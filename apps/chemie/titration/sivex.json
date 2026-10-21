@@ -1,0 +1,13 @@
+{
+  "id": "chemie/titration",
+  "title": "Virtuelles Titrationslabor",
+  "description": "Säure-Base-Titration, pH-Kurve und quantitative Auswertung.",
+  "subject": "Chemie",
+  "grades": [
+    10,
+    11,
+    12,
+    13
+  ],
+  "status": "planned"
+}
