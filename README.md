@@ -6,7 +6,7 @@ SiVex ist eine modular aufgebaute Sammlung interaktiver naturwissenschaftlicher 
 
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
-| Säure-Base-Titration | `apps/chemie/titration/` | Prototyp; fachliche Freigabe offen |
+| Säure-Base-Titration | `apps/chemie/titration/` | **TitraLab 2** (neuere Codex-Version); Quellcode-Import ausstehend |
 | Fehling- und Tollens-Probe | `apps/chemie/redoxlabor/` | In Planung |
 | Esterbildung und chemisches Gleichgewicht | `apps/chemie/ester-gleichgewicht/` | In Planung |
 
@@ -31,7 +31,7 @@ Siehe [mebis-Konzept](docs/MEBIS.md), [Architektur](docs/ARCHITECTURE.md) und [Q
 
 ## Stand des Repositories
 
-Das GitHub-Repository ist angelegt. Die vollständigen bereits lokal vorbereiteten Simulationsquellen und Build-Werkzeuge werden separat synchronisiert. Fehlende Dateien in `apps/` oder `tools/` sind derzeit **noch nicht hochgeladen**.
+Das GitHub-Repository ist angelegt. Der neueste geprüfte Importkandidat ist **TitraLab 2** (Codex-Entwicklungszweig, Nutzerarchiv `TitraLab-2-Web.zip` vom 18.10.2026). Das neue SCORM-1.2-Paket wurde lokal erfolgreich erzeugt; der vollständige Quellcode-Import nach GitHub steht noch aus. Die vorherige Claude-Implementierung ist ein anderer Entwicklungszweig und wurde als separates Archiv erhalten. Fehlende Dateien in `apps/` oder `tools/` sind derzeit **noch nicht hochgeladen**.
 
 ## Lizenz
 
