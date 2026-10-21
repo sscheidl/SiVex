@@ -1,0 +1,13 @@
+{
+  "id": "chemie/ester-gleichgewicht",
+  "title": "Esterbildung und chemisches Gleichgewicht",
+  "description": "Teilchenmodell, Konzentrationsdiagramme und Gleichgewichtsverschiebung.",
+  "subject": "Chemie",
+  "grades": [
+    10,
+    11,
+    12,
+    13
+  ],
+  "status": "planned"
+}
