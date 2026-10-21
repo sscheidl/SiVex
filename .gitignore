@@ -1,0 +1,13 @@
+# Buildprodukte
+dist/
+build/
+*.log
+.DS_Store
+__pycache__/
+.pytest_cache/
+*.py[cod]
+node_modules/
+.vscode/
+.idea/
+.env
+.env.*
