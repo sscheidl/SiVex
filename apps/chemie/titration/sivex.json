@@ -1,7 +1,7 @@
 {
   "id": "chemie/titration",
-  "title": "Virtuelles Titrationslabor",
-  "description": "Säure-Base-Titration, pH-Kurve und quantitative Auswertung.",
+  "title": "TitraLab 2 – Virtuelle Säure-Base-Titration",
+  "description": "Neuere Codex-Version mit animierten Tropfen und pH-Kurve; Quellcode-Import ausstehend.",
   "subject": "Chemie",
   "grades": [
     10,
