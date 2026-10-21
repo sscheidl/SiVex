@@ -1,0 +1,12 @@
+{
+  "id": "chemie/redoxlabor",
+  "title": "Virtuelles Redoxlabor",
+  "description": "Fehling- und Tollens-Probe mit Experimentsteuerung und Redoxauswertung.",
+  "subject": "Chemie",
+  "grades": [
+    10,
+    11,
+    12
+  ],
+  "status": "planned"
+}
