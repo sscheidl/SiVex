@@ -14,27 +14,28 @@ SiVex-Simulationen sollen im mebis-Kurs unmittelbar im Browser starten, ohne Dow
 ## Status der praktischen Erprobung (21.10.2026)
 
 - **PASS (durch Lehrkraft bestätigt):** Das SCORM-Paket der Titrationssimulation lässt sich grundsätzlich in mebis einbinden und dort starten.
-- **OPEN:** Die HTML-Inhalte erscheinen im eingebetteten mebis-Fenster verkleinert; eine Vollbildoption wurde bislang nicht gefunden.
-- **OPEN:** Vollständige Bedienbarkeit auf Schüler-iPads, Layout und echte Fullscreen-Option noch nicht abschließend verifiziert.
+- **PASS (durch Lehrkraft bestätigt):** In den SCORM-Darstellungseinstellungen lässt sich das Lernpaket in einem **eigenen Browserfenster** öffnen. Dies ist die bevorzugte Darstellung für die SiVex-Simulationen.
+- **BEKANNT:** Bei Anzeige innerhalb des mebis-Kursfensters wirkt die Simulation verkleinert; dafür ist gegenwärtig keine gesonderte Kompaktversion erforderlich.
+- **OPEN:** Vollständige Bedienbarkeit auf Schüler-iPads einschließlich Fenster-/Tab-Verhalten, Layout und Touch-Steuerung noch nicht abschließend verifiziert.
 
 Diese Befunde nicht mit einer vollständigen mebis- oder iPad-Freigabe gleichsetzen.
 
-## Nächste Maßnahme A: SCORM-Aktivität konfigurieren
+## Bestätigte Darstellung: separates Fenster
 
 Bei der SCORM-Aktivität in mebis „Einstellungen bearbeiten“ → „Ausführliche Eingabe“ → „Darstellung“ prüfen (die konkrete ByCS-Konfiguration kann Optionen einschränken):
 
-1. „Lernpaket anzeigen“: falls verfügbar, „Neues Fenster“ gegen „Aktuelles Fenster“ testen.
+1. „Lernpaket anzeigen“: **„Neues Fenster“ (in mebis erfolgreich getestet)** wählen.
 2. Fensterbreite möglichst voll ausnutzen; bei Moodle kann „100 %“ für die Bühnenbreite genutzt werden.
 3. Kursstruktur, Vorschalt- oder Übersichtsseiten bei nur einem Lernobjekt ausblenden bzw. überspringen, soweit verfügbar.
 4. Popup-Sperren und Navigation zurück zum Kurs kontrollieren.
 
 Moodle-Dokumentation: https://docs.moodle.org/502/en/Using_SCORM
 
-Wichtig: Die oben genannten Einstellungen sind in Moodle dokumentiert; ihre konkrete Verfügbarkeit in mebis ist nicht bestätigt.
+Wichtig: Die Option „Neues Fenster“ wurde in mebis praktisch bestätigt; weitere Darstellungseinstellungen können je nach ByCS-Konfiguration variieren.
 
-## Nächste Maßnahme B: Responsives SiVex-Layout
+## Responsives SiVex-Layout (nachrangig)
 
-Jede Anwendung soll neben der normalen Webserver-Ansicht einen automatisch aktivierten Kompaktmodus für eingebettete SCORM-Anzeigen haben:
+Das separate Browserfenster ist der bevorzugte Weg. Eine besondere Kompaktversion für eingebettete SCORM-Anzeigen ist **vorerst nicht erforderlich**; allgemeine Responsivität bleibt eine Qualitätsanforderung:
 
 - Keine feste Mindestbreite, die zu horizontalem Scrollen oder Miniaturskalierung zwingt.
 - Laborgrafiken proportional skalieren, ohne Touchziele unbedienbar klein zu machen.
@@ -49,9 +50,9 @@ Die gebaute Anwendung direkt auf einem statischen HTTPS-Webserver hosten und im 
 
 ## Noch offene Abnahmetests
 
-1. Anzeigeoptionen der mebis-SCORM-Aktivität testen (aktuelles/neues Fenster).
-2. Start und Bedienung mit aktuellem iPad-Safari und Desktop-Browser.
-3. Darstellung von Animationen, Diagrammen, Flüssigkeiten und Touch-Steuerung, auch bei beengten Fenstern.
+1. Prüfen, wie „Neues Fenster“ auf Schul-iPads umgesetzt wird (Tab, separates Fenster, ggf. Pop-up-Sperre).
+2. Start und vollständige Bedienung mit aktuellem iPad-Safari und Desktop-Browser.
+3. Darstellung von Animationen, Diagrammen, Flüssigkeiten und Touch-Steuerung in der tatsächlich verfügbaren Fenstergröße.
 4. Erneuter Start nach Kurswechsel und Neuladen; keine Cache- oder Offline-Fehler.
 5. Keine externen Ressourcenanfragen oder Übertragung personenbezogener Daten.
 
