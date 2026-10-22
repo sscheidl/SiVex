@@ -96,7 +96,7 @@ Die Tests sichern das Modell ab; die fachliche Begründung liefern die Quellen i
 
 ## 5. Verbleibende offene Punkte
 
-1. **Release:** `release/redoxlabor-1.0.0-*.zip` enthalten noch den alten Stand. Ein neues Release (z. B. 1.1.0) mit Versionsnummer, Paketen und Prüfsummen ist eine eigene Entscheidung; die Download-Links im README zeigen bis dahin auf 1.0.0.
+1. **Release:** erledigt – Release 1.1.0 (`release/redoxlabor-1.1.0-*.zip`) enthält den überarbeiteten Stand; die Download-Links zeigen darauf. Die Pakete 1.0.0 bleiben zum Vergleich erhalten.
 2. **Geräte- und LMS-Tests:** iPad mit Safari (WebKit) und Import in einen echten mebis-Kurs stehen weiterhin aus.
 3. **Zugänglichkeit:** Fokus- und Tastaturverbesserungen sowie die Live-Region sind umgesetzt, aber nicht mit VoiceOver/NVDA geprüft. Die Canvas-Bedienung (Ziehen, Antippen auf dem Labortisch) hat Panel-Äquivalente; ein vollständiges Audit fehlt.
 4. **Modellgrenzen, bewusst offen gelassen:**

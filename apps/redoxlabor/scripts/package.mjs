@@ -1,7 +1,8 @@
 // Erzeugt die Release-Pakete aus dem statischen Build (dist/redoxlabor):
 //   release/redoxlabor-<version>-web.zip      – zum Hochladen auf einen Webserver
 //   release/redoxlabor-<version>-scorm12.zip  – SCORM-1.2-Lernpaket für mebis/Moodle
-//   release/SHA256SUMS.txt
+//   release/SHA256SUMS.txt                    – Prüfsummen aller Pakete im Ordner
+// Pakete älterer Versionen bleiben erhalten; nur die aktuelle Version wird ersetzt.
 // Ohne externe Werkzeuge (eigener ZIP-Schreiber mit zlib); feste Zeitstempel
 // sorgen dafür, dass wiederholte Builds identische Archive ergeben.
 import fs from 'node:fs';
@@ -100,12 +101,14 @@ ${files.map((f) => `      <file href="${xml(f)}"/>`).join('\n')}
 
 // ------------------------------------------------------------------ Pakete schreiben
 fs.mkdirSync(out, { recursive: true });
-for (const f of fs.readdirSync(out)) if (/^redoxlabor-.*\.zip$|^SHA256SUMS\.txt$/.test(f)) fs.rmSync(path.join(out, f));
 const read = (f) => fs.readFileSync(path.join(dist, f));
 const webName = `redoxlabor-${version}-web.zip`;
 const scormName = `redoxlabor-${version}-scorm12.zip`;
 fs.writeFileSync(path.join(out, webName), zip(files.map((f) => ({ name: 'redoxlabor/' + f, data: read(f) }))));
 fs.writeFileSync(path.join(out, scormName), zip([{ name: 'imsmanifest.xml', data: Buffer.from(manifest, 'utf8') }, ...files.map((f) => ({ name: f, data: read(f) }))]));
-const sums = [webName, scormName].map((n) => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(out, n))).digest('hex')}  ${n}`).join('\n') + '\n';
+// Prüfsummen für alle vorhandenen Pakete, neueste Version zuerst
+const vkey = (n) => (/^redoxlabor-(\d+)\.(\d+)\.(\d+)/.exec(n) || [0, 0, 0, 0]).slice(1).map((x) => x.padStart(6, '0')).join('.');
+const all = fs.readdirSync(out).filter((f) => /^redoxlabor-.*\.zip$/.test(f)).sort((a, b) => vkey(b).localeCompare(vkey(a)) || (a.includes('-web') ? -1 : 1));
+const sums = all.map((n) => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(out, n))).digest('hex')}  ${n}`).join('\n') + '\n';
 fs.writeFileSync(path.join(out, 'SHA256SUMS.txt'), sums);
 for (const n of [webName, scormName]) console.log(`Paket: release/${n} (${(fs.statSync(path.join(out, n)).size / 1024).toFixed(1)} KiB, ${files.length} Dateien${n === scormName ? ' + imsmanifest.xml' : ''})`);
