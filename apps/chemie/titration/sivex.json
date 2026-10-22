@@ -1,13 +1,18 @@
 {
   "id": "chemie/titration",
-  "title": "Claude V3 – Virtuelle Säure-Base-Titration",
-  "description": "Gewählte Claude-V3-Fassung; SCORM-Release getestet, Quellcode-Import ins Repository noch ausstehend.",
+  "title": "TitraLab 3 (Claude) – Virtuelle Säure-Base-Titration",
+  "description": "Ausgewählte Titrationssimulation. Funktionsfähiges SCORM-1.2-Release vorhanden; Import der Laufzeitdateien nach GitHub ausstehend.",
   "subject": "Chemie",
+  "topics": [
+    "Säure-Base-Chemie",
+    "Analytische Chemie"
+  ],
   "grades": [
     10,
     11,
     12,
     13
   ],
+  "version": "3",
   "status": "planned"
 }
