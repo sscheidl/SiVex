@@ -1,0 +1,16 @@
+[
+  {
+    "package": "trennlabor-1.0.0-web.zip",
+    "sha256": "b209c750cd13092a505619bb14ebb1a99d09503b6ab8b8f481ee2ef83e4387b0",
+    "crc": "PASS",
+    "relative_resources": "PASS",
+    "manifest": null
+  },
+  {
+    "package": "trennlabor-1.0.0-scorm12.zip",
+    "sha256": "690e5ac1ff309f6a5042b5a68428d51cd7857a80edf727120fae3871a5b90694",
+    "crc": "PASS",
+    "relative_resources": "PASS",
+    "manifest": "PASS"
+  }
+]

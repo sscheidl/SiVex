@@ -1,0 +1,9 @@
+# Umsetzung und Prüfansatz
+
+22.10.2026, vor der Implementierung. Das zuvor leere Arbeitsverzeichnis wurde aus sscheidl/SiVex geklont. Feature-Branch: feat/trennlabor. Keine Änderungen an bestehenden Laboren.
+
+Statische HTML/CSS/JS-Anwendung ohne Laufzeitabhängigkeiten; klassische Skripte erlauben auch file://. DOM-freie Fachmodelle mit gemeinsamen festen 0,05-s-Schritten; eine Steuerung verwaltet Aktionen, Hilfen, protokollierte Beobachtungen, Antwortentwürfe und eingefrorene Erfolge. Der SVG-Renderer zeichnet Stoffmengen und Gerätezustand; die UI bietet alle Aktionen als beschriftete Klick-/Tastaturkontrollen an. Sitzungsspeicherung ausschließlich lokal.
+
+Klassik: explizite Stoffvektoren in frei wählbaren Gefäßen, Filterrückstand, Magnet, Verlust- und Dampfbehälter; Salz fest/gelöst, Pflanzenfarbstoff gebunden/gelöst. Transfers dauern mehrere Simulationssekunden. Kriterium: getrennte, ausreichend große tatsächliche Fraktionen. Chromatographie: sieben definierte Modellproben, gemeinsames Blau/Gelb/Rot, zwei Laufmittel mit festen Retentionsdaten, kontinuierliche kapillare Front, Mengenabhängigkeit der Bandbreite. Destillation: 30 g Ethanol + 70 g Wasser, stetige vereinfachte Anreicherung und Siedekurve, Energie-/Stoffkopplung, gesonderte Probe, Sicherheitsverriegelung. Modellwerte sind Unterrichtsparameter, keine Laboranleitung.
+
+Prüfung: positive und negative Modelltests, Bilanzinvarianten und Zeitsteuerung; echte Browseraktionen für alle Pflichtabläufe auf Desktop und Touch-Tablet; Screenshots ansehen. Danach tatsächlich gepackte Web-/SCORM-ZIPs extrahieren, Ressourcen und Manifest prüfen, dieselben Benutzerabläufe aus den Paketen im Browser ausführen und LMS-An-/Abmeldung ohne Datentransfer nachweisen. Reproduzierbare Archive und SHA256. Kriterien einzeln dokumentieren, keinen PASS ohne Nachweis. Echte iPads/mebis/Unterricht sind spätere Lehrkraftprüfungen.

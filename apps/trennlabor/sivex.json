@@ -1,0 +1,6 @@
+{
+  "id": "chemie/trennlabor", "title": "Virtuelles Trennlabor",
+  "description": "Frei experimentieren: fünf klassische Stofftrennungen, Papierchromatographie und Ethanol-Wasser-Destillation.",
+  "subject": "Chemie", "grades": [8, 9], "status": "prototype", "entry": "index.html",
+  "topics": ["Stoffgemische", "Trennverfahren", "Chromatographie", "Destillation"]
+}

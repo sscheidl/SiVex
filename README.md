@@ -6,6 +6,7 @@ SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftli
 
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
+| [Virtuelles Trennlabor](apps/trennlabor/) – klassische Trennverfahren, Chromatographie und Destillation | `apps/trennlabor/` | **prototype** – Version 1.0.0, Quellcode mit Modell-/Browser-/Pakettests. [SCORM 1.2](apps/trennlabor/release/trennlabor-1.0.0-scorm12.zip) · [Web-ZIP](apps/trennlabor/release/trennlabor-1.0.0-web.zip) · [Testbericht](apps/trennlabor/docs/TESTBERICHT.md) |
 | **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/titration/` | **Ausgewählt**; läuft in mebis. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip). Import als entpackter Quellcode ausstehend |
 | [Redoxlabor – Fehling- und Tollens-Probe](apps/redoxlabor/) | `apps/redoxlabor/` | **prototype** – Redoxlabor 1.3 (Claude Code; überarbeitet nach Prüfung vom 22.10.2026, Zucker als Feststoffe, GHS-Kennzeichnung), Quellcode im Repo. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-web.zip) · [Testbericht](apps/redoxlabor/docs/TESTBERICHT.md) |
 | Esterbildung und chemisches Gleichgewicht | `apps/ester-gleichgewicht/` | In Planung |

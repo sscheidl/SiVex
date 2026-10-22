@@ -1,0 +1,219 @@
+{
+  "date": "2026-10-22T18:15:46.879Z",
+  "reports": [
+    {
+      "label": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "touch": false
+      },
+      "results": [
+        {
+          "name": "A-01 Startansicht und drei Bereiche",
+          "status": "PASS",
+          "ms": 683
+        },
+        {
+          "name": "E01 K-02 + L-02/03/04 Auswertung und Hefteintrag",
+          "status": "PASS",
+          "ms": 3615
+        },
+        {
+          "name": "E02 trocken filtrieren + E18 kontextbezogene Hilfe",
+          "status": "PASS",
+          "ms": 1421
+        },
+        {
+          "name": "E03 Filtrat verwerfen: kein Salz aus dem Nichts",
+          "status": "PASS",
+          "ms": 2961
+        },
+        {
+          "name": "E04 Sedimentieren/Dekantieren und korrigierbarer Fehlversuch",
+          "status": "PASS",
+          "ms": 2981
+        },
+        {
+          "name": "E05 Eisen/Sand/Salz vollständig",
+          "status": "PASS",
+          "ms": 3317
+        },
+        {
+          "name": "E06 Scheidetrichter und Hahnverluste",
+          "status": "PASS",
+          "ms": 5671
+        },
+        {
+          "name": "E07 Hibiskus kalt/warm und Pflanzenreste",
+          "status": "PASS",
+          "ms": 2614
+        },
+        {
+          "name": "E08 Chromatographie drei Proben dynamisch + gemeinsame Bande",
+          "status": "PASS",
+          "ms": 3141
+        },
+        {
+          "name": "E09 wasserfester Stift in Wasser bleibt stehen",
+          "status": "PASS",
+          "ms": 2436
+        },
+        {
+          "name": "E10 untergetauchte Punkte liefern keine Banden",
+          "status": "PASS",
+          "ms": 2502
+        },
+        {
+          "name": "E11 überladener Punkt und Kugelschreiber",
+          "status": "PASS",
+          "ms": 4617
+        },
+        {
+          "name": "E12 Reinstoff und Experten-Rf korrekt",
+          "status": "PASS",
+          "ms": 2641
+        },
+        {
+          "name": "E13 vollständige Destillation und Brennprobe",
+          "status": "PASS",
+          "ms": 2532
+        },
+        {
+          "name": "E14 Kühlwasser aus verändert Ergebnis",
+          "status": "PASS",
+          "ms": 2084
+        },
+        {
+          "name": "E15 falsches Thermometer, E16 Heizung 0",
+          "status": "PASS",
+          "ms": 3645
+        },
+        {
+          "name": "E17 Sicherheitsstopp geschlossen / Zündung / Wiederaufnahme",
+          "status": "PASS",
+          "ms": 2313
+        },
+        {
+          "name": "A-04 Pause, Entwürfe und Sitzungszustand",
+          "status": "PASS",
+          "ms": 2050
+        },
+        {
+          "name": "V-03/04 Layout, Tastatur und lokaler Datenverkehr",
+          "status": "PASS",
+          "ms": 867
+        }
+      ],
+      "consoleErrors": [],
+      "externalRequests": []
+    },
+    {
+      "label": "tablet",
+      "viewport": {
+        "width": 1024,
+        "height": 768,
+        "touch": true
+      },
+      "results": [
+        {
+          "name": "A-01 Startansicht und drei Bereiche",
+          "status": "PASS",
+          "ms": 544
+        },
+        {
+          "name": "E01 K-02 + L-02/03/04 Auswertung und Hefteintrag",
+          "status": "PASS",
+          "ms": 3801
+        },
+        {
+          "name": "E02 trocken filtrieren + E18 kontextbezogene Hilfe",
+          "status": "PASS",
+          "ms": 1508
+        },
+        {
+          "name": "E03 Filtrat verwerfen: kein Salz aus dem Nichts",
+          "status": "PASS",
+          "ms": 3109
+        },
+        {
+          "name": "E04 Sedimentieren/Dekantieren und korrigierbarer Fehlversuch",
+          "status": "PASS",
+          "ms": 3068
+        },
+        {
+          "name": "E05 Eisen/Sand/Salz vollständig",
+          "status": "PASS",
+          "ms": 3470
+        },
+        {
+          "name": "E06 Scheidetrichter und Hahnverluste",
+          "status": "PASS",
+          "ms": 5745
+        },
+        {
+          "name": "E07 Hibiskus kalt/warm und Pflanzenreste",
+          "status": "PASS",
+          "ms": 2746
+        },
+        {
+          "name": "E08 Chromatographie drei Proben dynamisch + gemeinsame Bande",
+          "status": "PASS",
+          "ms": 3312
+        },
+        {
+          "name": "E09 wasserfester Stift in Wasser bleibt stehen",
+          "status": "PASS",
+          "ms": 2518
+        },
+        {
+          "name": "E10 untergetauchte Punkte liefern keine Banden",
+          "status": "PASS",
+          "ms": 2664
+        },
+        {
+          "name": "E11 überladener Punkt und Kugelschreiber",
+          "status": "PASS",
+          "ms": 4819
+        },
+        {
+          "name": "E12 Reinstoff und Experten-Rf korrekt",
+          "status": "PASS",
+          "ms": 2637
+        },
+        {
+          "name": "E13 vollständige Destillation und Brennprobe",
+          "status": "PASS",
+          "ms": 2769
+        },
+        {
+          "name": "E14 Kühlwasser aus verändert Ergebnis",
+          "status": "PASS",
+          "ms": 2159
+        },
+        {
+          "name": "E15 falsches Thermometer, E16 Heizung 0",
+          "status": "PASS",
+          "ms": 3839
+        },
+        {
+          "name": "E17 Sicherheitsstopp geschlossen / Zündung / Wiederaufnahme",
+          "status": "PASS",
+          "ms": 2554
+        },
+        {
+          "name": "A-04 Pause, Entwürfe und Sitzungszustand",
+          "status": "PASS",
+          "ms": 2177
+        },
+        {
+          "name": "V-03/04 Layout, Tastatur und lokaler Datenverkehr",
+          "status": "PASS",
+          "ms": 876
+        }
+      ],
+      "consoleErrors": [],
+      "externalRequests": []
+    }
+  ]
+}

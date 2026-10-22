@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#173e49"><title>SiVex · Trennlabor</title><link rel="icon" href="data:,"><link rel="stylesheet" href="css/app.css"></head>
+<body>
+<header><button id="home" class="brand" aria-label="Startansicht"><span class="mark">Si<span>V</span>ex</span><span>VIRTUELLES TRENNLABOR</span></button><span class="school">Chemie · NTG 8 / SG 9</span><button id="fullscreen">Vollbild</button></header>
+<main>
+<section id="landing"><div class="eyebrow">STOFFE VERSTEHEN. GEMISCHE TRENNEN.</div><h1>Ein Gemisch.<br>Dein Weg zur Trennung.</h1><p class="intro">Wähle einen Laborbereich. Baue selbst auf, untersuche deine Stoffe und finde heraus, welche Eigenschaften eine Trennung ermöglichen.</p><div class="categories">
+<button data-category="classic" class="category"><span class="category-art" id="art-classic"></span><span class="eyebrow">01 / KLASSISCHE VERFAHREN</span><h2>Eigenschaften nutzen</h2><p>Vom Sand im Wasser bis zum Hibiskustee. Fünf Aufgaben, mehrere sinnvolle Wege.</p><strong>Trennverfahren öffnen →</strong></button>
+<button data-task="C" class="category"><span class="category-art" id="art-chroma"></span><span class="eyebrow">02 / CHROMATOGRAPHIE</span><h2>Farben auf der Spur</h2><p>Sieben Proben, zwei Laufmittel. Welche Farbstoffe wandern gemeinsam?</p><strong>Chromatographie öffnen →</strong></button>
+<button data-task="D" class="category"><span class="category-art" id="art-distill"></span><span class="eyebrow">03 / DESTILLATION</span><h2>Vom Dampf zum Tropfen</h2><p>Ethanol und Wasser untersuchen. Aufbauen, erwärmen und Destillat gewinnen.</p><strong>Destillation öffnen →</strong></button>
+</div><p class="quiet">Frei experimentieren · Ohne Anmeldung · Vollständig lokal · Virtuelle Versuche, keine Anleitung für reale Experimente</p></section>
+<section id="workspace" hidden>
+<nav id="tasknav" aria-label="Versuche"></nav>
+<div class="taskhead"><div><span class="eyebrow" id="taskid"></span><h1 id="tasktitle"></h1><p id="goal"></p></div><button id="reset">Aktuellen Versuch neu beginnen</button></div>
+<div class="labgrid"><aside><details open id="controls-detail"><summary>Geräte & Bedienung</summary><div id="controls"></div></details></aside>
+<section class="bench" aria-label="Laborbühne"><div class="benchbar"><span><i class="live-dot"></i> <b id="phase">Labor bereit</b></span><div class="time-controls"><button id="pause">Pause</button><label>Tempo <select id="speed"><option value="1">1×</option><option value="4">4×</option><option value="10">10×</option></select></label><span id="clock">0 s</span></div></div><div id="scene"></div><div id="readings" class="readings"></div><p id="notice" role="status" aria-live="polite"></p></section></div>
+<section class="bottomgrid"><details id="help-panel"><summary>Hilfe <span id="offer"></span></summary><div class="help-options" id="help-options"><button data-help="0" aria-pressed="true">Keine Hilfe</button><button data-help="1" aria-pressed="false">Kleine Hilfe</button><button data-help="2" aria-pressed="false">Konkrete Hilfestellung</button></div><p id="hint"></p></details><details id="evaluation"><summary>Beobachtung & Auswertung <span id="completed"></span></summary><div id="assessment"></div></details></section>
+<section id="notebook" hidden></section>
+</section>
+</main><footer>SiVex / Trennlabor 1.0 <span>Modelle machen Eigenschaften sichtbar. Reale Stoffe können abweichen.</span></footer>
+<script src="js/chemistry.js"></script><script src="js/lab.js"></script><script src="js/render.js"></script><script src="js/scorm.js"></script><script src="js/ui.js"></script>
+</body></html>
