@@ -219,7 +219,7 @@ async function scenarioStart(browser) {
     await sleep(600);
     const f = await shot(page, '01-labortisch.png');
     const counts = await page.evaluate(() => ({ reagents: document.querySelectorAll('[data-reagent]').length, samples: document.querySelectorAll('[data-sample]').length, tubes: document.querySelectorAll('[data-tube]').length }));
-    assert(counts.reagents === 5 && counts.samples === 6 && counts.tubes === 4, JSON.stringify(counts));
+    assert(counts.reagents === 5 && counts.samples === 10 && counts.tubes === 4, JSON.stringify(counts));
     assert(errors.length === 0, errors.join('; '));
     await context.close();
     return { screenshot: f, counts };
@@ -610,7 +610,7 @@ async function scenarioModesAndReset(browser) {
       await page.click('#btnRestart'); await page.click('[data-m="fullRestart"]'); await sleep(150);
       changed = (await page.evaluate(() => window.RedoxLab.lab.state.samples.map((s) => s.sampleId).join())) !== map1;
     }
-    assert(learn.join() === 'Ethanal,Propanal,Butanal,Propanon,Butanon,Pentan-2-on', learn.join());
+    assert(learn.join() === 'Ethanal,Propanal,Butanal,Propanon,Butanon,Pentan-2-on,Glucose,Fructose,Saccharose,Maltose', learn.join());
     assert(ana.join() === 'A,B,C,D,E,F', ana.join());
     assert(changed, 'Zuordnung wird nicht neu gemischt');
     return { lernmodus: learn, analysemodus: ana };
@@ -678,6 +678,8 @@ async function scenarioMotion(browser) {
     const frames = [], rows = [];
     const t0 = Date.now();
     while (Date.now() - t0 < 2300) {
+      // nur Bilder werten, solange die Zugabe noch läuft (danach steht die Pipette zu Recht still)
+      if (!(await page.evaluate(() => window.RedoxLab.lab.busy()))) break;
       frames.push(await page.evaluate((r) => window.__snap(...r), region));
       rows.push(await blueRows());
       await sleep(90);
@@ -877,6 +879,67 @@ async function scenarioReviewFixes(browser) {
   }
 }
 
+// Zucker als Feststoffe, Glas im Wasserbad antippen, Beschriftung und Sicherheitszeichen
+async function scenarioSugars(browser) {
+  const { page, errors, context } = await newPage(browser);
+  await test('Z-01', 'Glucose per Spatel in Fehling-Lösung: Kristalle sichtbar, lösen sich, positiver Nachweis', async () => {
+    await fehlingByMouse(page, 1, null);
+    await canvasClick(page, { type: 'sample', id: 'glucose' });
+    const s0 = await page.evaluate(() => { const c = window.RedoxLab.lab.tubeById(1).contents; return { solid: c.solid, dissolved: +c.dissolved.toFixed(2), sample: c.sampleId, vol: window.RedoxLab.chem.volume(c) }; });
+    assert(s0.solid === 1 && s0.sample === 'glucose' && s0.vol === 2 && s0.dissolved < 0.2, JSON.stringify(s0));
+    const crystals = await shot(page, 'zucker-01-glucose-kristalle.png', await lupeClip(page));
+    await click(page, '[data-action="bath"]');
+    await waitComplete(page, 1);
+    const s = await tube(page, 1);
+    const c = hsl((await probe(page, 'color')).rgb);
+    assert(s.outcome === 'positive', JSON.stringify(s));
+    assert(c.h <= 25 || c.h >= 350, 'nicht ziegelrot ' + JSON.stringify(c));
+    const f = await shot(page, 'zucker-02-glucose-positiv.png');
+    return { vorher: s0, zustand: s, farbe: c, screenshots: [crystals, f] };
+  });
+  await test('U-08', 'Reagenzglas im Wasserbad antippen bringt es in den Ständer zurück', async () => {
+    assert((await tube(page, 1)).place === 'bath', 'Ausgangslage');
+    await canvasClick(page, { type: 'tube', id: 1 });
+    const s = await tube(page, 1);
+    assert(s.place === 'rack', 'nicht zurück im Ständer: ' + s.place);
+    return { ort: s.place };
+  });
+  await test('Z-02', 'Saccharose bleibt in der Fehling-Probe negativ (tiefblau)', async () => {
+    await fehlingByMouse(page, 2, null);
+    await click(page, '[data-sample="saccharose"]');
+    await click(page, '[data-action="shake"]');
+    await click(page, '[data-action="bath"]');
+    await waitObservable(page, 2, 60000);
+    const s = await tube(page, 2);
+    const c = hsl((await probe(page, 'color')).rgb);
+    assert(s.outcome === 'negative' && s.progress === 0, JSON.stringify(s));
+    assert(c.h >= 210 && c.h <= 245, 'nicht blau ' + JSON.stringify(c));
+    await click(page, '[data-action="record"]');
+    await page.click('[data-proto="solution"]');
+    await page.waitForSelector('text=anomeren C-Atome');
+    const f = await shot(page, 'zucker-03-saccharose-negativ.png');
+    assert(errors.length === 0, errors.join('; '));
+    return { zustand: s, farbe: c, screenshot: f };
+  });
+  await context.close();
+  {
+    const { page, errors, context } = await newPage(browser, { viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true });
+    await test('V-09', 'Labortisch: zwei Probenreihen, größere Beschriftung, Augenschutz-Zeichen (Tablet)', async () => {
+      const m = await page.evaluate(() => {
+        const { renderer, lab } = window.RedoxLab;
+        const hits = lab.state.samples.map((s) => { const a = renderer.anchor({ type: 'sample', id: s.sampleId }); const r = document.getElementById('lab').getBoundingClientRect(); const lp = renderer.toLogical(a.x, a.y); const h = renderer.hitTest(lp.x, lp.y); return { id: s.sampleId, hit: h && h.id, y: Math.round(lp.y) }; });
+        return { hits, rows: [...new Set(hits.map((h) => h.y))].length };
+      });
+      assert(m.hits.every((h) => h.hit === h.id), 'Trefferflächen: ' + JSON.stringify(m.hits));
+      assert(m.rows === 2, 'Reihen: ' + m.rows);
+      const f = await shot(page, 'zucker-00-labortisch-tablet.png');
+      assert(errors.length === 0, errors.join('; '));
+      return { reihen: m.rows, proben: m.hits.length, screenshot: f };
+    });
+    await context.close();
+  }
+}
+
 // ------------------------------------------------------------------ Ablauf
 const server = await serve(ROOT, PORT);
 const CHANNEL = process.env.PW_CHANNEL || '';
@@ -889,6 +952,7 @@ await Promise.all([scenarioTollensEthanal(browser), scenarioTollensButanalDrag(b
 await scenarioNegatives(browser);
 await Promise.all([scenarioModesAndReset(browser), scenarioBump(browser), scenarioResponsive(browser), scenarioMotion(browser)]);
 await scenarioReviewFixes(browser);
+await scenarioSugars(browser);
 await browser.close();
 server.close();
 

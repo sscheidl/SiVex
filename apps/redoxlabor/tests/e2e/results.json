@@ -1,8 +1,8 @@
 {
-  "date": "2026-10-22T13:55:58.068Z",
+  "date": "2026-10-22T15:24:12.097Z",
   "browser": "msedge via Playwright 1.62.1, Version 155.0.4283.62",
-  "durationSeconds": 209,
-  "passed": 32,
+  "durationSeconds": 259,
+  "passed": 36,
   "failed": 0,
   "results": [
     {
@@ -14,7 +14,7 @@
         "screenshot": "docs\\screenshots\\01-labortisch.png",
         "counts": {
           "reagents": 5,
-          "samples": 6,
+          "samples": 10,
           "tubes": 4
         }
       }
@@ -93,7 +93,7 @@
         "zustand": {
           "place": "bath",
           "vol": 3,
-          "progress": 0.989,
+          "progress": 0.984,
           "temp": 80,
           "observable": true,
           "outcome": "positive",
@@ -104,9 +104,9 @@
         },
         "farbe": {
           "h": 11,
-          "s": 0.47,
+          "s": 0.49,
           "l": 0.48,
-          "c": 115
+          "c": 119
         },
         "layout": {
           "scrollW": 1180,
@@ -186,20 +186,20 @@
       "seconds": 15,
       "evidence": {
         "fruehesteBeobachtung": {
-          "progress": 0.489,
+          "progress": 0.451,
           "outcome": "positive"
         },
         "endfarbe": {
           "h": 9,
-          "s": 0.54,
-          "l": 0.43,
-          "c": 118
+          "s": 0.53,
+          "l": 0.42,
+          "c": 114
         },
         "farbstufen": 10,
         "rauheit": {
           "klareLoesung": 1.4,
           "vorErwaermen": 1.1,
-          "ende": 3.23
+          "ende": 3.08
         },
         "verlauf": [
           {
@@ -212,76 +212,76 @@
             "rough": 1
           },
           {
-            "t": 1.4,
-            "progress": 0.002,
-            "temp": 48,
+            "t": 1.3,
+            "progress": 0.001,
+            "temp": 47,
             "h": 230,
-            "s": 0.63,
-            "l": 0.45,
-            "rough": 1.17
+            "s": 0.78,
+            "l": 0.4,
+            "rough": 1.08
           },
           {
-            "t": 2.7,
-            "progress": 0.037,
+            "t": 2.6,
+            "progress": 0.034,
             "temp": 62,
-            "h": 226,
-            "s": 0.75,
-            "l": 0.41,
-            "rough": 3.96
+            "h": 227,
+            "s": 0.76,
+            "l": 0.4,
+            "rough": 3.32
           },
           {
-            "t": 4.1,
-            "progress": 0.136,
-            "temp": 71,
-            "h": 211,
-            "s": 0.5,
-            "l": 0.56,
-            "rough": 3.4
+            "t": 3.9,
+            "progress": 0.124,
+            "temp": 70,
+            "h": 213,
+            "s": 0.51,
+            "l": 0.51,
+            "rough": 2.97
           },
           {
-            "t": 5.4,
-            "progress": 0.26,
+            "t": 5.3,
+            "progress": 0.248,
             "temp": 75,
-            "h": 178,
-            "s": 0.29,
-            "l": 0.47,
-            "rough": 1.96
+            "h": 183,
+            "s": 0.3,
+            "l": 0.48,
+            "rough": 1.66
           },
           {
-            "t": 6.8,
-            "progress": 0.407,
+            "t": 6.7,
+            "progress": 0.396,
             "temp": 77,
-            "h": 80,
-            "s": 0.26,
-            "l": 0.52,
-            "rough": 2.13
+            "h": 84,
+            "s": 0.25,
+            "l": 0.53,
+            "rough": 3.31
           },
           {
             "t": 8.4,
-            "progress": 0.596,
+            "progress": 0.59,
             "temp": 79,
             "h": 36,
-            "s": 0.58,
-            "l": 0.57,
-            "rough": 4.27
+            "s": 0.57,
+            "l": 0.56,
+            "rough": 4.4
           },
           {
-            "t": 9.7,
-            "progress": 0.743,
+            "t": 9.6,
+            "progress": 0.737,
             "temp": 79,
             "h": 22,
             "s": 0.56,
-            "l": 0.55,
-            "rough": 6.21
+            "l": 0.56,
+            "rough": 5.39
           },
           {
             "t": 11,
-            "progress": 0.899,
+            "progress": 0.895,
             "temp": 80,
-            "h": 14,
+            "h": 15,
             "s": 0.49,
             "l": 0.55,
-            "rough": 5.74
+            "rough": 4.16
           }
         ],
         "screenshots": [
@@ -349,7 +349,7 @@
         },
         "nach 2× NH3": {
           "h": 208,
-          "s": 0.36,
+          "s": 0.35,
           "l": 0.95,
           "c": 9
         },
@@ -365,7 +365,7 @@
         "zustand": {
           "place": "bath",
           "vol": 5,
-          "progress": 0.97,
+          "progress": 0.977,
           "temp": 60,
           "observable": true,
           "outcome": "positive",
@@ -375,12 +375,12 @@
           "sample": "butanal"
         },
         "belag": {
-          "dark": 0.5162370271175092,
-          "mean": 160.77306488115028,
-          "std": 52.72999194783515,
-          "sat": 0.0445210713169712,
+          "dark": 0.5179109474389019,
+          "mean": 160.67076551724003,
+          "std": 52.52140546657768,
+          "sat": 0.04473306692934138,
           "aboveDark": 0,
-          "range": 153.0642
+          "range": 152.92380000000003
         }
       }
     },
@@ -392,17 +392,17 @@
       "evidence": {
         "vorher": {
           "dark": 0.00033478406427854036,
-          "mean": 242.90744673585465,
-          "std": 4.083244710993866,
-          "sat": 0.03486590806924309,
+          "mean": 242.90785577502442,
+          "std": 4.083839160583762,
+          "sat": 0.0348725074366365,
           "aboveDark": 0,
           "range": 13.706000000000017
         },
         "ende": {
-          "dark": 0.48610646133244056,
-          "mean": 163.52034797455508,
-          "std": 51.0633417839609,
-          "sat": 0.04126405473589606,
+          "dark": 0.4881151657181118,
+          "mean": 163.45363675928886,
+          "std": 50.89847553583597,
+          "sat": 0.0412614262993901,
           "aboveDark": 0,
           "range": 148.0642
         },
@@ -418,7 +418,7 @@
             "above": 0
           },
           {
-            "t": 1.3,
+            "t": 1.4,
             "progress": 0.009,
             "mirror": 0,
             "dark": 0,
@@ -428,16 +428,16 @@
           },
           {
             "t": 2.6,
-            "progress": 0.031,
+            "progress": 0.032,
             "mirror": 0,
             "dark": 0,
             "std": 4,
-            "sat": 0.04,
+            "sat": 0.03,
             "above": 0
           },
           {
             "t": 3.9,
-            "progress": 0.087,
+            "progress": 0.089,
             "mirror": 0,
             "dark": 0,
             "std": 5,
@@ -445,82 +445,82 @@
             "above": 0
           },
           {
-            "t": 5.2,
-            "progress": 0.167,
+            "t": 5.3,
+            "progress": 0.171,
             "mirror": 0.05,
-            "dark": 0.001,
+            "dark": 0,
             "std": 10,
             "sat": 0.02,
             "above": 0
           },
           {
-            "t": 6.7,
-            "progress": 0.267,
-            "mirror": 0.15,
-            "dark": 0.058,
+            "t": 6.8,
+            "progress": 0.272,
+            "mirror": 0.16,
+            "dark": 0.063,
             "std": 18,
-            "sat": 0.01,
+            "sat": 0,
             "above": 0
           },
           {
             "t": 8.1,
-            "progress": 0.363,
-            "mirror": 0.29,
-            "dark": 0.277,
+            "progress": 0.367,
+            "mirror": 0.3,
+            "dark": 0.287,
             "std": 26,
             "sat": 0.01,
             "above": 0
           },
           {
-            "t": 9.3,
-            "progress": 0.455,
-            "mirror": 0.45,
-            "dark": 0.502,
+            "t": 9.4,
+            "progress": 0.459,
+            "mirror": 0.46,
+            "dark": 0.5,
             "std": 34,
             "sat": 0.01,
             "above": 0
           },
           {
             "t": 10.7,
-            "progress": 0.554,
-            "mirror": 0.62,
-            "dark": 0.519,
+            "progress": 0.558,
+            "mirror": 0.63,
+            "dark": 0.505,
             "std": 43,
             "sat": 0.02,
             "above": 0
           },
           {
-            "t": 11.9,
-            "progress": 0.648,
+            "t": 12,
+            "progress": 0.651,
             "mirror": 0.78,
-            "dark": 0.475,
+            "dark": 0.476,
             "std": 50,
             "sat": 0.04,
             "above": 0
           },
           {
             "t": 13.3,
-            "progress": 0.749,
+            "progress": 0.751,
             "mirror": 0.91,
-            "dark": 0.501,
-            "std": 53,
+            "dark": 0.503,
+            "std": 52,
             "sat": 0.04,
             "above": 0
           },
           {
-            "t": 14.5,
-            "progress": 0.844,
+            "t": 14.6,
+            "progress": 0.846,
             "mirror": 0.98,
-            "dark": 0.515,
+            "dark": 0.514,
             "std": 53,
             "sat": 0.04,
             "above": 0
           },
           {
             "t": 15.8,
-            "progress": 0.939,
+            "progress": 0.94,
             "mirror": 1,
-            "dark": 0.517,
+            "dark": 0.518,
             "std": 53,
             "sat": 0.04,
             "above": 0
@@ -600,9 +600,9 @@
         },
         "belag": {
           "dark": 0.00033478406427854036,
-          "mean": 243.3164223635745,
-          "std": 4.234212760792392,
-          "sat": 0.028988798067125777,
+          "mean": 243.31553927016975,
+          "std": 4.2318344466964675,
+          "sat": 0.02899277574336953,
           "aboveDark": 0,
           "range": 14.706000000000017
         },
@@ -719,7 +719,7 @@
       "id": "U-03/E-09",
       "title": "Experiment zurücksetzen und erneut durchführen",
       "status": "PASS",
-      "seconds": 6,
+      "seconds": 5,
       "evidence": {
         "nachReset": [
           0,
@@ -742,7 +742,11 @@
           "Butanal",
           "Propanon",
           "Butanon",
-          "Pentan-2-on"
+          "Pentan-2-on",
+          "Glucose",
+          "Fructose",
+          "Saccharose",
+          "Maltose"
         ],
         "analysemodus": [
           "A",
@@ -758,29 +762,26 @@
       "id": "V-02/E-07/V-07",
       "title": "Zugeben und Schütteln sind bewegte Animationen (Pixelmessung über die Zeit)",
       "status": "PASS",
-      "seconds": 8,
+      "seconds": 7,
       "evidence": {
-        "ruhe": 0.05,
+        "ruhe": 0.062,
         "pipettenbewegung": [
-          0.15,
-          0.33,
-          0.54,
-          0.6,
-          0.45,
-          0.24
+          0.16,
+          0.36,
+          0.52,
+          0.63
         ],
         "fuellhoehePixel": [
           0,
-          27,
-          36,
-          38,
-          39
+          10,
+          33,
+          37
         ],
         "schuetteln": [
-          4.35,
-          9.04,
-          11.83,
-          7.88
+          5.92,
+          11.44,
+          12.57,
+          6.95
         ]
       }
     },
@@ -815,11 +816,11 @@
       "seconds": 29,
       "evidence": {
         "zeilen": [
-          "Probe A positiv – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Ethanal (Aldehyd)",
-          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanal (Aldehyd)",
+          "Probe A negativ – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanon (Keton)",
+          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Butanal (Aldehyd)",
           "Probe C – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Pentan-2-on (Keton)",
-          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanon (Keton)",
-          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanal (Aldehyd)",
+          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanal (Aldehyd)",
+          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Ethanal (Aldehyd)",
           "Probe F – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanon (Keton)"
         ],
         "screenshot": "docs\\screenshots\\16-analysemodus-ergebnisuebersicht.png"
@@ -908,18 +909,18 @@
       "seconds": 37,
       "evidence": {
         "vorher": {
-          "dark": 0.5122196183461667,
-          "mean": 161.0829102778694,
-          "std": 52.78923301239057,
-          "sat": 0.04358804288124301,
+          "dark": 0.5138935386675594,
+          "mean": 160.98595246066145,
+          "std": 52.63405240408547,
+          "sat": 0.04360044678022527,
           "aboveDark": 0,
           "range": 153.13640000000004
         },
         "nachher": {
           "dark": 0.4237053447798394,
-          "mean": 169.32296477429966,
-          "std": 47.58884634091135,
-          "sat": 0.055164072374174235,
+          "mean": 169.09832988091856,
+          "std": 47.383422271540425,
+          "sat": 0.055261860038226814,
           "aboveDark": 0,
           "range": 142.2808
         },
@@ -950,6 +951,89 @@
       "evidence": {
         "kacheln": 10,
         "screenshot": "docs\\screenshots\\review-panel-1180x820.png"
+      }
+    },
+    {
+      "id": "Z-01",
+      "title": "Glucose per Spatel in Fehling-Lösung: Kristalle sichtbar, lösen sich, positiver Nachweis",
+      "status": "PASS",
+      "seconds": 25,
+      "evidence": {
+        "vorher": {
+          "solid": 1,
+          "dissolved": 0.03,
+          "sample": "glucose",
+          "vol": 2
+        },
+        "zustand": {
+          "place": "bath",
+          "vol": 2,
+          "progress": 0.98,
+          "temp": 80,
+          "observable": true,
+          "outcome": "positive",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "glucose"
+        },
+        "farbe": {
+          "h": 10,
+          "s": 0.48,
+          "l": 0.47,
+          "c": 116
+        },
+        "screenshots": [
+          "docs\\screenshots\\zucker-01-glucose-kristalle.png",
+          "docs\\screenshots\\zucker-02-glucose-positiv.png"
+        ]
+      }
+    },
+    {
+      "id": "U-08",
+      "title": "Reagenzglas im Wasserbad antippen bringt es in den Ständer zurück",
+      "status": "PASS",
+      "seconds": 1,
+      "evidence": {
+        "ort": "rack"
+      }
+    },
+    {
+      "id": "Z-02",
+      "title": "Saccharose bleibt in der Fehling-Probe negativ (tiefblau)",
+      "status": "PASS",
+      "seconds": 23,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 2,
+          "progress": 0,
+          "temp": 80,
+          "observable": true,
+          "outcome": "negative",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "saccharose"
+        },
+        "farbe": {
+          "h": 229,
+          "s": 0.67,
+          "l": 0.46,
+          "c": 156
+        },
+        "screenshot": "docs\\screenshots\\zucker-03-saccharose-negativ.png"
+      }
+    },
+    {
+      "id": "V-09",
+      "title": "Labortisch: zwei Probenreihen, größere Beschriftung, Augenschutz-Zeichen (Tablet)",
+      "status": "PASS",
+      "seconds": 0,
+      "evidence": {
+        "reihen": 2,
+        "proben": 10,
+        "screenshot": "docs\\screenshots\\zucker-00-labortisch-tablet.png"
       }
     }
   ]

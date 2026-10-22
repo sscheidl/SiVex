@@ -15,7 +15,7 @@ Dieses Dokument beschreibt, welche fachlichen Annahmen die Simulation trifft und
 
 Die Proben sind **verdünnte wässrige Lösungen**, keine Reinstoffe. Das wird in der Stoffinfo und im Bedienfeld genannt. Reines Ethanal siedet bereits bei etwa 21 °C (NIST); die verdünnte Lösung im Wasserbad siedet nicht.
 
-Für diesen Probensatz gilt: drei Alkanale positiv, drei einfache Ketone negativ. Das ist **keine allgemeine Regel** für alle Aldehyde oder Ketone (z. B. reagieren α-Hydroxyketone und Fructose in alkalischer Lösung positiv). Benzaldehyd ist bewusst nicht enthalten. Ein Unit-Test leitet die Summenformeln aus den hinterlegten Halbstrukturformeln ab und vergleicht sie.
+Für diesen Probensatz gilt: drei Alkanale positiv, drei einfache Ketone negativ. Das ist **keine allgemeine Regel** für alle Aldehyde oder Ketone (z. B. reagieren α-Hydroxyketone und Fructose in alkalischer Lösung positiv – siehe Abschnitt 10 zu den Zuckern im Lernmodus). Benzaldehyd ist bewusst nicht enthalten. Ein Unit-Test leitet die Summenformeln aus den hinterlegten Halbstrukturformeln ab und vergleicht sie.
 
 ## 2. Mengenmodell
 
@@ -78,10 +78,10 @@ Modell der Auflösung: Anteil gelöst = min(1, NH₃-Portionen / (2 · AgNO₃-P
 
 ## 7. Erwärmen, Bläschen und Siedeverzug
 
-- **Wasserbad:** Heizplatte 60 °C oder 80 °C; das Reagenzglas folgt mit einer Zeitkonstante von ca. 2 s.
+- **Wasserbad:** Heizplatte 60 °C oder 80 °C; das Reagenzglas folgt mit einer Zeitkonstante von ca. 2 s. Beim Herunter- oder Ausschalten kühlt das Bad nach dem Newtonschen Abkühlungsgesetz ab (Zeitkonstante 25 s im Zeitraffer: von 80 °C in rund 30 s auf etwa 40 °C); das Thermometer sinkt entsprechend.
 - **Bläschen:** Beim Aufheizen entweicht anfangs gelöste Luft als einzelne Bläschen; das klingt nach einigen Sekunden ab. Wasser siedet bei 60/80 °C nicht, und die Nachweisreaktionen setzen kein Gas frei. Über dem warmen Bad steigt leichter Dunst auf.
 - **Lupe:** zeigt das Reagenzglas immer vor neutralem, weißem Hintergrund, auch wenn es im Wasserbad steht – das getönte Bad würde schwach gefärbte Proben verfälschen.
-- **Brennerflamme (optional, „Weitere Geräte“):** Direktes Halten in die Flamme führt im Modell nach 2,6 s zu einem Siedeverzug. Das ist ein **geskriptetes Lernszenario**; der Sicherheitshinweis sagt ausdrücklich, dass ein realer Siedeverzug nicht vorhersagbar ist.
+- **Brennerflamme (optional, „Weitere Geräte“):** rauschende, nicht leuchtende (blaue) Flamme. Direktes Halten eines Glases **mit Flüssigkeit** in die Flamme führt im Modell nach 2,6 s zu einem Siedeverzug; leere Gläser oder trockener Feststoff nicht. Das ist ein **geskriptetes Lernszenario**; der Sicherheitshinweis sagt ausdrücklich, dass ein realer Siedeverzug nicht vorhersagbar ist.
 
 ## 8. Protokolle und Ergebnisübersicht
 
@@ -105,10 +105,28 @@ Modell der Auflösung: Anteil gelöst = min(1, NH₃-Portionen / (2 · AgNO₃-P
 
 Die Komplexierung von Cu(II) durch Tartrat bleibt in beiden Schreibweisen unberücksichtigt. Oxidationszahlen: C der Aldehydgruppe +I → +III; Cu +II → +I; Ag +I → 0. Unit-Tests prüfen für alle Gleichungen beider Schreibweisen Atom- und Ladungsbilanz und dass die Gesamtgleichung der Summe der Teilgleichungen entspricht.
 
+## 10. Zucker (Lernmodus, Feststoffe)
+
+Im Lernmodus stehen in einer zweiten Reihe vier Zucker als **Feststoffe** (Pulverdosen) bereit. Eine Zugabe ist eine Spatelspitze (höchstens drei pro Reagenzglas). Feststoff zählt nicht zum Flüssigkeitsvolumen; die Kristalle sinken zu Boden und lösen sich nach und nach, schneller beim Schütteln und im warmen Wasserbad. Erst der gelöste Anteil reagiert. Die Beobachtungszeit für einen negativen Befund läuft erst, wenn der Zucker gelöst ist (≥ 95 %). Trockener Zucker ohne Reagenz ist kein Nachweis. Im Analysemodus (Proben A–F) bleiben die Zucker ausgeblendet; der Grundprobensatz aus Aldehyden und Ketonen bleibt dort unverändert.
+
+| Zucker | Ergebnis | Begründung in der App | Stoffklasse im Protokoll |
+| --- | --- | --- | --- |
+| Glucose (Aldohexose) | positiv | Ring (Halbacetal) im Gleichgewicht mit der offenkettigen Form mit Aldehydgruppe. Schulmodell: Oxidation zur Gluconsäure (Gluconat). **Hinweis:** Nach Herstellerangaben zum Fehling-Reagenz ist das Hauptprodukt mit Cu(II) eher **Glucoson** (OH-Gruppe an C2 → Ketogruppe), das unter C–C-Spaltung weiter abgebaut wird. | reduzierender Zucker |
+| Fructose (Ketohexose) | positiv | Ketose, kein Aldehyd. Im alkalischen Reagenz Keto-Enol-Tautomerie über ein Endiol (Lobry-de-Bruyn-van-Ekenstein-Umlagerung) → Aldosen bzw. Endiolat-Ionen reduzieren das Reagenz. Unterschied zu Propanon: OH-Gruppe am Nachbar-C-Atom der Carbonylgruppe. | reduzierender Zucker |
+| Saccharose (Glucose + Fructose) | negativ | Beide anomeren C-Atome (C1 Glucose, C2 Fructose) sind glycosidisch gebunden; kein Ring kann sich öffnen. Hinweis: Langes Kochen kann Saccharose teilweise spalten und ein schwach positives Ergebnis vortäuschen – nicht modelliert. | nicht reduzierender Zucker |
+| Maltose (Glucose + Glucose, α-1,4) | positiv | Das anomere C-Atom der zweiten Glucose-Einheit ist frei; dieser Ring öffnet sich in Lösung zur Aldehydform (Produkt im Schulmodell: Maltobionsäure). | reduzierender Zucker |
+
+**Kinetik (modelliert):** Geschwindigkeitsfaktoren Glucose 0,70, Fructose 0,85, Maltose 0,55. Fructose ist bewusst nicht langsamer als Glucose: Nach der Herstellerangabe reagiert Fructose sogar schneller als Glucose und Mannose, was zur Endiol-Erklärung passt und gegen eine reine „Aldehyd → Carbonsäure“-Erklärung spricht. Die Zahlen sind keine Messdaten.
+
+**Redox-Trainer:** Die allgemeine Gleichung mit R–CHO gilt für die Aldehydgruppe der (offenkettigen) Aldose. Für Glucose zeigt die Musterlösung ein Beispiel mit Gluconsäure und den Glucoson-Hinweis; für Fructose und Maltose einen erklärenden Text statt einer Beispielgleichung.
+
 ## Quellen
 
 - University of Strathclyde, Dissertation, Kap. 7 „Studying the Tollens’ test“ (S. 157–168 der Arbeit): Silberspiegel oder Teilspiegel mit überwiegend schwarzem, kolloidalem Silber als positiver Befund; Silberspiegel bzw. Reaktion bei Raumtemperatur für mehrere Substrate. <https://stax.strath.ac.uk/downloads/kh04dq07h?locale=en>
 - Royal Society of Chemistry, „The silver mirror test with Tollens’ reagent“: Aldehyde werden zu Carboxylat-Ionen oxidiert; Reagenz nicht im Voraus ansetzen. <https://edu.rsc.org/experiments/the-silver-mirror-test-with-tollens-reagent/822.article>
 - Chemguide (J. Clark), „Oxidation of aldehydes and ketones“: graues Silber oder Silberspiegel; Gleichungen mit Carboxylat im alkalischen Milieu. <https://www.chemguide.co.uk/organicprops/carbonyls/oxidation.html>
 - FU Berlin, Versuchsvideo Fehling-Probe: Fehling I hellblau, Fehling II farblos, Mischung tiefblau, Cu₂O-Niederschlag. <https://www.bcp.fu-berlin.de/en/chemie/chemie/forschung/OrgChem/schalley/Teaching/OCI_Videos/Versuch10_02/index.html>
+- ITW Reagents (PanReac AppliChem), Produktinformation „Fehling’s A Reagent“: Hauptprodukt von Glucose mit Cu(II) ist Glucoson (2-Ketoglucose), das unter C–C-Spaltung weiter oxidiert wird; Fructose reagiert schneller als Glucose; Reduktion über Endiolat-Ionen. Herstellerangabe ohne Literaturzitat – deshalb in der App als Hinweis formuliert. <https://itwreagents.com/rest-of-world/en/product/fehlingx0027-s-a-reagent-for-clinical-diagnosis/251563>
+- C. A. Lobry de Bruyn, W. Alberda van Ekenstein, Recueil des Travaux Chimiques des Pays-Bas 14 (1895) 203–216: Umlagerung von Glucose, Fructose und Mannose in alkalischer Lösung (Endiol-Zwischenstufe).
+- Boston University, Biochemie-Skript „Carbohydrates“: Saccharose ohne freies anomeres C-Atom (nicht reduzierend), Maltose mit freiem Halbacetal (reduzierend). <https://www.bu.edu/aldolase/biochemistry/html_docs/22_Carbohydrates_25.pdf>
 - NIST Chemistry WebBook, Acetaldehyd: Normalsiedetemperatur 294,0 ± 0,8 K. <https://webbook.nist.gov/cgi/cbook.cgi?ID=C75070&Mask=4&Units=CAL>

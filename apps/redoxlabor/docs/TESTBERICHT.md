@@ -1,5 +1,38 @@
 # Testbericht und PASS/HOLD-Abnahme – Redoxlabor
 
+## Nachtrag 2 (22.10.2026) – mebis-Test 1.1.0 und Zucker
+
+**mebis-Test (durch die Lehrkraft, 22.10.2026):** `redoxlabor-1.1.0-scorm12.zip` wurde in mebis hochgeladen und durchgespielt. Rückmeldung: **keine Fehler** aufgefallen, „alles läuft soweit gut“. Gerät und Browser wurden nicht genannt. Damit ist der Import in einen echten mebis-Kurs erstmals erfolgreich erfolgt; ein gezielter Test auf Schul-iPads mit Safari ist dadurch nicht automatisch belegt.
+
+Rückmeldungen aus dem Test und ihre Umsetzung:
+
+| Rückmeldung | Umsetzung |
+| --- | --- |
+| Schrift der Aldehyde/Ketone zu klein | Flaschen ca. 12 % größer, Etikettenschrift 11 → 12,5 px (+14 %), Formel 10,5 → 12 px |
+| Flaschen ggf. auf zwei Reihen | hintere Reihe: 6 Aldehyde/Ketone; vordere Reihe: 4 Zucker als Pulverdosen |
+| Feststoffe der vier Zucker | Glucose, Fructose, Saccharose, Maltose als Feststoffe (Spatel, Kristalle, Lösen) – Lernmodus; fachlich: [CHEMIE.md](CHEMIE.md), Abschnitt 10 |
+| Brennerflamme stärker bläulich | Flammenmantel und Kegel kräftig blau (rauschende, nicht leuchtende Flamme) |
+| Schutzbrillensymbol als echtes Symbol | Gebotszeichen „Augenschutz benutzen“ nach ISO 7010 M004 nachgezeichnet (für Schutzbrillen gibt es kein GHS-Piktogramm) |
+| Glas im Wasserbad antippen → zurück in den Ständer | umgesetzt (gilt auch für die Flamme; ist ein Stoff zum Zugeben ausgewählt, wird stattdessen zugegeben) |
+| Siedeverzug auch bei leerem Reagenzglas | **nicht reproduzierbar** (Modell und Browser, vier Bedienwege); zusätzlich abgesichert: Siedeverzug nur mit Flüssigkeit, Regressionstest für leeres Glas und trockenen Zucker |
+| Thermometer sinkt beim Zurückschalten nicht | Es sank, aber sehr langsam (aus 80 °C nach 30 s erst ca. 60 °C). Jetzt Newtonsches Abkühlen: nach 30 s ca. 38 °C; 80 → 60 °C in wenigen Sekunden |
+
+**Tests dieser Runde** (Windows 11, Node 24.19.0, Edge 155 über Playwright 1.62.1):
+
+| Testart | Ergebnis |
+| --- | --- |
+| Unit-Tests | **71/71** – neu: 9 Tests in `tests/unit/sugars.test.js` (Zucker positiv/negativ in beiden Nachweisen, Erklärungen, Feststoff und Lösen, kein falsch negativer Befund, Probensätze je Modus, Siedeverzug nur mit Flüssigkeit, Abkühlen des Bads); 2 Tests an den erweiterten Probensatz angepasst |
+| Browser-Tests | **36/36** – neu: Z-01 (Glucose per Spatel, Kristalle, positiv), Z-02 (Saccharose negativ), U-08 (Glas im Wasserbad antippen → Ständer), V-09 (zwei Probenreihen, Trefferflächen, Tablet); 2 Prüfungen an 10 Proben im Lernmodus angepasst; V-02 wertet die Pipettenbewegung nur noch während der laufenden Zugabe aus (vorher zeitabhängig instabil) |
+
+Während der Browser-Tests gefunden und behoben: Beim Zugeben eines Zuckers brach die Darstellung ab, weil für einen reinen Feststoff keine Flüssigkeitsfarbe existiert (`appearance()` = `null`). Die Unit-Tests hatten das nicht erfasst.
+
+Neue Screenshots: `zucker-00-labortisch-tablet.png`, `zucker-01-glucose-kristalle.png`, `zucker-02-glucose-positiv.png`, `zucker-03-saccharose-negativ.png`.
+
+**Nicht durchgeführt:** neues Release-Paket mit diesen Änderungen (die Pakete 1.1.0 enthalten sie noch nicht), Test auf Schul-iPads mit Safari, Unterrichtstest, Screenreader-Test.
+
+---
+
+
 ## Nachtrag 22.10.2026 – Überarbeitung nach unabhängiger Prüfung
 
 **Anlass:** [REVIEW-2026-10-22.md](REVIEW-2026-10-22.md) · **Umsetzung:** [REVIEW-2026-10-22-UMSETZUNG.md](REVIEW-2026-10-22-UMSETZUNG.md)

@@ -21,7 +21,8 @@
     shelf: { x0: 470, x1: 1382, y: 300 },
     reagentX: { fehling1: 556, fehling2: 727, agno3: 898, naoh: 1069, nh3: 1240 },
     bottle: { w: 112, h: 190 },
-    sample: { baseY: 694, x0: 84, dx: 78, w: 58, h: 118 },
+    sample: { baseY: 694, x0: 70, dx: 80, w: 65, h: 132 }, // Aldehyde/Ketone, ca. 12 % größer als zuvor
+    sugar: { baseY: 856, x0: 104, dx: 100, w: 76, h: 84 }, // Zucker als Pulverdosen (zweite Reihe)
     rack: { x0: 516, x1: 904, baseY: 908, slotX: [578, 666, 754, 842], tubeBottom: 884, railY: 700 },
     bath: { cx: 1052, plateTop: 842, beakerBottom: 838, beakerTop: 612, beakerHalf: 112, water: 655, slotX: [1016, 1076], tubeBottom: 826 },
     burner: { cx: 1292, baseY: 906, topY: 756 },
@@ -140,9 +141,9 @@
       if (!t) return;
       const v = visualFor(t);
       const sub = e.substance;
-      const pure = chem.createContents();
-      chem.add(pure, sub);
-      const subApp = chem.appearance(pure);
+      v.settle = 0;
+      if (chem.isSolid(sub)) return; // Feststoff: keine Schichtung, keine Schlieren
+      const subApp = { body: pureColor(sub) };
       const vol = chem.volume(t.contents);
       if (vol > 1 && v.app && t.contents.mix < 0.98) {
         v.layer = { lower: v.app.body.slice(), upper: subApp.body.slice(), frac: 1 / vol };
@@ -151,8 +152,14 @@
       }
       v.plumes.push({ u: 0, v: 1, r: 0.25, a: 0.7, c: subApp.body.slice(), age: 0 });
       v.wave = Math.min(4, v.wave + 2.2);
-      v.settle = 0;
     });
+
+    /** Farbe eines einzelnen Stoffs (Flüssigkeit) bzw. Weiß für Feststoffe. */
+    function pureColor(id) {
+      const pure = chem.createContents(); chem.add(pure, id);
+      const ap = chem.appearance(pure);
+      return ap ? ap.body : [250, 250, 246, 1];
+    }
 
     // ------------------------------------------------------------ Positionen
     function restPose(place, slot) {
@@ -288,7 +295,7 @@
       g.fillStyle = bf; g.fillRect(x0, L.benchFront, x1 - x0, H + 200);
       g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(x0, L.benchFront, x1 - x0, 1.5);
       // Beschriftungen auf dem Tisch
-      plaque(g, (L.sample.x0 + L.sample.x0 + 5 * L.sample.dx) / 2, L.sample.baseY + 20, 'Stoffproben');
+      plaque(g, L.sample.x0 + 2.5 * L.sample.dx, L.sample.baseY + 20, 'Stoffproben');
       plaque(g, (L.rack.x0 + L.rack.x1) / 2, L.rack.baseY + 34, 'Reagenzglasständer');
       plaque(g, L.bath.cx, L.rack.baseY + 34, 'Wasserbad auf Heizplatte');
       plaque(g, L.burner.cx, L.rack.baseY + 34, 'Gasbrenner');
@@ -297,19 +304,34 @@
       return c;
     }
 
-    /** Gebotszeichen „Augenschutz benutzen“ (vereinfacht) */
+    /**
+     * Gebotszeichen „Augenschutz benutzen“ nach ISO 7010 M004 (nachgezeichnet):
+     * blaue Kreisfläche, weißes Piktogramm – Kopf mit Schutzbrille.
+     * (Für Schutzbrillen gibt es kein GHS-Piktogramm; GHS kennzeichnet Gefahren von Stoffen.)
+     */
     function gogglesSign(g, x, y) {
       g.save();
-      g.fillStyle = '#fff'; roundRect(g, x - 40, y - 40, 80, 104, 8); g.fill();
-      g.strokeStyle = 'rgba(0,0,0,0.08)'; g.stroke();
-      g.fillStyle = '#1f5fbf'; g.beginPath(); g.arc(x, y, 31, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#fff'; roundRect(g, x - 42, y - 42, 84, 112, 8); g.fill();
+      g.strokeStyle = 'rgba(0,0,0,0.10)'; g.lineWidth = 1; g.stroke();
+      const R = 33;
+      g.fillStyle = '#005387'; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.fill();
+      g.save();
+      g.beginPath(); g.arc(x, y, R - 2.5, 0, Math.PI * 2); g.clip();
       g.fillStyle = '#fff';
-      roundRect(g, x - 22, y - 9, 44, 18, 8); g.fill();
-      g.fillStyle = '#1f5fbf';
-      g.beginPath(); g.ellipse(x - 10, y, 7.5, 6, 0, 0, Math.PI * 2); g.ellipse(x + 10, y, 7.5, 6, 0, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.moveTo(x - 22, y - 2); g.lineTo(x - 28, y - 6); g.moveTo(x + 22, y - 2); g.lineTo(x + 28, y - 6); g.stroke();
+      // Schultern und Hals
+      g.beginPath(); g.ellipse(x, y + 36, 27, 15, 0, Math.PI, 0); g.fill();
+      g.fillRect(x - 6.5, y + 8, 13, 14);
+      // Kopf
+      g.beginPath(); g.ellipse(x, y - 4, 14.5, 17.5, 0, 0, Math.PI * 2); g.fill();
+      // Schutzbrille: Band und zwei Gläser
+      g.fillStyle = '#005387';
+      g.fillRect(x - 16.5, y - 9.5, 33, 3.2);
+      roundRect(g, x - 13.5, y - 11.5, 12, 10, 3.5); g.fill();
+      roundRect(g, x + 1.5, y - 11.5, 12, 10, 3.5); g.fill();
+      g.fillStyle = '#fff'; g.fillRect(x - 1.5, y - 8.5, 3, 2.2); // Steg
+      g.restore();
       g.fillStyle = '#2b3640'; g.font = '700 11px system-ui, sans-serif'; g.textAlign = 'center';
-      g.fillText('Schutzbrille', x, y + 46); g.fillText('tragen', x, y + 59);
+      g.fillText('Augenschutz', x, y + 49); g.fillText('benutzen', x, y + 62);
       g.restore();
     }
 
@@ -462,24 +484,76 @@
       }
     }
 
+    /** Lage einer Probe auf dem Tisch: Flüssigkeiten in der hinteren Reihe, Zucker davor. */
+    function samplePos(id) {
+      const sm = chem.SAMPLE_BY_ID[id];
+      const row = lab.state.samples.filter((x) => !!chem.SAMPLE_BY_ID[x.sampleId].solid === !!sm.solid);
+      const i = row.findIndex((x) => x.sampleId === id);
+      const S = sm.solid ? L.sugar : L.sample;
+      return { x: S.x0 + i * S.dx, baseY: S.baseY, w: S.w, h: S.h, dx: S.dx, solid: !!sm.solid };
+    }
+
     function drawSamples() {
       const op = lab.state.op;
-      const S = L.sample;
-      lab.state.samples.forEach((s, i) => {
-        const x = S.x0 + i * S.dx;
+      const learn = lab.state.mode === 'learn';
+      let sugars = 0;
+      lab.state.samples.forEach((s) => {
+        const sm = chem.SAMPLE_BY_ID[s.sampleId];
+        const P = samplePos(s.sampleId);
         const inUse = op && op.type === 'add' && op.substance === s.sampleId;
         const armed = lab.state.armed && lab.state.armed.id === s.sampleId;
         const hover = pointer.hover && pointer.hover.type === 'sample' && pointer.hover.id === s.sampleId;
-        const learn = lab.state.mode === 'learn';
+        const glow = armed ? 1 : hover ? 0.5 : 0;
+        if (sm.solid) { sugars++; drawJar(P.x, P.baseY, P.w, P.h, s.label, sm.formula, inUse, glow); return; }
         const name = s.label;
         const title = learn ? (name.length > 8 ? splitName(name) : [name]) : [s.key];
-        drawBottle(x, S.baseY, {
-          w: S.w, h: S.h, liquid: [236, 244, 250, 0.16], title, sub: learn ? chem.SAMPLE_BY_ID[s.sampleId].formula : 'Probe',
-          stripe: learn ? (chem.SAMPLE_BY_ID[s.sampleId].cls === 'aldehyd' ? '#8a6bd1' : '#4aa3a1') : '#7b8794',
-          titleSize: learn ? 11 : 20, labelH: learn && title.length > 1 ? 56 : 48, bulb: '#2b2f33', pipLen: 76, pipDepth: 84, subSize: 10.5
-        }, inUse, armed ? 1 : hover ? 0.5 : 0);
+        drawBottle(P.x, P.baseY, {
+          w: P.w, h: P.h, liquid: [236, 244, 250, 0.16], title, sub: learn ? sm.formula : 'Probe',
+          stripe: learn ? (sm.cls === 'aldehyd' ? '#8a6bd1' : '#4aa3a1') : '#7b8794',
+          titleSize: learn ? 12.5 : 22, labelH: learn && title.length > 1 ? 62 : 54, bulb: '#2b2f33', pipLen: 84, pipDepth: 94, subSize: 12
+        }, inUse, glow);
       });
+      if (sugars) plaque(ctx, L.sugar.x0 + (sugars - 1) * L.sugar.dx / 2, L.sugar.baseY + 20, 'Zucker (Feststoffe)');
     }
+
+    /** Pulverdose mit weißem Zucker; der Deckel liegt daneben, solange der Spatel benutzt wird. */
+    function drawJar(x, base, w, h, name, formula, inUse, glow) {
+      const top = base - h, r = 9;
+      const path = () => { roundRect(ctx, x - w / 2, top + 10, w, h - 10, r); };
+      shadow(x, base + 2, w * 0.6, 8, 0.26);
+      if (glow) glowRing(path, glow);
+      ctx.save();
+      path(); ctx.clip();
+      ctx.fillStyle = 'rgba(205,225,238,0.28)'; ctx.fillRect(x - w, top, w * 2, h + 4);
+      // Zucker: weißes, körniges Pulver mit leicht gewölbter Oberfläche
+      const lvl = base - h * 0.5;
+      const pg = ctx.createLinearGradient(0, lvl, 0, base);
+      pg.addColorStop(0, '#fbfbf8'); pg.addColorStop(1, '#e4e6e3');
+      ctx.fillStyle = pg;
+      ctx.beginPath(); ctx.moveTo(x - w, base + 2); ctx.lineTo(x - w, lvl + 4); ctx.quadraticCurveTo(x, lvl - 6, x + w, lvl + 4); ctx.lineTo(x + w, base + 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(150,155,160,0.35)';
+      for (let i = 0; i < 26; i++) { const gx = x - w / 2 + 4 + ((i * 37) % (w - 8)), gy = lvl + 2 + ((i * 53) % Math.max(4, h * 0.45)); ctx.fillRect(gx, gy, 1.2, 1.2); }
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(90,115,135,0.55)'; ctx.lineWidth = 1.5; path(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(x - w / 2 + 5, top + 16, 5, h - 30);
+      // Deckel
+      const lid = (lx, ly) => {
+        const lg = ctx.createLinearGradient(lx - w / 2, 0, lx + w / 2, 0);
+        lg.addColorStop(0, '#d9dee3'); lg.addColorStop(0.5, '#ffffff'); lg.addColorStop(1, '#c9d0d6');
+        ctx.fillStyle = lg; roundRect(ctx, lx - w / 2 - 2, ly, w + 4, 13, 4); ctx.fill();
+        ctx.strokeStyle = 'rgba(90,105,120,0.45)'; ctx.lineWidth = 1; ctx.stroke();
+      };
+      if (inUse) { ctx.save(); ctx.translate(x + w * 0.58, base - 4); ctx.rotate(-0.12); lid(0, -13); ctx.restore(); } else lid(x, top);
+      // Etikett
+      const lw = w * 0.86, lh = 34, ly = base - 12 - lh;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1;
+      ctx.fillStyle = '#fdfdfb'; roundRect(ctx, x - lw / 2, ly, lw, lh, 4); ctx.fill(); ctx.restore();
+      ctx.fillStyle = '#c99a2e'; ctx.fillRect(x - lw / 2, ly, lw, 5);
+      ctx.fillStyle = '#1d2733'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.font = '700 12.5px system-ui, -apple-system, "Segoe UI", sans-serif'; ctx.fillText(name, x, ly + 19);
+      ctx.font = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif'; ctx.fillStyle = '#56616d'; ctx.fillText(formula, x, ly + 31);
+    }
+
     function splitName(n) {
       const i = n.indexOf('-');
       if (i > 0) return [n.slice(0, i + 1), n.slice(i + 1)];
@@ -524,8 +598,9 @@
 
     function substanceSource(id) {
       if (L.reagentX[id] != null) return { x: L.reagentX[id], tip: L.shelf.y - 4 - L.bottle.h + 62, len: 118, bulb: '#c8403a' };
-      const i = lab.state.samples.findIndex((s) => s.sampleId === id);
-      return { x: L.sample.x0 + i * L.sample.dx, tip: L.sample.baseY - L.sample.h + 84, len: 76, bulb: '#2b2f33' };
+      const P = samplePos(id);
+      if (P.solid) return { x: P.x, tip: P.baseY - P.h + 40, len: 90, solid: true };
+      return { x: P.x, tip: P.baseY - P.h + 94, len: 84, bulb: '#2b2f33' };
     }
 
     function pipetteState() {
@@ -555,9 +630,9 @@
     function drawPipetteOp() {
       const ps = pipetteState();
       if (!ps) return;
-      const pure = chem.createContents(); chem.add(pure, ps.op.substance);
-      const col = chem.appearance(pure).body;
+      const col = pureColor(ps.op.substance);
       ps.color = col;
+      if (ps.op.solid) { drawSpatula(ps.x, ps.tip, ps.fill); return; }
       // Strahl (bei normaler Zugabe) – Tropfen werden in updateVisuals erzeugt
       if (ps.dripping && !ps.op.dropwise) {
         const v = visuals.get(ps.t.id);
@@ -565,6 +640,25 @@
         streamPath(ctx, ps.x, ps.tip + 2, surf, col, 1);
       }
       drawPipette(ps.x, ps.tip, ps.src.bulb, col, ps.fill, ps.src.len);
+    }
+
+    /** Spatel aus Edelstahl mit einer Spatelspitze Zucker (fill 1 → 0 beim Abstreifen). */
+    function drawSpatula(x, tip, fill) {
+      ctx.save();
+      ctx.translate(x, tip);
+      ctx.rotate(-0.18);
+      const sg = ctx.createLinearGradient(-3, 0, 3, 0);
+      sg.addColorStop(0, '#8d969e'); sg.addColorStop(0.5, '#eef1f3'); sg.addColorStop(1, '#7d868e');
+      ctx.fillStyle = sg;
+      ctx.fillRect(-1.8, -150, 3.6, 140);
+      ctx.beginPath(); ctx.moveTo(-5.5, -12); ctx.lineTo(5.5, -12); ctx.lineTo(4.5, 2); ctx.quadraticCurveTo(0, 6, -4.5, 2); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(70,80,90,0.5)'; ctx.lineWidth = 0.8; ctx.stroke();
+      if (fill > 0.05) {
+        ctx.fillStyle = '#fbfbf7';
+        ctx.beginPath(); ctx.ellipse(0, -10, 5.2, 3.5 * fill + 0.8, 0, Math.PI, 0); ctx.fill();
+        ctx.strokeStyle = 'rgba(150,155,160,0.6)'; ctx.lineWidth = 0.6; ctx.stroke();
+      }
+      ctx.restore();
     }
 
     function streamPath(g, x, y0, y1, col, s) {
@@ -598,24 +692,32 @@
     // ------------------------------------------------------------ Tropfen
     function emitDrops(dt) {
       const ps = pipetteState();
-      if (!ps || !ps.dripping || !ps.op.dropwise) return;
+      if (!ps || !ps.dripping || !(ps.op.dropwise || ps.op.solid)) return;
+      if (ps.op.solid) {
+        if (Math.random() < 0.7) drops.push({ x: ps.x + (Math.random() - 0.5) * 6, y: ps.tip - 6, vy: 20, tubeId: ps.t.id, col: [250, 250, 246, 1], grain: true, born: time });
+        return;
+      }
       const n = 6;
       const interval = (ps.dripEnd - 0.92) / n;
       const k = Math.floor((ps.op.t - 0.92) / interval);
       ps.op._drops = ps.op._drops || 0;
       if (k >= ps.op._drops && ps.op._drops < n) {
         ps.op._drops++;
-        const pure = chem.createContents(); chem.add(pure, ps.op.substance);
-        drops.push({ x: ps.x, y: ps.tip + 3, vy: 40, tubeId: ps.t.id, col: chem.appearance(pure).body, born: time });
+        drops.push({ x: ps.x, y: ps.tip + 3, vy: 40, tubeId: ps.t.id, col: pureColor(ps.op.substance), born: time });
       }
     }
 
     function drawDrops() {
       for (const d of drops) {
-        drawDrop(ctx, d.x, d.y, 1, d.col, d.vy);
+        drawDrop(ctx, d.x, d.y, 1, d.col, d.vy, d.grain);
       }
     }
-    function drawDrop(g, x, y, s, col, vy) {
+    function drawDrop(g, x, y, s, col, vy, grain) {
+      if (grain) {
+        g.save(); g.fillStyle = 'rgba(252,252,248,0.95)'; g.strokeStyle = 'rgba(120,125,130,0.55)'; g.lineWidth = 0.5;
+        g.fillRect(x - 1.1 * s, y - 1.1 * s, 2.2 * s, 2.2 * s); g.strokeRect(x - 1.1 * s, y - 1.1 * s, 2.2 * s, 2.2 * s);
+        g.restore(); return;
+      }
       const base = col[3] < 0.2 ? [210, 230, 245, 0.85] : [col[0], col[1], col[2], 0.9];
       const stretch = 1 + Math.min(0.8, vy / 900);
       g.save();
@@ -646,7 +748,7 @@
         const pose = t ? tubePose(t) : null;
         const surf = pose ? pose.y - liquidHeight(v) : H;
         if (d.y >= surf) {
-          if (v) {
+          if (v && !d.grain) {
             v.wave = Math.min(4, v.wave + 1.2);
             v.plumes.push({ u: (Math.random() - 0.5) * 0.3, v: 1, r: 0.12, a: 0.6, c: d.col, age: 0 });
           }
@@ -823,6 +925,7 @@
 
       const h = liquidHeight(v);
       if (v.app && h > 0.5) drawLiquid(g, t, v, h, s);
+      if (t.contents.solid > 0 && t.contents.dissolved < 0.98) drawCrystals(g, t, v, h);
 
       // Vorderseite: Kanten, Lichtreflexe, Rand
       g.save();
@@ -856,6 +959,26 @@
       g.strokeStyle = 'rgba(70,95,115,0.4)'; g.lineWidth = 0.6; g.stroke();
       g.fillStyle = '#26323e'; g.font = '700 13px system-ui, -apple-system, "Segoe UI", sans-serif';
       g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(t.id), 0, -TUBE.h + 31.5);
+      g.restore();
+    }
+
+    /** Ungelöste Zuckerkristalle am Boden (bzw. trocken im leeren Glas). */
+    function drawCrystals(g, t, v, h) {
+      const c = t.contents;
+      const ri = TUBE.r - TUBE.wall;
+      const left = c.solid * (1 - c.dissolved);
+      const n = Math.round(46 * Math.min(1.5, left));
+      const tint = v.app && h > 0.5 ? v.app.body : [255, 255, 255, 0];
+      g.save();
+      tubePath(g, TUBE.wall); g.closePath(); g.clip();
+      for (let i = 0; i < n; i++) {
+        const p = v.particles[i];
+        const y = -2.5 - p.v * (3 + 7 * Math.min(1, left)) * (0.4 + 0.6 * (1 - Math.abs(p.u)));
+        const x = p.u * ri * 0.8;
+        const col = mixc([252, 252, 248, 1], tint, Math.min(0.35, tint[3] * 0.35));
+        g.fillStyle = rgba(col, 0.92);
+        g.fillRect(x - 0.9 * p.s, y - 0.9 * p.s, 1.8 * p.s, 1.8 * p.s);
+      }
       g.restore();
     }
 
@@ -1367,12 +1490,12 @@
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
       const halo = ctx.createRadialGradient(Bn.cx, topY - 70, 5, Bn.cx, topY - 70, 110);
-      halo.addColorStop(0, 'rgba(90,140,255,0.16)'); halo.addColorStop(1, 'rgba(90,140,255,0)');
+      halo.addColorStop(0, 'rgba(40,110,255,0.22)'); halo.addColorStop(1, 'rgba(40,110,255,0)');
       ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(Bn.cx, topY - 70, 110, 0, Math.PI * 2); ctx.fill();
       // äußerer Flammenmantel
       const tipY = topY - 150 + f2;
       const og = ctx.createLinearGradient(0, topY, 0, tipY);
-      og.addColorStop(0, 'rgba(70,110,255,0.55)'); og.addColorStop(0.5, 'rgba(120,120,255,0.35)'); og.addColorStop(1, 'rgba(200,120,255,0)');
+      og.addColorStop(0, 'rgba(25,90,255,0.72)'); og.addColorStop(0.55, 'rgba(45,115,255,0.5)'); og.addColorStop(1, 'rgba(90,150,255,0)');
       ctx.fillStyle = og;
       ctx.beginPath();
       ctx.moveTo(Bn.cx - 10, topY);
@@ -1381,7 +1504,7 @@
       ctx.closePath(); ctx.fill();
       // innerer Kegel
       const ig = ctx.createLinearGradient(0, topY, 0, topY - 55);
-      ig.addColorStop(0, 'rgba(120,230,255,0.95)'); ig.addColorStop(1, 'rgba(60,140,255,0.4)');
+      ig.addColorStop(0, 'rgba(140,215,255,0.98)'); ig.addColorStop(1, 'rgba(30,110,255,0.6)');
       ctx.fillStyle = ig;
       ctx.beginPath();
       ctx.moveTo(Bn.cx - 8, topY);
@@ -1447,15 +1570,14 @@
       const ps = pipetteState();
       if (ps && ps.t.id === t.id && t.place !== 'flame') {
         const toD = (wx, wy) => ({ x: cx + (wx - ps.pose.x) * Z, y: by - (ps.pose.y - wy) * Z });
-        if (ps.dripping && !ps.op.dropwise) {
+        if (ps.dripping && !ps.op.dropwise && !ps.op.solid) {
           const a = toD(ps.x, ps.tip), b = by - liquidHeight(v) * Z;
-          const pure = chem.createContents(); chem.add(pure, ps.op.substance);
-          streamPath(ctx, a.x, Math.max(iy, a.y), b, chem.appearance(pure).body, Z * 0.9);
+          streamPath(ctx, a.x, Math.max(iy, a.y), b, pureColor(ps.op.substance), Z * 0.9);
         }
         for (const d of drops) {
           if (d.tubeId !== t.id) continue;
           const p = toD(d.x, d.y);
-          if (p.y > iy) drawDrop(ctx, p.x, p.y, Z * 0.9, d.col, d.vy);
+          if (p.y > iy) drawDrop(ctx, p.x, p.y, Z * 0.9, d.col, d.vy, d.grain);
         }
       }
       // Skalenhinweis
@@ -1492,8 +1614,8 @@
         ctx.translate(d.x, d.y + TUBE.h / 2);
         drawTube(ctx, t, visualFor(t), 1, {});
       } else {
-        const pure = chem.createContents(); chem.add(pure, d.source.id);
-        drawPipette(d.x, d.y + 40, d.source.type === 'sample' ? '#2b2f33' : '#c8403a', chem.appearance(pure).body, 1, 100);
+        if (chem.isSolid(d.source.id)) drawSpatula(d.x, d.y + 40, 1);
+        else drawPipette(d.x, d.y + 40, d.source.type === 'sample' ? '#2b2f33' : '#c8403a', pureColor(d.source.id), 1, 100);
       }
       ctx.restore();
     }
@@ -1515,9 +1637,9 @@
         const x = L.reagentX[r.id];
         if (Math.abs(lx - x) < L.bottle.w / 2 + 8 && ly > L.shelf.y - L.bottle.h - 40 && ly < L.shelf.y + 4) return { type: 'reagent', id: r.id };
       }
-      for (let i = 0; i < lab.state.samples.length; i++) {
-        const x = L.sample.x0 + i * L.sample.dx;
-        if (Math.abs(lx - x) < L.sample.dx / 2 && ly > L.sample.baseY - L.sample.h - 34 && ly < L.sample.baseY + 8) return { type: 'sample', id: lab.state.samples[i].sampleId };
+      for (const sp of lab.state.samples) {
+        const P = samplePos(sp.sampleId);
+        if (Math.abs(lx - P.x) < P.dx / 2 && ly > P.baseY - P.h - (P.solid ? 12 : 40) && ly < P.baseY + 8) return { type: 'sample', id: sp.sampleId };
       }
       const B = L.bath;
       if (lx > B.cx - 128 && lx < B.cx - 20 && ly > B.plateTop && ly < L.rack.baseY + 4) return { type: 'hotplate' };
@@ -1538,7 +1660,7 @@
       let p = null;
       if (target.type === 'tube') { const t = lab.tubeById(target.id); const r = restPose(t.place, t.slot); p = { x: r.x, y: r.y - 60 }; }
       else if (target.type === 'reagent') p = { x: L.reagentX[target.id], y: L.shelf.y - 60 };
-      else if (target.type === 'sample') { const i = lab.state.samples.findIndex((s) => s.sampleId === target.id); p = { x: L.sample.x0 + i * L.sample.dx, y: L.sample.baseY - 40 }; }
+      else if (target.type === 'sample') { const P = samplePos(target.id); p = { x: P.x, y: P.baseY - (P.solid ? 30 : 40) }; }
       else if (target.type === 'bath') p = { x: L.bath.cx, y: L.bath.beakerTop + 40 };
       else if (target.type === 'hotplate') p = { x: L.bath.cx - 82, y: L.bath.plateTop + 33 };
       else if (target.type === 'burner') p = { x: L.burner.cx, y: L.burner.baseY - 60 };

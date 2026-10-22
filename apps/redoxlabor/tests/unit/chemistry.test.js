@@ -31,11 +31,12 @@ function contentsWith(ids) {
 }
 
 test('Stoffdaten: Pflichtproben vollständig, kein Benzaldehyd, Summenformeln passen zur Halbstrukturformel', () => {
-  const ids = chem.SAMPLES.map((s) => s.id).sort();
+  const ids = chem.BASIC_SAMPLE_IDS.slice().sort();
   assert.deepEqual(ids, [...ALDEHYDES, ...KETONES].sort());
-  assert.ok(!ids.some((id) => /benz/i.test(id)));
+  assert.deepEqual(chem.SUGAR_IDS.slice().sort(), ['fructose', 'glucose', 'maltose', 'saccharose']);
+  assert.ok(!chem.SAMPLES.some((s) => /benz/i.test(s.id)));
   const sub = { '₀': 0, '₁': 1, '₂': 2, '₃': 3, '₄': 4, '₅': 5, '₆': 6, '₇': 7, '₈': 8, '₉': 9 };
-  for (const s of chem.SAMPLES) {
+  for (const s of chem.SAMPLES.filter((x) => x.chain)) {
     const f = chem.formulaFromChain(s);
     const m = /^C(.+)H(.+)O$/.exec(s.formula);
     const num = (t) => +t.split('').map((ch) => sub[ch]).join('');

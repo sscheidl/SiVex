@@ -147,6 +147,8 @@ sub, sup { line-height: 0; }
 .group-label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-3); margin: 0 0 4px 2px; }
 .substances.reagents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .substances.samples { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.substances.samples.sugars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.group-label.sugar-label { margin-top: 10px; }
 .sub-btn {
   position: relative; border: 1.5px solid var(--line); background: #fff; border-radius: 12px;
   padding: 6px 4px 7px; min-height: 76px; display: flex; flex-direction: column; align-items: center; gap: 3px;

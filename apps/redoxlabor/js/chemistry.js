@@ -57,9 +57,41 @@
       id: 'pentan-2-on', name: 'Pentan-2-on', trivial: 'Methylpropylketon', cls: 'keton',
       formula: 'C₅H₁₀O', condensed: 'CH₃–CO–CH₂–CH₂–CH₃', chain: ['CH3', 'C', 'CH2', 'CH2', 'CH3'], carbonyl: 1,
       reducing: false, rate: 0
+    },
+    // Zucker: Feststoffe (Spatelspitze), nur im Lernmodus. Geschwindigkeiten modelliert;
+    // Fructose reagiert über das Endiol eher schneller als Glucose.
+    {
+      id: 'glucose', name: 'Glucose', trivial: 'Traubenzucker', cls: 'zucker', sugar: 'Aldohexose (Monosaccharid)', solid: true,
+      formula: 'C₆H₁₂O₆', condensed: 'HOCH₂–(CHOH)₄–CHO', reducing: true, rate: 0.7,
+      R: 'HOCH₂–(CHOH)₄', acid: 'Gluconsäure', acidCondensed: 'HOCH₂–(CHOH)₄–COOH',
+      structure: 'Liegt in Lösung überwiegend als Ring (Halbacetal) vor, im Gleichgewicht mit einem kleinen Anteil der offenkettigen Form mit Aldehydgruppe an C1.',
+      note: 'Glucose steht in Lösung im Gleichgewicht mit ihrer offenkettigen Form, die eine Aldehydgruppe besitzt. Im Schulmodell wird diese zur Carboxygruppe oxidiert: Es entsteht Gluconsäure (im alkalischen Ansatz Gluconat). Hinweis: Nach Angaben eines Reagenzherstellers ist das Hauptprodukt mit Kupfer(II) eher Glucoson – dabei wird die OH-Gruppe an C2 zur Ketogruppe oxidiert –, das unter den Reaktionsbedingungen weiter gespalten wird. Die Gleichung mit Gluconsäure ist eine Vereinfachung.'
+    },
+    {
+      id: 'fructose', name: 'Fructose', trivial: 'Fruchtzucker', cls: 'zucker', sugar: 'Ketohexose (Monosaccharid)', solid: true,
+      formula: 'C₆H₁₂O₆', condensed: 'HOCH₂–(CHOH)₃–CO–CH₂OH', reducing: true, rate: 0.85,
+      structure: 'Ketose: Carbonylgruppe an C2, daneben an C1 eine OH-Gruppe (α-Hydroxyketon). Liegt in Lösung überwiegend als Ring (Halbketal) vor.',
+      note: 'Fructose ist eine Ketose, kein Aldehyd. Im alkalischen Reagenz stellt sich über Keto-Enol-Tautomerie ein Endiol ein (Lobry-de-Bruyn-van-Ekenstein-Umlagerung). Daraus entstehen Aldosen (Glucose, Mannose) bzw. Endiolat-Ionen, die das Reagenz reduzieren. Das widerspricht nicht dem negativen Ergebnis einfacher Ketone wie Propanon: Fructose hat neben der Carbonylgruppe eine OH-Gruppe am Nachbar-C-Atom.'
+    },
+    {
+      id: 'saccharose', name: 'Saccharose', trivial: 'Rohr-/Rübenzucker', cls: 'zucker', sugar: 'Disaccharid (Glucose + Fructose)', solid: true,
+      formula: 'C₁₂H₂₂O₁₁', reducing: false, rate: 0,
+      structure: 'Glucose und Fructose sind über C1 der Glucose und C2 der Fructose glycosidisch verknüpft – beide anomeren C-Atome sind gebunden.',
+      note: 'In Saccharose sind beide anomeren C-Atome (C1 der Glucose, C2 der Fructose) an der glycosidischen Bindung beteiligt. Kein Ring kann sich öffnen; es gibt weder eine Aldehydgruppe noch ein Endiol – Saccharose ist ein nicht reduzierender Zucker. (Langes Kochen kann Saccharose teilweise spalten und ein schwach positives Ergebnis vortäuschen; das bildet das Modell nicht ab.)'
+    },
+    {
+      id: 'maltose', name: 'Maltose', trivial: 'Malzzucker', cls: 'zucker', sugar: 'Disaccharid (Glucose + Glucose)', solid: true,
+      formula: 'C₁₂H₂₂O₁₁', reducing: true, rate: 0.55, acid: 'Maltobionsäure',
+      structure: 'Zwei Glucose-Einheiten, α-1,4-glycosidisch verknüpft. Das anomere C-Atom der zweiten Einheit ist frei (Halbacetal).',
+      note: 'Maltose besteht aus zwei Glucose-Einheiten (α-1,4-glycosidisch). Das anomere C-Atom der zweiten Einheit ist nicht an der glycosidischen Bindung beteiligt: Dieser Ring kann sich in Lösung öffnen, und es entsteht eine Aldehydgruppe. Maltose ist deshalb ein reduzierender Zucker (Produkt im Schulmodell: Maltobionsäure).'
     }
   ];
   const SAMPLE_BY_ID = Object.fromEntries(SAMPLES.map((s) => [s.id, s]));
+  /** Grundprobensatz (Aldehyde und Ketone) – auch für den Analysemodus. */
+  const BASIC_SAMPLE_IDS = SAMPLES.filter((s) => s.cls !== 'zucker').map((s) => s.id);
+  const SUGAR_IDS = SAMPLES.filter((s) => s.cls === 'zucker').map((s) => s.id);
+  /** Höchstzahl der Spatelportionen eines Feststoffs pro Reagenzglas. */
+  const SOLID_MAX = 3;
 
   const REAGENTS = [
     { id: 'fehling1', name: 'Fehling I', short: 'Fehling I', desc: 'Kupfer(II)-sulfat-Lösung', test: 'fehling', color: [95, 172, 236, 0.5] },
@@ -138,7 +170,9 @@
     return {
       portions: { fehling1: 0, fehling2: 0, agno3: 0, naoh: 0, nh3: 0 },
       sampleId: null,
-      sampleAmount: 0,
+      sampleAmount: 0, // flüssige Probe in Portionen
+      solid: 0, // Feststoff (Zucker) in Spatelportionen – zählt nicht zum Flüssigkeitsvolumen
+      dissolved: 1, // gelöster Anteil des Feststoffs 0..1
       history: [],
       mix: 1, // 1 = homogen durchmischt
       temp: T.ROOM,
@@ -169,16 +203,30 @@
 
   function isSample(id) { return !!SAMPLE_BY_ID[id]; }
   function isReagent(id) { return !!REAGENT_BY_ID[id]; }
+  function isSolid(id) { return !!(SAMPLE_BY_ID[id] && SAMPLE_BY_ID[id].solid); }
+  /** Enthält das Reagenzglas überhaupt etwas (Flüssigkeit oder Feststoff)? */
+  function hasContent(c) { return volume(c) > 0 || c.solid > 0; }
+  /** Anteil der Probe, der für die Reaktion zur Verfügung steht (Feststoff erst gelöst). */
+  function available(c) { return c.solid > 0 ? c.dissolved : 1; }
 
   /** Prüft, ob eine Zugabe möglich ist. Fachlich falsche Zugaben sind erlaubt – nur Unmögliches wird abgelehnt. */
   function canAdd(c, id) {
     if (!isSample(id) && !isReagent(id)) return { ok: false, reason: 'Unbekannter Stoff.' };
     if (c.bumped) return { ok: false, reason: 'Nach dem Siedeverzug ist dieser Ansatz unbrauchbar. Tausche das Reagenzglas aus.' };
-    if (volume(c) + 1 > CAPACITY) return { ok: false, reason: 'Das Reagenzglas ist zu voll. Zum Erwärmen darf es höchstens etwa zur Hälfte gefüllt sein.' };
     if (isSample(id) && c.sampleId && c.sampleId !== id) {
       return { ok: false, reason: 'In diesem Reagenzglas ist bereits eine andere Stoffprobe. Für eine eindeutige Auswertung pro Reagenzglas nur eine Probe verwenden.' };
     }
+    if (isSolid(id)) {
+      if (c.solid + 1 > SOLID_MAX) return { ok: false, reason: 'Es ist schon genug Feststoff im Reagenzglas – für den Nachweis genügt eine Spatelspitze.' };
+      return { ok: true };
+    }
+    if (volume(c) + 1 > CAPACITY) return { ok: false, reason: 'Das Reagenzglas ist zu voll. Zum Erwärmen darf es höchstens etwa zur Hälfte gefüllt sein.' };
     return { ok: true };
+  }
+
+  /** Schütteln/Umrühren beschleunigt das Lösen eines Feststoffs. */
+  function dissolve(c, amount) {
+    if (c.solid > 0 && volume(c) > 0) c.dissolved = Math.min(1, c.dissolved + amount);
   }
 
   /** Gibt eine Portion zu. Gibt ein Objekt zurück, das den vorherigen Zustand für die Darstellung beschreibt. */
@@ -186,7 +234,12 @@
     const check = canAdd(c, id);
     if (!check.ok) return check;
     const before = volume(c);
-    if (isSample(id)) {
+    if (isSolid(id)) {
+      // Spatelspitze: Die Kristalle sinken zu Boden und lösen sich erst nach und nach.
+      c.sampleId = id;
+      c.solid += 1;
+      c.dissolved = c.dissolved * (c.solid - 1) / c.solid;
+    } else if (isSample(id)) {
       c.sampleId = id;
       c.sampleAmount += 1;
     } else {
@@ -196,7 +249,7 @@
     // Fehling-Lösungen und Stoffproben schichten sich zunächst auf und vermischen
     // sich erst durch Diffusion, Schütteln oder Konvektion beim Erwärmen.
     // Die Tollens-Reagenzien werden tropfenweise unter Umschwenken zugegeben.
-    if (before > 0 && !(REAGENT_BY_ID[id] && REAGENT_BY_ID[id].test === 'tollens')) c.mix = Math.min(c.mix, 0.3);
+    if (before > 0 && !isSolid(id) && !(REAGENT_BY_ID[id] && REAGENT_BY_ID[id].test === 'tollens')) c.mix = Math.min(c.mix, 0.3);
     // Neue Zusammensetzung: Die Beobachtungszeit für einen negativen Befund
     // beginnt neu. Bereits entstandene Produkte bleiben unverändert.
     c.exposure = 0;
@@ -224,7 +277,14 @@
       system: 'none', status: 'noReagent', reason: '', sample, reducing: !!(sample && sample.reducing),
       cuFree: 0, cuComplex: 0, cuOH2: 0, cuAmmine: 0, ag2o: 0, agComplex: 0, agFree: 0, valid: false
     };
-    if (volume(c) === 0) { res.system = 'empty'; res.status = 'empty'; return res; }
+    if (volume(c) === 0) {
+      if (c.solid > 0) {
+        res.system = 'none'; res.status = 'noReagent';
+        res.reason = 'Der Feststoff liegt trocken im Reagenzglas – es fehlt noch das Nachweisreagenz, in dem er sich lösen kann.';
+        return res;
+      }
+      res.system = 'empty'; res.status = 'empty'; return res;
+    }
 
     const hasCuSys = cu > 0 || tart > 0;
     if (hasCuSys && ag > 0) {
@@ -316,18 +376,21 @@
     // Durchmischung: langsame Diffusion, schnelle Konvektion in warmer Flüssigkeit.
     c.mix = Math.min(1, c.mix + dt * (0.012 + (c.temp > 35 ? 0.22 : 0)));
     if (c.temp > c.sinceAddMaxTemp) c.sinceAddMaxTemp = c.temp;
+    // Zucker löst sich langsam, in warmer, bewegter Flüssigkeit schneller.
+    if (c.solid > 0 && c.dissolved < 1) c.dissolved = Math.min(1, c.dissolved + dt * (0.03 + (c.temp > 35 ? 0.18 : 0)));
 
     if (c.bumped) return; // Ansatz unbrauchbar – keine weitere Auswertung
     const a = analyze(c);
     const fSys = a.system === 'tollens' ? fT / T.HEAT_TOLLENS : fF / T.HEAT_FEHLING;
     c.heatAny += dt * fSys;
-    // Nur der gebrauchsfertige, durchmischte Ansatz zählt als Beobachtungszeit.
-    if (a.valid && c.mix >= 0.85) c.exposure += dt * fSys;
+    // Nur der gebrauchsfertige, durchmischte Ansatz mit gelöster Probe zählt als Beobachtungszeit.
+    if (a.valid && c.mix >= 0.85 && available(c) >= 0.95) c.exposure += dt * fSys;
 
+    const avail = c.mix * available(c);
     if (a.system === 'fehling' && a.valid && a.reducing) {
-      c.cu2o = Math.min(1, c.cu2o + dt * fF * c.mix * a.sample.rate / T.FEHLING_REACTION);
+      c.cu2o = Math.min(1, c.cu2o + dt * fF * avail * a.sample.rate / T.FEHLING_REACTION);
     } else if (a.system === 'tollens' && a.valid && a.reducing) {
-      const d = Math.min(1 - c.ag, dt * fT * c.mix * a.sample.rate / T.TOLLENS_REACTION);
+      const d = Math.min(1 - c.ag, dt * fT * avail * a.sample.rate / T.TOLLENS_REACTION);
       c.ag += d;
       // An sauberem Glas und bei schonender Temperatur scheidet sich das meiste
       // Silber als Film ab; bei zu starkem Erwärmen entsteht mehr fein verteiltes,
@@ -559,8 +622,12 @@
     aldehydEindeutig: 'Der Stoff ist durch den Nachweis eindeutig identifiziert (z. B. „das ist Ethanal“).',
     keinAldehyd: 'Keine Aldehydgruppe nachweisbar – im Probensatz also ein Keton. Allein durch den Nachweis ist das nicht bewiesen.',
     ketonBewiesen: 'Der negative Nachweis beweist, dass der Stoff ein Keton ist.',
+    reduzierenderZucker: 'Reduzierender Zucker – liegt in Lösung auch mit Aldehydgruppe vor oder bildet im alkalischen Reagenz ein Endiol.',
+    nichtReduzierenderZucker: 'Nicht reduzierender Zucker – kein Ring kann sich öffnen, weil die anomeren C-Atome glycosidisch gebunden sind.',
     keineAussage: 'Keine Zuordnung möglich.'
   };
+  /** Stoffklassen, die nur bei Zuckerproben (Lernmodus) zur Auswahl stehen. */
+  const SUGAR_CLASSES = ['reduzierenderZucker', 'nichtReduzierenderZucker'];
   const METHODS = { fehling: 'Fehling-Probe', tollens: 'Tollens-Probe (Silberspiegelprobe)', keines: 'Kein vollständiges Nachweisverfahren' };
 
   /**
@@ -642,14 +709,19 @@
     }
 
     const product = isF ? c.cu2o : c.ag;
+    const sugar = sample.cls === 'zucker';
+    if (sugar) out.modelNote += ' Zucker werden als Feststoff (Spatelspitze) zugegeben und lösen sich im Reagenz; Reaktionsgeschwindigkeiten der Zucker sind modelliert.';
     if (positiveVisible(c, a)) {
-      out.outcome = 'positive'; out.result = 'positiv'; out.interpretation = 'reduzierend'; out.cls = 'aldehyd';
+      out.outcome = 'positive'; out.result = 'positiv'; out.interpretation = 'reduzierend'; out.cls = sugar ? 'reduzierenderZucker' : 'aldehyd';
       out.complete = product >= COMPLETE;
       const running = out.complete ? '' : ' Die Reaktion läuft noch weiter. Für einen positiven Nachweis genügt das deutlich sichtbare Nachweisprodukt – vollständiger Umsatz ist dafür nicht nötig.';
-      const tail = ' Die Probe wirkt reduzierend. Welcher Aldehyd vorliegt, lässt sich aus diesem Nachweis allein nicht ableiten – alle drei Aldehyde reagieren gleich.';
+      const tail = sugar
+        ? ' Die Probe wirkt reduzierend. ' + sample.note
+        : ' Die Probe wirkt reduzierend. Welcher Aldehyd vorliegt, lässt sich aus diesem Nachweis allein nicht ableiten – alle drei Aldehyde reagieren gleich.';
+      const oxidized = sugar ? 'die Probe wurde oxidiert' : 'die Aldehydgruppe der Probe wurde oxidiert (im alkalischen Ansatz zum Carboxylat-Ion)';
       if (isF) {
         out.title = out.complete ? 'Positive Fehling-Probe' : 'Positive Fehling-Probe (Reaktion läuft noch)';
-        out.explanation = 'Es bildet sich eine orange bis ziegelrote Trübung aus Kupfer(I)-oxid (Cu₂O). Die Kupfer(II)-Ionen wurden zu Kupfer(I) reduziert, die Aldehydgruppe der Probe wurde oxidiert (im alkalischen Ansatz zum Carboxylat-Ion).' + running + tail;
+        out.explanation = `Es bildet sich eine orange bis ziegelrote Trübung aus Kupfer(I)-oxid (Cu₂O). Die Kupfer(II)-Ionen wurden zu Kupfer(I) reduziert, ${oxidized}.` + running + tail;
         set(['ziegelrot'], []);
       } else {
         const filmShare = c.ag > 0 ? c.agFilm / c.ag : 1;
@@ -657,7 +729,7 @@
           ? 'An der Glaswand scheidet sich elementares Silber als Silberspiegel ab.'
           : 'Es scheidet sich elementares Silber ab – überwiegend fein verteilt als grau-schwarzer Niederschlag, nur teilweise als Spiegel. Auch fein verteiltes Silber ist ein positiver Nachweis; ein gleichmäßiger Spiegel entsteht vor allem an sauberem Glas bei schonendem Erwärmen.';
         out.title = (filmShare >= 0.75 ? 'Positive Tollens-Probe (Silberspiegel)' : 'Positive Tollens-Probe (fein verteiltes Silber)') + (out.complete ? '' : ' – Reaktion läuft noch');
-        out.explanation = form + ' Die Silber(I)-Ionen des Silber-Ammin-Komplexes wurden zu Silber reduziert, die Aldehydgruppe der Probe wurde oxidiert (im alkalischen Ansatz zum Carboxylat-Ion). Nicht verwechseln mit braunem Silberoxid (Ag₂O) aus unvollständig angesetztem Reagenz.' + running + tail;
+        out.explanation = form + ` Die Silber(I)-Ionen des Silber-Ammin-Komplexes wurden zu Silber reduziert, ${oxidized}. Nicht verwechseln mit braunem Silberoxid (Ag₂O) aus unvollständig angesetztem Reagenz.` + running + tail;
         set([], ['spiegel', 'grau'], ['spiegel', 'grau']);
       }
       return out;
@@ -672,6 +744,9 @@
       if (trace) {
         out.title = 'Beginnende Veränderung – noch nicht eindeutig';
         out.explanation = 'Eine beginnende Veränderung ist zu sehen, aber noch kein eindeutiges Nachweisprodukt. Beobachte weiter.';
+      } else if (available(c) < 0.95) {
+        out.title = 'Feststoff noch nicht gelöst';
+        out.explanation = 'Am Boden liegen noch ungelöste Kristalle. Erst die gelöste Probe kann mit dem Reagenz reagieren – schütteln oder im Wasserbad erwärmen.';
       } else if (!mixed && !unheatedFehling) {
         out.title = 'Ansatz noch nicht durchmischt';
         out.explanation = 'Probe und Reagenz sind noch nicht gleichmäßig vermischt. Erst der durchmischte Ansatz zählt als Beobachtung – schütteln oder im Wasserbad erwärmen.';
@@ -690,12 +765,14 @@
       return out;
     }
 
-    out.outcome = 'negative'; out.result = 'negativ'; out.interpretation = 'nichtReduzierend'; out.cls = 'keinAldehyd';
+    out.outcome = 'negative'; out.result = 'negativ'; out.interpretation = 'nichtReduzierend'; out.cls = sugar ? 'nichtReduzierenderZucker' : 'keinAldehyd';
     out.title = `Negative ${testName}`;
     out.explanation = (isF
       ? 'Die Lösung bleibt auch nach ausreichend langem Erwärmen tiefblau, es bildet sich kein Kupfer(I)-oxid.'
       : 'Die Lösung bleibt auch nach ausreichend langer Beobachtung im warmen Wasserbad klar, es entsteht weder ein Silberspiegel noch fein verteiltes Silber.') +
-      ' Die Probe wirkt unter diesen Bedingungen nicht reduzierend. Ketone besitzen am Carbonyl-C-Atom kein Wasserstoffatom und werden daher nicht oxidiert. Ein negativer Nachweis allein beweist aber nicht, dass ein Keton vorliegt – auch z. B. Alkane oder Ethanol reagieren negativ.';
+      (sugar
+        ? ' Die Probe wirkt unter diesen Bedingungen nicht reduzierend. ' + sample.note
+        : ' Die Probe wirkt unter diesen Bedingungen nicht reduzierend. Ketone besitzen am Carbonyl-C-Atom kein Wasserstoffatom und werden daher nicht oxidiert. Ein negativer Nachweis allein beweist aber nicht, dass ein Keton vorliegt – auch z. B. Alkane oder Ethanol reagieren negativ.');
     set(isF ? ['tiefblau'] : ['klar'], ['keineVeraenderung']);
     return out;
   }
@@ -746,7 +823,7 @@
    */
   function describe(c) {
     const vol = volume(c);
-    if (vol === 0) return 'leer';
+    if (vol === 0) return c.solid > 0 ? 'weiße Kristalle, trocken' : 'leer';
     const a = analyze(c);
     const ap = appearance(c);
     const parts = [];
@@ -760,14 +837,15 @@
     if (c.cu2o > 0.2 && !(a.cuComplex > 0)) parts.push('orange-roter Feststoff');
     if (ap.mirror > 0.3) parts.push('silbriger Belag an der Glaswand');
     if (c.ag - c.agFilm > 0.15 || c.darkening > 0.3) parts.push('grau-schwarze Trübung');
+    if (c.solid > 0 && c.dissolved < 0.95) parts.push('ungelöste weiße Kristalle am Boden');
     if (c.mix < 0.85) parts.push('noch nicht durchmischt');
     return parts.join(', ');
   }
 
   return {
-    SAMPLES, SAMPLE_BY_ID, REAGENTS, REAGENT_BY_ID, CAPACITY, TIMES: T, VISIBLE, COMPLETE,
-    OBSERVATIONS, RESULTS, INTERPRETATIONS, CLASSES, METHODS,
-    createContents, volume, canAdd, add, analyze, reagentReady, step,
+    SAMPLES, SAMPLE_BY_ID, BASIC_SAMPLE_IDS, SUGAR_IDS, SOLID_MAX, REAGENTS, REAGENT_BY_ID, CAPACITY, TIMES: T, VISIBLE, COMPLETE,
+    OBSERVATIONS, RESULTS, INTERPRETATIONS, CLASSES, SUGAR_CLASSES, METHODS,
+    createContents, volume, hasContent, isSolid, dissolve, canAdd, add, analyze, reagentReady, step,
     fehlingTempFactor, tollensTempFactor, heatDose, isReactive, isObservable, isComplete, positiveVisible, currentProgress,
     appearance, classify, gradeProtocol, formulaFromChain, describe,
     util: { clamp, smooth, lerp, lerpColor }
