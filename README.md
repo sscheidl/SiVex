@@ -6,7 +6,7 @@ SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftli
 
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
-| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/chemie/titration/` | **Ausgewählt**; läuft in mebis. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)**. Import als entpackter Quellcode ausstehend |
+| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/chemie/titration/` | **Ausgewählt**; läuft in mebis. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-web.zip). Import als entpackter Quellcode ausstehend |
 | [Redoxlabor – Fehling- und Tollens-Probe](apps/chemie/redoxlabor/) | `apps/chemie/redoxlabor/` | **prototype** – Redoxlabor 1.0 (Claude Code), Quellcode im Repo. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-web.zip) · [Testbericht](apps/chemie/redoxlabor/docs/TESTBERICHT.md) |
 | Esterbildung und chemisches Gleichgewicht | `apps/chemie/ester-gleichgewicht/` | In Planung |
 
@@ -17,7 +17,7 @@ Es gibt **keine separate ältere Titrationsversion** im Zielbestand. Die zuvor d
 | TitraLab 3 – Säure-Base-Titration | Redoxlabor – Fehling- und Tollens-Probe |
 | --- | --- |
 | [![TitraLab 3](apps/chemie/titration/docs/titralab3-screenshot.png)](apps/chemie/titration/) | [![Redoxlabor](apps/chemie/redoxlabor/docs/screenshots/01-labortisch.png)](apps/chemie/redoxlabor/) |
-| **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-web.zip) |
+| **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-web.zip) | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-web.zip) |
 
 ## Aufbau
 

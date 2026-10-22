@@ -6,9 +6,11 @@ Virtuelle Säure-Base-Titration für SiVex.
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket herunterladen (SiVex-Titration-Claude-v3-mebis-SCORM12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)**
+**[⬇ SCORM-1.2-Paket herunterladen (SiVex-Titration-Claude-v3-mebis-SCORM12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-Version (SiVex-Titration-Claude-v3-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-web.zip)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
+
+Webserver: Web-ZIP entpacken und den Ordner `titration/` per HTTPS bereitstellen. Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt).
 
 **Einzige ausgewählte Titrationsversion: TitraLab 3 von Claude.** Die frühere Codex-Variante TitraLab 2 wurde verworfen und gehört nicht zum Projektbestand.
 
