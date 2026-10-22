@@ -12,7 +12,9 @@
 | Browser-Tests | 26 bisherige Prüfungen (angepasst: Verlauf bis Reaktionsende statt bis zur ersten Beobachtbarkeit, Gasbrenner unter „Weitere Geräte“) + 6 neue: R3 (Formularentwurf, Markierung, Fokus), R4 (Zwischenstand im Panel und Protokoll), neutrale Lupe (Pixel), R2 (Silberbelag bleibt nach Fehling I, Pixel), Tablet-Beschriftung 1024×768 und 1180×820 | **32/32 bestanden** (209 s; zweiter Lauf, der erste ergab ebenfalls 32/32) |
 | SCORM-Paket | 9 Prüfungen mit simuliertem LMS, Paket aus dem überarbeiteten Build | **9/9 bestanden** – keine `LMSGetValue`/`LMSSetValue`-Aufrufe |
 
-Das SCORM-Paket wurde nur für diesen Test neu erzeugt. Die eingecheckten Release-Pakete `1.0.0` sind unverändert und enthalten **noch den alten Stand**.
+Das SCORM-Paket wurde für diesen Test zunächst nur vorübergehend erzeugt.
+
+**Release 1.1.0 (22.10.2026):** `redoxlabor-1.1.0-web.zip` und `redoxlabor-1.1.0-scorm12.zip` aus dem überarbeiteten Stand gebaut. Prüfung: zweiter Build byte-identisch (Prüfsummen gleich), ZIP-Integrität OK (Web 11 Einträge, SCORM 12 inkl. `imsmanifest.xml`, Manifest-Version 1.1.0), SCORM-Prüfung mit simuliertem LMS gegen das fertige Paket **9/9 bestanden**, Unit-Tests 62/62. Die Pakete 1.0.0 liegen unverändert daneben (alter Stand).
 
 **Nicht durchgeführt:** Test auf einem echten iPad mit Safari/WebKit, Import in einen echten mebis-Kurs, Unterrichtstest mit Lernenden, vollständiges Accessibility-Audit (Screenreader-Ausgabe nur strukturell umgesetzt, nicht mit VoiceOver/NVDA geprüft). Der Gesamtstatus bleibt deshalb **HOLD – nicht verifiziert**.
 
@@ -164,4 +166,4 @@ Nach diesen Änderungen lief die vollständige Suite zweimal hintereinander mit 
 
 1. Build auf Schul-iPads in Safari öffnen (Querformat): kompletter Fehling- und Tollens-Versuch nur per Finger, Bildrate beobachten.
 2. Kurzer Klassentest (2–3 Schülergruppen) zu D-08.
-3. Danach `release/redoxlabor-1.0.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.
+3. Danach `release/redoxlabor-1.1.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.
