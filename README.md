@@ -33,10 +33,7 @@ Siehe [mebis-Konzept](docs/MEBIS.md), [Architektur](docs/ARCHITECTURE.md) und [Q
 
 ## Code-Stand
 
-Im Repository liegen Projektstruktur, Dokumentation und Manifeste.
-
-- **Redoxlabor 1.0** ist vollständig eingecheckt (Quellcode, Unit- und Browser-Tests, Dokumentation, Screenshots). Start: `apps/chemie/redoxlabor/index.html` öffnen oder `npm start` im App-Verzeichnis. Abnahmestatus: HOLD – nicht verifiziert (offen sind nur der Test auf echten iPads und ein Test mit Lernenden).
-- **Die lauffähigen Dateien von TitraLab 3 (Claude) fehlen auf GitHub noch.** Das SCORM-Release wurde außerhalb des Repositories entpackt und als importierbares Quellcodearchiv aufbereitet; der Import ist ausstehend. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
+Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. **Die lauffähigen Dateien von TitraLab 3 (Claude) fehlen auf GitHub noch.** Das SCORM-Release wurde außerhalb des Repositories entpackt und als importierbares Quellcodearchiv aufbereitet; der Import ist ausstehend. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
 
 ## Lizenz
 

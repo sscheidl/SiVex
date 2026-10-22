@@ -27,5 +27,4 @@ Verzeichnisse werden **nach Fach und Experiment**, nicht nach Jahrgangsstufe ang
 
 ## Status
 
-- `apps/chemie/redoxlabor/`: lauffähiger Quellcode (Status `prototype`) mit eigenem `package.json` für Build und Tests; keine Laufzeitabhängigkeiten.
-- `apps/chemie/titration/`: Die Quellcode-Dateien des TitraLab-3-Releases müssen noch auf GitHub importiert werden; das Verzeichnis enthält derzeit nur Dokumentation und Metadaten.
+Die Quellcode-Dateien des TitraLab-3-Releases müssen noch auf GitHub importiert werden. Das aktuell eingecheckte Experimentverzeichnis enthält daher nur Dokumentation und Metadaten.
