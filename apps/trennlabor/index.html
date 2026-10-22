@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16202b">
+  <meta name="description" content="Virtuelles Trennlabor: klassische Trennverfahren, Papierchromatographie und Destillation frei erproben, beobachten und auswerten.">
+  <title>Trennlabor – Stoffgemische trennen</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6h24l-9 11v9l-6 3V17z' fill='%231f6fe5'/%3E%3Cpath d='M9 10h14l-3.5 4h-7z' fill='%23d4572c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <button type="button" class="brand" id="homeBtn" aria-label="Zur Startansicht">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 6h24l-9 11v9l-6 3V17z" fill="#3d8bfd"/><path d="M9 10h14l-3.5 4h-7z" fill="#e0703c"/></svg>
+      <span><strong>Trennlabor</strong><small>Stoffgemische trennen</small></span>
+    </button>
+    <nav class="labtabs" id="labTabs" aria-label="Labore">
+      <button type="button" data-lab="classic"><b>A</b><span>Klassische Verfahren</span></button>
+      <button type="button" data-lab="chroma"><b>B</b><span>Chromatographie</span></button>
+      <button type="button" data-lab="distill"><b>C</b><span>Destillation</span></button>
+    </nav>
+    <div class="timectl" id="timeCtl" role="group" aria-label="Zeitsteuerung">
+      <button type="button" data-speed="pause" aria-label="Pause" title="Pause">❚❚</button>
+      <button type="button" data-speed="1" title="normaler Ablauf">1×</button>
+      <button type="button" data-speed="4" title="schneller">4×</button>
+      <button type="button" data-speed="10" title="am schnellsten">10×</button>
+      <span class="lapse" id="lapse"></span>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="tb" id="btnRestart"><span class="ic" aria-hidden="true">↺</span><span class="lbl">Neu beginnen</span></button>
+      <button type="button" class="tb" id="btnPanel" aria-pressed="true" aria-controls="panel"><span class="ic" aria-hidden="true">☰</span><span class="lbl">Bedienfeld</span></button>
+    </div>
+  </header>
+
+  <main class="layout" id="layout">
+    <section class="home" id="home" aria-label="Startansicht"></section>
+    <section class="stage" id="stage" aria-label="Laborbühne">
+      <canvas id="lab" role="img" aria-label="Virtuelle Laborbühne"></canvas>
+      <div class="hud" id="hud" aria-live="off"></div>
+      <div class="toasts" id="toasts" aria-live="polite"></div>
+      <div class="safety" id="safety" hidden role="alertdialog" aria-modal="true" aria-labelledby="safetyTitle"></div>
+    </section>
+    <aside class="panel" id="panel" aria-label="Bedienfeld">
+      <div class="taskbar" id="taskBar"></div>
+      <div id="taskCard"></div>
+      <div id="helpCard"></div>
+      <div class="ptabs" role="tablist" id="pTabs">
+        <button type="button" role="tab" data-act="tab" data-tab="exp">Versuch</button>
+        <button type="button" role="tab" data-act="tab" data-tab="eval">Auswertung</button>
+        <button type="button" role="tab" data-act="tab" data-tab="note">Hefteintrag</button>
+      </div>
+      <div class="tabbody" id="tabBody"></div>
+    </aside>
+  </main>
+
+  <div class="modal-backdrop" id="modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" id="modalBox"></div>
+  </div>
+
+  <noscript><p class="noscript">Das Trennlabor benötigt JavaScript.</p></noscript>
+
+  <script src="js/scorm.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/answers.js"></script>
+  <script src="js/model/classic.js"></script>
+  <script src="js/model/chroma.js"></script>
+  <script src="js/model/distill.js"></script>
+  <script src="js/tasks/classic-tasks.js"></script>
+  <script src="js/tasks/chroma-tasks.js"></script>
+  <script src="js/tasks/distill-tasks.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/render/common.js"></script>
+  <script src="js/render/classic-render.js"></script>
+  <script src="js/render/chroma-render.js"></script>
+  <script src="js/render/distill-render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

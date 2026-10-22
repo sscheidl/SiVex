@@ -1,0 +1,19 @@
+{
+  "id": "chemie/trennlabor",
+  "title": "Virtuelles Trennlabor",
+  "description": "Stoffgemische frei trennen: Sedimentieren, Dekantieren, Filtrieren, Lösen/Extrahieren, Eindampfen, Magnettrennung, Scheidetrichter (K-01 bis K-05), Papierchromatographie mit sieben Proben und zwei Laufmitteln sowie Destillation eines Ethanol-Wasser-Gemischs mit Brennprobe.",
+  "subject": "Chemie",
+  "topics": [
+    "Stoffgemische und Reinstoffe",
+    "Trennverfahren",
+    "Chromatographie",
+    "Destillation"
+  ],
+  "grades": [
+    8,
+    9
+  ],
+  "version": "1.0.0",
+  "status": "prototype",
+  "entry": "index.html"
+}
