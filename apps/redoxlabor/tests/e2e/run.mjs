@@ -304,7 +304,10 @@ async function scenarioFehlingEthanal(browser) {
     const buckets = new Set(series.map((x) => Math.round(x.h / 20)));
     assert(buckets.size >= 5, 'zu wenige unterscheidbare Farbstufen: ' + [...buckets]);
     assert(series.some((x) => x.h > 60 && x.h < 190 && x.s > 0.2), 'kein blaugrün/gelbgrüner Zwischenzustand');
-    const endP = await probe(page, 'color');
+    // Körnung flackert von Bild zu Bild (Partikel funkeln): Median aus sieben Messungen statt Einzelwert
+    const roughs = [];
+    for (let i = 0; i < 7; i++) { roughs.push((await probe(page, 'color')).rough); await sleep(250); }
+    const endP = { rough: roughs.slice().sort((a, b) => a - b)[3] };
     // Körnung der Cu₂O-Suspension gegenüber der klaren tiefblauen Lösung (C-03)
     assert(endP.rough >= ev.clearRough * 2, `keine Trübung/Körnung messbar (Rauheit klar ${ev.clearRough.toFixed(2)} → ${endP.rough.toFixed(2)})`);
     ev.series = series;
@@ -859,16 +862,20 @@ async function scenarioReviewFixes(browser) {
       const m = await page.evaluate(() => {
         const out = [];
         for (const b of document.querySelectorAll('.reagents .sub-btn')) {
-          for (const el of b.querySelectorAll('span, small')) {
+          const br = b.getBoundingClientRect();
+          for (const el of b.querySelectorAll('span:not(.info-btn), small')) {
             const lh = parseFloat(getComputedStyle(el).lineHeight) || 14;
-            const lines = Math.round(el.getBoundingClientRect().height / lh);
-            out.push({ id: b.dataset.reagent, text: el.textContent, overflow: el.scrollWidth > el.clientWidth + 1 || b.scrollWidth > b.clientWidth + 1, lines });
+            const r = el.getBoundingClientRect();
+            const lines = Math.round(r.height / lh);
+            // Text muss innerhalb der Kachel bleiben (das ⓘ-Eckabzeichen ragt absichtlich heraus)
+            out.push({ id: b.dataset.reagent, text: el.textContent, overflow: el.scrollWidth > el.clientWidth + 1 || r.left < br.left - 1 || r.right > br.right + 1, lines });
           }
         }
         const dev = document.querySelector('.devices-card').getBoundingClientRect();
         return { items: out, devicesVisible: dev.bottom <= innerHeight + 1 && dev.top < innerHeight };
       });
-      const bad = m.items.filter((x) => x.overflow || (x.lines > 1 && !/­/.test(x.text)));
+      // Fehler: Überlauf oder Umbruch mitten im Wort (mehrzeilig ohne Leerzeichen oder weiche Trennstelle)
+      const bad = m.items.filter((x) => x.overflow || (x.lines > 1 && !/[­ ]/.test(x.text)));
       assert(bad.length === 0, 'Umbrüche/Überlauf: ' + JSON.stringify(bad));
       assert(m.devicesVisible, 'Wasserbad-Steuerung nicht sichtbar');
       const f = await shot(page, `review-panel-${w}x${h}.png`);
@@ -940,6 +947,60 @@ async function scenarioSugars(browser) {
   }
 }
 
+// GHS-Kennzeichnung: Symbole auf den Flaschen ein-/ausblendbar, Gefahrstoffkarte, Legende
+async function scenarioGhs(browser) {
+  const { page, errors, context } = await newPage(browser, { viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true });
+  // Rotanteil im Bereich über dem Etikett der Fehling-I-Flasche (dort sitzen die Rauten)
+  const redAboveLabel = () => page.evaluate(() => {
+    const { renderer } = window.RedoxLab;
+    const L = renderer.layout;
+    const canvas = document.getElementById('lab'); const rect = canvas.getBoundingClientRect(); const k = canvas.width / rect.width;
+    const a = renderer.toClient(L.reagentX.fehling1 - 34, L.shelf.y - 4 - 18 - 66 - 36), b = renderer.toClient(L.reagentX.fehling1 + 34, L.shelf.y - 4 - 18 - 66 - 2);
+    const d = canvas.getContext('2d').getImageData(Math.round((a.x - rect.left) * k), Math.round((a.y - rect.top) * k), Math.round((b.x - a.x) * k), Math.round((b.y - a.y) * k)).data;
+    let red = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 190 && d[i + 1] < 70 && d[i + 2] < 70) red++;
+    return red;
+  });
+  await test('GHS-1', 'GHS-Symbole auf den Reagenzflaschen, per Schalter aus- und wieder einblendbar', async () => {
+    await sleep(500);
+    const on = await redAboveLabel();
+    const f1 = await shot(page, 'ghs-01-symbole-an.png');
+    await page.click('[data-ghs]');
+    await sleep(400);
+    const off = await redAboveLabel();
+    const f2 = await shot(page, 'ghs-02-symbole-aus.png');
+    await page.click('[data-ghs]');
+    await sleep(400);
+    const again = await redAboveLabel();
+    assert(on > 40 && off === 0 && again > 40, JSON.stringify({ on, off, again }));
+    return { rotePixel: { an: on, aus: off, wieder: again }, screenshots: [f1, f2] };
+  });
+  await test('GHS-2', 'Gefahrstoffkarte (ⓘ) mit Piktogrammen, Signalwort und H-Sätzen im Wortlaut; Legende mit allen neun Symbolen', async () => {
+    await page.locator('[data-hazard="naoh"]').tap();
+    await page.waitForSelector('.modal .hazard');
+    await sleep(400); // Einblendanimation abwarten
+    const card = await page.evaluate(() => ({ imgs: [...document.querySelectorAll('.modal .hazard-picts img')].map((i) => i.naturalWidth > 0), text: document.querySelector('.modal').innerText }));
+    assert(card.imgs.length === 1 && card.imgs[0], 'Piktogramm ' + JSON.stringify(card.imgs));
+    assert(/GEFAHR/i.test(card.text) && /H314/.test(card.text) && /schwere Verätzungen/.test(card.text), card.text.slice(0, 300));
+    const f1 = await shot(page, 'ghs-03-gefahrstoffkarte-natronlauge.png');
+    await page.click('[data-m="legend"]');
+    await page.waitForSelector('.legend-grid');
+    const n = await page.evaluate(() => [...document.querySelectorAll('.legend-grid img')].filter((i) => i.naturalWidth > 0).length);
+    assert(n === 9, 'Legende: ' + n);
+    const f2 = await shot(page, 'ghs-04-legende.png');
+    await page.click('[data-m="close"]');
+    // Stoffinfo Ethanal: Reinstoff-Einstufung mit Hinweis zur realen Schule
+    await page.locator('[data-info="ethanal"]').tap();
+    await page.waitForSelector('text=Einstufung des Reinstoffs');
+    const t = await page.locator('.modal').innerText();
+    assert(/H350/.test(t) && /RiSU/.test(t) && /virtuellen Labor/.test(t), t.slice(0, 400));
+    const f3 = await shot(page, 'ghs-05-stoffinfo-ethanal.png');
+    await page.click('[data-m="close"]');
+    assert(errors.length === 0, errors.join('; '));
+    return { legende: n, screenshots: [f1, f2, f3] };
+  });
+  await context.close();
+}
+
 // ------------------------------------------------------------------ Ablauf
 const server = await serve(ROOT, PORT);
 const CHANNEL = process.env.PW_CHANNEL || '';
@@ -953,6 +1014,7 @@ await scenarioNegatives(browser);
 await Promise.all([scenarioModesAndReset(browser), scenarioBump(browser), scenarioResponsive(browser), scenarioMotion(browser)]);
 await scenarioReviewFixes(browser);
 await scenarioSugars(browser);
+await scenarioGhs(browser);
 await browser.close();
 server.close();
 

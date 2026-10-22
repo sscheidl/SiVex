@@ -1,8 +1,8 @@
 {
-  "date": "2026-10-22T15:24:12.097Z",
+  "date": "2026-10-22T16:11:02.094Z",
   "browser": "msedge via Playwright 1.62.1, Version 155.0.4283.62",
-  "durationSeconds": 259,
-  "passed": 36,
+  "durationSeconds": 265,
+  "passed": 38,
   "failed": 0,
   "results": [
     {
@@ -93,7 +93,7 @@
         "zustand": {
           "place": "bath",
           "vol": 3,
-          "progress": 0.984,
+          "progress": 0.983,
           "temp": 80,
           "observable": true,
           "outcome": "positive",
@@ -104,9 +104,9 @@
         },
         "farbe": {
           "h": 11,
-          "s": 0.49,
-          "l": 0.48,
-          "c": 119
+          "s": 0.48,
+          "l": 0.58,
+          "c": 101
         },
         "layout": {
           "scrollW": 1180,
@@ -175,7 +175,7 @@
       "status": "PASS",
       "seconds": 0,
       "evidence": {
-        "anfragen": 10,
+        "anfragen": 11,
         "extern": 0
       }
     },
@@ -183,23 +183,23 @@
       "id": "F-01/V-03/V-04",
       "title": "Ethanal + Fehling + Wasserbad: kontinuierlicher Farbumschlag bis ziegelrot mit Trübung",
       "status": "PASS",
-      "seconds": 15,
+      "seconds": 16,
       "evidence": {
         "fruehesteBeobachtung": {
-          "progress": 0.451,
+          "progress": 0.529,
           "outcome": "positive"
         },
         "endfarbe": {
           "h": 9,
-          "s": 0.53,
-          "l": 0.42,
-          "c": 114
+          "s": 0.5,
+          "l": 0.44,
+          "c": 111
         },
         "farbstufen": 10,
         "rauheit": {
-          "klareLoesung": 1.4,
-          "vorErwaermen": 1.1,
-          "ende": 3.08
+          "klareLoesung": 1.44,
+          "vorErwaermen": 1.09,
+          "ende": 3.21
         },
         "verlauf": [
           {
@@ -209,79 +209,79 @@
             "h": 230,
             "s": 0.79,
             "l": 0.4,
-            "rough": 1
+            "rough": 1.01
           },
           {
-            "t": 1.3,
-            "progress": 0.001,
-            "temp": 47,
+            "t": 1.4,
+            "progress": 0.002,
+            "temp": 48,
             "h": 230,
-            "s": 0.78,
-            "l": 0.4,
-            "rough": 1.08
+            "s": 0.73,
+            "l": 0.42,
+            "rough": 1.11
           },
           {
             "t": 2.6,
-            "progress": 0.034,
+            "progress": 0.035,
             "temp": 62,
-            "h": 227,
-            "s": 0.76,
-            "l": 0.4,
-            "rough": 3.32
+            "h": 226,
+            "s": 0.61,
+            "l": 0.46,
+            "rough": 3.94
           },
           {
-            "t": 3.9,
-            "progress": 0.124,
+            "t": 4,
+            "progress": 0.127,
             "temp": 70,
-            "h": 213,
-            "s": 0.51,
-            "l": 0.51,
-            "rough": 2.97
+            "h": 212,
+            "s": 0.5,
+            "l": 0.55,
+            "rough": 3.38
           },
           {
             "t": 5.3,
-            "progress": 0.248,
+            "progress": 0.251,
             "temp": 75,
-            "h": 183,
+            "h": 182,
             "s": 0.3,
-            "l": 0.48,
-            "rough": 1.66
+            "l": 0.47,
+            "rough": 1.79
           },
           {
             "t": 6.7,
-            "progress": 0.396,
+            "progress": 0.394,
             "temp": 77,
-            "h": 84,
+            "h": 81,
             "s": 0.25,
-            "l": 0.53,
-            "rough": 3.31
+            "l": 0.52,
+            "rough": 2.96
           },
           {
-            "t": 8.4,
-            "progress": 0.59,
+            "t": 8.3,
+            "progress": 0.586,
             "temp": 79,
             "h": 36,
             "s": 0.57,
-            "l": 0.56,
-            "rough": 4.4
+            "l": 0.55,
+            "rough": 5.15
           },
           {
             "t": 9.6,
-            "progress": 0.737,
+            "progress": 0.733,
             "temp": 79,
-            "h": 22,
-            "s": 0.56,
-            "l": 0.56,
-            "rough": 5.39
+            "h": 23,
+            "s": 0.57,
+            "l": 0.55,
+            "rough": 5.88
           },
           {
-            "t": 11,
-            "progress": 0.895,
+            "t": 10.9,
+            "progress": 0.889,
             "temp": 80,
             "h": 15,
-            "s": 0.49,
-            "l": 0.55,
-            "rough": 4.16
+            "s": 0.5,
+            "l": 0.53,
+            "rough": 4.8
           }
         ],
         "screenshots": [
@@ -330,7 +330,7 @@
       "seconds": 12,
       "evidence": {
         "AgNO3": {
-          "h": 207,
+          "h": 208,
           "s": 0.38,
           "l": 0.95,
           "c": 10
@@ -338,7 +338,7 @@
         "nach NaOH": {
           "h": 26,
           "s": 0.22,
-          "l": 0.41,
+          "l": 0.4,
           "c": 46
         },
         "nach 1× NH3": {
@@ -365,7 +365,7 @@
         "zustand": {
           "place": "bath",
           "vol": 5,
-          "progress": 0.977,
+          "progress": 0.975,
           "temp": 60,
           "observable": true,
           "outcome": "positive",
@@ -375,10 +375,10 @@
           "sample": "butanal"
         },
         "belag": {
-          "dark": 0.5179109474389019,
-          "mean": 160.67076551724003,
-          "std": 52.52140546657768,
-          "sat": 0.04473306692934138,
+          "dark": 0.5162370271175092,
+          "mean": 160.6815358553722,
+          "std": 52.5751958919374,
+          "sat": 0.044723760142195965,
           "aboveDark": 0,
           "range": 152.92380000000003
         }
@@ -392,19 +392,19 @@
       "evidence": {
         "vorher": {
           "dark": 0.00033478406427854036,
-          "mean": 242.90785577502442,
-          "std": 4.083839160583762,
-          "sat": 0.0348725074366365,
+          "mean": 242.90682725142213,
+          "std": 4.083466103273844,
+          "sat": 0.03487138987728128,
           "aboveDark": 0,
           "range": 13.706000000000017
         },
         "ende": {
           "dark": 0.4881151657181118,
-          "mean": 163.45363675928886,
-          "std": 50.89847553583597,
-          "sat": 0.0412614262993901,
+          "mean": 163.51236096417685,
+          "std": 50.78495823276812,
+          "sat": 0.041333878684838635,
           "aboveDark": 0,
-          "range": 148.0642
+          "range": 147.2768
         },
         "stufen": 6,
         "verlauf": [
@@ -432,12 +432,12 @@
             "mirror": 0,
             "dark": 0,
             "std": 4,
-            "sat": 0.03,
+            "sat": 0.04,
             "above": 0
           },
           {
             "t": 3.9,
-            "progress": 0.089,
+            "progress": 0.088,
             "mirror": 0,
             "dark": 0,
             "std": 5,
@@ -445,8 +445,8 @@
             "above": 0
           },
           {
-            "t": 5.3,
-            "progress": 0.171,
+            "t": 5.2,
+            "progress": 0.168,
             "mirror": 0.05,
             "dark": 0,
             "std": 10,
@@ -454,47 +454,47 @@
             "above": 0
           },
           {
-            "t": 6.8,
-            "progress": 0.272,
+            "t": 6.7,
+            "progress": 0.27,
             "mirror": 0.16,
-            "dark": 0.063,
+            "dark": 0.06,
             "std": 18,
-            "sat": 0,
+            "sat": 0.01,
             "above": 0
           },
           {
             "t": 8.1,
-            "progress": 0.367,
+            "progress": 0.365,
             "mirror": 0.3,
-            "dark": 0.287,
+            "dark": 0.282,
             "std": 26,
             "sat": 0.01,
             "above": 0
           },
           {
-            "t": 9.4,
-            "progress": 0.459,
-            "mirror": 0.46,
-            "dark": 0.5,
+            "t": 9.3,
+            "progress": 0.456,
+            "mirror": 0.45,
+            "dark": 0.504,
             "std": 34,
             "sat": 0.01,
             "above": 0
           },
           {
             "t": 10.7,
-            "progress": 0.558,
+            "progress": 0.556,
             "mirror": 0.63,
-            "dark": 0.505,
+            "dark": 0.515,
             "std": 43,
             "sat": 0.02,
             "above": 0
           },
           {
             "t": 12,
-            "progress": 0.651,
+            "progress": 0.65,
             "mirror": 0.78,
             "dark": 0.476,
-            "std": 50,
+            "std": 51,
             "sat": 0.04,
             "above": 0
           },
@@ -502,14 +502,14 @@
             "t": 13.3,
             "progress": 0.751,
             "mirror": 0.91,
-            "dark": 0.503,
-            "std": 52,
+            "dark": 0.502,
+            "std": 53,
             "sat": 0.04,
             "above": 0
           },
           {
             "t": 14.6,
-            "progress": 0.846,
+            "progress": 0.845,
             "mirror": 0.98,
             "dark": 0.514,
             "std": 53,
@@ -518,9 +518,9 @@
           },
           {
             "t": 15.8,
-            "progress": 0.94,
+            "progress": 0.941,
             "mirror": 1,
-            "dark": 0.518,
+            "dark": 0.515,
             "std": 53,
             "sat": 0.04,
             "above": 0
@@ -556,7 +556,7 @@
           "h": 207,
           "s": 0.81,
           "l": 0.82,
-          "c": 74
+          "c": 72
         }
       }
     },
@@ -600,9 +600,9 @@
         },
         "belag": {
           "dark": 0.00033478406427854036,
-          "mean": 243.31553927016975,
-          "std": 4.2318344466964675,
-          "sat": 0.02899277574336953,
+          "mean": 243.31558627385235,
+          "std": 4.232678174984292,
+          "sat": 0.028990169341595363,
           "aboveDark": 0,
           "range": 14.706000000000017
         },
@@ -764,24 +764,24 @@
       "status": "PASS",
       "seconds": 7,
       "evidence": {
-        "ruhe": 0.062,
+        "ruhe": 0.083,
         "pipettenbewegung": [
-          0.16,
+          0.18,
           0.36,
-          0.52,
+          0.48,
           0.63
         ],
         "fuellhoehePixel": [
           0,
-          10,
+          11,
           33,
           37
         ],
         "schuetteln": [
-          5.92,
-          11.44,
-          12.57,
-          6.95
+          4.99,
+          10.91,
+          12.79,
+          7.88
         ]
       }
     },
@@ -816,12 +816,12 @@
       "seconds": 29,
       "evidence": {
         "zeilen": [
-          "Probe A negativ – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanon (Keton)",
-          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Butanal (Aldehyd)",
-          "Probe C – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Pentan-2-on (Keton)",
-          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanal (Aldehyd)",
-          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Ethanal (Aldehyd)",
-          "Probe F – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanon (Keton)"
+          "Probe A positiv – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Ethanal (Aldehyd)",
+          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanal (Aldehyd)",
+          "Probe C – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanon (Keton)",
+          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanon (Keton)",
+          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanal (Aldehyd)",
+          "Probe F – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Pentan-2-on (Keton)"
         ],
         "screenshot": "docs\\screenshots\\16-analysemodus-ergebnisuebersicht.png"
       }
@@ -909,20 +909,20 @@
       "seconds": 37,
       "evidence": {
         "vorher": {
-          "dark": 0.5138935386675594,
-          "mean": 160.98595246066145,
-          "std": 52.63405240408547,
-          "sat": 0.04360044678022527,
+          "dark": 0.5135587546032809,
+          "mean": 161.08878064947967,
+          "std": 52.57149206734248,
+          "sat": 0.043500512314596416,
           "aboveDark": 0,
-          "range": 153.13640000000004
+          "range": 152.27679999999998
         },
         "nachher": {
-          "dark": 0.4237053447798394,
-          "mean": 169.09832988091856,
-          "std": 47.383422271540425,
-          "sat": 0.055261860038226814,
+          "dark": 0.42315148158404875,
+          "mean": 169.1895695929094,
+          "std": 47.374251585279396,
+          "sat": 0.055297006691965654,
           "aboveDark": 0,
-          "range": 142.2808
+          "range": 142.2086
         },
         "farbe": {
           "h": 217,
@@ -968,7 +968,7 @@
         "zustand": {
           "place": "bath",
           "vol": 2,
-          "progress": 0.98,
+          "progress": 0.986,
           "temp": 80,
           "observable": true,
           "outcome": "positive",
@@ -979,9 +979,9 @@
         },
         "farbe": {
           "h": 10,
-          "s": 0.48,
-          "l": 0.47,
-          "c": 116
+          "s": 0.45,
+          "l": 0.48,
+          "c": 110
         },
         "screenshots": [
           "docs\\screenshots\\zucker-01-glucose-kristalle.png",
@@ -1034,6 +1034,37 @@
         "reihen": 2,
         "proben": 10,
         "screenshot": "docs\\screenshots\\zucker-00-labortisch-tablet.png"
+      }
+    },
+    {
+      "id": "GHS-1",
+      "title": "GHS-Symbole auf den Reagenzflaschen, per Schalter aus- und wieder einblendbar",
+      "status": "PASS",
+      "seconds": 2,
+      "evidence": {
+        "rotePixel": {
+          "an": 372,
+          "aus": 0,
+          "wieder": 372
+        },
+        "screenshots": [
+          "docs\\screenshots\\ghs-01-symbole-an.png",
+          "docs\\screenshots\\ghs-02-symbole-aus.png"
+        ]
+      }
+    },
+    {
+      "id": "GHS-2",
+      "title": "Gefahrstoffkarte (ⓘ) mit Piktogrammen, Signalwort und H-Sätzen im Wortlaut; Legende mit allen neun Symbolen",
+      "status": "PASS",
+      "seconds": 1,
+      "evidence": {
+        "legende": 9,
+        "screenshots": [
+          "docs\\screenshots\\ghs-03-gefahrstoffkarte-natronlauge.png",
+          "docs\\screenshots\\ghs-04-legende.png",
+          "docs\\screenshots\\ghs-05-stoffinfo-ethanal.png"
+        ]
       }
     }
   ]

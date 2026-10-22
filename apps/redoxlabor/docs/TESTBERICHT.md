@@ -1,5 +1,24 @@
 # Testbericht und PASS/HOLD-Abnahme – Redoxlabor
 
+## Nachtrag 3 (22.10.2026) – GHS-Kennzeichnung und Release 1.3.0
+
+**Umgesetzt:** amtliche GHS-Piktogramme auf den Reagenzflaschen (ein-/ausblendbar), Gefahrstoffinfo (ⓘ) mit Signalwort, H-Sätzen im Wortlaut, Schutzmaßnahmen und Quelle, Legende aller neun Symbole, Reinstoff-Einstufung in der Stoffinfo der Proben, Hinweis zu Ethanal (Carc. 1B; reale Schule: kein Schülerversuch nach RiSU; im virtuellen Labor zulässig). Einstufungen und Quellen: [CHEMIE.md](CHEMIE.md), Abschnitt 11.
+
+| Testart | Ergebnis |
+| --- | --- |
+| Unit-Tests | **74/74** – neu: 3 GHS-Tests (Vollständigkeit mit Quelle, Stichproben aus den Sicherheitsdatenblättern, eingebettete Piktogramme ohne Skripte/externe Verweise) |
+| Browser-Tests | **38/38** – neu: GHS-1 (Symbole auf den Flaschen, Schalter aus/an, Pixelmessung), GHS-2 (Gefahrstoffkarte Natronlauge, Legende mit 9 Symbolen, Stoffinfo Ethanal) |
+| Release 1.3.0 | zweiter Build byte-identisch, ZIP-Integrität OK (Web 12, SCORM 13 Einträge inkl. Manifest-Version 1.3.0), SCORM-Prüfung **9/9** gegen das fertige Paket |
+
+**Testanpassungen mit Begründung:**
+- *F-01 (Körnung der Cu₂O-Trübung):* Der Messwert flackert von Bild zu Bild (funkelnde Partikel). Eine Messreihe ergab je Lauf Einzelwerte von 2,37–4,17 bei Medianen von 3,0–3,5. Seit die dauerhaft aufsteigenden Bläschen entfernt wurden (Prüfung R-Grafik), lag der Einzelwert nahe der Schwelle. Gemessen wird jetzt der Median aus sieben Aufnahmen; die Schwelle (2 × klare Lösung) ist unverändert.
+- *TAB-Beschriftung:* Gewertet werden nur Überlauf und Umbrüche mitten im Wort, nicht ein Umbruch an einem Leerzeichen („Tartrat, / alkal.“). Das ⓘ-Eckabzeichen ragt absichtlich über den Kachelrand und wird nicht als Text gezählt.
+- *Absetzen im heißen Bad* auf höchstens 20 % begrenzt (Konvektion hält Cu₂O in Schwebe).
+
+**Nicht durchgeführt:** mebis-Test von 1.3.0, Test auf Schul-iPads mit Safari, fachdidaktische Prüfung der GHS-Texte durch die Lehrkraft.
+
+---
+
 ## Nachtrag 2 (22.10.2026) – mebis-Test 1.1.0 und Zucker
 
 **mebis-Test (durch die Lehrkraft, 22.10.2026):** `redoxlabor-1.1.0-scorm12.zip` wurde in mebis hochgeladen und durchgespielt. Rückmeldung: **keine Fehler** aufgefallen, „alles läuft soweit gut“. Gerät und Browser wurden nicht genannt. Damit ist der Import in einen echten mebis-Kurs erstmals erfolgreich erfolgt; ein gezielter Test auf Schul-iPads mit Safari ist dadurch nicht automatisch belegt.
@@ -201,4 +220,4 @@ Nach diesen Änderungen lief die vollständige Suite zweimal hintereinander mit 
 
 1. Build auf Schul-iPads in Safari öffnen (Querformat): kompletter Fehling- und Tollens-Versuch nur per Finger, Bildrate beobachten.
 2. Kurzer Klassentest (2–3 Schülergruppen) zu D-08.
-3. Danach `release/redoxlabor-1.2.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.
+3. Danach `release/redoxlabor-1.3.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.
