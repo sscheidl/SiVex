@@ -3,7 +3,9 @@
  *
  * Schulische Vereinfachung: Das Oxidationsprodukt wird als Carbonsäure mit
  * protonierter Carboxygruppe (R–COOH) geschrieben, obwohl im alkalischen
- * Milieu tatsächlich das Carboxylat-Ion überwiegt.
+ * Milieu tatsächlich das Carboxylat-Ion überwiegt. Beide Schreibweisen sind
+ * atom- und ladungsmäßig ausgeglichen; die fachlich genauere Form mit R–COO⁻
+ * steht in EQUATIONS_PRECISE und wird in der Musterlösung zusätzlich gezeigt.
  */
 (function (root, factory) {
   const api = factory();
@@ -85,6 +87,7 @@
   const HTML = {
     'R-CHO': 'R–CHO',
     'R-COOH': 'R–COOH',
+    'R-COO-': 'R–COO<sup>–</sup>',
     'OH-': 'OH<sup>–</sup>',
     'H2O': 'H<sub>2</sub>O',
     'e-': 'e<sup>–</sup>',
@@ -129,6 +132,34 @@
       total: {
         left: [{ n: 1, f: 'R-CHO' }, { n: 2, f: '[Ag(NH3)2]+' }, { n: 2, f: 'OH-' }],
         right: [{ n: 1, f: 'R-COOH' }, { n: 2, f: 'Ag' }, { n: 4, f: 'NH3' }, { n: 1, f: 'H2O' }]
+      }
+    }
+  };
+
+  /**
+   * Fachlich genauere Schreibweise im alkalischen Ansatz: Carboxylat-Ion statt
+   * Carbonsäure. Die Komplexierung von Cu(II) durch Tartrat bleibt vereinfacht.
+   * Vgl. RSC Education, „The silver mirror test with Tollens' reagent“.
+   */
+  const OXIDATION_PRECISE = {
+    left: [{ n: 1, f: 'R-CHO' }, { n: 3, f: 'OH-' }],
+    right: [{ n: 1, f: 'R-COO-' }, { n: 2, f: 'H2O' }, { n: 2, f: 'e-' }]
+  };
+  const EQUATIONS_PRECISE = {
+    fehling: {
+      oxidation: OXIDATION_PRECISE,
+      reduction: EQUATIONS.fehling.reduction,
+      total: {
+        left: [{ n: 1, f: 'R-CHO' }, { n: 2, f: 'Cu2+' }, { n: 5, f: 'OH-' }],
+        right: [{ n: 1, f: 'R-COO-' }, { n: 1, f: 'Cu2O' }, { n: 3, f: 'H2O' }]
+      }
+    },
+    tollens: {
+      oxidation: OXIDATION_PRECISE,
+      reduction: EQUATIONS.tollens.reduction,
+      total: {
+        left: [{ n: 1, f: 'R-CHO' }, { n: 2, f: '[Ag(NH3)2]+' }, { n: 3, f: 'OH-' }],
+        right: [{ n: 1, f: 'R-COO-' }, { n: 2, f: 'Ag' }, { n: 4, f: 'NH3' }, { n: 2, f: 'H2O' }]
       }
     }
   };
@@ -297,7 +328,7 @@
     return { left, right };
   }
 
-  const COOH_NOTE = 'Fachlicher Hinweis: Im alkalischen Reaktionsmilieu liegt die Carbonsäure tatsächlich überwiegend deprotoniert als Carboxylat-Ion (R–COO⁻) vor. In der Schule wird das Oxidationsprodukt vereinfacht als Carbonsäure R–COOH notiert. Die Komplexbildung (Kupfer-Tartrat-Komplex) wird in der vereinfachten Fehling-Gleichung nicht berücksichtigt.';
+  const COOH_NOTE = 'Schreibweise: Im alkalischen Reaktionsgemisch liegt das Oxidationsprodukt überwiegend als Carboxylat-Ion (R–COO⁻) vor. Hier wird es – wie im Unterricht üblich – vereinfacht als Carbonsäure R–COOH notiert. Diese Gleichungen sind trotzdem atom- und ladungsmäßig ausgeglichen; sie beschreiben nur die Teilchenform vereinfacht. Die Komplexbildung (Kupfer-Tartrat-Komplex) wird in der Fehling-Gleichung nicht berücksichtigt.';
 
-  return { parseFormula, balance, EQUATIONS, buildTrainer, checkStep, fieldsOf, trainerEquation, eqToHtml, html, COOH_NOTE, OX_OPTIONS };
+  return { parseFormula, balance, EQUATIONS, EQUATIONS_PRECISE, buildTrainer, checkStep, fieldsOf, trainerEquation, eqToHtml, html, COOH_NOTE, OX_OPTIONS };
 });

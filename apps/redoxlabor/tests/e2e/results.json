@@ -1,8 +1,8 @@
 {
-  "date": "2026-10-22T08:36:21.270Z",
-  "browser": "Chromium (Playwright 1.56.1)",
-  "durationSeconds": 167,
-  "passed": 26,
+  "date": "2026-10-22T13:55:58.068Z",
+  "browser": "msedge via Playwright 1.62.1, Version 155.0.4283.62",
+  "durationSeconds": 209,
+  "passed": 32,
   "failed": 0,
   "results": [
     {
@@ -11,7 +11,7 @@
       "status": "PASS",
       "seconds": 2,
       "evidence": {
-        "screenshot": "docs/screenshots/01-labortisch.png",
+        "screenshot": "docs\\screenshots\\01-labortisch.png",
         "counts": {
           "reagents": 5,
           "samples": 6,
@@ -29,15 +29,15 @@
           "h": 207,
           "s": 0.84,
           "l": 0.76,
-          "c": 101
+          "c": 102
         },
         "Fehling II (Reagenzglas 2)": {
-          "h": 205,
-          "s": 0.34,
+          "h": 207,
+          "s": 0.38,
           "l": 0.95,
-          "c": 9
+          "c": 10
         },
-        "screenshot": "docs/screenshots/02-fehling-I-und-II-vor-dem-Mischen.png"
+        "screenshot": "docs\\screenshots\\02-fehling-I-und-II-vor-dem-Mischen.png"
       }
     },
     {
@@ -53,8 +53,8 @@
           "c": 154
         },
         "screenshots": [
-          "docs/screenshots/02b-fehling-schichtung-beim-zugeben.png",
-          "docs/screenshots/03-fehling-tiefblau-nach-dem-Mischen.png"
+          "docs\\screenshots\\02b-fehling-schichtung-beim-zugeben.png",
+          "docs\\screenshots\\03-fehling-tiefblau-nach-dem-Mischen.png"
         ]
       }
     },
@@ -80,15 +80,48 @@
           "h": 230,
           "s": 0.79,
           "l": 0.4,
-          "c": 161
+          "c": 160
         }
+      }
+    },
+    {
+      "id": "F-02/U-02",
+      "title": "Propanal + Fehling nur per Antippen auf dem Labortisch (Touch, Tablet-Querformat)",
+      "status": "PASS",
+      "seconds": 22,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 3,
+          "progress": 0.989,
+          "temp": 80,
+          "observable": true,
+          "outcome": "positive",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "propanal"
+        },
+        "farbe": {
+          "h": 11,
+          "s": 0.47,
+          "l": 0.48,
+          "c": 115
+        },
+        "layout": {
+          "scrollW": 1180,
+          "innerW": 1180,
+          "canvasW": 868,
+          "panelW": 312
+        },
+        "screenshot": "docs\\screenshots\\09-tablet-querformat-1180x820.png"
       }
     },
     {
       "id": "N-01/C-05/T-06",
       "title": "Propanon + Fehling ohne Netzwerk: kein Cu₂O, Lösung bleibt blau",
       "status": "PASS",
-      "seconds": 23,
+      "seconds": 22,
       "evidence": {
         "zustand": {
           "place": "bath",
@@ -103,54 +136,37 @@
           "sample": "propanon"
         },
         "farbe": {
-          "h": 228,
-          "s": 0.61,
-          "l": 0.48,
-          "c": 151
+          "h": 229,
+          "s": 0.57,
+          "l": 0.5,
+          "c": 145
         },
-        "screenshot": "docs/screenshots/06-fehling-negativ-propanon.png"
+        "screenshot": "docs\\screenshots\\06-fehling-negativ-propanon.png"
       }
     },
     {
-      "id": "F-02/U-02",
-      "title": "Propanal + Fehling nur per Antippen auf dem Labortisch (Touch, Tablet-Querformat)",
+      "id": "U-02b/D-03/U-05",
+      "title": "Gestufte Hilfe per Touch, drei Stufen, kontextabhängig",
       "status": "PASS",
-      "seconds": 22,
+      "seconds": 2,
       "evidence": {
-        "zustand": {
-          "place": "bath",
-          "vol": 3,
-          "progress": 0.98,
-          "temp": 80,
-          "observable": true,
-          "outcome": "positive",
-          "phase": "observable",
-          "status": "ready",
-          "mirror": 0,
-          "sample": "propanal"
-        },
-        "farbe": {
-          "h": 12,
-          "s": 0.53,
-          "l": 0.47,
-          "c": 127
-        },
-        "layout": {
-          "scrollW": 1180,
-          "innerW": 1180,
-          "canvasW": 868,
-          "panelW": 312
-        },
-        "screenshot": "docs/screenshots/09-tablet-querformat-1180x820.png"
+        "kontextVorher": "Beobachtung möglich",
+        "kontextNachher": "Reagenzglas 3 ist leer",
+        "stufen": [
+          "HILFE 1 – DENKIMPULS\nWas hat sich im Vergleich zum Beginn verändert?",
+          "HILFE 2 – KONKRETISIERUNG\nHalte deine Beobachtung fest – Farbe, Trübung, Niederschlag. Ein",
+          "HILFE 3 – KONKRETE ANLEITUNG\nTippe auf „Beobachtung festhalten“."
+        ],
+        "screenshot": "docs\\screenshots\\13-hilfe-drei-stufen.png"
       }
     },
     {
       "id": "E-10",
       "title": "Korrekt durchgeführter negativer Nachweis wird erfolgreich ausgewertet",
       "status": "PASS",
-      "seconds": 2,
+      "seconds": 1,
       "evidence": {
-        "screenshot": "docs/screenshots/14-protokoll-negativ.png"
+        "screenshot": "docs\\screenshots\\14-protokoll-negativ.png"
       }
     },
     {
@@ -159,24 +175,8 @@
       "status": "PASS",
       "seconds": 0,
       "evidence": {
-        "anfragen": 9,
+        "anfragen": 10,
         "extern": 0
-      }
-    },
-    {
-      "id": "U-02b/D-03/U-05",
-      "title": "Gestufte Hilfe per Touch, drei Stufen, kontextabhängig",
-      "status": "PASS",
-      "seconds": 3,
-      "evidence": {
-        "kontextVorher": "Beobachtung möglich",
-        "kontextNachher": "Reagenzglas 3 ist leer",
-        "stufen": [
-          "Hilfe 1 – DenkimpulsWas hat sich im Vergleich zum Beginn verändert?",
-          "Hilfe 2 – KonkretisierungHalte deine Beobachtung fest – Farbe, Trübung, Niederschlag.",
-          "Hilfe 3 – Konkrete AnleitungTippe auf „Beobachtung festhalten“."
-        ],
-        "screenshot": "docs/screenshots/13-hilfe-drei-stufen.png"
       }
     },
     {
@@ -185,95 +185,108 @@
       "status": "PASS",
       "seconds": 15,
       "evidence": {
-        "endfarbe": {
-          "h": 10,
-          "s": 0.5,
-          "l": 0.46,
-          "c": 116
+        "fruehesteBeobachtung": {
+          "progress": 0.489,
+          "outcome": "positive"
         },
-        "farbstufen": 9,
+        "endfarbe": {
+          "h": 9,
+          "s": 0.54,
+          "l": 0.43,
+          "c": 118
+        },
+        "farbstufen": 10,
         "rauheit": {
-          "klareLoesung": 1.27,
-          "vorErwaermen": 1.49,
-          "ende": 3.62
+          "klareLoesung": 1.4,
+          "vorErwaermen": 1.1,
+          "ende": 3.23
         },
         "verlauf": [
           {
             "t": 0,
             "progress": 0,
-            "temp": 22,
+            "temp": 20,
             "h": 230,
-            "s": 0.8,
-            "l": 0.4,
-            "rough": 1.62
-          },
-          {
-            "t": 2,
-            "progress": 0.013,
-            "temp": 56,
-            "h": 229,
             "s": 0.79,
             "l": 0.4,
-            "rough": 0.98
+            "rough": 1
           },
           {
-            "t": 3.2,
-            "progress": 0.073,
-            "temp": 66,
-            "h": 220,
-            "s": 0.58,
-            "l": 0.49,
-            "rough": 0.85
+            "t": 1.4,
+            "progress": 0.002,
+            "temp": 48,
+            "h": 230,
+            "s": 0.63,
+            "l": 0.45,
+            "rough": 1.17
           },
           {
-            "t": 4.6,
-            "progress": 0.185,
-            "temp": 73,
-            "h": 201,
-            "s": 0.45,
-            "l": 0.48,
-            "rough": 3.66
+            "t": 2.7,
+            "progress": 0.037,
+            "temp": 62,
+            "h": 226,
+            "s": 0.75,
+            "l": 0.41,
+            "rough": 3.96
           },
           {
-            "t": 6.3,
-            "progress": 0.348,
-            "temp": 76,
-            "h": 120,
-            "s": 0.18,
-            "l": 0.54,
+            "t": 4.1,
+            "progress": 0.136,
+            "temp": 71,
+            "h": 211,
+            "s": 0.5,
+            "l": 0.56,
+            "rough": 3.4
+          },
+          {
+            "t": 5.4,
+            "progress": 0.26,
+            "temp": 75,
+            "h": 178,
+            "s": 0.29,
+            "l": 0.47,
+            "rough": 1.96
+          },
+          {
+            "t": 6.8,
+            "progress": 0.407,
+            "temp": 77,
+            "h": 80,
+            "s": 0.26,
+            "l": 0.52,
             "rough": 2.13
           },
           {
-            "t": 8.2,
-            "progress": 0.559,
+            "t": 8.4,
+            "progress": 0.596,
             "temp": 79,
-            "h": 41,
-            "s": 0.52,
-            "l": 0.55,
-            "rough": 3.51
+            "h": 36,
+            "s": 0.58,
+            "l": 0.57,
+            "rough": 4.27
           },
           {
             "t": 9.7,
-            "progress": 0.73,
+            "progress": 0.743,
             "temp": 79,
-            "h": 24,
-            "s": 0.57,
-            "l": 0.54,
-            "rough": 4.4
+            "h": 22,
+            "s": 0.56,
+            "l": 0.55,
+            "rough": 6.21
           },
           {
-            "t": 11.2,
-            "progress": 0.908,
+            "t": 11,
+            "progress": 0.899,
             "temp": 80,
-            "h": 15,
-            "s": 0.54,
-            "l": 0.5,
-            "rough": 3.7
+            "h": 14,
+            "s": 0.49,
+            "l": 0.55,
+            "rough": 5.74
           }
         ],
         "screenshots": [
-          "docs/screenshots/04-fehling-positiv-waehrend-Farbumschlag.png",
-          "docs/screenshots/05-fehling-ziegelrot-ausgebildet.png",
+          "docs\\screenshots\\04-fehling-positiv-waehrend-Farbumschlag.png",
+          "docs\\screenshots\\05-fehling-ziegelrot-ausgebildet.png",
           "docs/screenshots/seq-fehling-ethanal.png"
         ]
       }
@@ -282,22 +295,22 @@
       "id": "U-06/D-04/D-05",
       "title": "Beobachtung eintragen und auswerten (positiv)",
       "status": "PASS",
-      "seconds": 2,
+      "seconds": 1,
       "evidence": {
-        "screenshot": "docs/screenshots/12-protokoll-auswertung-positiv.png"
+        "screenshot": "docs\\screenshots\\12-protokoll-auswertung-positiv.png"
       }
     },
     {
       "id": "U-07/D-06/D-07",
       "title": "Redox-Trainer bearbeiten (6 Schritte) und Musterlösung anzeigen",
       "status": "PASS",
-      "seconds": 5,
+      "seconds": 1,
       "evidence": {
         "schritte": 6,
         "bilanz": "Atom links rechts R 1 1 C 1 1 H 5 5 O 5 5 Cu 2 2 Ladung 0 0",
         "screenshots": [
-          "docs/screenshots/10-redox-auswertung.png",
-          "docs/screenshots/10b-redox-musterloesung.png"
+          "docs\\screenshots\\10-redox-auswertung.png",
+          "docs\\screenshots\\10b-redox-musterloesung.png"
         ]
       }
     },
@@ -314,45 +327,45 @@
       "id": "E-02/Tollens-Vorbereitung",
       "title": "AgNO₃ → brauner Ag₂O-Niederschlag mit NaOH → klare Lösung durch NH₃",
       "status": "PASS",
-      "seconds": 13,
+      "seconds": 12,
       "evidence": {
         "AgNO3": {
-          "h": 205,
-          "s": 0.34,
+          "h": 207,
+          "s": 0.38,
           "l": 0.95,
-          "c": 9
+          "c": 10
         },
         "nach NaOH": {
-          "h": 27,
-          "s": 0.23,
+          "h": 26,
+          "s": 0.22,
           "l": 0.41,
-          "c": 47
+          "c": 46
         },
         "nach 1× NH3": {
           "h": 27,
           "s": 0.13,
-          "l": 0.54,
+          "l": 0.53,
           "c": 31
         },
         "nach 2× NH3": {
-          "h": 204,
-          "s": 0.33,
+          "h": 208,
+          "s": 0.36,
           "l": 0.95,
-          "c": 8
+          "c": 9
         },
-        "screenshot": "docs/screenshots/07a-tollens-silberoxid-niederschlag.png"
+        "screenshot": "docs\\screenshots\\07a-tollens-silberoxid-niederschlag.png"
       }
     },
     {
       "id": "F-04/U-01",
       "title": "Butanal + Tollens per Drag-and-drop mit der Maus",
       "status": "PASS",
-      "seconds": 36,
+      "seconds": 34,
       "evidence": {
         "zustand": {
           "place": "bath",
           "vol": 5,
-          "progress": 0.973,
+          "progress": 0.97,
           "temp": 60,
           "observable": true,
           "outcome": "positive",
@@ -362,12 +375,12 @@
           "sample": "butanal"
         },
         "belag": {
-          "dark": 0.47271509876129897,
-          "mean": 164.3302077000338,
-          "std": 51.52777422034189,
-          "sat": 0.045627405706812146,
+          "dark": 0.5162370271175092,
+          "mean": 160.77306488115028,
+          "std": 52.72999194783515,
+          "sat": 0.0445210713169712,
           "aboveDark": 0,
-          "range": 149.63379999999995
+          "range": 153.0642
         }
       }
     },
@@ -375,148 +388,148 @@
       "id": "F-03/C-07/C-09/V-05/V-06",
       "title": "Ethanal + Tollens im Wasserbad: Silberspiegel wächst auf der Innenwand",
       "status": "PASS",
-      "seconds": 30,
+      "seconds": 27,
       "evidence": {
         "vorher": {
           "dark": 0.00033478406427854036,
-          "mean": 242.8969609641786,
-          "std": 4.0380591818439955,
-          "sat": 0.03213171911946161,
+          "mean": 242.90744673585465,
+          "std": 4.083244710993866,
+          "sat": 0.03486590806924309,
           "aboveDark": 0,
-          "range": 14.2808
+          "range": 13.706000000000017
         },
         "ende": {
-          "dark": 0.44928021426180115,
-          "mean": 167.10087037161085,
-          "std": 48.36734640818818,
-          "sat": 0.04271948522003791,
+          "dark": 0.48610646133244056,
+          "mean": 163.52034797455508,
+          "std": 51.0633417839609,
+          "sat": 0.04126405473589606,
           "aboveDark": 0,
-          "range": 141.5616
+          "range": 148.0642
         },
         "stufen": 6,
         "verlauf": [
           {
             "t": 0,
-            "progress": 0,
+            "progress": 0.006,
             "mirror": 0,
             "dark": 0,
-            "std": 7,
-            "sat": 0.14,
+            "std": 4,
+            "sat": 0.04,
             "above": 0
           },
           {
-            "t": 1.4,
-            "progress": 0.001,
+            "t": 1.3,
+            "progress": 0.009,
             "mirror": 0,
             "dark": 0,
-            "std": 7,
-            "sat": 0.14,
+            "std": 4,
+            "sat": 0.04,
             "above": 0
           },
           {
-            "t": 2.7,
-            "progress": 0.023,
+            "t": 2.6,
+            "progress": 0.031,
             "mirror": 0,
             "dark": 0,
-            "std": 7,
-            "sat": 0.14,
+            "std": 4,
+            "sat": 0.04,
             "above": 0
           },
           {
-            "t": 4,
-            "progress": 0.077,
+            "t": 3.9,
+            "progress": 0.087,
             "mirror": 0,
             "dark": 0,
-            "std": 8,
-            "sat": 0.15,
-            "above": 0
-          },
-          {
-            "t": 5.4,
-            "progress": 0.156,
-            "mirror": 0.02,
-            "dark": 0,
-            "std": 13,
-            "sat": 0.13,
-            "above": 0
-          },
-          {
-            "t": 6.8,
-            "progress": 0.245,
-            "mirror": 0.09,
-            "dark": 0.129,
-            "std": 19,
-            "sat": 0.1,
-            "above": 0
-          },
-          {
-            "t": 8.6,
-            "progress": 0.374,
-            "mirror": 0.26,
-            "dark": 0.572,
-            "std": 25,
-            "sat": 0.08,
-            "above": 0
-          },
-          {
-            "t": 9.9,
-            "progress": 0.463,
-            "mirror": 0.4,
-            "dark": 0.675,
-            "std": 31,
-            "sat": 0.05,
-            "above": 0
-          },
-          {
-            "t": 11.4,
-            "progress": 0.567,
-            "mirror": 0.58,
-            "dark": 0.535,
-            "std": 41,
+            "std": 5,
             "sat": 0.03,
             "above": 0
           },
           {
-            "t": 12.7,
-            "progress": 0.659,
-            "mirror": 0.73,
-            "dark": 0.479,
+            "t": 5.2,
+            "progress": 0.167,
+            "mirror": 0.05,
+            "dark": 0.001,
+            "std": 10,
+            "sat": 0.02,
+            "above": 0
+          },
+          {
+            "t": 6.7,
+            "progress": 0.267,
+            "mirror": 0.15,
+            "dark": 0.058,
+            "std": 18,
+            "sat": 0.01,
+            "above": 0
+          },
+          {
+            "t": 8.1,
+            "progress": 0.363,
+            "mirror": 0.29,
+            "dark": 0.277,
+            "std": 26,
+            "sat": 0.01,
+            "above": 0
+          },
+          {
+            "t": 9.3,
+            "progress": 0.455,
+            "mirror": 0.45,
+            "dark": 0.502,
+            "std": 34,
+            "sat": 0.01,
+            "above": 0
+          },
+          {
+            "t": 10.7,
+            "progress": 0.554,
+            "mirror": 0.62,
+            "dark": 0.519,
+            "std": 43,
+            "sat": 0.02,
+            "above": 0
+          },
+          {
+            "t": 11.9,
+            "progress": 0.648,
+            "mirror": 0.78,
+            "dark": 0.475,
             "std": 50,
             "sat": 0.04,
             "above": 0
           },
           {
-            "t": 14.2,
-            "progress": 0.766,
-            "mirror": 0.88,
-            "dark": 0.478,
+            "t": 13.3,
+            "progress": 0.749,
+            "mirror": 0.91,
+            "dark": 0.501,
             "std": 53,
-            "sat": 0.05,
+            "sat": 0.04,
             "above": 0
           },
           {
-            "t": 15.5,
-            "progress": 0.857,
-            "mirror": 0.96,
-            "dark": 0.497,
+            "t": 14.5,
+            "progress": 0.844,
+            "mirror": 0.98,
+            "dark": 0.515,
             "std": 53,
-            "sat": 0.05,
+            "sat": 0.04,
             "above": 0
           },
           {
-            "t": 16.8,
-            "progress": 0.954,
+            "t": 15.8,
+            "progress": 0.939,
             "mirror": 1,
-            "dark": 0.475,
-            "std": 51,
-            "sat": 0.05,
+            "dark": 0.517,
+            "std": 53,
+            "sat": 0.04,
             "above": 0
           }
         ],
         "screenshots": [
-          "docs/screenshots/07-tollens-beginnende-silberabscheidung.png",
-          "docs/screenshots/08-tollens-silberspiegel-ausgebildet.png",
-          "docs/screenshots/08b-tollens-silberspiegel-im-staender.png",
+          "docs\\screenshots\\07-tollens-beginnende-silberabscheidung.png",
+          "docs\\screenshots\\08-tollens-silberspiegel-ausgebildet.png",
+          "docs\\screenshots\\08b-tollens-silberspiegel-im-staender.png",
           "docs/screenshots/seq-tollens-ethanal.png"
         ]
       }
@@ -525,7 +538,7 @@
       "id": "N-03",
       "title": "Ethanal + nur Fehling I + Wasserbad: kein gültiger Nachweis",
       "status": "PASS",
-      "seconds": 21,
+      "seconds": 20,
       "evidence": {
         "zustand": {
           "place": "bath",
@@ -540,10 +553,10 @@
           "sample": "ethanal"
         },
         "farbe": {
-          "h": 206,
-          "s": 0.79,
-          "l": 0.77,
-          "c": 95
+          "h": 207,
+          "s": 0.81,
+          "l": 0.82,
+          "c": 74
         }
       }
     },
@@ -551,7 +564,7 @@
       "id": "N-05",
       "title": "Ethanal + unvollständiges Tollens-Reagenz (ohne Ammoniak) + Wasserbad: kein Silberspiegel",
       "status": "PASS",
-      "seconds": 25,
+      "seconds": 24,
       "evidence": {
         "zustand": {
           "place": "bath",
@@ -587,13 +600,13 @@
         },
         "belag": {
           "dark": 0.00033478406427854036,
-          "mean": 225.0784802142591,
-          "std": 7.675719144762117,
-          "sat": 0.14428781957378436,
+          "mean": 243.3164223635745,
+          "std": 4.234212760792392,
+          "sat": 0.028988798067125777,
           "aboveDark": 0,
-          "range": 24.747800000000012
+          "range": 14.706000000000017
         },
-        "screenshot": "docs/screenshots/15-tollens-negativ-butanon.png"
+        "screenshot": "docs\\screenshots\\15-tollens-negativ-butanon.png"
       }
     },
     {
@@ -627,9 +640,9 @@
       "id": "V-08/T-05",
       "title": "Layout bei Tablet- und Desktopgrößen (kein horizontales Scrollen, Bedienelemente sichtbar)",
       "status": "PASS",
-      "seconds": 6,
+      "seconds": 5,
       "evidence": {
-        "screenshot": "docs/screenshots/09b-tablet-1024x768.png",
+        "screenshot": "docs\\screenshots\\09b-tablet-1024x768.png",
         "1024x768": {
           "scrollW": 1024,
           "innerW": 1024,
@@ -706,7 +719,7 @@
       "id": "U-03/E-09",
       "title": "Experiment zurücksetzen und erneut durchführen",
       "status": "PASS",
-      "seconds": 7,
+      "seconds": 6,
       "evidence": {
         "nachReset": [
           0,
@@ -721,7 +734,7 @@
       "id": "U-04/D-01/D-02",
       "title": "Wechsel Lern-/Analysemodus, Proben A–F, neues Mischen beim Neustart",
       "status": "PASS",
-      "seconds": 2,
+      "seconds": 1,
       "evidence": {
         "lernmodus": [
           "Ethanal",
@@ -745,27 +758,29 @@
       "id": "V-02/E-07/V-07",
       "title": "Zugeben und Schütteln sind bewegte Animationen (Pixelmessung über die Zeit)",
       "status": "PASS",
-      "seconds": 9,
+      "seconds": 8,
       "evidence": {
-        "ruhe": 0.056,
+        "ruhe": 0.05,
         "pipettenbewegung": [
-          0.42,
-          0.64,
-          0.59,
-          0.46
+          0.15,
+          0.33,
+          0.54,
+          0.6,
+          0.45,
+          0.24
         ],
         "fuellhoehePixel": [
           0,
-          2,
-          32,
+          27,
+          36,
           38,
-          40
+          39
         ],
         "schuetteln": [
-          6.01,
-          11.53,
-          12.04,
-          4.92
+          4.35,
+          9.04,
+          11.83,
+          7.88
         ]
       }
     },
@@ -788,8 +803,8 @@
           "sample": null
         },
         "screenshots": [
-          "docs/screenshots/11a-siedeverzug.png",
-          "docs/screenshots/11b-sicherheitshinweis.png"
+          "docs\\screenshots\\11a-siedeverzug.png",
+          "docs\\screenshots\\11b-sicherheitshinweis.png"
         ]
       }
     },
@@ -797,17 +812,144 @@
       "id": "D-02b",
       "title": "Analysemodus: zwei unbekannte Proben untersuchen, vergleichen, einordnen",
       "status": "PASS",
-      "seconds": 40,
+      "seconds": 29,
       "evidence": {
         "zeilen": [
-          "Probe A negativ – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanon (Keton)",
-          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Butanal (Aldehyd)",
+          "Probe A positiv – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Ethanal (Aldehyd)",
+          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanal (Aldehyd)",
           "Probe C – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Pentan-2-on (Keton)",
-          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanon (Keton)",
-          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Ethanal (Aldehyd)",
-          "Probe F – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanal (Aldehyd)"
+          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanon (Keton)",
+          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanal (Aldehyd)",
+          "Probe F – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanon (Keton)"
         ],
-        "screenshot": "docs/screenshots/16-analysemodus-ergebnisuebersicht.png"
+        "screenshot": "docs\\screenshots\\16-analysemodus-ergebnisuebersicht.png"
+      }
+    },
+    {
+      "id": "R3",
+      "title": "Validierungsfehler: Eingaben bleiben erhalten, fehlende Teile markiert, Fokus auf erstem fehlenden Feld",
+      "status": "PASS",
+      "seconds": 8,
+      "evidence": {
+        "nachFehler": {
+          "error": true,
+          "method": "fehling",
+          "obs": [
+            "tiefblau"
+          ],
+          "note": "Noch nicht erwärmt.",
+          "missing": [
+            "result",
+            "interp",
+            "cls"
+          ],
+          "focus": "result"
+        },
+        "screenshot": "docs\\screenshots\\review-r3-entwurf-bleibt.png"
+      }
+    },
+    {
+      "id": "R4",
+      "title": "Frühes Protokoll wird als Zwischenstand gekennzeichnet; weiterlaufender Versuch ist erneut auswertbar",
+      "status": "PASS",
+      "seconds": 15,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 3,
+          "progress": 1,
+          "temp": 80,
+          "observable": true,
+          "outcome": "positive",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "ethanal"
+        },
+        "phase": "Zustand 8/10: Beobachtung möglich Dein Protokoll ist ein Zwischenstand – der Versuch hat sich seitdem verändert.",
+        "screenshot": "docs\\screenshots\\review-r4-zwischenstand.png"
+      }
+    },
+    {
+      "id": "LUPE-neutral",
+      "title": "Lupe zeigt das Reagenzglas im Wasserbad vor neutralem, weißem Hintergrund",
+      "status": "PASS",
+      "seconds": 0,
+      "evidence": {
+        "pixel": [
+          [
+            242,
+            245,
+            247
+          ],
+          [
+            236,
+            240,
+            243
+          ],
+          [
+            246,
+            248,
+            250
+          ],
+          [
+            239,
+            243,
+            246
+          ]
+        ],
+        "screenshot": "docs\\screenshots\\review-lupe-neutral.png"
+      }
+    },
+    {
+      "id": "R2",
+      "title": "Silberspiegel bleibt nach Zugabe von Fehling I erhalten, keine ziegelrote Trübung",
+      "status": "PASS",
+      "seconds": 37,
+      "evidence": {
+        "vorher": {
+          "dark": 0.5122196183461667,
+          "mean": 161.0829102778694,
+          "std": 52.78923301239057,
+          "sat": 0.04358804288124301,
+          "aboveDark": 0,
+          "range": 153.13640000000004
+        },
+        "nachher": {
+          "dark": 0.4237053447798394,
+          "mean": 169.32296477429966,
+          "std": 47.58884634091135,
+          "sat": 0.055164072374174235,
+          "aboveDark": 0,
+          "range": 142.2808
+        },
+        "farbe": {
+          "h": 217,
+          "s": 0.04,
+          "l": 0.48,
+          "c": 10
+        },
+        "screenshot": "docs\\screenshots\\review-r2-silber-bleibt.png"
+      }
+    },
+    {
+      "id": "TAB-Beschriftung-1024",
+      "title": "Reagenzkacheln ohne Wortabbrüche oder Überlauf (1024×768); Geräteleiste sichtbar",
+      "status": "PASS",
+      "seconds": 0,
+      "evidence": {
+        "kacheln": 10,
+        "screenshot": "docs\\screenshots\\review-panel-1024x768.png"
+      }
+    },
+    {
+      "id": "TAB-Beschriftung-1180",
+      "title": "Reagenzkacheln ohne Wortabbrüche oder Überlauf (1180×820); Geräteleiste sichtbar",
+      "status": "PASS",
+      "seconds": 0,
+      "evidence": {
+        "kacheln": 10,
+        "screenshot": "docs\\screenshots\\review-panel-1180x820.png"
       }
     }
   ]

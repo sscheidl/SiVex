@@ -158,6 +158,10 @@ const probe = (page, kind) => page.evaluate((k) => window.__probe(k), kind);
 async function waitObservable(page, id, timeout = 45000) {
   await page.waitForFunction((i) => window.__tube(i).observable, id, { timeout, polling: 250 });
 }
+// Reaktion praktisch abgeschlossen (ein positiver Befund ist schon vorher möglich)
+async function waitComplete(page, id, timeout = 60000) {
+  await page.waitForFunction((i) => window.__tube(i).progress >= 0.97, id, { timeout, polling: 250 });
+}
 async function shot(page, name, clip) { const f = path.join(SHOTS, name); await page.screenshot(clip ? { path: f, clip } : { path: f }); return path.relative(APP, f); }
 async function lupeClip(page) {
   return page.evaluate(() => {
@@ -283,7 +287,8 @@ async function scenarioFehlingEthanal(browser) {
         frames.push({ png: await page.screenshot({ clip }), caption: `t=${series[series.length - 1].t}s · ${s.temp} °C · Umsatz ${Math.round(s.progress * 100)} %` });
       }
       if (!midShot && s.progress >= 0.4) midShot = await shot(page, '04-fehling-positiv-waehrend-Farbumschlag.png');
-      if (s.observable) break;
+      if (s.observable && ev.firstObservable == null) ev.firstObservable = { progress: s.progress, outcome: s.outcome };
+      if (s.progress >= 0.97) break;
       await sleep(400);
     }
     const end = series[series.length - 1];
@@ -292,6 +297,8 @@ async function scenarioFehlingEthanal(browser) {
     const f = await shot(page, '05-fehling-ziegelrot-ausgebildet.png');
     const sheet = await contactSheet(browser, frames, 'Fehling-Probe mit Ethanal – Lupe zu verschiedenen Zeitpunkten (Echtzeit-Rendering)', 'seq-fehling-ethanal.png');
     assert(end.progress >= 0.97, 'Reaktion nicht abgeschlossen: ' + JSON.stringify(end));
+    // R5: positiver Befund schon bei deutlich sichtbarem Cu₂O, nicht erst bei vollständigem Umsatz
+    assert(ev.firstObservable && ev.firstObservable.outcome === 'positive' && ev.firstObservable.progress < 0.97, 'früheste Beobachtung: ' + JSON.stringify(ev.firstObservable));
     const final = hsl((await probe(page, 'color')).rgb);
     assert(final.h <= 25 || final.h >= 350, 'Endfarbe nicht ziegelrot: ' + JSON.stringify(final));
     const buckets = new Set(series.map((x) => Math.round(x.h / 20)));
@@ -301,7 +308,7 @@ async function scenarioFehlingEthanal(browser) {
     // Körnung der Cu₂O-Suspension gegenüber der klaren tiefblauen Lösung (C-03)
     assert(endP.rough >= ev.clearRough * 2, `keine Trübung/Körnung messbar (Rauheit klar ${ev.clearRough.toFixed(2)} → ${endP.rough.toFixed(2)})`);
     ev.series = series;
-    return { endfarbe: final, farbstufen: buckets.size, rauheit: { klareLoesung: +ev.clearRough.toFixed(2), vorErwaermen: +start.rough.toFixed(2), ende: +endP.rough.toFixed(2) }, verlauf: series.filter((_, i) => i % 3 === 0), screenshots: [midShot, f, sheet] };
+    return { fruehesteBeobachtung: ev.firstObservable, endfarbe: final, farbstufen: buckets.size, rauheit: { klareLoesung: +ev.clearRough.toFixed(2), vorErwaermen: +start.rough.toFixed(2), ende: +endP.rough.toFixed(2) }, verlauf: series.filter((_, i) => i % 3 === 0), screenshots: [midShot, f, sheet] };
   });
   await test('U-06/D-04/D-05', 'Beobachtung eintragen und auswerten (positiv)', async () => {
     await click(page, '[data-action="record"]');
@@ -360,7 +367,7 @@ async function scenarioPropanalTouch(browser) {
     assert(s0.place === 'bath', 'nicht im Wasserbad: ' + s0.place);
     await page.waitForFunction(() => window.__tube(2).progress > 0.4, null, { timeout: 40000 });
     const f = await shot(page, '09-tablet-querformat-1180x820.png');
-    await waitObservable(page, 2);
+    await waitComplete(page, 2);
     const s = await tube(page, 2);
     assert(s.outcome === 'positive', 'Ergebnis ' + s.outcome);
     const c = hsl((await probe(page, 'color')).rgb);
@@ -451,7 +458,7 @@ async function scenarioTollensEthanal(browser) {
     await click(page, '[data-sample="ethanal"]');
     await sleep(3000);
     const before = await probe(page, 'mirror');
-    assert((await tube(page, 2)).progress === 0, 'Reaktion vor dem Erwärmen');
+    assert((await tube(page, 2)).progress < 0.05, 'vor dem Erwärmen höchstens beginnende Reaktion');
     await click(page, '[data-action="bath"]');
     const clip = await lupeClip(page);
     const series = [], frames = [];
@@ -465,7 +472,7 @@ async function scenarioTollensEthanal(browser) {
         frames.push({ png: await page.screenshot({ clip }), caption: `t=${series[series.length - 1].t}s · ${s.temp} °C · Umsatz ${Math.round(s.progress * 100)} %` });
       }
       if (!early && s.progress >= 0.22) early = await shot(page, '07-tollens-beginnende-silberabscheidung.png');
-      if (s.observable) break;
+      if (s.progress >= 0.97) break;
       await sleep(400);
     }
     await sleep(1200);
@@ -505,7 +512,7 @@ async function scenarioTollensButanalDrag(browser) {
     assert(s0.vol === 5 && s0.status === 'ready', JSON.stringify(s0));
     await drag(page, { type: 'tube', id: 3 }, { type: 'bath' });
     assert((await tube(page, 3)).place === 'bath', 'nicht ins Bad gezogen');
-    await waitObservable(page, 3);
+    await waitComplete(page, 3);
     const s = await tube(page, 3);
     const m = await probe(page, 'mirror');
     assert(s.outcome === 'positive' && s.mirror > 0.95 && m.dark > 0.3, JSON.stringify({ s, m }));
@@ -702,6 +709,7 @@ async function scenarioBump(browser) {
   await test('OPT-Siedeverzug', 'Optional: Direktes Erhitzen in der Flamme → Siedeverzug + Sicherheitshinweis', async () => {
     await click(page, '[data-tube="4"]');
     await click(page, '[data-reagent="fehling1"]'); await click(page, '[data-reagent="fehling2"]');
+    await page.click('details.more summary');
     await click(page, '[data-action="burner"]');
     await click(page, '[data-action="flame"]');
     await page.waitForFunction(() => window.RedoxLab.lab.state.op && window.RedoxLab.lab.state.op.type === 'bump', null, { timeout: 10000 });
@@ -742,9 +750,137 @@ async function scenarioResponsive(browser) {
   });
 }
 
+// Prüfung vom 22.10.2026: Formularentwurf (R3), Zwischenstand (R4), neutrale Lupe,
+// Silber bleibt nach Fehling-I-Zugabe (R2), Beschriftung der Reagenzkacheln auf dem Tablet
+async function scenarioReviewFixes(browser) {
+  {
+    const { page, errors, context } = await newPage(browser);
+    await test('R3', 'Validierungsfehler: Eingaben bleiben erhalten, fehlende Teile markiert, Fokus auf erstem fehlenden Feld', async () => {
+      await fehlingByMouse(page, 1, 'ethanal');
+      await click(page, '[data-action="record"]');
+      await page.check('#protoForm input[name="method"][value="fehling"]');
+      await page.check('#protoForm input[name="obs"][value="tiefblau"]');
+      await page.fill('#protoForm textarea[name="note"]', 'Noch nicht erwärmt.');
+      await page.click('#protoForm button[type="submit"]');
+      await sleep(200);
+      const st = await page.evaluate(() => ({
+        error: !!document.querySelector('.note.bad'),
+        method: (document.querySelector('#protoForm input[name="method"]:checked') || {}).value || null,
+        obs: Array.from(document.querySelectorAll('#protoForm input[name="obs"]:checked')).map((i) => i.value),
+        note: document.querySelector('#protoForm textarea[name="note"]').value,
+        missing: Array.from(document.querySelectorAll('#protoForm fieldset.missing')).map((f) => f.dataset.field),
+        focus: document.activeElement && document.activeElement.closest('fieldset') ? document.activeElement.closest('fieldset').dataset.field : null
+      }));
+      assert(st.error && st.method === 'fehling' && st.obs.join() === 'tiefblau' && st.note === 'Noch nicht erwärmt.', JSON.stringify(st));
+      assert(st.missing.join() === 'result,interp,cls' && st.focus === 'result', JSON.stringify(st));
+      const f = await shot(page, 'review-r3-entwurf-bleibt.png');
+      // Schließen und erneut öffnen: Entwurf bleibt
+      await page.click('#drawerClose');
+      await click(page, '[data-action="record"]');
+      const again = await page.evaluate(() => document.querySelector('#protoForm textarea[name="note"]').value);
+      assert(again === 'Noch nicht erwärmt.', 'Entwurf nach erneutem Öffnen: ' + again);
+      return { nachFehler: st, screenshot: f };
+    });
+    await test('R4', 'Frühes Protokoll wird als Zwischenstand gekennzeichnet; weiterlaufender Versuch ist erneut auswertbar', async () => {
+      await page.check('#protoForm input[name="result"][value="ungueltig"]');
+      await page.check('#protoForm input[name="interp"][value="keineAussage"]');
+      await page.check('#protoForm input[name="cls"][value="keineAussage"]');
+      await page.click('#protoForm button[type="submit"]');
+      await page.waitForSelector('text=Zwischenstand');
+      await page.click('[data-newform="1"]');
+      await click(page, '[data-action="bath"]');
+      await waitComplete(page, 1);
+      await sleep(500);
+      const s = await tube(page, 1);
+      const phase = await page.locator('#phaseBox').innerText();
+      assert(s.outcome === 'positive' && s.phase === 'observable', JSON.stringify(s));
+      assert(/Zwischenstand/.test(phase), 'Phasenhinweis: ' + phase);
+      await page.click('#btnEval');
+      await page.waitForSelector('text=erneut beobachten und auswerten');
+      await sleep(600); // Einblendanimation des Auswertungsbereichs abwarten
+      const f = await shot(page, 'review-r4-zwischenstand.png');
+      await page.click('#drawerClose');
+      return { zustand: s, phase: phase.replace(/\s+/g, ' '), screenshot: f };
+    });
+    await test('LUPE-neutral', 'Lupe zeigt das Reagenzglas im Wasserbad vor neutralem, weißem Hintergrund', async () => {
+      const px = await page.evaluate(() => {
+        const { renderer } = window.RedoxLab;
+        const p = renderer.probe();
+        const canvas = document.getElementById('lab');
+        const rect = canvas.getBoundingClientRect(); const k = canvas.width / rect.width;
+        const ctx = canvas.getContext('2d');
+        return [[-150, -30], [150, -30], [-150, -150], [150, -150]].map(([dx, dy]) => {
+          const cl = p.toClient(p.cx + dx, p.by + dy);
+          const d = ctx.getImageData(Math.round((cl.x - rect.left) * k), Math.round((cl.y - rect.top) * k), 1, 1).data;
+          return [d[0], d[1], d[2]];
+        });
+      });
+      const tinted = px.filter(([r, g, b]) => Math.min(r, g, b) < 215 || Math.max(r, g, b) - Math.min(r, g, b) > 14);
+      assert((await tube(page, 1)).place === 'bath', 'Glas nicht im Bad');
+      assert(tinted.length === 0, 'Hintergrund getönt: ' + JSON.stringify(px));
+      const f = await shot(page, 'review-lupe-neutral.png', await lupeClip(page));
+      assert(errors.length === 0, errors.join('; '));
+      return { pixel: px, screenshot: f };
+    });
+    await context.close();
+  }
+  {
+    const { page, errors, context } = await newPage(browser);
+    await test('R2', 'Silberspiegel bleibt nach Zugabe von Fehling I erhalten, keine ziegelrote Trübung', async () => {
+      await click(page, '[data-hotplate="60"]');
+      await click(page, '[data-tube="2"]');
+      for (const r of ['agno3', 'naoh', 'nh3', 'nh3']) await click(page, `[data-reagent="${r}"]`);
+      await click(page, '[data-sample="ethanal"]');
+      await click(page, '[data-action="bath"]');
+      await waitComplete(page, 2);
+      await click(page, '[data-action="rack"]');
+      await sleep(1500);
+      const before = await probe(page, 'mirror');
+      await click(page, '[data-reagent="fehling1"]');
+      await sleep(3000);
+      const after = await probe(page, 'mirror');
+      const s = await tube(page, 2);
+      const c = hsl((await probe(page, 'color')).rgb);
+      assert(s.status === 'foreign' && s.mirror > 0.95, JSON.stringify(s));
+      assert(after.dark > 0.3 && after.dark > before.dark * 0.7, `Belag verschwunden: ${before.dark.toFixed(2)} → ${after.dark.toFixed(2)}`);
+      assert(!((c.h <= 25 || c.h >= 345) && c.s > 0.45), 'ziegelrote Färbung: ' + JSON.stringify(c));
+      const f = await shot(page, 'review-r2-silber-bleibt.png');
+      assert(errors.length === 0, errors.join('; '));
+      return { vorher: before, nachher: after, farbe: c, screenshot: f };
+    });
+    await context.close();
+  }
+  for (const [w, h] of [[1024, 768], [1180, 820]]) {
+    const { page, errors, context } = await newPage(browser, { viewport: { width: w, height: h }, hasTouch: true });
+    await test('TAB-Beschriftung-' + w, `Reagenzkacheln ohne Wortabbrüche oder Überlauf (${w}×${h}); Geräteleiste sichtbar`, async () => {
+      await click(page, '[data-tube="1"]');
+      const m = await page.evaluate(() => {
+        const out = [];
+        for (const b of document.querySelectorAll('.reagents .sub-btn')) {
+          for (const el of b.querySelectorAll('span, small')) {
+            const lh = parseFloat(getComputedStyle(el).lineHeight) || 14;
+            const lines = Math.round(el.getBoundingClientRect().height / lh);
+            out.push({ id: b.dataset.reagent, text: el.textContent, overflow: el.scrollWidth > el.clientWidth + 1 || b.scrollWidth > b.clientWidth + 1, lines });
+          }
+        }
+        const dev = document.querySelector('.devices-card').getBoundingClientRect();
+        return { items: out, devicesVisible: dev.bottom <= innerHeight + 1 && dev.top < innerHeight };
+      });
+      const bad = m.items.filter((x) => x.overflow || (x.lines > 1 && !/­/.test(x.text)));
+      assert(bad.length === 0, 'Umbrüche/Überlauf: ' + JSON.stringify(bad));
+      assert(m.devicesVisible, 'Wasserbad-Steuerung nicht sichtbar');
+      const f = await shot(page, `review-panel-${w}x${h}.png`);
+      assert(errors.length === 0, errors.join('; '));
+      return { kacheln: m.items.length, screenshot: f };
+    });
+    await context.close();
+  }
+}
+
 // ------------------------------------------------------------------ Ablauf
 const server = await serve(ROOT, PORT);
-const browser = await chromium.launch();
+const CHANNEL = process.env.PW_CHANNEL || '';
+const browser = await chromium.launch(CHANNEL ? { channel: CHANNEL } : {});
 console.log('Prüfe Build in', path.relative(process.cwd(), ROOT) || '.');
 const t0 = Date.now();
 await scenarioStart(browser);
@@ -752,10 +888,11 @@ await Promise.all([scenarioFehlingEthanal(browser), scenarioPropanalTouch(browse
 await Promise.all([scenarioTollensEthanal(browser), scenarioTollensButanalDrag(browser)]);
 await scenarioNegatives(browser);
 await Promise.all([scenarioModesAndReset(browser), scenarioBump(browser), scenarioResponsive(browser), scenarioMotion(browser)]);
+await scenarioReviewFixes(browser);
 await browser.close();
 server.close();
 
-const summary = { date: new Date().toISOString(), browser: 'Chromium (Playwright ' + (await import('playwright/package.json', { with: { type: 'json' } })).default.version + ')', durationSeconds: Math.round((Date.now() - t0) / 1000), passed: results.filter((r) => r.status === 'PASS').length, failed: results.filter((r) => r.status === 'FAIL').length, results };
+const summary = { date: new Date().toISOString(), browser: (CHANNEL ? CHANNEL + ' via ' : 'Chromium (') + 'Playwright ' + (await import('playwright/package.json', { with: { type: 'json' } })).default.version + (CHANNEL ? ', Version ' + browser.version() : ')'), durationSeconds: Math.round((Date.now() - t0) / 1000), passed: results.filter((r) => r.status === 'PASS').length, failed: results.filter((r) => r.status === 'FAIL').length, results };
 fs.writeFileSync(path.join(HERE, 'results.json'), JSON.stringify(summary, null, 2));
 console.log(`\n${summary.passed} bestanden, ${summary.failed} fehlgeschlagen (${summary.durationSeconds} s). Ergebnisse: tests/e2e/results.json`);
 process.exit(summary.failed ? 1 : 0);

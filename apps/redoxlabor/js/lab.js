@@ -76,8 +76,22 @@
       return {
         id, generation: (state.tubes[id - 1] ? state.tubes[id - 1].generation + 1 : 1),
         place: 'rack', slot: id - 1, contents: chem.createContents(),
-        flameTime: 0, recordedId: null, evaluated: false
+        flameTime: 0, recordedId: null, recordKey: null, evaluated: false, staleNotified: false
       };
+    }
+
+    /**
+     * Kennung des beobachtbaren Zustands: Zusammensetzung und Befund. Ändert sie
+     * sich nach dem Protokollieren (z. B. „noch nicht abgeschlossen“ → „positiv“),
+     * gilt das Protokoll als Zwischenstand und der Versuch kann erneut
+     * beobachtet und ausgewertet werden.
+     */
+    function observationKey(c) {
+      return c.history.length + '|' + chem.classify(c).outcome;
+    }
+    /** Beschreibt das letzte Protokoll noch den aktuellen Zustand des Reagenzglases? */
+    function recordCurrent(t) {
+      return !!t.recordedId && t.recordKey === observationKey(t.contents);
     }
 
     function setupSamples() {
@@ -223,9 +237,12 @@
       if (!t) return { ok: false };
       const fresh = newTube(t.id);
       fresh.generation = t.generation + 1;
+      const wasTollens = t.contents.portions.agno3 > 0;
       state.tubes[t.id - 1] = fresh;
       state.activeTubeId = t.id;
-      message(`Reagenzglas ${t.id} wurde durch ein sauberes Reagenzglas ersetzt.`);
+      message(wasTollens
+        ? `Reagenzglas ${t.id} wurde ersetzt. Silberhaltige Reste nicht aufbewahren – im Unterricht nach Anweisung der Lehrkraft entsorgen.`
+        : `Reagenzglas ${t.id} wurde durch ein sauberes Reagenzglas ersetzt.`);
       emit('change', { reason: 'replace' });
       return { ok: true };
     }
@@ -281,7 +298,7 @@
       const before = chem.analyze(t.contents);
       const res = chem.add(t.contents, op.substance);
       if (!res.ok) { message(res.reason, 'warn'); return; }
-      t.evaluated = false; t.recordedId = null;
+      t.staleNotified = true; // nach einer Zugabe ist der Hinweis über die Phase sichtbar
       const after = chem.analyze(t.contents);
       emit('added', { tubeId: t.id, substance: op.substance, before, after });
       describeChange(t, op.substance, before, after);
@@ -297,7 +314,7 @@
       if (after.system === 'tollens') {
         if (after.status === 'precipitate' && before.status !== 'precipitate') message('Ein brauner Niederschlag bildet sich.', 'info');
         else if (after.status === 'precipitate' && id === 'nh3') message('Der braune Niederschlag löst sich teilweise auf.', 'info');
-        else if (after.valid && before.status === 'precipitate') message('Der Niederschlag hat sich gelöst – die Lösung ist klar.', 'info');
+        else if (after.valid && before.status === 'precipitate') message('Der Niederschlag hat sich gelöst – die Lösung ist klar. Tollens-Reagenz immer frisch ansetzen und nicht aufbewahren.', 'info');
       }
     }
 
@@ -336,6 +353,12 @@
           emit('observable', { tubeId: t.id });
           message(`Reagenzglas ${t.id}: Der Versuch kann jetzt beobachtet und protokolliert werden.`, 'success');
         }
+        // Der Versuch lief nach dem Protokollieren weiter und zeigt jetzt einen anderen Befund.
+        if (t.recordedId && !t.staleNotified && !recordCurrent(t)) {
+          t.staleNotified = true;
+          emit('change', { reason: 'stale' });
+          message(`Reagenzglas ${t.id}: Der Versuch hat sich seit deinem Protokoll verändert. Dein Eintrag bleibt als Zwischenstand erhalten – beobachte erneut und werte erneut aus.`, 'info');
+        }
       }
     }
 
@@ -356,19 +379,22 @@
       if (!t) return PHASES[0];
       const c = t.contents;
       const a = chem.analyze(c);
+      const current = recordCurrent(t);
       let id;
-      if (t.evaluated) id = 'evaluated';
-      else if (t.recordedId) id = 'finished';
+      if (current && t.evaluated) id = 'evaluated';
+      else if (current) id = 'finished';
       else if (a.system === 'empty') id = state.activeTubeId === t.id ? 'provided' : 'notPrepared';
       else if (chem.isObservable(c)) id = 'observable';
       else if (!c.sampleId) id = chem.reagentReady(c) ? 'reagentReady' : 'partial';
       else if (!a.valid) id = 'partial';
-      else if (c.heatF > 0.02 || c.heatT > 0.02) id = 'running';
+      else if (c.exposure > 0.02 || c.progress > 0.02) id = 'running';
       else if ((t.place === 'bath' && state.bath.setting > 0) || (t.place === 'flame' && state.burner.on)) id = 'conditions';
       else id = 'sampleAdded';
       const ph = PHASES[PHASE_INDEX[id]];
-      const label = c.bumped && id === 'observable' ? 'Versuch abgebrochen (Siedeverzug)' : ph.label;
-      return { id: ph.id, label, index: PHASE_INDEX[id] + 1, total: PHASES.length };
+      let label = c.bumped && id === 'observable' ? 'Versuch abgebrochen (Siedeverzug)' : ph.label;
+      if (id === 'observable' && !c.bumped && chem.isReactive(c) && !chem.isComplete(c)) label = 'Beobachtung möglich – Reaktion läuft noch';
+      const stale = !!t.recordedId && !current;
+      return { id: ph.id, label, index: PHASE_INDEX[id] + 1, total: PHASES.length, stale };
     }
 
     /** Kontextabhängige Hilfe in drei Stufen. */
@@ -389,8 +415,10 @@
 
       if (c.bumped) return H('Siedeverzug', 'Ist dieser Ansatz noch auswertbar?', 'Ein Teil des Ansatzes ist herausgespritzt – das Ergebnis ist nicht verwertbar. Gefahrlos erwärmt man im Wasserbad.', `Nimm Reagenzglas ${n} aus der Flamme („In den Ständer“), tausche es aus („Austauschen“) und setze den Versuch neu an. Erwärme im Wasserbad.`);
       if (t.place === 'flame') return H('Reagenzglas in der Flamme', 'Ist direktes Erhitzen in der Flamme hier die geeignete Methode?', 'Beim direkten Erhitzen kann es zu einem Siedeverzug kommen. Für Fehling- und Tollens-Probe eignet sich ein Wasserbad.', `Nimm Reagenzglas ${n} sofort aus der Flamme: „In den Ständer“ oder „Ins Wasserbad“.`);
-      if (t.recordedId && !t.evaluated) return H('Beobachtung protokolliert', 'Was bedeutet deine Beobachtung?', 'Im Protokoll kannst du Ergebnis, Deutung und Stoffklasse eintragen und prüfen lassen.', 'Öffne „Auswertung“ und prüfe dein Protokoll.');
-      if (t.evaluated) return H('Versuch ausgewertet', 'Welche Probe hast du noch nicht untersucht?', 'Vergleiche die Ergebnisse verschiedener Proben in der Ergebnisübersicht; bei positiven Nachweisen kannst du die Redoxreaktion erarbeiten.', 'Tausche das Reagenzglas aus oder nimm ein anderes Reagenzglas für die nächste Probe. Für positive Nachweise: „Redox-Trainer“ öffnen.');
+      const current = recordCurrent(t);
+      if (current && !t.evaluated) return H('Beobachtung protokolliert', 'Was bedeutet deine Beobachtung?', 'Im Protokoll kannst du Ergebnis, Deutung und Stoffklasse eintragen und prüfen lassen.', 'Öffne „Auswertung“ und prüfe dein Protokoll.');
+      if (current && t.evaluated) return H('Versuch ausgewertet', 'Welche Probe hast du noch nicht untersucht?', 'Vergleiche die Ergebnisse verschiedener Proben in der Ergebnisübersicht; bei positiven Nachweisen kannst du die Redoxreaktion erarbeiten.', 'Tausche das Reagenzglas aus oder nimm ein anderes Reagenzglas für die nächste Probe. Für positive Nachweise: „Redox-Trainer“ öffnen.');
+      if (t.recordedId && chem.isObservable(c) && a.valid) return H('Versuch hat sich verändert', 'Dein Protokoll hält einen früheren Zwischenstand fest. Was siehst du jetzt?', 'Der frühere Eintrag bleibt erhalten. Für die Auswertung zählt eine Beobachtung des aktuellen Zustands.', 'Tippe erneut auf „Beobachtung festhalten“ und werte den aktuellen Zustand aus.');
 
       if (a.system === 'empty') {
         return H(`Reagenzglas ${n} ist leer`,
@@ -403,7 +431,7 @@
       }
       const heatHint = (sys) => sys === 'fehling'
         ? ['Die Nachweisreaktion braucht Energie.', 'Die Fehling-Probe wird im heißen Wasserbad erwärmt (Heizplatte auf 80 °C, 60 °C reicht auch, dauert aber länger).']
-        : ['Die Nachweisreaktion braucht Energie – aber schonend.', 'Die Tollens-Probe wird im warmen Wasserbad (ca. 60 °C) erwärmt, nie direkt in der Flamme.'];
+        : ['Wie lässt sich die Nachweisreaktion schonend beschleunigen?', 'Bei Raumtemperatur kann sich Silber langsam abscheiden. Im warmen Wasserbad (ca. 60 °C) geht es in kurzer Zeit – nie direkt in der Flamme erhitzen.'];
       const bathStep = (sys) => {
         const temp = sys === 'fehling' ? 80 : 60;
         if (t.place !== 'bath' && state.bath.setting === 0) return `Schalte die Heizplatte auf ${temp} °C und stelle Reagenzglas ${n} ins Wasserbad.`;
@@ -422,11 +450,11 @@
         if (c.mix < 0.85 && !c.sampleId) return H('Fehling-Lösung noch nicht durchmischt', 'Sind beide Lösungen schon gleichmäßig vermischt?', 'Erst eine homogene, tiefblaue Lösung ist das gebrauchsfertige Fehling-Reagenz.', `Tippe auf „Schütteln“, um Reagenzglas ${n} zu durchmischen.`);
         if (!c.sampleId) return H('Fehling-Reagenz bereit', 'Das Reagenz ist angesetzt. Was soll nachgewiesen werden?', 'Gib nun eine Stoffprobe hinzu (Aldehyd oder Keton).', 'Tippe auf eine der Probenflaschen (z. B. „' + state.samples[0].label + '“).');
         if (!chem.isObservable(c)) {
-          if (c.progress > 0.02) return H('Reaktion läuft', 'Beobachte die Farbe genau – was verändert sich?', 'Achte auf Farbe und Trübung der Mischung in der Lupe.', 'Lass das Reagenzglas im heißen Wasserbad, bis sich nichts mehr verändert.');
+          if (c.progress > 0.02) return H('Reaktion läuft', 'Beobachte die Farbe genau – was verändert sich?', 'Achte auf Farbe und Trübung der Mischung in der Lupe.', 'Lass das Reagenzglas im heißen Wasserbad, bis ein deutliches Ergebnis zu sehen ist.');
           const [l1, l2] = heatHint('fehling');
           return H('Probe zugegeben', l1, l2, bathStep('fehling'));
         }
-        return H('Beobachtung möglich', 'Was hat sich im Vergleich zum Beginn verändert?', 'Halte deine Beobachtung fest – Farbe, Trübung, Niederschlag.', 'Tippe auf „Beobachtung festhalten“.');
+        return H('Beobachtung möglich', 'Was hat sich im Vergleich zum Beginn verändert?', 'Halte deine Beobachtung fest – Farbe, Trübung, Niederschlag. Ein deutlich sichtbarer Niederschlag genügt; die Reaktion muss dafür nicht vollständig abgelaufen sein.', 'Tippe auf „Beobachtung festhalten“.');
       }
 
       // Tollens
@@ -436,11 +464,11 @@
       }
       if (!c.sampleId) return H('Tollens-Reagenz bereit', 'Die klare ammoniakalische Silberlösung ist fertig. Was fehlt noch?', 'Gib nun eine Stoffprobe hinzu (Aldehyd oder Keton).', 'Tippe auf eine der Probenflaschen (z. B. „' + state.samples[0].label + '“).');
       if (!chem.isObservable(c)) {
-        if (c.progress > 0.02) return H('Reaktion läuft', 'Beobachte die Glaswand genau.', 'Achte auf die Innenseite des Reagenzglases unterhalb des Flüssigkeitsspiegels.', 'Lass das Reagenzglas im warmen Wasserbad, bis sich nichts mehr verändert.');
+        if (c.progress > 0.02) return H('Reaktion läuft', 'Beobachte die Glaswand und die Lösung genau.', 'Achte auf die Innenseite des Reagenzglases unterhalb des Flüssigkeitsspiegels und auf eine graue Färbung der Lösung.', 'Lass das Reagenzglas im warmen Wasserbad, bis ein deutliches Ergebnis zu sehen ist.');
         const [l1, l2] = heatHint('tollens');
         return H('Probe zugegeben', l1, l2, bathStep('tollens'));
       }
-      return H('Beobachtung möglich', 'Was siehst du an der Glaswand und in der Lösung?', 'Halte deine Beobachtung fest.', 'Tippe auf „Beobachtung festhalten“.');
+      return H('Beobachtung möglich', 'Was siehst du an der Glaswand und in der Lösung?', 'Silber kann sich als Spiegel an der Glaswand oder fein verteilt als grau-schwarzer Niederschlag zeigen. Halte fest, was du siehst.', 'Tippe auf „Beobachtung festhalten“.');
     }
 
     // -------------------------------------------------------------- Protokoll
@@ -463,26 +491,51 @@
         model, answers: answers || null, graded,
         solutionShown: !!(opts2 && opts2.solutionShown),
         contents: Object.assign({}, t.contents.portions), sampleAmount: t.contents.sampleAmount,
-        observable: chem.isObservable(t.contents)
+        observable: chem.isObservable(t.contents),
+        // Zeitpunkt der Beobachtung: Ein früher Eintrag ist ein Zwischenstand,
+        // wenn der Versuch danach weiterlaufen kann.
+        simTime: Math.round(state.time), temp: Math.round(t.contents.temp),
+        interim: model.outcome === 'unfinished' || (model.outcome === 'positive' && !model.complete)
       };
       state.protocol.push(rec);
       t.recordedId = rec.id;
+      t.recordKey = observationKey(t.contents);
+      t.staleNotified = false;
       t.evaluated = !!(answers || rec.solutionShown);
       emit('protocol', rec);
       emit('change', { reason: 'protocol' });
       return rec;
     }
 
-    /** Ergebnisübersicht: letztes gültiges Protokoll je Probe und Verfahren. */
+    const isEvidence = (rec) => rec && (rec.model.outcome === 'positive' || rec.model.outcome === 'negative');
+
+    /**
+     * Ergebnisübersicht je Probe und Verfahren: das zuletzt protokollierte
+     * Ergebnis und – getrennt davon – die letzte gültige Evidenz. Ein später
+     * gescheiterter Versuch löscht eine frühere gültige Beobachtung nicht.
+     */
     function overview() {
       return state.samples.map((s) => {
-        const row = { key: s.key, label: s.label, sampleId: s.sampleId, fehling: null, tollens: null };
+        const row = { key: s.key, label: s.label, sampleId: s.sampleId, fehling: null, tollens: null, fehlingEvidence: null, tollensEvidence: null };
         for (const rec of state.protocol) {
           if (rec.sampleId !== s.sampleId) continue;
           const m = rec.model.method;
-          if (m === 'fehling' || m === 'tollens') row[m] = rec;
+          if (m !== 'fehling' && m !== 'tollens') continue;
+          row[m] = rec;
+          if (isEvidence(rec)) row[m + 'Evidence'] = rec;
         }
         return row;
+      });
+    }
+
+    /** Einordnung bewerten, ohne Ereignisse auszulösen. */
+    function analysisResult(answers) {
+      return overview().map((row) => {
+        const truth = chem.SAMPLE_BY_ID[row.sampleId];
+        const evidence = [row.fehlingEvidence, row.tollensEvidence].filter(Boolean);
+        const answer = answers[row.key] || '';
+        const expected = truth.reducing ? 'aldehyd' : 'keinAldehyd';
+        return { key: row.key, answer, expected, correct: answer === expected, hasEvidence: evidence.length > 0 };
       });
     }
 
@@ -490,14 +543,7 @@
     function checkAnalysis(answers) {
       state.analysisAnswers = Object.assign({}, answers);
       state.analysisChecked = true;
-      const rows = overview();
-      const result = rows.map((row) => {
-        const truth = chem.SAMPLE_BY_ID[row.sampleId];
-        const evidence = [row.fehling, row.tollens].filter((r) => r && (r.model.outcome === 'positive' || r.model.outcome === 'negative'));
-        const answer = answers[row.key] || '';
-        const expected = truth.reducing ? 'aldehyd' : 'keinAldehyd';
-        return { key: row.key, answer, expected, correct: answer === expected, hasEvidence: evidence.length > 0 };
-      });
+      const result = analysisResult(state.analysisAnswers);
       emit('change', { reason: 'analysis' });
       return result;
     }
@@ -539,7 +585,7 @@
       on: (ev, fn) => { (listeners[ev] = listeners[ev] || []).push(fn); },
       update, selectTube, chooseSubstance, addSubstance, shake, moveTube, replaceTube,
       setHotplate, cycleHotplate, toggleBurner, resetBench, fullRestart,
-      phaseOf, help, modelFor, recordProtocol, overview, checkAnalysis, revealAnalysis,
+      phaseOf, help, modelFor, recordProtocol, recordCurrent, overview, analysisResult, checkAnalysis, revealAnalysis,
       tubeById, activeTube, sampleEntry, substanceLabel, busy, exportSession, importSession,
       setMode: (mode) => fullRestart(mode),
       // Für Tests: Simulation zeitraffend vorantreiben

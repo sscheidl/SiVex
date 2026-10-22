@@ -1,99 +1,114 @@
 # Chemische Modellierung
 
-Dieses Dokument beschreibt, welche fachlichen Annahmen die Simulation trifft und wo sie bewusst vereinfacht. Alle Regeln sind in `js/chemistry.js` umgesetzt und durch `tests/unit/chemistry.test.js` abgesichert.
+Dieses Dokument beschreibt, welche fachlichen Annahmen die Simulation trifft und wo sie bewusst vereinfacht. Alle Regeln sind in `js/chemistry.js` umgesetzt und durch `tests/unit/chemistry.test.js` sowie `tests/unit/regression.test.js` abgesichert. Die Tests sichern das **Modell** ab; die fachliche Begründung stützt sich auf die Quellen am Ende dieses Dokuments.
 
 ## 1. Stoffproben
 
-| Stoff | Klasse | Summenformel | Halbstrukturformel | reduzierend | Oxidationsprodukt |
+| Stoff | Klasse | Summenformel | Halbstrukturformel | reduzierend | Oxidationsprodukt (alkalisch) |
 | --- | --- | --- | --- | --- | --- |
-| Ethanal | Aldehyd | C₂H₄O | CH₃–CHO | ja | Ethansäure |
-| Propanal | Aldehyd | C₃H₆O | CH₃–CH₂–CHO | ja | Propansäure |
-| Butanal | Aldehyd | C₄H₈O | CH₃–CH₂–CH₂–CHO | ja | Butansäure |
+| Ethanal | Aldehyd | C₂H₄O | CH₃–CHO | ja | Ethanoat (Schule: Ethansäure) |
+| Propanal | Aldehyd | C₃H₆O | CH₃–CH₂–CHO | ja | Propanoat (Schule: Propansäure) |
+| Butanal | Aldehyd | C₄H₈O | CH₃–CH₂–CH₂–CHO | ja | Butanoat (Schule: Butansäure) |
 | Propanon | Keton | C₃H₆O | CH₃–CO–CH₃ | nein | – |
 | Butanon | Keton | C₄H₈O | CH₃–CO–CH₂–CH₃ | nein | – |
 | Pentan-2-on | Keton | C₅H₁₀O | CH₃–CO–CH₂–CH₂–CH₃ | nein | – |
 
-Benzaldehyd ist bewusst nicht enthalten. Ein Unit-Test leitet die Summenformeln aus den hinterlegten Halbstrukturformeln ab und vergleicht sie. Propanal/Propanon und Butanal/Butanon sind Isomere – das wird in der Stoffinfo und in der Auflösung des Analysemodus thematisiert.
+Die Proben sind **verdünnte wässrige Lösungen**, keine Reinstoffe. Das wird in der Stoffinfo und im Bedienfeld genannt. Reines Ethanal siedet bereits bei etwa 21 °C (NIST); die verdünnte Lösung im Wasserbad siedet nicht.
+
+Für diesen Probensatz gilt: drei Alkanale positiv, drei einfache Ketone negativ. Das ist **keine allgemeine Regel** für alle Aldehyde oder Ketone (z. B. reagieren α-Hydroxyketone und Fructose in alkalischer Lösung positiv). Benzaldehyd ist bewusst nicht enthalten. Ein Unit-Test leitet die Summenformeln aus den hinterlegten Halbstrukturformeln ab und vergleicht sie.
 
 ## 2. Mengenmodell
 
-Jede Zugabe ist eine abstrakte **Portion** (Pipettenfüllung). Es werden keine Volumina, Konzentrationen oder Massen angegeben. Ein Reagenzglas fasst höchstens 7 Portionen (zum Erwärmen höchstens etwa halb voll). Pro Reagenzglas ist nur eine Stoffprobe zulässig (sonst keine eindeutige Auswertung).
+Jede Zugabe ist eine abstrakte **Portion** (Pipettenfüllung). Es werden keine Volumina, Konzentrationen oder Massen angegeben. Ein Reagenzglas fasst höchstens 7 Portionen. Pro Reagenzglas ist nur eine Stoffprobe zulässig.
 
-## 3. Fehling-Probe
+## 3. Zustand eines Reagenzglases
+
+Der Inhalt besteht aus drei getrennten Teilen:
+
+1. **Zusammensetzung** (Portionen, Stoffprobe, Reihenfolge der Zugaben) – daraus leitet `analyze()` ab, welcher Nachweis vorliegt und ob er korrekt angesetzt ist.
+2. **Beständige Reaktionsprodukte**: `cu2o` (Kupfer(I)-oxid), `ag` mit Anteil `agFilm` (Silber als Wandbelag bzw. fein verteilt), `cuo` (Kupfer(II)-oxid aus Fehlansatz), `darkening` (dunkles Silber aus nicht gelöstem Ag₂O). Produkte bleiben erhalten, wenn spätere Zugaben den Ansatz ungültig machen. Ein Statuswechsel deutet sie nie in ein anderes Produkt um.
+3. **Beobachtungszeit** `exposure`: wächst nur, solange der aktuelle Ansatz gültig, gebrauchsfertig und durchmischt ist (Durchmischung ≥ 0,85), gewichtet mit dem Temperaturfaktor des jeweiligen Nachweises. **Jede Zugabe setzt sie auf 0** – Wärme vor der Zugabe der Probe zählt nicht.
+
+## 4. Bewertung: positiv, abgeschlossen, negativ
+
+| Begriff | Bedingung | Bedeutung |
+| --- | --- | --- |
+| **positiv** | Nachweisprodukt deutlich sichtbar (Cu₂O ≥ 45 %, Ag ≥ 30 % des vollständigen Umsatzes) | Ein charakteristisches, deutlich sichtbares Produkt genügt für eine positive qualitative Aussage. |
+| **abgeschlossen** | Umsatz ≥ 97 % | Nur Anzeige („Reaktion läuft noch“); keine Voraussetzung für einen positiven Befund. |
+| **negativ** | kein Produkt sichtbar **und** `exposure ≥ 1` | Erst nach ausreichend langer Beobachtung des fertig gemischten Ansatzes unter geeigneten Bedingungen. |
+| **nicht abgeschlossen** | sonst | Beginnende Veränderung, nicht erwärmt, nicht durchmischt oder Beobachtungszeit zu kurz – jeweils mit eigener Begründung. |
+
+Ein Regressionstest prüft für alle Aldehyde, beide Nachweise und mehrere Temperaturen, dass nie ein falsch negativer Befund entsteht: Das Produkt wird sichtbar, bevor die Wartezeit für „negativ“ erreicht ist.
+
+## 5. Fehling-Probe
 
 | Inhalt | Modellzustand | Darstellung |
 | --- | --- | --- |
 | Fehling I | freie Cu²⁺(aq) | hellblau, klar |
 | Fehling II | Tartrat, NaOH | farblos, klar |
-| Fehling I + II (II ≥ I) | Kupfer(II)-Tartrat-Komplex, „bereit“ | tiefblau, klar; beim Zugeben zunächst geschichtet (hellblau / tiefblaue Grenzschicht / farblos), durch Schütteln oder Konvektion homogen |
+| Fehling I + II (II ≥ I) | Kupfer(II)-Tartrat-Komplex, „bereit“ | tiefblau, klar; beim Zugeben zunächst geschichtet, durch Schütteln oder Konvektion homogen |
 | Fehling I + II (II < I) | teilweise Cu(OH)₂ | Niederschlag, „nicht korrekt angesetzt“ |
 | Fehling I + Natronlauge | Cu(OH)₂ | hellblauer Niederschlag, beim Erhitzen schwarzes CuO; kein gültiger Fehling-Nachweis |
+| … danach + Fehling II | CuO bleibt als Feststoff | schwarz; „außerhalb des Modells“ – ob sich CuO wieder löst, wird nicht modelliert; kein gültiger Nachweis |
 | Fehling I + Ammoniaklösung | Kupfer-Ammin-Komplex | tiefblau-violett; kein Fehling-Reagenz |
-| Kupfer- und Silberreagenzien gemischt | „fremd“ | trüb; kein gültiger Nachweis |
+| Kupfer- und Silberreagenzien gemischt | „fremd“ | kein gültiger Nachweis; vorhandene Produkte (z. B. Silberbelag) bleiben sichtbar |
 
-**Reaktion:** Nur wenn das Reagenz korrekt angesetzt ist, eine reduzierende Probe enthalten ist und die Temperatur über ca. 40 °C liegt:
+**Reaktion:** Nur wenn das Reagenz korrekt angesetzt ist, eine reduzierende Probe enthalten ist und die Temperatur über ca. 40 °C liegt: `d(cu2o)/dt = f(T) · Durchmischung · k(Probe) / 12 s`, mit `f(T) = ((T − 40 °C)/30 K)^1,3` (gedeckelt). Bei 80 °C ist Cu₂O nach wenigen Sekunden deutlich sichtbar und nach rund 10 s praktisch vollständig, bei 60 °C nach rund 20 s. Bei Raumtemperatur läuft die Fehling-Probe im Modell nicht ab. **In der Auswertung steht ausdrücklich: „Wir betrachten den beschleunigten Versuch im heißen Wasserbad.“** Die Geschwindigkeitsfaktoren der drei Aldehyde (1,00 / 0,93 / 0,86) sind modelliert, keine Messdaten, und ändern nichts am Ergebnis.
 
-- Umsatz `p` wächst mit `dp/dt = f(T) · Durchmischung · k(Probe) / 12 s`, mit `f(T) = ((T − 40 °C)/30 K)^1,3` (gedeckelt).
-- Bei 80 °C ist die Reaktion nach rund 10 s abgeschlossen, bei 60 °C nach rund 20 s, bei Raumtemperatur findet sie im Modell nicht statt (in der Realität ebenfalls nicht in beobachtbarer Zeit).
-- Ethanal reagiert etwas schneller als Propanal und Butanal (k = 1,00 / 0,93 / 0,86) – das ändert nichts am Ergebnis.
+**Optisches Modell:** Cu₂O entsteht zunächst als feines, gelb-oranges Kolloid und wird mit wachsender Partikelgröße ziegelrot. Gelbe Partikel in tiefblauer Lösung wirken subtraktiv grün. Die Gesamtfarbe durchläuft deshalb im Modell tiefblau → blaugrün → oliv/gelbgrün → gelborange → orange → ziegelrot. Das ist **ein mögliches Erscheinungsbild**, keine unveränderliche Abfolge für alle Konzentrationen und Partikelgrößen. Cu₂O setzt sich in ruhender Flüssigkeit langsam ab (im Ständer schneller als im warmen Bad, wo Konvektion einen Teil in Schwebe hält); Schütteln oder Umsetzen wirbelt es wieder auf.
 
-**Optisches Modell:** Cu₂O entsteht zunächst als feines, gelb-oranges Kolloid und wird mit wachsender Partikelgröße ziegelrot. Gelbe Partikel in tiefblauer Lösung wirken subtraktiv grün. Die beobachtete Gesamtfarbe durchläuft deshalb: tiefblau → blau-türkis → blaugrün → oliv/gelbgrün → gelborange → orange → ziegelrot. Zusätzlich steigen Trübung (Wolkentextur) und Partikeldichte. Nach Abschluss und Abkühlen im Ständer setzt sich Cu₂O vereinfacht als Bodensatz ab; darüber bleibt die überschüssige Fehling-Lösung bläulich.
-
-**Ketone:** Die Lösung bleibt auch nach ausreichendem Erwärmen tiefblau; der Versuch ist abgeschlossen und als negativer Nachweis auswertbar.
-
-## 4. Tollens-Probe
+## 6. Tollens-Probe
 
 | Inhalt | Modellzustand | Darstellung |
 | --- | --- | --- |
 | Silbernitratlösung | Ag⁺(aq) | farblos – kein Tollens-Reagenz |
-| + Natronlauge | Ag₂O | brauner Niederschlag |
+| + Natronlauge | Ag₂O | brauner Niederschlag (kein Nachweisprodukt) |
 | + Ammoniaklösung (tropfenweise) | Ag₂O löst sich als [Ag(NH₃)₂]⁺ | Niederschlag wird weniger, schließlich klar |
 | klare ammoniakalische Silberlösung | „bereit“ | farblos, klar |
 
-Modell der Auflösung: Anteil gelöst = min(1, NH₃-Portionen / (2 · AgNO₃-Portionen)). Mit einer Portion Silbernitrat sind also zwei Portionen Ammoniaklösung nötig. Auch ohne Natronlauge bildet Ammoniaklösung zuerst einen Ag₂O-Niederschlag, der sich im Überschuss löst – das klassische ammoniakalische Reagenz ist ebenfalls gültig.
+Modell der Auflösung: Anteil gelöst = min(1, NH₃-Portionen / (2 · AgNO₃-Portionen)). Die „zwei Portionen“ sind eine abstrakte Modellregel, keine Mengenangabe.
 
-**Reaktion:** Nur mit klarer ammoniakalischer Silberlösung, reduzierender Probe und Temperatur über ca. 35 °C (Faktor `(T − 35 °C)/25 K`, gedeckelt). Bei 60 °C ist die Silberabscheidung nach rund 15 s abgeschlossen. Im Modell findet die Reaktion bei Raumtemperatur nicht statt (Vereinfachung: real kann sie langsam einsetzen). Oberhalb ca. 75 °C entsteht vereinfacht mehr fein verteiltes, dunkles Silber und ein fleckigerer Spiegel; empfohlen wird daher das warme Wasserbad (60 °C).
+**Reaktion und Temperatur:** Faktor `f(T) = 0,05 + max(0, (T − 35 °C)/25 K)` (gedeckelt). Mit einfachen Aldehyden **kann sich Silber auch bei Raumtemperatur abscheiden** (Strathclyde, Kap. 7). Im Modell geschieht das langsam (deutlich sichtbar nach rund 1,5–2 min, vollständig nach einigen Minuten). Im warmen Wasserbad (60 °C) ist die Abscheidung nach rund 15 s abgeschlossen. Ein negativer Befund bei Raumtemperatur setzt entsprechend längere Beobachtung voraus.
 
-**Darstellung des Silberspiegels:** Zunächst färbt kolloidales Silber die Lösung grau. An der benetzten Innenwand entstehen an zufällig verteilten Keimstellen kleine Inseln, die wachsen und zusammenwachsen; ein dünner Film deckt zuletzt fast die ganze benetzte Fläche. Die Schicht wird mit einem zylindrischen Metallverlauf (Glanzlichter, dunkle Umgebungsspiegelung, wandernder Glanzstreifen) eingefärbt und endet scharf am Flüssigkeitsspiegel – oberhalb bleibt das Glas klar.
+**Formen des Silbers:** Ein positiver Tollens-Nachweis ist die Reduktion von Ag(I) zu **elementarem Silber**. Es kann sich als Spiegel an der Glaswand oder fein verteilt als grau-schwarzer Niederschlag zeigen; beides gilt als positiv (Strathclyde, Kap. 7; Chemguide). Im Modell gehen bei schonender Temperatur (≤ 65 °C) 88 % des Silbers an die Wand, bei 65–75 °C 65 %, darüber 40 %; der Rest bleibt fein verteilt. In der Auswertung genügt deshalb die Beobachtung „Silberspiegel“ **oder** „grau-schwarz“. Braunes Ag₂O aus unvollständig angesetztem Reagenz ist ausdrücklich davon abgegrenzt.
 
-**Fehlerfälle:** Silbernitrat allein oder mit nicht gelöstem Ag₂O ergibt keinen Silberspiegel. Ag₂O mit Aldehyd dunkelt beim Erwärmen zu grau-schwarzem Niederschlag nach – das ist kein gültiger Nachweis.
+**Darstellung des Silberspiegels:** Zunächst färbt kolloidales Silber die Lösung grau. An der benetzten Innenwand entstehen an zufällig verteilten Keimstellen kleine Inseln, die wachsen und zusammenwachsen. Die Schicht endet scharf am Flüssigkeitsspiegel. Der Belag bleibt erhalten, auch wenn danach andere Reagenzien zugegeben werden.
 
-## 5. Erwärmen und Siedeverzug
+**Handhabung:** Beim Fertigstellen des Reagenzes erscheint der Hinweis „immer frisch ansetzen und nicht aufbewahren“; beim Austauschen eines silberhaltigen Glases „Reste nicht aufbewahren – nach Anweisung der Lehrkraft entsorgen“. Konkrete Entsorgungswege werden bewusst nicht vorgegeben, weil sie von den regionalen Schulregeln abhängen.
 
-- **Wasserbad:** Heizplatte 60 °C oder 80 °C; das Bad heizt in einigen Sekunden auf, das Reagenzglas folgt mit einer Zeitkonstante von ca. 2 s.
-- **Kein Erwärmen:** keine Reaktion; das Protokoll weist den Versuch als „noch nicht abgeschlossen“ aus.
-- **Brennerflamme (optional):** Direktes Halten in die Flamme führt nach etwa 2,6 s zu einem Siedeverzug: Die Flüssigkeit wallt auf, ein Teil spritzt heraus, der Ansatz ist ungültig, und ein Sicherheitshinweis erscheint (Wasserbad, Schutzbrille, Öffnung nie auf Personen richten; Tollens-Reagenz nie in der Flamme erhitzen, frisch ansetzen, nicht aufbewahren). Gefährliches Verhalten wird nicht belohnt.
+## 7. Erwärmen, Bläschen und Siedeverzug
 
-## 6. Bewertung von Versuchen
+- **Wasserbad:** Heizplatte 60 °C oder 80 °C; das Reagenzglas folgt mit einer Zeitkonstante von ca. 2 s.
+- **Bläschen:** Beim Aufheizen entweicht anfangs gelöste Luft als einzelne Bläschen; das klingt nach einigen Sekunden ab. Wasser siedet bei 60/80 °C nicht, und die Nachweisreaktionen setzen kein Gas frei. Über dem warmen Bad steigt leichter Dunst auf.
+- **Lupe:** zeigt das Reagenzglas immer vor neutralem, weißem Hintergrund, auch wenn es im Wasserbad steht – das getönte Bad würde schwach gefärbte Proben verfälschen.
+- **Brennerflamme (optional, „Weitere Geräte“):** Direktes Halten in die Flamme führt im Modell nach 2,6 s zu einem Siedeverzug. Das ist ein **geskriptetes Lernszenario**; der Sicherheitshinweis sagt ausdrücklich, dass ein realer Siedeverzug nicht vorhersagbar ist.
 
-`classify()` liefert für jeden Inhalt eine Musterauswertung:
+## 8. Protokolle und Ergebnisübersicht
 
-| Fall | Ergebnis |
-| --- | --- |
-| korrektes Reagenz + Aldehyd + ausreichend erwärmt | positiv – Probe wirkt reduzierend; Aldehyd, aber **nicht eindeutig welcher** |
-| korrektes Reagenz + Keton + ausreichend erwärmt | negativ – keine reduzierende Wirkung; im Probensatz ein Keton, aber **allein dadurch nicht bewiesen** |
-| korrektes Reagenz ohne Probe | Blindprobe |
-| nicht erwärmt / Reaktion läuft noch | nicht abgeschlossen – keine Aussage |
-| Reagenz unvollständig, falsch, gemischt, Siedeverzug | kein gültiger Nachweis |
+- Jedes Protokoll speichert Zeitpunkt (Simulationszeit), Temperatur und den damaligen Befund. Einträge vor Reaktionsende sind als **Zwischenstand** gekennzeichnet.
+- Ändert sich der Befund danach (z. B. „nicht abgeschlossen“ → „positiv“), bleibt der alte Eintrag erhalten. Das Reagenzglas wird wieder als „Beobachtung möglich“ angezeigt und kann erneut ausgewertet werden.
+- Die Ergebnisübersicht zeigt je Probe und Verfahren die **letzte gültige Evidenz** und – falls abweichend – zusätzlich den letzten Versuch. Ein späterer gescheiterter Versuch löscht eine frühere Beobachtung nicht.
 
-Beobachtungen werden über eine Liste zutreffender Aussagen erfasst (erforderliche, optionale und falsche Aussagen je Fall). Die Stoffklassen-Auswahl enthält absichtlich auch die fachlich unzulässigen Schlüsse „eindeutig identifiziert“ und „Keton bewiesen“.
+## 9. Redoxgleichungen
 
-## 7. Redoxgleichungen (schulische Darstellung)
-
-Das Oxidationsprodukt wird vereinbarungsgemäß als Carbonsäure R–COOH geschrieben. Im alkalischen Milieu liegt tatsächlich überwiegend das Carboxylat-Ion R–COO⁻ vor; die App weist im Redox-Trainer darauf hin. Die Komplexbildung (Kupfer-Tartrat) bleibt in der Fehling-Gleichung unberücksichtigt.
-
-**Fehling-Probe**
+**Schulische Schreibweise** (im Redox-Trainer): Das Oxidationsprodukt wird als Carbonsäure R–COOH geschrieben. Diese Gleichungen sind **atom- und ladungsmäßig ausgeglichen**; sie vereinfachen nur die Teilchenform. Der Hinweis steht sichtbar über dem Trainer, nicht mehr in einem zugeklappten Abschnitt.
 
 - Oxidation: R–CHO + 2 OH⁻ → R–COOH + H₂O + 2 e⁻
-- Reduktion: 2 Cu²⁺ + 2 OH⁻ + 2 e⁻ → Cu₂O + H₂O
-- Gesamt: R–CHO + 2 Cu²⁺ + 4 OH⁻ → R–COOH + Cu₂O + 2 H₂O
+- Fehling gesamt: R–CHO + 2 Cu²⁺ + 4 OH⁻ → R–COOH + Cu₂O + 2 H₂O
+- Tollens gesamt: R–CHO + 2 [Ag(NH₃)₂]⁺ + 2 OH⁻ → R–COOH + 2 Ag + 4 NH₃ + H₂O
 
-**Tollens-Probe**
+**Fachlich genauere Schreibweise** (zusätzlich in der Musterlösung; im alkalischen Ansatz liegt das Carboxylat vor, RSC):
 
-- Oxidation: R–CHO + 2 OH⁻ → R–COOH + H₂O + 2 e⁻
-- Reduktion: 2 [Ag(NH₃)₂]⁺ + 2 e⁻ → 2 Ag + 4 NH₃
-- Gesamt: R–CHO + 2 [Ag(NH₃)₂]⁺ + 2 OH⁻ → R–COOH + 2 Ag + 4 NH₃ + H₂O
+- Oxidation: R–CHO + 3 OH⁻ → R–COO⁻ + 2 H₂O + 2 e⁻
+- Fehling gesamt: R–CHO + 2 Cu²⁺ + 5 OH⁻ → R–COO⁻ + Cu₂O + 3 H₂O
+- Tollens gesamt: R–CHO + 2 [Ag(NH₃)₂]⁺ + 3 OH⁻ → R–COO⁻ + 2 Ag + 4 NH₃ + 2 H₂O
 
-Oxidationszahlen: C der Aldehydgruppe +I → C der Carboxygruppe +III; Cu +II → +I; Ag +I → 0.
+Die Komplexierung von Cu(II) durch Tartrat bleibt in beiden Schreibweisen unberücksichtigt. Oxidationszahlen: C der Aldehydgruppe +I → +III; Cu +II → +I; Ag +I → 0. Unit-Tests prüfen für alle Gleichungen beider Schreibweisen Atom- und Ladungsbilanz und dass die Gesamtgleichung der Summe der Teilgleichungen entspricht.
 
-Ein Formelparser (`redox.parseFormula`) zählt Atome inkl. Klammern und R als Rest; Unit-Tests prüfen für alle sechs Gleichungen Atom- und Ladungsbilanz, dass Gesamtgleichung = Oxidation + Reduktion ist und dass die Musterlösungen des Trainers genau diese Gleichungen ergeben.
+## Quellen
+
+- University of Strathclyde, Dissertation, Kap. 7 „Studying the Tollens’ test“ (S. 157–168 der Arbeit): Silberspiegel oder Teilspiegel mit überwiegend schwarzem, kolloidalem Silber als positiver Befund; Silberspiegel bzw. Reaktion bei Raumtemperatur für mehrere Substrate. <https://stax.strath.ac.uk/downloads/kh04dq07h?locale=en>
+- Royal Society of Chemistry, „The silver mirror test with Tollens’ reagent“: Aldehyde werden zu Carboxylat-Ionen oxidiert; Reagenz nicht im Voraus ansetzen. <https://edu.rsc.org/experiments/the-silver-mirror-test-with-tollens-reagent/822.article>
+- Chemguide (J. Clark), „Oxidation of aldehydes and ketones“: graues Silber oder Silberspiegel; Gleichungen mit Carboxylat im alkalischen Milieu. <https://www.chemguide.co.uk/organicprops/carbonyls/oxidation.html>
+- FU Berlin, Versuchsvideo Fehling-Probe: Fehling I hellblau, Fehling II farblos, Mischung tiefblau, Cu₂O-Niederschlag. <https://www.bcp.fu-berlin.de/en/chemie/chemie/forschung/OrgChem/schalley/Teaching/OCI_Videos/Versuch10_02/index.html>
+- NIST Chemistry WebBook, Acetaldehyd: Normalsiedetemperatur 294,0 ± 0,8 K. <https://webbook.nist.gov/cgi/cbook.cgi?ID=C75070&Mask=4&Units=CAL>

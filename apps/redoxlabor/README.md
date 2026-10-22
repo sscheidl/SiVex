@@ -1,6 +1,6 @@
 # Redoxlabor: Fehling- und Tollens-Probe
 
-**Status: prototype** (fachlich und im Desktop-Browser geprüft; Test auf echten Schul-iPads und in mebis steht noch aus – siehe [Testbericht](docs/TESTBERICHT.md))
+**Status: prototype** (fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); Test auf echten Schul-iPads und in mebis steht noch aus – siehe [Testbericht](docs/TESTBERICHT.md))
 
 Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fehling- und Tollens-Reagenz selbst an, geben Stoffproben (drei Aldehyde, drei Ketone) zu, erwärmen im Wasserbad, beobachten die Reaktion in einer Lupe, protokollieren und erarbeiten anschließend die Redoxgleichungen.
 
@@ -36,6 +36,8 @@ Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefo
 | [`release/redoxlabor-1.0.0-web.zip`](release/redoxlabor-1.0.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
 | [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt) | Prüfsummen |
 
+**Hinweis:** Die Pakete 1.0.0 enthalten noch den Stand **vor** der Überarbeitung vom 22.10.2026. Ein neues Release ist noch nicht erzeugt.
+
 Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`); es überträgt keine Noten, Fortschritte oder personenbezogenen Daten. Mit einem simulierten SCORM-1.2-LMS geprüft (eingebettet und im neuen Fenster), **in mebis selbst noch nicht getestet**. Neu erzeugen: `npm run package` (reproduzierbar, gleiche Quelle → identische ZIP-Dateien).
 
 ## Bedienung (Kurzfassung)
@@ -44,10 +46,10 @@ Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`)
 2. **Reagenz ansetzen** – Reagenzflaschen antippen: Die Pipette gibt eine Portion in das gewählte Reagenzglas. Alternativ Flasche auf das Reagenzglas ziehen.
    - Fehling: Fehling I + Fehling II, dann *Schütteln* → tiefblaue Lösung
    - Tollens: Silbernitrat → Natronlauge (brauner Niederschlag) → Ammoniaklösung tropfenweise, bis die Lösung klar ist
-3. **Stoffprobe zugeben** – Probenflasche antippen.
-4. **Erwärmen** – Heizplatte einschalten (60 °C / 80 °C), Reagenzglas *Ins Wasserbad* stellen (oder auf das Wasserbad ziehen).
-5. **Beobachten** – in der Lupe vor weißem Hintergrund.
-6. **Beobachtung festhalten** – Protokoll ausfüllen, auswerten lassen oder Lösung anzeigen.
+3. **Stoffprobe zugeben** – Probenflasche antippen (verdünnte Lösungen).
+4. **Erwärmen** – Heizplatte einschalten (60 °C / 80 °C, Steuerung unten im Bedienfeld), Reagenzglas *Ins Wasserbad* stellen (oder auf das Wasserbad ziehen). Der Gasbrenner liegt unter „Weitere Geräte“ und wird für diese Nachweise nicht gebraucht.
+5. **Beobachten** – in der Lupe, immer vor neutralem, weißem Hintergrund. Ein deutlich sichtbares Nachweisprodukt genügt für einen positiven Befund; für „negativ“ muss der fertig gemischte Ansatz lange genug beobachtet werden.
+6. **Beobachtung festhalten** – Protokoll ausfüllen, auswerten lassen oder Lösung anzeigen. Eingaben bleiben bei unvollständigem Formular erhalten; frühe Einträge werden mit Zeitpunkt als Zwischenstand gespeichert.
 7. **Redox-Trainer** – bei positiven Nachweisen die Redoxgleichungen in sechs Schritten erarbeiten.
 
 Alle Handlungen sind ohne Drag-and-drop durch Antippen erreichbar. Die **Hilfe** gibt drei Stufen (Denkimpuls → Konkretisierung → Anleitung) passend zum aktuellen Versuchszustand. **Neustart** setzt nur den Aufbau oder alles zurück. Im **Analysemodus** heißen die Proben A–F und werden bei jedem Neustart neu gemischt.
@@ -73,22 +75,22 @@ tests/e2e/scorm.mjs   Prüfung des SCORM-Pakets mit simuliertem LMS
 docs/                 Chemische Modellierung, Testbericht, Screenshots
 ```
 
-Die Trennung ist strikt: `chemistry.js` und `lab.js` laufen auch in Node und enthalten keine Grafik. Der Renderer zeichnet ausschließlich aus dem Zustand der Experimentsteuerung und dem optischen Modell der Chemie-Engine; Reaktionen werden nie durch einen Zeitablauf seit Programmstart ausgelöst, sondern durch die Wärmedosis, die ein korrekt angesetztes Reagenzglas mit geeigneter Probe im Wasserbad erhält.
+Die Trennung ist strikt: `chemistry.js` und `lab.js` laufen auch in Node und enthalten keine Grafik. Der Renderer zeichnet ausschließlich aus dem Zustand der Experimentsteuerung und dem optischen Modell der Chemie-Engine; Reaktionen werden nie durch einen Zeitablauf seit Programmstart ausgelöst, sondern durch Temperatur und Zusammensetzung des Ansatzes. Reaktionsprodukte (Cu₂O, Silber, CuO) bleiben als eigene Mengen erhalten; die Beobachtungszeit für einen negativen Befund zählt nur für den fertig gemischten Ansatz seit der letzten Zugabe.
 
 Fachliche Einzelheiten: [docs/CHEMIE.md](docs/CHEMIE.md).
 
 ## Tests
 
 ```bash
-npm test            # 45 Unit-Tests (Node, ohne Abhängigkeiten)
+npm test            # 62 Unit-Tests (Node, ohne Abhängigkeiten), davon 16 Regressionstests zur Prüfung vom 22.10.2026
 npm run build       # statischer Build + Prüfung auf externe Ressourcen/absolute Pfade
 npm install         # einmalig für die Browser-Tests (Playwright)
-npm run test:e2e    # 26 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
+npm run test:e2e    # 32 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
 npm run package     # Release-ZIPs (Web + SCORM 1.2) nach release/
 npm run test:scorm  # 9 Prüfungen des SCORM-Pakets mit simuliertem LMS
 ```
 
-Für die Browser-Tests wird Chromium benötigt (`npx playwright install chromium`, falls nicht vorhanden). Ergebnisse: `tests/e2e/results.json`, Bericht: [docs/TESTBERICHT.md](docs/TESTBERICHT.md).
+Für die Browser-Tests wird Chromium benötigt (`npx playwright install chromium`, falls nicht vorhanden). Alternativ einen installierten Browser verwenden: Umgebungsvariable `PW_CHANNEL=msedge` (oder `chrome`). Ergebnisse: `tests/e2e/results.json`, Bericht: [docs/TESTBERICHT.md](docs/TESTBERICHT.md).
 
 ## Datenschutz
 
@@ -98,7 +100,7 @@ Keine Anmeldung, keine Server, keine externen Dienste, keine Analyse-Skripte. Pr
 
 - **iPad:** Touch-Bedienung und Tablet-Layout sind in Chromium mit Touch-Emulation (1180×820, 1024×768) geprüft, aber **nicht auf einem echten iPad mit Safari**. Dieser Gerätetest ist offen.
 - **mebis/SCORM:** Ein SCORM-1.2-Paket liegt vor und ist mit einem simulierten LMS geprüft; ein Import in einen echten mebis-Kurs ist noch nicht getestet.
-- **Zeitraffer:** Reaktionen laufen in 10–25 s statt in Minuten ab. Mengen sind abstrakte „Portionen“ – die Anwendung ist keine Herstellungs- oder Dosieranleitung.
-- **Darstellung:** 2,5D-Canvas-Grafik statt physikalischer Strömungs- oder Lichtsimulation; das Absetzen von Cu₂O ist vereinfacht.
+- **Zeitraffer:** Im Wasserbad laufen die Reaktionen in 10–25 s statt in Minuten ab; die Tollens-Probe setzt bei Raumtemperatur langsam (einige Minuten) ein. Zeiten und Farbverlauf sind modelliert, keine Messdaten. Mengen sind abstrakte „Portionen“ – die Anwendung ist keine Herstellungs- oder Dosieranleitung.
+- **Darstellung:** 2,5D-Canvas-Grafik statt physikalischer Strömungs- oder Lichtsimulation; das Absetzen von Cu₂O und die Verteilung des Silbers (Film/fein verteilt) sind vereinfacht. Der Siedeverzug in der Flamme ist ein geskriptetes Lernszenario.
 - Glucose/Fructose (Expertenmodus) sind nicht umgesetzt.
 - Sehr alte Browser ohne `CanvasPattern.setTransform` zeigen die Trübungstextur gröber; die Funktion bleibt erhalten.
