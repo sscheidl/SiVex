@@ -53,6 +53,28 @@ test('C-11: schulische –COOH-Darstellung, kein Carboxylat in den Gleichungen',
   assert.match(redox.COOH_NOTE, /Carboxylat/);
 });
 
+test('Fachlich genauere Schreibweise mit Carboxylat: ausgeglichen und Summe der Teilgleichungen', () => {
+  for (const test of ['fehling', 'tollens']) {
+    const P = redox.EQUATIONS_PRECISE[test];
+    for (const kind of ['oxidation', 'reduction', 'total']) {
+      const b = redox.balance(P[kind]);
+      assert.ok(b.ok, `${test}/${kind}: ${JSON.stringify(b.diff)} Ladung ${b.left.charge}/${b.right.charge}`);
+    }
+    assert.ok(P.total.right.some((p) => p.f === 'R-COO-'));
+    const sum = {};
+    const addSide = (list, sign) => list.forEach(({ n, f }) => { sum[f] = (sum[f] || 0) + sign * n; });
+    addSide(P.oxidation.left, 1); addSide(P.reduction.left, 1);
+    addSide(P.oxidation.right, -1); addSide(P.reduction.right, -1);
+    addSide(P.total.left, -1); addSide(P.total.right, 1);
+    for (const k in sum) assert.equal(sum[k], 0, `${test}: ${k}`);
+  }
+  // RSC/Chemguide: R–CHO + 2 Cu²⁺ + 5 OH⁻ → R–COO⁻ + Cu₂O + 3 H₂O
+  const coef = (side, f) => side.find((p) => p.f === f).n;
+  assert.equal(coef(redox.EQUATIONS_PRECISE.fehling.total.left, 'OH-'), 5);
+  assert.equal(coef(redox.EQUATIONS_PRECISE.tollens.total.left, 'OH-'), 3);
+  assert.match(redox.COOH_NOTE, /ausgeglichen/);
+});
+
 test('Trainer-Musterlösungen ergeben exakt die geprüften Gleichungen', () => {
   for (const test of ['fehling', 'tollens']) {
     const tr = redox.buildTrainer(test);

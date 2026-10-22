@@ -133,7 +133,7 @@ test('C-06: Fehling-Farbverlauf über mehrere unterscheidbare Zustände (grünli
   const c = contentsWith(['fehling1', 'fehling2', 'ethanal']);
   const hues = [];
   for (const p of [0, 0.25, 0.4, 0.55, 0.72, 1]) {
-    c.progress = p;
+    c.cu2o = p;
     hues.push(Math.round(hsl(chem.appearance(c).body).h));
   }
   // blau → blaugrün → gelbgrün → gelborange → orange → ziegelrot
@@ -216,11 +216,18 @@ test('E-04: Fehling reagiert nur mit Reagenz + reduzierender Probe + Wärme', ()
   }
 });
 
-test('E-05: Tollens reagiert nicht spontan beim Zugeben eines Aldehyds (ohne Wärme)', () => {
+test('E-05: Tollens bei Raumtemperatur langsam, im warmen Wasserbad deutlich schneller', () => {
+  // Fachlich: Mit einfachen Aldehyden kann sich Silber auch ohne Erwärmen abscheiden
+  // (Strathclyde, Kap. 7). Das Modell zeigt das als langsame Reaktion über einige Minuten.
+  const cold = tollens(newLab(), 1, 'ethanal', { heat: false, seconds: 30 });
+  const warm = tollens(newLab(), 1, 'ethanal', { setting: 60, seconds: 30 });
+  assert.ok(cold.contents.progress > 0 && cold.contents.progress < chem.VISIBLE.tollens, 'kalt: beginnend ' + cold.contents.progress);
+  assert.ok(warm.contents.progress >= chem.COMPLETE, 'warm: abgeschlossen ' + warm.contents.progress);
+  assert.equal(chem.classify(cold.contents).outcome, 'unfinished');
   const lab = newLab();
-  const t = tollens(lab, 1, 'ethanal', { heat: false, seconds: 90 });
-  assert.equal(t.contents.progress, 0);
-  assert.equal(chem.appearance(t.contents).mirror, 0);
+  const late = tollens(lab, 1, 'ethanal', { heat: false, seconds: 400 });
+  assert.equal(chem.classify(late.contents).outcome, 'positive', 'nach einigen Minuten auch bei Raumtemperatur sichtbar');
+  assert.ok(chem.appearance(late.contents).mirror > 0.9, 'schonende Abscheidung ergibt einen Spiegel');
 });
 
 test('Unkritische Reihenfolge: Probe vor dem Reagenz, Fehling II vor Fehling I', () => {
@@ -276,14 +283,16 @@ test('E-10/D-05: Protokollbewertung erkennt korrekte positive und negative Auswe
   }
 });
 
-test('Positive Tollens-Auswertung: Spiegel erforderlich, graue Trübung optional', () => {
+test('Positive Tollens-Auswertung: Silberspiegel oder grau-schwarzes Silber (mindestens eins), nicht braunes Ag₂O', () => {
   const lab = newLab();
   const t = tollens(lab, 1, 'butanal');
   const m = chem.classify(t.contents);
   const base = { method: 'tollens', result: 'positiv', interpretation: 'reduzierend', cls: 'aldehyd' };
   assert.ok(chem.gradeProtocol(m, Object.assign({ observations: ['spiegel'] }, base)).allCorrect);
   assert.ok(chem.gradeProtocol(m, Object.assign({ observations: ['spiegel', 'grau'] }, base)).allCorrect);
-  assert.equal(chem.gradeProtocol(m, Object.assign({ observations: ['grau'] }, base)).observations, false);
+  assert.ok(chem.gradeProtocol(m, Object.assign({ observations: ['grau'] }, base)).allCorrect, 'fein verteiltes Silber ist ebenfalls elementares Silber');
+  assert.equal(chem.gradeProtocol(m, Object.assign({ observations: ['braun'] }, base)).observations, false);
+  assert.equal(chem.gradeProtocol(m, Object.assign({ observations: ['klar'] }, base)).observations, false);
 });
 
 test('Temperaturabhängigkeit: Fehling bei 60 °C langsamer als bei 80 °C, aber positiv', () => {

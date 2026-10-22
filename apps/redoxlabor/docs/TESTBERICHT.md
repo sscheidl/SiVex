@@ -1,4 +1,27 @@
-# Testbericht und PASS/HOLD-Abnahme – Redoxlabor 1.0
+# Testbericht und PASS/HOLD-Abnahme – Redoxlabor
+
+## Nachtrag 22.10.2026 – Überarbeitung nach unabhängiger Prüfung
+
+**Anlass:** [REVIEW-2026-10-22.md](REVIEW-2026-10-22.md) · **Umsetzung:** [REVIEW-2026-10-22-UMSETZUNG.md](REVIEW-2026-10-22-UMSETZUNG.md)
+**Prüfumgebung:** Windows 11 Pro, Node.js 24.19.0, Microsoft Edge 155.0.4283.62 über Playwright 1.62.1 (`PW_CHANNEL=msedge`, headless). Das Projekt pinnt Playwright 1.56.1; hier lief die lokal vorhandene neuere Version. Geprüft wurde der statische Build `dist/redoxlabor/`.
+
+| Testart | Umfang | Ergebnis |
+| --- | --- | --- |
+| Unit-Tests | 62 Tests: 45 bisherige (3 an die korrigierte Chemie angepasst: Tollens bei Raumtemperatur, „grau“ als positive Beobachtung, Farbverlauf über `cu2o`) + 16 Regressionstests R1–R6/Übersicht (`tests/unit/regression.test.js`) + 1 Test der Carboxylat-Gleichungen | **62/62 bestanden** |
+| Build | statische Kopie, Prüfung auf externe Ressourcen, absolute Pfade, Netzwerkzugriffe | **OK** (11 Dateien, 256 KiB) |
+| Browser-Tests | 26 bisherige Prüfungen (angepasst: Verlauf bis Reaktionsende statt bis zur ersten Beobachtbarkeit, Gasbrenner unter „Weitere Geräte“) + 6 neue: R3 (Formularentwurf, Markierung, Fokus), R4 (Zwischenstand im Panel und Protokoll), neutrale Lupe (Pixel), R2 (Silberbelag bleibt nach Fehling I, Pixel), Tablet-Beschriftung 1024×768 und 1180×820 | **32/32 bestanden** (209 s; zweiter Lauf, der erste ergab ebenfalls 32/32) |
+| SCORM-Paket | 9 Prüfungen mit simuliertem LMS, Paket aus dem überarbeiteten Build | **9/9 bestanden** – keine `LMSGetValue`/`LMSSetValue`-Aufrufe |
+
+Das SCORM-Paket wurde nur für diesen Test neu erzeugt. Die eingecheckten Release-Pakete `1.0.0` sind unverändert und enthalten **noch den alten Stand**.
+
+**Nicht durchgeführt:** Test auf einem echten iPad mit Safari/WebKit, Import in einen echten mebis-Kurs, Unterrichtstest mit Lernenden, vollständiges Accessibility-Audit (Screenreader-Ausgabe nur strukturell umgesetzt, nicht mit VoiceOver/NVDA geprüft). Der Gesamtstatus bleibt deshalb **HOLD – nicht verifiziert**.
+
+Neue Screenshots: `review-r2-silber-bleibt.png`, `review-r3-entwurf-bleibt.png`, `review-r4-zwischenstand.png`, `review-lupe-neutral.png`, `review-panel-1024x768.png`, `review-panel-1180x820.png`. Alle übrigen Screenshots in `docs/screenshots/` wurden mit dem überarbeiteten Stand neu erzeugt.
+
+---
+
+## Erstfassung (Redoxlabor 1.0)
+
 
 **Stand:** 22.10.2026 · **Prüfumgebung:** Linux-Container, Node.js 22, Chromium (Playwright 1.56.1, headless) · **Geprüft wurde der statische Build** `dist/redoxlabor/`.
 

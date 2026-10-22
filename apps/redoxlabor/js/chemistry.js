@@ -111,11 +111,25 @@
     if (temp <= 40) return 0;
     return Math.pow(Math.min((temp - 40) / 30, 1.3), 1.3);
   }
-  /** Temperaturfaktor der Tollens-Reaktion: im Modell erst oberhalb von ca. 35 °C. */
+  /**
+   * Temperaturfaktor der Tollens-Reaktion. Bei Raumtemperatur kann die
+   * Silberabscheidung mit einfachen Aldehyden langsam einsetzen (im Modell
+   * einige Minuten); das warme Wasserbad beschleunigt sie deutlich.
+   */
+  const TOLLENS_ROOM_FACTOR = 0.05;
   function tollensTempFactor(temp) {
-    if (temp <= 35) return 0;
-    return Math.min((temp - 35) / 25, 1.4);
+    if (temp < 15) return 0;
+    return Math.min(TOLLENS_ROOM_FACTOR + Math.max(0, (temp - 35) / 25), 1.45);
   }
+
+  /**
+   * Ab welcher Produktmenge ist das charakteristische Nachweisprodukt deutlich
+   * sichtbar? (Cu₂O: kräftig gelb-orange Trübung; Ag: grauer Belag bzw. Trübung)
+   * Ein positiver Nachweis setzt keinen vollständigen Umsatz voraus.
+   */
+  const VISIBLE = { fehling: 0.45, tollens: 0.3 };
+  /** Ab hier gilt die Reaktion als praktisch abgeschlossen. */
+  const COMPLETE = 0.97;
 
   // ---------------------------------------------------------------------------
   // Reagenzglasinhalt
@@ -129,11 +143,19 @@
       mix: 1, // 1 = homogen durchmischt
       temp: T.ROOM,
       maxTemp: T.ROOM,
-      heatF: 0, // Wärmedosis bezogen auf Fehling-Bedingungen (1 = ausreichend erwärmt)
-      heatT: 0, // Wärmedosis bezogen auf Tollens-Bedingungen
-      progress: 0, // Umsatz der Nachweisreaktion 0..1 (Cu₂O bzw. Ag)
-      darkening: 0, // Bildung von dunklem Silberpulver aus nicht gelöstem Ag₂O
-      cuo: 0, // Zerfall von Cu(OH)₂ zu schwarzem CuO
+      // Beobachtungsdosis des aktuellen, gebrauchsfertigen und durchmischten
+      // Ansatzes seit der letzten Zugabe (1 = lange genug für einen negativen Befund).
+      // Jede Zugabe beginnt die Beobachtung neu; Reaktionsprodukte bleiben erhalten.
+      exposure: 0,
+      heatAny: 0, // Wärmedosis seit der letzten Zugabe, unabhängig vom Ansatz (für Fehlansätze)
+      sinceAddMaxTemp: T.ROOM, // höchste Temperatur seit der letzten Zugabe
+      progress: 0, // Anzeige: Umsatz der Nachweisreaktion des aktuellen Ansatzes (Cu₂O bzw. Ag)
+      // Reaktionsprodukte – beständig, unabhängig vom aktuellen Reagenzstatus
+      cu2o: 0, // Kupfer(I)-oxid aus der Fehling-Reaktion (0..1 bezogen auf vollständigen Umsatz)
+      ag: 0, // elementares Silber aus der Tollens-Reaktion (0..1)
+      agFilm: 0, // davon als Wandbelag (Silberspiegel) abgeschieden; Rest fein verteilt
+      darkening: 0, // dunkles Silberpulver aus nicht gelöstem Ag₂O (Fehlansatz)
+      cuo: 0, // schwarzes Kupfer(II)-oxid aus Cu(OH)₂ (Fehlansatz)
       hotTollens: 0, // Sekunden Tollens-Reaktion oberhalb ca. 75 °C
       bumped: false, // Siedeverzug aufgetreten
       lost: 0 // herausgespritzter Volumenanteil
@@ -175,6 +197,12 @@
     // sich erst durch Diffusion, Schütteln oder Konvektion beim Erwärmen.
     // Die Tollens-Reagenzien werden tropfenweise unter Umschwenken zugegeben.
     if (before > 0 && !(REAGENT_BY_ID[id] && REAGENT_BY_ID[id].test === 'tollens')) c.mix = Math.min(c.mix, 0.3);
+    // Neue Zusammensetzung: Die Beobachtungszeit für einen negativen Befund
+    // beginnt neu. Bereits entstandene Produkte bleiben unverändert.
+    c.exposure = 0;
+    c.heatAny = 0;
+    c.sinceAddMaxTemp = c.temp;
+    c.progress = currentProgress(c);
     return { ok: true };
   }
 
@@ -226,6 +254,11 @@
       } else if (tart < cu) {
         res.status = 'imbalanced'; res.cuComplex = tart; res.cuOH2 = cu - tart;
         res.reason = 'Zu wenig Fehling II: Ein Teil der Kupfer(II)-Ionen fällt als Kupfer(II)-hydroxid aus. Fehling I und II zu gleichen Teilen mischen.';
+      } else if (c.cuo > 0.05) {
+        // Schwarzes CuO aus einem vorherigen Fehlansatz bleibt als Feststoff erhalten.
+        // Ob und wie es sich in der Tartrat-Lösung wieder löst, bildet das Modell nicht ab.
+        res.status = 'contaminated'; res.cuComplex = cu;
+        res.reason = 'Im Reagenzglas ist noch schwarzes Kupfer(II)-oxid aus dem vorherigen Fehlansatz. Dieser Ansatz liegt außerhalb des Modells – für eine Fehling-Probe ein sauberes Reagenzglas verwenden.';
       } else {
         res.status = 'ready'; res.cuComplex = cu; res.valid = true;
       }
@@ -282,29 +315,43 @@
     const fT = tollensTempFactor(c.temp);
     // Durchmischung: langsame Diffusion, schnelle Konvektion in warmer Flüssigkeit.
     c.mix = Math.min(1, c.mix + dt * (0.012 + (c.temp > 35 ? 0.22 : 0)));
-
-    c.heatF += dt * fF / T.HEAT_FEHLING;
-    c.heatT += dt * fT / T.HEAT_TOLLENS;
+    if (c.temp > c.sinceAddMaxTemp) c.sinceAddMaxTemp = c.temp;
 
     if (c.bumped) return; // Ansatz unbrauchbar – keine weitere Auswertung
     const a = analyze(c);
+    const fSys = a.system === 'tollens' ? fT / T.HEAT_TOLLENS : fF / T.HEAT_FEHLING;
+    c.heatAny += dt * fSys;
+    // Nur der gebrauchsfertige, durchmischte Ansatz zählt als Beobachtungszeit.
+    if (a.valid && c.mix >= 0.85) c.exposure += dt * fSys;
+
     if (a.system === 'fehling' && a.valid && a.reducing) {
-      c.progress = Math.min(1, c.progress + dt * fF * c.mix * a.sample.rate / T.FEHLING_REACTION);
+      c.cu2o = Math.min(1, c.cu2o + dt * fF * c.mix * a.sample.rate / T.FEHLING_REACTION);
     } else if (a.system === 'tollens' && a.valid && a.reducing) {
-      c.progress = Math.min(1, c.progress + dt * fT * c.mix * a.sample.rate / T.TOLLENS_REACTION);
-      if (fT > 0 && c.temp > 75) c.hotTollens += dt;
+      const d = Math.min(1 - c.ag, dt * fT * c.mix * a.sample.rate / T.TOLLENS_REACTION);
+      c.ag += d;
+      // An sauberem Glas und bei schonender Temperatur scheidet sich das meiste
+      // Silber als Film ab; bei zu starkem Erwärmen entsteht mehr fein verteiltes,
+      // grau-schwarzes Silber (ebenfalls elementares Silber).
+      c.agFilm += d * (c.temp > 75 ? 0.4 : c.temp > 65 ? 0.65 : 0.88);
+      if (c.temp > 75) c.hotTollens += dt;
     } else if (a.system === 'tollens' && a.status === 'precipitate' && a.reducing) {
       c.darkening = Math.min(1, c.darkening + dt * fT / T.DARKEN);
     }
     if (a.system === 'fehling' && (a.status === 'cuoh2' || a.status === 'imbalanced')) {
       c.cuo = Math.min(1, c.cuo + dt * fF / T.CUO);
     }
+    c.progress = currentProgress(c, a);
   }
 
-  /** Wurde ausreichend erwärmt, um eine Beobachtung abschließend zu beurteilen? */
+  /** Umsatz der Nachweisreaktion, die zum aktuellen Ansatz gehört (sonst 0). */
+  function currentProgress(c, a) {
+    const s = (a || analyze(c)).system;
+    return s === 'fehling' ? c.cu2o : s === 'tollens' ? c.ag : 0;
+  }
+
+  /** Beobachtungsdosis des aktuellen Ansatzes seit der letzten Zugabe. */
   function heatDose(c) {
-    const a = analyze(c);
-    return a.system === 'tollens' ? c.heatT : c.heatF;
+    return c.exposure;
   }
 
   function isReactive(c) {
@@ -312,12 +359,31 @@
     return (a.system === 'fehling' || a.system === 'tollens') && a.valid && a.reducing;
   }
 
-  /** Beobachtung möglich: positive Reaktion praktisch abgeschlossen bzw. ausreichend lange erwärmt. */
+  /** Ist das charakteristische Produkt des aktuellen, gültigen Nachweises deutlich sichtbar? */
+  function positiveVisible(c, a) {
+    a = a || analyze(c);
+    if (!a.valid) return false;
+    if (a.system === 'fehling') return c.cu2o >= VISIBLE.fehling;
+    if (a.system === 'tollens') return c.ag >= VISIBLE.tollens;
+    return false;
+  }
+
+  /**
+   * Lässt sich jetzt eine Aussage treffen? Positiv, sobald das Nachweisprodukt
+   * deutlich sichtbar ist; negativ erst nach ausreichender Beobachtungszeit des
+   * fertig gemischten Ansatzes. Fehlansätze nach ausreichendem Erwärmen.
+   */
   function isObservable(c) {
     if (volume(c) === 0) return false;
     if (c.bumped) return true;
-    if (isReactive(c)) return c.progress >= 0.97;
-    return heatDose(c) >= 1;
+    const a = analyze(c);
+    if (a.valid) return (!!a.sample && positiveVisible(c, a)) || c.exposure >= 1;
+    return c.heatAny >= 1;
+  }
+
+  /** Reaktion praktisch abgeschlossen (nur für die Anzeige, nicht für das Ergebnis). */
+  function isComplete(c) {
+    return isReactive(c) && c.progress >= COMPLETE;
   }
 
   // ---------------------------------------------------------------------------
@@ -365,7 +431,7 @@
     // Gelöste farbige Teilchen
     if (a.cuFree > 0) layers.push([COL.cuAqua, clamp(0.3 + 0.35 * conc(a.cuFree), 0, 0.7)]);
     if (a.cuComplex > 0) {
-      const remaining = a.cuComplex * (1 - 0.55 * c.progress);
+      const remaining = a.cuComplex * (1 - 0.55 * c.cu2o);
       layers.push([COL.cuTartrate, clamp(0.55 + 0.9 * conc(remaining), 0, 0.92)]);
     }
     if (a.cuAmmine > 0) layers.push([COL.cuAmmine, clamp(0.55 + 0.9 * conc(a.cuAmmine), 0, 0.92)]);
@@ -383,60 +449,67 @@
     const flecks = { color: [0, 0, 0], density: 0, size: 1 };
     let mirror = 0, mirrorQuality = 1;
 
-    if (a.system === 'fehling' || (a.system === 'foreign' && c.progress > 0)) {
-      if (c.progress > 0) {
-        // Cu₂O-Kolloid: Farbe wandert von gelb-orange nach ziegelrot, Trübung nimmt zu.
-        const col = stops(CU2O_STOPS, c.progress);
-        turb = [...col, 0.94 * smooth(0.03, 0.82, c.progress)];
-        flecks.color = lerpColor(col, [150, 45, 25], 0.35);
-        flecks.density = smooth(0.02, 0.9, c.progress);
-        flecks.size = 0.8 + 0.8 * c.progress;
-      }
-      if (a.cuOH2 > 0) {
-        const frac = clamp(a.cuOH2 / Math.max(1, c.portions.fehling1));
-        const col = lerpColor(COL.cuOH2, COL.cuO, smooth(0, 1, c.cuo));
-        const ta = (0.55 + 0.35 * frac) * (0.85 + 0.15 * c.cuo);
-        turb = mixTurb(turb, [...col, ta]);
-        flecks.color = lerpColor([90, 150, 215], COL.cuO, c.cuo);
-        flecks.density = Math.max(flecks.density, 0.6);
-        flecks.size = 1.6;
-      }
+    // Die Feststoffe werden nach ihrer tatsächlich vorhandenen Menge dargestellt –
+    // unabhängig davon, ob der aktuelle Ansatz noch ein gültiger Nachweis ist.
+    if (c.cu2o > 0) {
+      // Cu₂O-Kolloid: Farbe wandert von gelb-orange nach ziegelrot, Trübung nimmt zu.
+      const col = stops(CU2O_STOPS, c.cu2o);
+      turb = [...col, 0.94 * smooth(0.03, 0.82, c.cu2o)];
+      flecks.color = lerpColor(col, [150, 45, 25], 0.35);
+      flecks.density = smooth(0.02, 0.9, c.cu2o);
+      flecks.size = 0.8 + 0.8 * c.cu2o;
+    }
+    if (a.cuOH2 > 0) {
+      const frac = clamp(a.cuOH2 / Math.max(1, c.portions.fehling1));
+      const col = lerpColor(COL.cuOH2, COL.cuO, smooth(0, 1, c.cuo));
+      const ta = (0.55 + 0.35 * frac) * (0.85 + 0.15 * c.cuo);
+      turb = mixTurb(turb, [...col, ta]);
+      flecks.color = lerpColor([90, 150, 215], COL.cuO, c.cuo);
+      flecks.density = Math.max(flecks.density, 0.6);
+      flecks.size = 1.6;
+    } else if (c.cuo > 0) {
+      // Schwarzes CuO bleibt als Feststoff erhalten, auch wenn später Tartrat zugegeben wird.
+      turb = mixTurb(turb, [...COL.cuO, 0.85 * smooth(0, 0.6, c.cuo)]);
+      flecks.color = COL.cuO;
+      flecks.density = Math.max(flecks.density, 0.6 * c.cuo);
+      flecks.size = 1.6;
     }
 
-    if (a.system === 'tollens') {
-      if (a.ag2o > 0) {
-        const frac = a.ag2o / Math.max(1e-9, c.portions.agno3);
-        const col = lerpColor(COL.ag2o, COL.agDark, c.darkening);
-        turb = [...col, 0.25 + 0.65 * frac];
-        flecks.color = lerpColor([70, 48, 32], [30, 30, 32], c.darkening);
-        flecks.density = 0.25 + 0.75 * frac;
-        flecks.size = 1.3;
-      } else if (c.darkening > 0) {
-        turb = [...COL.agDark, 0.35 * c.darkening];
-      }
-      if (a.valid && c.progress > 0) {
-        // Kolloidales Silber färbt die Lösung zunächst grau, dann scheidet es sich an der Wand ab.
-        const haze = 0.42 * smooth(0.02, 0.3, c.progress) * (1 - 0.45 * smooth(0.5, 1, c.progress));
-        const hot = clamp(c.hotTollens / 6);
-        turb = mixTurb(turb, [...lerpColor([120, 112, 104], COL.agDark, 0.5 + 0.5 * hot), haze + 0.2 * hot * c.progress]);
-        flecks.color = [70, 70, 74];
-        flecks.density = Math.max(flecks.density, 0.25 * smooth(0.05, 0.5, c.progress) + 0.4 * hot * c.progress);
-        flecks.size = 0.8;
-        mirror = smooth(0.08, 0.96, c.progress);
-        mirrorQuality = 1 - 0.35 * hot;
-      }
+    if (a.ag2o > 0) {
+      const frac = a.ag2o / Math.max(1e-9, c.portions.agno3);
+      const col = lerpColor(COL.ag2o, COL.agDark, c.darkening);
+      turb = mixTurb(turb, [...col, 0.25 + 0.65 * frac]);
+      flecks.color = lerpColor([70, 48, 32], [30, 30, 32], c.darkening);
+      flecks.density = Math.max(flecks.density, 0.25 + 0.75 * frac);
+      flecks.size = 1.3;
+    } else if (c.darkening > 0) {
+      turb = mixTurb(turb, [...COL.agDark, 0.35 * c.darkening]);
+    }
+    if (c.ag > 0) {
+      // Während der Reaktion färbt kolloidales Silber die Lösung grau, dann scheidet
+      // es sich überwiegend an der Wand ab. Fein verteiltes Silber bleibt grau-schwarz.
+      const fine = Math.max(0, c.ag - c.agFilm);
+      const running = a.system === 'tollens' && a.valid && c.ag < COMPLETE ? 1 : 0.55;
+      const haze = 0.42 * smooth(0.02, 0.3, c.ag) * (1 - 0.45 * smooth(0.5, 1, c.ag)) * running;
+      const dark = 0.75 * smooth(0, 0.45, fine);
+      turb = mixTurb(turb, [...lerpColor([120, 112, 104], COL.agDark, clamp(fine / Math.max(0.05, c.ag) * 1.6)), Math.max(haze, dark)]);
+      flecks.color = [70, 70, 74];
+      flecks.density = Math.max(flecks.density, 0.25 * smooth(0.05, 0.5, c.ag) + 0.6 * smooth(0, 0.4, fine));
+      flecks.size = 0.8;
+      mirror = smooth(0.05, 0.8, c.agFilm);
+      mirrorQuality = 1 - 0.6 * clamp(fine / Math.max(0.05, c.ag));
     }
 
-    if (a.system === 'foreign' && c.progress === 0) {
+    if (a.system === 'foreign' && c.cu2o === 0 && c.ag === 0) {
       turb = mixTurb(turb, [120, 128, 120, 0.25]);
     }
 
     // body: sichtbare Gesamtfarbe des Reagenzglasinhalts (Lösung + Schwebstoffe)
     let body;
-    if (a.system === 'fehling' && c.progress > 0 && a.cuOH2 === 0) {
+    if (a.system === 'fehling' && c.cu2o > 0 && a.cuOH2 === 0 && c.cuo === 0) {
       const start = [liquid[0], liquid[1], liquid[2]];
       const list = [[0, start]].concat(FEHLING_VIEW_STOPS);
-      body = [...stops(list, c.progress), lerp(liquid[3], 0.97, smooth(0, 0.7, c.progress))];
+      body = [...stops(list, c.cu2o), lerp(liquid[3], 0.97, smooth(0, 0.7, c.cu2o))];
     } else {
       const ta = turb[3];
       const la = liquid[3];
@@ -465,7 +538,7 @@
     ziegelrot: 'Es bildet sich eine orange bis ziegelrote Trübung (Niederschlag).',
     klar: 'Die Lösung bleibt klar und farblos.',
     spiegel: 'An der Glaswand bildet sich ein silberner bzw. grau-silberner Belag (Silberspiegel).',
-    grau: 'Die Lösung färbt sich grau bis schwarz.',
+    grau: 'Die Lösung färbt sich grau bis schwarz bzw. ein grau-schwarzer Niederschlag entsteht.',
     braun: 'Ein brauner Niederschlag ist zu sehen.',
     hellblauNs: 'Ein hellblauer Niederschlag ist zu sehen.',
     schwarz: 'Es entsteht ein schwarzer Niederschlag.',
@@ -493,6 +566,16 @@
   /**
    * Fachliche Musterauswertung eines Reagenzglases.
    */
+  /** Kurzer Hinweis auf Feststoffe, die aus einem früheren Zustand des Ansatzes stammen. */
+  function leftoverNote(c, a) {
+    const parts = [];
+    if (c.agFilm > 0.1 && a.system !== 'tollens') parts.push('Der zuvor entstandene Silberbelag bleibt an der Glaswand sichtbar.');
+    else if (c.ag > 0.1 && a.system !== 'tollens') parts.push('Das zuvor entstandene Silber bleibt im Reagenzglas.');
+    if (c.cu2o > 0.1 && a.system !== 'fehling') parts.push('Das zuvor entstandene Kupfer(I)-oxid bleibt als roter Feststoff erhalten.');
+    if (!parts.length) return '';
+    return ' ' + parts.join(' ') + ' Es stammt aus dem früheren Ansatz und ist kein neues Nachweisergebnis.';
+  }
+
   function classify(c) {
     const a = analyze(c);
     const sample = a.sample;
@@ -501,12 +584,12 @@
       system: a.system, status: a.status, reason: a.reason,
       sampleId: sample ? sample.id : null,
       method: a.system === 'fehling' ? 'fehling' : a.system === 'tollens' ? 'tollens' : 'keines',
-      outcome: 'invalid',
+      outcome: 'invalid', complete: false,
       result: 'ungueltig', interpretation: 'keineAussage', cls: 'keineAussage',
-      obsRequired: [], obsOptional: [], strictObs: true,
-      title: '', explanation: ''
+      obsRequired: [], obsOptional: [], obsOneOf: [], strictObs: true,
+      title: '', explanation: '', modelNote: ''
     };
-    const set = (req, opt) => { out.obsRequired = req; out.obsOptional = opt || []; };
+    const set = (req, opt, oneOf) => { out.obsRequired = req; out.obsOptional = opt || []; out.obsOneOf = oneOf || []; };
 
     if (a.system === 'empty') {
       out.outcome = 'empty'; out.title = 'Leeres Reagenzglas'; out.explanation = 'Das Reagenzglas enthält noch nichts.';
@@ -519,26 +602,33 @@
     }
     if (a.system === 'foreign' || a.system === 'none') {
       out.title = 'Kein gültiger Nachweis';
-      out.explanation = a.reason + ' Setze ein neues Reagenzglas an.';
+      out.explanation = a.reason + leftoverNote(c, a) + ' Setze ein neues Reagenzglas an.';
       out.strictObs = false; return out;
     }
 
     const isF = a.system === 'fehling';
     const testName = isF ? 'Fehling-Probe' : 'Tollens-Probe';
+    out.modelNote = isF
+      ? 'Modell: Wir betrachten den beschleunigten Versuch im heißen Wasserbad (60–80 °C). Bei Raumtemperatur läuft die Fehling-Probe praktisch nicht ab. Zeiten und Farbverlauf sind ein mögliches Erscheinungsbild, keine Messdaten.'
+      : 'Modell: Wir betrachten den beschleunigten Versuch im warmen Wasserbad (ca. 60 °C). Mit einfachen Aldehyden kann sich Silber auch bei Raumtemperatur langsam abscheiden. Zeiten sind modelliert, keine Messdaten.';
 
     if (!a.valid) {
       out.title = 'Kein gültiger Nachweis – Reagenz nicht korrekt angesetzt';
-      out.explanation = a.reason + ' Ein Ergebnis dieses Ansatzes lässt keine Aussage über die Probe zu.';
+      out.explanation = a.reason + leftoverNote(c, a) + ' Ein Ergebnis dieses Ansatzes lässt keine Aussage über die Probe zu.';
       if (isF) {
         if (a.status === 'cuoh2' || a.status === 'imbalanced') {
           if (c.cuo > 0.5) set(['schwarz'], ['hellblauNs', 'ziegelrot', 'tiefblau']);
           else set(['hellblauNs'], ['schwarz', 'tiefblau', 'keineVeraenderung']);
-          out.strictObs = c.progress === 0 && !a.reducing;
+          out.strictObs = c.cu2o === 0 && !a.reducing;
+        } else if (a.status === 'contaminated') {
+          set(['schwarz'], ['tiefblau', 'keineVeraenderung']);
         } else if (c.portions.fehling1 > 0) set(['hellblau'], ['keineVeraenderung']);
         else set(['klar'], ['keineVeraenderung']);
       } else {
-        if (a.status === 'precipitate') set(['braun'], c.darkening > 0.2 ? ['grau', 'schwarz'] : ['keineVeraenderung']);
-        else set(['klar'], ['keineVeraenderung']);
+        if (a.status === 'precipitate') {
+          out.explanation += ' Der braune Niederschlag ist Silberoxid (Ag₂O) und kein Nachweisprodukt.';
+          set(['braun'], c.darkening > 0.2 ? ['grau', 'schwarz'] : ['keineVeraenderung']);
+        } else set(['klar'], ['keineVeraenderung']);
       }
       return out;
     }
@@ -546,42 +636,67 @@
     // Reagenz korrekt angesetzt
     if (!sample) {
       out.title = 'Blindprobe ohne Stoffprobe';
-      out.explanation = `Das ${testName.replace('-Probe', '-Reagenz')} wurde ohne Stoffprobe ${heated ? 'erwärmt' : 'beobachtet'}. Eine solche Blindprobe zeigt, dass das Reagenz allein keine positive Reaktion zeigt – über eine Stoffprobe sagt sie nichts aus.`;
+      out.explanation = `Das ${testName.replace('-Probe', '-Reagenz')} wurde ohne Stoffprobe ${heated ? 'ausreichend lange erwärmt' : 'beobachtet'}. Eine solche Blindprobe zeigt, dass das Reagenz allein keine positive Reaktion zeigt – über eine Stoffprobe sagt sie nichts aus.`;
       set(isF ? ['tiefblau'] : ['klar'], ['keineVeraenderung']);
       return out;
     }
 
-    if (!isObservable(c)) {
-      out.outcome = 'unfinished';
-      out.title = heated || c.progress > 0 ? 'Versuch noch nicht abgeschlossen' : 'Noch nicht erwärmt – kein abgeschlossener Nachweis';
-      out.explanation = heated || c.progress > 0
-        ? 'Die Reaktion ist noch nicht abgeschlossen. Lass das Reagenzglas weiter im Wasserbad und beobachte erneut.'
-        : `Die ${testName} benötigt Wärme. Ohne Erwärmen im Wasserbad läuft die Nachweisreaktion nicht in beobachtbarer Zeit ab – daraus darf noch kein Ergebnis abgeleitet werden.`;
-      if (c.progress > 0.05) set([], isF ? ['tiefblau', 'ziegelrot'] : ['klar', 'grau', 'spiegel']);
-      else set(isF ? ['tiefblau'] : ['klar'], ['keineVeraenderung']);
-      out.strictObs = c.progress <= 0.05;
-      return out;
-    }
-
-    if (a.reducing) {
+    const product = isF ? c.cu2o : c.ag;
+    if (positiveVisible(c, a)) {
       out.outcome = 'positive'; out.result = 'positiv'; out.interpretation = 'reduzierend'; out.cls = 'aldehyd';
+      out.complete = product >= COMPLETE;
+      const running = out.complete ? '' : ' Die Reaktion läuft noch weiter. Für einen positiven Nachweis genügt das deutlich sichtbare Nachweisprodukt – vollständiger Umsatz ist dafür nicht nötig.';
+      const tail = ' Die Probe wirkt reduzierend. Welcher Aldehyd vorliegt, lässt sich aus diesem Nachweis allein nicht ableiten – alle drei Aldehyde reagieren gleich.';
       if (isF) {
-        out.title = 'Positive Fehling-Probe';
-        out.explanation = 'Beim Erwärmen bildet sich eine orange bis ziegelrote Trübung aus Kupfer(I)-oxid (Cu₂O). Die Kupfer(II)-Ionen wurden zu Kupfer(I) reduziert, die Aldehydgruppe der Probe wurde zur Carboxygruppe oxidiert. Die Probe wirkt reduzierend. Welcher Aldehyd vorliegt, lässt sich aus diesem Nachweis allein nicht ableiten – alle drei Aldehyde reagieren gleich.';
+        out.title = out.complete ? 'Positive Fehling-Probe' : 'Positive Fehling-Probe (Reaktion läuft noch)';
+        out.explanation = 'Es bildet sich eine orange bis ziegelrote Trübung aus Kupfer(I)-oxid (Cu₂O). Die Kupfer(II)-Ionen wurden zu Kupfer(I) reduziert, die Aldehydgruppe der Probe wurde oxidiert (im alkalischen Ansatz zum Carboxylat-Ion).' + running + tail;
         set(['ziegelrot'], []);
       } else {
-        out.title = 'Positive Tollens-Probe (Silberspiegel)';
-        out.explanation = 'An der Glaswand scheidet sich elementares Silber als Silberspiegel ab. Die Silber(I)-Ionen des Silber-Ammin-Komplexes wurden zu Silber reduziert, die Aldehydgruppe der Probe wurde zur Carboxygruppe oxidiert. Die Probe wirkt reduzierend. Welcher Aldehyd vorliegt, lässt sich aus diesem Nachweis allein nicht ableiten.';
-        set(['spiegel'], ['grau']);
+        const filmShare = c.ag > 0 ? c.agFilm / c.ag : 1;
+        const form = filmShare >= 0.75
+          ? 'An der Glaswand scheidet sich elementares Silber als Silberspiegel ab.'
+          : 'Es scheidet sich elementares Silber ab – überwiegend fein verteilt als grau-schwarzer Niederschlag, nur teilweise als Spiegel. Auch fein verteiltes Silber ist ein positiver Nachweis; ein gleichmäßiger Spiegel entsteht vor allem an sauberem Glas bei schonendem Erwärmen.';
+        out.title = (filmShare >= 0.75 ? 'Positive Tollens-Probe (Silberspiegel)' : 'Positive Tollens-Probe (fein verteiltes Silber)') + (out.complete ? '' : ' – Reaktion läuft noch');
+        out.explanation = form + ' Die Silber(I)-Ionen des Silber-Ammin-Komplexes wurden zu Silber reduziert, die Aldehydgruppe der Probe wurde oxidiert (im alkalischen Ansatz zum Carboxylat-Ion). Nicht verwechseln mit braunem Silberoxid (Ag₂O) aus unvollständig angesetztem Reagenz.' + running + tail;
+        set([], ['spiegel', 'grau'], ['spiegel', 'grau']);
       }
-    } else {
-      out.outcome = 'negative'; out.result = 'negativ'; out.interpretation = 'nichtReduzierend'; out.cls = 'keinAldehyd';
-      out.title = `Negative ${testName}`;
-      out.explanation = isF
-        ? 'Die Lösung bleibt auch nach dem Erwärmen tiefblau, es bildet sich kein Kupfer(I)-oxid. Die Probe wirkt unter diesen Bedingungen nicht reduzierend. Ketone besitzen am Carbonyl-C-Atom kein Wasserstoffatom und werden daher nicht oxidiert. Ein negativer Nachweis allein beweist aber nicht, dass ein Keton vorliegt – auch z. B. Alkane oder Ethanol reagieren negativ.'
-        : 'Die Lösung bleibt klar, an der Glaswand entsteht kein Silberspiegel. Die Probe wirkt unter diesen Bedingungen nicht reduzierend. Ketone besitzen am Carbonyl-C-Atom kein Wasserstoffatom und werden daher nicht oxidiert. Ein negativer Nachweis allein beweist aber nicht, dass ein Keton vorliegt – auch z. B. Alkane oder Ethanol reagieren negativ.';
-      set(isF ? ['tiefblau'] : ['klar'], ['keineVeraenderung']);
+      return out;
     }
+
+    // Kein negativer Befund, solange ein (noch schwaches) Produkt zu sehen ist.
+    if (c.exposure < 1 || product > 0.05) {
+      out.outcome = 'unfinished';
+      const trace = product > 0.05;
+      const mixed = c.mix >= 0.85;
+      const unheatedFehling = isF && c.exposure <= 0.02 && c.sinceAddMaxTemp <= 40;
+      if (trace) {
+        out.title = 'Beginnende Veränderung – noch nicht eindeutig';
+        out.explanation = 'Eine beginnende Veränderung ist zu sehen, aber noch kein eindeutiges Nachweisprodukt. Beobachte weiter.';
+      } else if (!mixed && !unheatedFehling) {
+        out.title = 'Ansatz noch nicht durchmischt';
+        out.explanation = 'Probe und Reagenz sind noch nicht gleichmäßig vermischt. Erst der durchmischte Ansatz zählt als Beobachtung – schütteln oder im Wasserbad erwärmen.';
+      } else if (c.exposure > 0.02) {
+        out.title = 'Beobachtungszeit noch zu kurz';
+        out.explanation = `Bisher ist kein Nachweisprodukt zu sehen. Für einen negativen Befund muss der fertig gemischte Ansatz seit der letzten Zugabe lange genug unter geeigneten Bedingungen beobachtet werden – das ist noch nicht der Fall. ${isF ? 'Lass das Reagenzglas weiter im heißen Wasserbad.' : 'Lass das Reagenzglas weiter im warmen Wasserbad.'}`;
+      } else {
+        out.title = isF ? 'Noch nicht erwärmt – kein abgeschlossener Nachweis' : 'Noch nicht ausreichend beobachtet';
+        out.explanation = isF
+          ? 'Die Fehling-Probe läuft bei Raumtemperatur praktisch nicht ab. Erst nach ausreichendem Erwärmen im Wasserbad darf aus „keine Veränderung“ ein negativer Befund abgeleitet werden.'
+          : 'Bei Raumtemperatur kann sich Silber langsam abscheiden; im warmen Wasserbad geht es deutlich schneller. Für einen negativen Befund muss der fertig gemischte Ansatz lange genug beobachtet werden.';
+      }
+      if (trace) set([], isF ? ['tiefblau', 'ziegelrot'] : ['klar', 'grau', 'spiegel']);
+      else set(isF ? ['tiefblau'] : ['klar'], ['keineVeraenderung']);
+      out.strictObs = !trace;
+      return out;
+    }
+
+    out.outcome = 'negative'; out.result = 'negativ'; out.interpretation = 'nichtReduzierend'; out.cls = 'keinAldehyd';
+    out.title = `Negative ${testName}`;
+    out.explanation = (isF
+      ? 'Die Lösung bleibt auch nach ausreichend langem Erwärmen tiefblau, es bildet sich kein Kupfer(I)-oxid.'
+      : 'Die Lösung bleibt auch nach ausreichend langer Beobachtung im warmen Wasserbad klar, es entsteht weder ein Silberspiegel noch fein verteiltes Silber.') +
+      ' Die Probe wirkt unter diesen Bedingungen nicht reduzierend. Ketone besitzen am Carbonyl-C-Atom kein Wasserstoffatom und werden daher nicht oxidiert. Ein negativer Nachweis allein beweist aber nicht, dass ein Keton vorliegt – auch z. B. Alkane oder Ethanol reagieren negativ.';
+    set(isF ? ['tiefblau'] : ['klar'], ['keineVeraenderung']);
     return out;
   }
 
@@ -593,14 +708,17 @@
     const fb = {};
     fb.method = answers.method === model.method;
     const obs = new Set(answers.observations || []);
+    const oneOf = model.obsOneOf || [];
     if (model.strictObs) {
-      const allowed = new Set([...model.obsRequired, ...model.obsOptional]);
+      const allowed = new Set([...model.obsRequired, ...model.obsOptional, ...oneOf]);
       const missing = model.obsRequired.filter((k) => !obs.has(k));
+      // Mindestens eine der gleichwertigen Beobachtungen (z. B. Spiegel oder grau-schwarzes Silber)
+      if (oneOf.length && !oneOf.some((k) => obs.has(k))) missing.push(oneOf.join('|'));
       const wrong = [...obs].filter((k) => !allowed.has(k));
       fb.observations = missing.length === 0 && wrong.length === 0 && obs.size > 0;
       fb.obsMissing = missing; fb.obsWrong = wrong;
     } else {
-      const allowed = new Set([...model.obsRequired, ...model.obsOptional]);
+      const allowed = new Set([...model.obsRequired, ...model.obsOptional, ...oneOf]);
       const wrong = allowed.size ? [...obs].filter((k) => !allowed.has(k)) : [];
       fb.observations = obs.size > 0 && wrong.length === 0;
       fb.obsMissing = []; fb.obsWrong = wrong;
@@ -622,12 +740,36 @@
     return { C, H, O: 1 };
   }
 
+  /**
+   * Sachliche Textbeschreibung des sichtbaren Zustands (für Screenreader).
+   * Beschreibt nur, was zu sehen ist – keine Deutung.
+   */
+  function describe(c) {
+    const vol = volume(c);
+    if (vol === 0) return 'leer';
+    const a = analyze(c);
+    const ap = appearance(c);
+    const parts = [];
+    if (a.cuAmmine > 0) parts.push('tiefblau-violette Lösung');
+    else if (a.cuComplex > 0) parts.push(c.cu2o > 0.2 ? 'Mischung mit orange-roter Trübung' : 'tiefblaue Lösung');
+    else if (a.cuFree > 0) parts.push('hellblaue Lösung');
+    else parts.push(ap.turb[3] > 0.3 ? 'trübe Flüssigkeit' : 'klare, farblose Lösung');
+    if (a.cuOH2 > 0) parts.push(c.cuo > 0.5 ? 'schwarzer Niederschlag' : 'hellblauer Niederschlag');
+    else if (c.cuo > 0.3) parts.push('schwarzer Feststoff');
+    if (a.ag2o > 0) parts.push('brauner Niederschlag');
+    if (c.cu2o > 0.2 && !(a.cuComplex > 0)) parts.push('orange-roter Feststoff');
+    if (ap.mirror > 0.3) parts.push('silbriger Belag an der Glaswand');
+    if (c.ag - c.agFilm > 0.15 || c.darkening > 0.3) parts.push('grau-schwarze Trübung');
+    if (c.mix < 0.85) parts.push('noch nicht durchmischt');
+    return parts.join(', ');
+  }
+
   return {
-    SAMPLES, SAMPLE_BY_ID, REAGENTS, REAGENT_BY_ID, CAPACITY, TIMES: T,
+    SAMPLES, SAMPLE_BY_ID, REAGENTS, REAGENT_BY_ID, CAPACITY, TIMES: T, VISIBLE, COMPLETE,
     OBSERVATIONS, RESULTS, INTERPRETATIONS, CLASSES, METHODS,
     createContents, volume, canAdd, add, analyze, reagentReady, step,
-    fehlingTempFactor, tollensTempFactor, heatDose, isReactive, isObservable,
-    appearance, classify, gradeProtocol, formulaFromChain,
+    fehlingTempFactor, tollensTempFactor, heatDose, isReactive, isObservable, isComplete, positiveVisible, currentProgress,
+    appearance, classify, gradeProtocol, formulaFromChain, describe,
     util: { clamp, smooth, lerp, lerpColor }
   };
 });

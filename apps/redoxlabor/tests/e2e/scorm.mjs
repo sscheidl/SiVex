@@ -73,7 +73,8 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': type }); res.end(data);
 });
 await new Promise((r) => server.listen(PORT, r));
-const browser = await chromium.launch();
+const CHANNEL = process.env.PW_CHANNEL || '';
+const browser = await chromium.launch(CHANNEL ? { channel: CHANNEL } : {});
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function runExperiment(frame) {

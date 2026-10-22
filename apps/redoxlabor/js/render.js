@@ -671,6 +671,12 @@
           }
         } else v.app = null;
         const targetVol = chem.volume(c) * (1 - c.lost);
+        // Frisch zugegebene Flüssigkeit enthält gelöste Luft, die beim Erwärmen
+        // anfangs als einzelne Bläschen entweicht (kein Sieden bei 60/80 °C).
+        if (targetVol > (v.lastVol || 0) + 0.5) v.degas = 1;
+        v.lastVol = targetVol;
+        const warmUp = clamp((c.temp - 40) / 30, 0, 1);
+        v.degas = Math.max(0, (v.degas == null ? 1 : v.degas) - dt * 0.07 * warmUp);
         v.vol = lerp(v.vol, targetVol, 1 - Math.exp(-dt / 0.28));
         if (Math.abs(v.vol - targetVol) < 0.002) v.vol = targetVol;
         if (target && target.mirror > 0.001 && v.mirrorH === 0) v.mirrorH = Math.max(8, chem.volume(c) * TUBE.portionH);
@@ -699,10 +705,15 @@
           if (p.a < 0.02 || p.v < -0.2) v.plumes.splice(i, 1);
         }
         if (c.mix > 0.98) v.layer = null;
-        // Sedimentation nach abgeschlossener Fehling-Reaktion im kalten Reagenzglas
-        const fehlingDone = target && target.system === 'fehling' && c.progress > 0.97;
-        if (fehlingDone && c.temp < 38 && !pose.moving && !pose.shake) v.settle = Math.min(1, v.settle + dt / 28);
-        else v.settle = Math.max(0, v.settle - dt * (pose.shake ? 2 : 0.5));
+        // Sedimentation des Cu₂O: in ruhender Flüssigkeit langsam, bei Konvektion im
+        // heißen Wasserbad nur teilweise; Schütteln oder Umsetzen wirbelt es wieder auf.
+        const solid = c.cu2o > 0.5;
+        const convecting = t.place === 'bath' && c.temp > 50;
+        const settleMax = convecting ? 0.45 : 1;
+        if (solid && !pose.moving && !pose.shake) {
+          if (v.settle < settleMax) v.settle = Math.min(settleMax, v.settle + dt / (convecting ? 90 : c.temp > 38 ? 50 : 28));
+          else v.settle = Math.max(settleMax, v.settle - dt * 0.05);
+        } else v.settle = Math.max(0, v.settle - dt * (pose.shake ? 2 : pose.moving ? 0.6 : 0.5));
         // Partikel
         const conv = clamp((c.temp - 35) / 30, 0, 1.2);
         for (const p of v.particles) {
@@ -950,7 +961,7 @@
       }
       // Bodensatz (abgesetztes Cu₂O)
       if (v.settle > 0.02) {
-        const sh = (5 + 9 * c.progress) * v.settle;
+        const sh = (5 + 9 * c.cu2o) * v.settle;
         const sg = g.createLinearGradient(0, 0, 0, -sh - 6);
         const sc = app.flecks.color;
         sg.addColorStop(0, rgba(shade(sc, 0.8), 0.98)); sg.addColorStop(0.7, rgba(sc, 0.9)); sg.addColorStop(1, rgba(sc, 0));
@@ -969,9 +980,10 @@
       g.strokeStyle = rgba(shade(body, 0.7), 0.55); g.lineWidth = 1;
       g.beginPath(); g.arc(-ri + 3.5, surfaceY(v, -ri, h) - 0.5, 3.5, Math.PI, Math.PI * 1.5); g.stroke();
       g.beginPath(); g.arc(ri - 3.5, surfaceY(v, ri, h) - 0.5, 3.5, Math.PI * 1.5, 0); g.stroke();
-      // Gasbläschen beim Erwärmen
-      if (c.temp > 55) {
-        const nB = Math.round((c.temp - 55) / 6);
+      // Einzelne Bläschen beim Erwärmen: entweichende gelöste Luft, zeitlich begrenzt
+      const warmUp = clamp((c.temp - 40) / 30, 0, 1);
+      if (warmUp > 0 && v.degas > 0.03) {
+        const nB = Math.round(6 * v.degas * warmUp);
         g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.6;
         for (let i = 0; i < nB; i++) {
           const ph = (time * (0.6 + i * 0.13) + i * 0.37) % 1;
@@ -1150,10 +1162,14 @@
     }
 
     // --------------------------------------------------------- Wasserbad
+    // Gelöste Luft im Wasserbad: entweicht beim Aufheizen, wird im kalten Bad langsam wieder aufgenommen
+    let bathDegas = 1;
     function updateBath(dt) {
       const T = lab.state.bath.temp;
       const B = L.bath;
-      const rate = T > 42 ? (T - 42) / 38 * 22 : 0;
+      if (T > 42) bathDegas = Math.max(0, bathDegas - dt * 0.035 * clamp((T - 42) / 30, 0, 1));
+      else if (T < 32) bathDegas = Math.min(1, bathDegas + dt * 0.01);
+      const rate = T > 42 ? (T - 42) / 38 * 14 * bathDegas : 0;
       if (Math.random() < rate * dt) {
         bubbles.push({ x: B.cx - B.beakerHalf + 14 + Math.random() * (B.beakerHalf * 2 - 28), y: B.beakerBottom - 6, r: 0.8 + Math.random() * 2.2, vy: 40 + Math.random() * 50, ph: Math.random() * 6 });
       }
@@ -1163,7 +1179,8 @@
         b.x += Math.sin(time * 5 + b.ph) * 0.2;
         if (b.y < B.water + 2) bubbles.splice(i, 1);
       }
-      if (T > 62 && Math.random() < (T - 62) / 18 * 3 * dt) {
+      // Leichter Dunst über warmem Wasser (Verdunstung, kein Sieden)
+      if (T > 62 && Math.random() < (T - 62) / 18 * 1.2 * dt) {
         steam.push({ x: B.cx - 70 + Math.random() * 140, y: B.water - 4, r: 10 + Math.random() * 10, a: 0, age: 0, vx: (Math.random() - 0.5) * 10 });
       }
       for (let i = steam.length - 1; i >= 0; i--) {
@@ -1411,28 +1428,8 @@
       const v = visualFor(t);
       const cx = ix + iw / 2, by = iy + ih - 22;
       const pose = tubePose(t);
-      // Umgebung: Wasserbad bzw. Flamme
-      if (t.place === 'bath') {
-        const wl = by - (L.bath.tubeBottom - L.bath.water) * Z;
-        const wg = ctx.createLinearGradient(0, wl, 0, iy + ih);
-        wg.addColorStop(0, 'rgba(170,215,240,0.45)'); wg.addColorStop(1, 'rgba(140,195,230,0.55)');
-        ctx.fillStyle = wg; ctx.fillRect(ix, wl, iw, iy + ih - wl);
-        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        for (let x = ix; x <= ix + iw; x += 6) ctx.lineTo(x, wl + Math.sin(x * 0.05 + time * 2) * 1.5);
-        ctx.stroke();
-        const T = lab.state.bath.temp;
-        if (T > 42) {
-          ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1;
-          const n = Math.round((T - 42) / 3);
-          for (let i = 0; i < n; i++) {
-            const ph = (time * (0.25 + (i % 5) * 0.05) + i * 0.618) % 1;
-            const bx = ix + ((i * 97) % iw);
-            const byy = iy + ih - ph * (iy + ih - wl);
-            ctx.beginPath(); ctx.arc(bx + Math.sin(time * 3 + i) * 3, byy, 1.5 + (i % 3), 0, Math.PI * 2); ctx.stroke();
-          }
-        }
-      }
+      // Die Lupe zeigt das Reagenzglas bewusst vor neutralem, weißem Hintergrund –
+      // das (getönte) Wasserbad würde schwach gefärbte oder farblose Proben verfälschen.
       ctx.save();
       ctx.translate(cx, by);
       if (pose.shake) { ctx.translate(0, -TUBE.h * Z + 60); ctx.rotate(pose.shake * 0.5); ctx.translate(0, TUBE.h * Z - 60); }
@@ -1464,6 +1461,7 @@
       // Skalenhinweis
       ctx.fillStyle = 'rgba(40,55,70,0.55)'; ctx.font = '600 12px system-ui, sans-serif'; ctx.textAlign = 'left';
       ctx.fillText('vor weißem Hintergrund beobachten', ix + 12, iy + 16);
+      if (t.place === 'bath') ctx.fillText('(aus dem Wasserbad gehoben betrachtet)', ix + 12, iy + 32);
       ctx.restore();
     }
 
@@ -1471,7 +1469,7 @@
     function drawBadges() {
       for (const t of lab.state.tubes) {
         if (t.place === 'moving') continue;
-        if (!chem.isObservable(t.contents) || t.recordedId || t.contents.bumped) continue;
+        if (!chem.isObservable(t.contents) || lab.recordCurrent(t) || t.contents.bumped) continue;
         const pose = restPose(t.place, t.slot);
         const x = pose.x + (t.place === 'flame' ? -120 : 0), y = pose.y - TUBE.h - 22 + Math.sin(time * 3) * 2;
         ctx.save();

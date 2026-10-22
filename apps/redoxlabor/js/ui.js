@@ -13,10 +13,15 @@
   const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a == null ? c[3] : a})`;
   const PLACE = { rack: 'im Ständer', bath: 'im Wasserbad', flame: 'in der Brennerflamme', moving: 'wird umgesetzt' };
   const STORE_KEY = 'redoxlabor.session.v1';
+  // Kurzname und Zusatz für die Kacheln;   verhindert „Fehling / I“, ­ erlaubt sinnvolle Trennung.
   const PANEL_NAME = {
-    fehling1: ['Fehling I', 'CuSO₄'], fehling2: ['Fehling II', 'Tartrat'],
-    agno3: ['AgNO₃', 'Silbernitrat'], naoh: ['NaOH', 'Natronlauge'], nh3: ['NH₃', 'Ammoniak']
+    fehling1: ['Fehling I', 'CuSO₄-Lsg.'], fehling2: ['Fehling II', 'Tartrat, alkal.'],
+    agno3: ['AgNO₃', 'Silber­nitrat'], naoh: ['NaOH', 'Natron­lauge'], nh3: ['NH₃', 'Ammoniak­lösung']
   };
+  const REAGENT_GROUPS = [
+    { title: 'Fehling-Probe', ids: ['fehling1', 'fehling2'] },
+    { title: 'Tollens-Probe', ids: ['agno3', 'naoh', 'nh3'] }
+  ];
 
   function createUI(lab, renderer, canvas) {
     const panel = $('#panel');
@@ -24,7 +29,8 @@
     const helpPop = $('#helpPop');
     const drawer = $('#drawer'), drawerBody = $('#drawerBody'), drawerBackdrop = $('#drawerBackdrop');
     const modal = $('#modal'), modalBox = $('#modalBox');
-    const ds = { tab: 'protocol', formTube: null, lastRecord: null, redoxTest: 'fehling', trainers: {}, formError: '' };
+    // drafts: Formularentwürfe je Reagenzglas und Generation (nur im Arbeitsspeicher)
+    const ds = { tab: 'protocol', formTube: null, lastRecord: null, redoxTest: 'fehling', trainers: {}, formError: '', formMissing: [], drafts: {} };
     let panelSig = '';
     let helpShown = 0, helpSig = '';
 
@@ -76,13 +82,13 @@
       const c = t.contents;
       const a = chem.analyze(c);
       const reagentOk = a.valid && c.mix >= 0.85;
-      const heated = chem.heatDose(c) >= 1 || (chem.isReactive(c) && c.progress > 0.97);
+      const observed = chem.heatDose(c) >= 1 || chem.positiveVisible(c);
       const list = [
         ['Reagenzglas ausgewählt', true],
         ['Nachweisreagenz angesetzt', reagentOk || (a.valid && !!c.sampleId)],
         ['Stoffprobe zugegeben', !!c.sampleId],
-        ['Erwärmt und beobachtet', heated],
-        ['Beobachtung protokolliert', !!t.recordedId]
+        ['Erwärmt und beobachtet', observed],
+        ['Beobachtung protokolliert', lab.recordCurrent(t)]
       ];
       let cur = list.findIndex((x) => !x[1]);
       return list.map((x, i) => ({ label: x[0], done: x[1], current: i === cur }));
@@ -92,7 +98,7 @@
       const c = t.contents;
       if (c.bumped) return 'Siedeverzug – Ansatz unbrauchbar.';
       const a = chem.analyze(c);
-      if (['foreign', 'cuoh2', 'imbalanced'].includes(a.status)) return a.reason;
+      if (['foreign', 'cuoh2', 'imbalanced', 'contaminated'].includes(a.status)) return a.reason;
       return '';
     }
 
@@ -102,10 +108,17 @@
       const parts = [st.mode, st.activeTubeId, st.armed ? st.armed.id : '', st.bath.setting, st.burner.on, st.op ? st.op.type : '', st.protocol.length, st.runId];
       for (const tb of st.tubes) {
         const c = tb.contents;
-        parts.push(tb.place, tb.generation, JSON.stringify(c.portions), c.sampleId, c.bumped, tb.recordedId, tb.evaluated, chem.isObservable(c), c.mix >= 0.85, chem.heatDose(c) >= 1);
+        parts.push(tb.place, tb.generation, JSON.stringify(c.portions), c.sampleId, c.bumped, tb.recordedId, tb.evaluated, lab.recordCurrent(tb), chem.isObservable(c), chem.isComplete(c), c.mix >= 0.85, chem.heatDose(c) >= 1);
       }
-      if (t) parts.push(lab.phaseOf(t.id).id);
+      if (t) { const ph = lab.phaseOf(t.id); parts.push(ph.id, ph.label); }
       return parts.join('|');
+    }
+
+    /** Fokus über das Neuzeichnen des Panels hinweg erhalten (Tastaturbedienung). */
+    function focusKey(el) {
+      if (!el || !panel.contains(el)) return null;
+      for (const k of ['tube', 'reagent', 'sample', 'hotplate', 'action', 'info']) if (el.dataset && el.dataset[k] != null) return `[data-${k}="${el.dataset[k]}"]`;
+      return null;
     }
 
     function renderPanel() {
@@ -122,15 +135,20 @@
         if (!chips.length) chips.push('<span class="chip empty">leer – Reagenzien antippen</span>');
         const ph = lab.phaseOf(t.id);
         const warn = phaseWarn(t);
-        const steps = stepsOf(t).map((s) => `<li class="${s.done ? 'done' : ''} ${s.current ? 'current' : ''}">${s.label}</li>`).join('');
+        const steps = stepsOf(t);
+        const curIndex = steps.findIndex((s) => s.current);
+        const curStep = steps[curIndex];
+        const stepDots = steps.map((s) => `<li class="${s.done ? 'done' : ''} ${s.current ? 'current' : ''}" title="${esc(s.label)}"><span class="sr-only">${esc(s.label)}${s.done ? ' – erledigt' : ''}</span></li>`).join('');
         const inFlame = t.place === 'flame';
         const canRecord = chem.volume(c) > 0 && !busy;
-        const observable = chem.isObservable(c) && !t.recordedId && !c.bumped;
+        const observable = chem.isObservable(c) && !lab.recordCurrent(t) && !c.bumped;
+        const staleNote = ph.stale ? '<br><span class="stale">Dein Protokoll ist ein Zwischenstand – der Versuch hat sich seitdem verändert.</span>' : '';
         tubeHtml = `
           <div class="tube-head"><b>Reagenzglas ${t.id}</b><span id="tubeLive">${PLACE[t.place]} · ${Math.round(c.temp)} °C</span></div>
           <div class="chips">${chips.join('')}</div>
-          <ol class="steps">${steps}</ol>
-          <div class="phase ${warn ? 'warn' : observable ? 'ok' : ''}" id="phaseBox">Zustand ${ph.index}/${ph.total}: <b>${ph.label}</b>${warn ? '<br>' + esc(warn) : ''}</div>
+          <div class="steps-compact"><ol class="dots" aria-label="Ablauf">${stepDots}</ol><span>${curStep ? `Schritt ${curIndex + 1}/5: ${esc(curStep.label)}` : 'Alle Schritte erledigt'}</span></div>
+          <div class="phase ${warn ? 'warn' : observable ? 'ok' : ''}" id="phaseBox">Zustand ${ph.index}/${ph.total}: <b>${ph.label}</b>${warn ? '<br>' + esc(warn) : ''}${staleNote}</div>
+          <p class="sr-only" id="tubeObs" aria-live="polite">${esc('Sichtbar: ' + chem.describe(c))}</p>
           <div class="actions">
             <button type="button" class="btn" data-action="shake" ${busy || inFlame || !chem.volume(c) ? 'disabled' : ''}><span class="i">≈</span>Schütteln</button>
             ${t.place === 'bath' || inFlame
@@ -138,23 +156,26 @@
               : `<button type="button" class="btn" data-action="bath" ${busy ? 'disabled' : ''}><span class="i">♨</span>Ins Wasserbad</button>`}
             ${inFlame
               ? `<button type="button" class="btn" data-action="bath" ${busy ? 'disabled' : ''}><span class="i">♨</span>Ins Wasserbad</button>`
-              : `<button type="button" class="btn" data-action="flame" ${busy ? 'disabled' : ''}><span class="i">🔥</span>In die Flamme</button>`}
-            <button type="button" class="btn" data-action="replace" ${busy ? 'disabled' : ''}><span class="i">⟲</span>Austauschen</button>
+              : `<button type="button" class="btn" data-action="replace" ${busy ? 'disabled' : ''}><span class="i">⟲</span>Austauschen</button>`}
+            ${st.burner.on && !inFlame ? `<button type="button" class="btn subtle wide" data-action="flame" ${busy ? 'disabled' : ''}><span class="i">🔥</span>In die Flamme halten (nicht empfohlen)</button>` : ''}
             <button type="button" class="btn ${observable ? 'ok' : 'primary'} wide" data-action="record" ${canRecord ? '' : 'disabled'}><span class="i">✎</span>Beobachtung festhalten</button>
           </div>`;
       } else {
         tubeHtml = '<p class="muted" style="margin:4px 0 2px">Wähle ein Reagenzglas: Tippe im Ständer darauf oder oben auf eine Nummer.</p>';
       }
-      const tabs = st.tubes.map((tb) => `<button type="button" class="tube-tab" data-tube="${tb.id}" aria-pressed="${st.activeTubeId === tb.id}" aria-label="Reagenzglas ${tb.id}">${tubeIcon(tb)}${tb.id}${chem.isObservable(tb.contents) && !tb.recordedId && !tb.contents.bumped ? '<span class="dot-ok" title="Beobachtung möglich"></span>' : ''}</button>`).join('');
-      const reagents = chem.REAGENTS.map((r) => `<button type="button" class="sub-btn ${st.armed && st.armed.id === r.id ? 'armed' : ''}" data-reagent="${r.id}" ${busy ? 'disabled' : ''} title="${esc(r.name + ' – ' + r.desc)}" aria-label="${esc(r.name)}">${bottleIcon(r.id)}<span>${esc(PANEL_NAME[r.id][0])}</span><small>${esc(PANEL_NAME[r.id][1])}</small></button>`).join('');
+      const tabs = st.tubes.map((tb) => `<button type="button" class="tube-tab" data-tube="${tb.id}" aria-pressed="${st.activeTubeId === tb.id}" aria-label="Reagenzglas ${tb.id}">${tubeIcon(tb)}${tb.id}${chem.isObservable(tb.contents) && !lab.recordCurrent(tb) && !tb.contents.bumped ? '<span class="dot-ok" title="Beobachtung möglich"></span>' : ''}</button>`).join('');
+      const reagentBtn = (r) => `<button type="button" class="sub-btn ${st.armed && st.armed.id === r.id ? 'armed' : ''}" data-reagent="${r.id}" ${busy ? 'disabled' : ''} title="${esc(r.name + ' – ' + r.desc)}" aria-label="${esc(r.name)}">${bottleIcon(r.id)}<span>${esc(PANEL_NAME[r.id][0])}</span><small>${esc(PANEL_NAME[r.id][1])}</small></button>`;
+      const reagents = REAGENT_GROUPS.map((g) => `<div class="reagent-group"><span class="group-label">${g.title}</span><div class="substances reagents n${g.ids.length}">${g.ids.map((id) => reagentBtn(chem.REAGENT_BY_ID[id])).join('')}</div></div>`).join('');
       const samples = st.samples.map((s) => {
         const sm = chem.SAMPLE_BY_ID[s.sampleId];
-        return `<button type="button" class="sub-btn ${st.armed && st.armed.id === s.sampleId ? 'armed' : ''}" data-sample="${s.sampleId}" ${busy ? 'disabled' : ''}>
+        return `<button type="button" class="sub-btn ${st.armed && st.armed.id === s.sampleId ? 'armed' : ''}" data-sample="${s.sampleId}" ${busy ? 'disabled' : ''} title="${esc((learn ? s.label : s.key) + ' – verdünnte wässrige Lösung')}">
           <span class="nm">${esc(learn ? s.label : s.key)}</span><small>${learn ? sm.formula : 'unbekannt'}</small>
           ${learn ? `<span class="info-btn" role="button" tabindex="0" data-info="${s.sampleId}" aria-label="Strukturformel ${esc(s.label)}">i</span>` : ''}
         </button>`;
       }).join('');
       const bath = st.bath;
+      const fk = focusKey(document.activeElement);
+      const scrollY = panel.scrollTop;
       panel.innerHTML = `
         <section class="card" aria-label="Reagenzglas">
           <h3>Reagenzglas <small>${t ? '' : 'nicht ausgewählt'}</small></h3>
@@ -163,23 +184,26 @@
         </section>
         <section class="card" aria-label="Reagenzien">
           <h3>Reagenzien <small>antippen = zugeben</small></h3>
-          <div class="substances reagents">${reagents}</div>
+          ${reagents}
         </section>
         <section class="card" aria-label="Stoffproben">
-          <h3>Stoffproben <small>${learn ? 'Lernmodus' : 'Analysemodus: unbekannt'}</small></h3>
+          <h3>Stoffproben <small>${learn ? 'verdünnte Lösungen' : 'Analysemodus: unbekannt'}</small></h3>
           <div class="substances samples">${samples}</div>
         </section>
-        <section class="card" aria-label="Geräte">
-          <h3>Geräte</h3>
+        <section class="card devices-card" aria-label="Geräte">
           <div class="devices">
-            <div class="device-row"><span>Heizplatte <span class="temp-live" id="bathLive">${Math.round(bath.temp)} °C</span></span>
+            <div class="device-row"><span>Wasserbad <span class="temp-live" id="bathLive">${Math.round(bath.temp)} °C</span></span>
               <div class="seg" role="radiogroup" aria-label="Heizplatte">${[0, 60, 80].map((v) => `<button type="button" role="radio" data-hotplate="${v}" aria-checked="${bath.setting === v}">${v ? v + ' °C' : 'Aus'}</button>`).join('')}</div>
             </div>
-            <div class="device-row"><span>Gasbrenner</span>
-              <button type="button" class="btn small" data-action="burner">${st.burner.on ? 'Brenner löschen' : 'Brenner entzünden'}</button>
-            </div>
+            <details class="more"${st.burner.on ? ' open' : ''}><summary>Weitere Geräte: Gasbrenner</summary>
+              <div class="device-row"><span class="muted">Für diese Nachweise nicht nötig – Wasserbad verwenden.</span>
+                <button type="button" class="btn small" data-action="burner">${st.burner.on ? 'Brenner löschen' : 'Brenner entzünden'}</button>
+              </div>
+            </details>
           </div>
         </section>`;
+      panel.scrollTop = scrollY;
+      if (fk) { const el = panel.querySelector(fk); if (el) el.focus({ preventScroll: true }); }
       panelSig = signature();
     }
 
@@ -191,6 +215,8 @@
       if (t && live) live.textContent = `${PLACE[t.place]} · ${Math.round(t.contents.temp)} °C`;
       const bl = $('#bathLive');
       if (bl) bl.textContent = `${Math.round(lab.state.bath.temp)} °C`;
+      const ob = $('#tubeObs');
+      if (t && ob) { const txt = 'Sichtbar: ' + chem.describe(t.contents); if (ob.textContent !== txt) ob.textContent = txt; }
       if (!helpPop.hidden) renderHelp(false);
       const badge = $('#evalBadge');
       const n = lab.state.protocol.length;
@@ -208,6 +234,11 @@
       else if (b.dataset.hotplate != null) lab.setHotplate(+b.dataset.hotplate);
       else if (b.dataset.action) doAction(b.dataset.action);
       refreshLive();
+    });
+    // Strukturinfo ist in die Probenkachel eingebettet: eigene Tastaturbedienung
+    panel.addEventListener('keydown', (e) => {
+      const info = e.target.closest('[data-info]');
+      if (info && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); showSampleInfo(info.dataset.info); }
     });
 
     function needTube() {
@@ -362,7 +393,9 @@
             <dt>Stoffklasse</dt><dd>${s.cls === 'aldehyd' ? 'Aldehyd (Alkanal)' : 'Keton (Alkanon)'}</dd>
             <dt>Summenformel</dt><dd class="formula">${s.formula}</dd>
             <dt>Halbstrukturformel</dt><dd class="formula">${s.condensed}</dd>
+            <dt>Probe</dt><dd>verdünnte wässrige Lösung (kein Reinstoff)</dd>
           </dl>
+          ${id === 'ethanal' ? '<p class="note info" style="margin:0">Reines Ethanal siedet schon bei etwa 21 °C. Im Versuch wird deshalb eine verdünnte Lösung verwendet – sie siedet im warmen Wasserbad nicht.</p>' : ''}
           <div>${RL.structures.structureSvg(s, { size: 24 })}</div>
           <p class="muted">${s.cls === 'aldehyd'
             ? 'Die Carbonylgruppe steht am Kettenende; am Carbonyl-C-Atom sitzt ein H-Atom (Aldehydgruppe –CHO).'
@@ -386,6 +419,7 @@
           ${tollens ? '<li><b>Tollens-Reagenz nie direkt in der Flamme erhitzen</b>, immer frisch ansetzen und nicht aufbewahren: Beim Stehenlassen können sich explosive Silberverbindungen bilden.</li>' : ''}
         </ul>
         <p class="muted">Dieser Ansatz ist nicht mehr auswertbar. Nimm das Reagenzglas aus der Flamme, tausche es aus und wiederhole den Versuch im Wasserbad.</p>
+        <p class="muted"><b>Hinweis zur Simulation:</b> Hier tritt der Siedeverzug als Lernszenario nach kurzer Zeit gezielt auf. In der Realität ist er nicht vorhersagbar – er kann früher, später oder gar nicht eintreten. Gerade deshalb ist das Wasserbad die sichere Wahl.</p>
         <div class="row end"><button type="button" class="btn primary" data-m="close">Verstanden</button></div>`, 'safety'), 900);
     });
 
@@ -425,7 +459,7 @@
         <ol class="howto">
           <li><b>Reagenzglas wählen:</b> Tippe im Ständer auf ein Reagenzglas.</li>
           <li><b>Reagenz ansetzen:</b> Tippe auf die Reagenzflaschen – die Pipette gibt eine Portion zu. Du kannst Flaschen auch auf ein Reagenzglas ziehen.</li>
-          <li><b>Stoffprobe zugeben</b> und <b>erwärmen:</b> Heizplatte einschalten, Reagenzglas ins Wasserbad stellen.</li>
+          <li><b>Stoffprobe zugeben</b> (verdünnte Lösung) und <b>erwärmen:</b> Heizplatte einschalten, Reagenzglas ins Wasserbad stellen.</li>
           <li><b>Beobachten</b> in der Lupe und die <b>Beobachtung festhalten</b>.</li>
           <li>In der <b>Auswertung</b> deuten und im <b>Redox-Trainer</b> die Gleichungen aufstellen.</li>
         </ol>
@@ -448,16 +482,33 @@
     $('#btnRedox').addEventListener('click', () => openDrawer('redox'));
 
     function openProtocol(tubeId) {
-      ds.formTube = tubeId; ds.lastRecord = null; ds.formError = '';
+      ds.formTube = tubeId; ds.lastRecord = null; ds.formError = ''; ds.formMissing = [];
       openDrawer('protocol');
     }
 
+    // Formularentwürfe: bleiben bei Validierungsfehlern sowie Schließen/Öffnen erhalten
+    const draftKey = (t) => t.id + ':' + t.generation;
+    function saveDraft(form) {
+      const t = lab.tubeById(+form.dataset.tube);
+      if (t) ds.drafts[draftKey(t)] = readForm(form);
+    }
+
     function renderDrawer() {
+      const form = $('#protoForm', drawerBody);
+      if (form) saveDraft(form);
       $$('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === ds.tab)));
       if (ds.tab === 'protocol') drawerBody.innerHTML = protocolHtml();
       else if (ds.tab === 'overview') drawerBody.innerHTML = overviewHtml();
       else drawerBody.innerHTML = redoxHtml();
       drawerBody.scrollTop = 0;
+      // Nach einem Validierungsfehler zum ersten fehlenden Feld springen
+      if (ds.tab === 'protocol' && ds.formMissing.length) {
+        const fs = $(`#protoForm fieldset[data-field="${ds.formMissing[0]}"]`, drawerBody);
+        if (fs) {
+          fs.scrollIntoView({ block: 'center' });
+          const inp = fs.querySelector('input'); if (inp) inp.focus({ preventScroll: true });
+        }
+      }
     }
 
     function optionList(name, dict, type, selected, marks) {
@@ -476,7 +527,8 @@
       parts.forEach((p) => { const last = compact[compact.length - 1]; if (last && last.n === p) last.k++; else compact.push({ n: p, k: 1 }); });
       const seq = compact.map((x) => x.n + (x.k > 1 ? ' ×' + x.k : '')).join(' → ') || '–';
       const heatTxt = c.maxTemp > 35 ? `ja, bis ca. ${Math.round(c.maxTemp)} °C` : 'nein';
-      return `<dl class="facts"><dt>Reagenzglas</dt><dd>${t.id}</dd><dt>Stoffprobe</dt><dd>${c.sampleId ? esc(lab.sampleEntry(c.sampleId).label) : 'keine'}</dd><dt>Zugaben</dt><dd>${esc(seq)}</dd><dt>Erwärmt</dt><dd>${heatTxt}</dd></dl>`;
+      const sinceTxt = c.history.length ? (c.sinceAddMaxTemp > 35 ? `bis ca. ${Math.round(c.sinceAddMaxTemp)} °C` : 'nicht erwärmt') : '–';
+      return `<dl class="facts"><dt>Reagenzglas</dt><dd>${t.id}</dd><dt>Stoffprobe</dt><dd>${c.sampleId ? esc(lab.sampleEntry(c.sampleId).label) + ' <span class="muted">(verdünnte Lösung)</span>' : 'keine'}</dd><dt>Zugaben</dt><dd>${esc(seq)}</dd><dt>Erwärmt</dt><dd>${heatTxt}</dd><dt>seit letzter Zugabe</dt><dd>${sinceTxt}</dd><dt>Zeitpunkt</dt><dd>${Math.round(lab.state.time)} s Simulationszeit</dd></dl>`;
     }
 
     function protocolHtml() {
@@ -493,20 +545,27 @@
     }
 
     function formHtml(t) {
-      const obs = chem.isObservable(t.contents);
+      const c = t.contents;
+      const obs = chem.isObservable(c);
+      const d = ds.drafts[draftKey(t)] || {};
+      const miss = new Set(ds.formMissing);
+      const fs = (field, legend, inner) => `<fieldset data-field="${field}" class="${miss.has(field) ? 'missing' : ''}"${miss.has(field) ? ' aria-invalid="true"' : ''}><legend>${legend}${miss.has(field) ? ' <span class="miss">– bitte ausfüllen</span>' : ''}</legend>${inner}</fieldset>`;
+      let note = '';
+      if (!obs) note = '<div class="note warn">Hinweis: Bisher ist weder ein deutliches Nachweisprodukt zu sehen noch wurde der fertig gemischte Ansatz lange genug unter geeigneten Bedingungen beobachtet. Du kannst trotzdem protokollieren – überlege, ob sich daraus schon ein Ergebnis ableiten lässt. Dein Eintrag wird mit Zeitpunkt als Zwischenstand gespeichert.</div>';
+      else if (chem.isReactive(c) && !chem.isComplete(c)) note = '<div class="note info">Die Reaktion läuft noch. Du kannst festhalten, was jetzt zu sehen ist; der Eintrag wird mit Zeitpunkt gespeichert.</div>';
       return `
         <h2>Beobachtung festhalten</h2>
         <p class="lead">Halte zuerst fest, was du <b>beobachtet</b> hast, und deute es dann. Die Musterlösung erscheint erst nach dem Auswerten oder auf ausdrücklichen Wunsch.</p>
         ${tubeFacts(t)}
-        ${obs ? '' : '<div class="note warn">Hinweis: Der Versuch ist noch nicht abgeschlossen (nicht oder nicht ausreichend erwärmt bzw. Reaktion noch im Gange). Du kannst trotzdem protokollieren – überlege, ob sich daraus schon ein Ergebnis ableiten lässt.</div>'}
-        ${ds.formError ? `<div class="note bad">${esc(ds.formError)}</div>` : ''}
-        <form id="protoForm" data-tube="${t.id}">
-          <fieldset><legend>1. Nachweisverfahren</legend><div class="opts">${optionList('method', chem.METHODS, 'radio', null)}</div></fieldset>
-          <fieldset><legend>2. Beobachtung <span class="muted">(alles Zutreffende ankreuzen)</span></legend><div class="opts">${optionList('obs', chem.OBSERVATIONS, 'checkbox', [])}</div>
-            <p class="muted" style="margin:10px 0 4px">Eigene Notiz (optional, bleibt nur in diesem Browser):</p><textarea name="note" maxlength="500"></textarea></fieldset>
-          <fieldset><legend>3. Ergebnis</legend><div class="opts">${optionList('result', chem.RESULTS, 'radio', null)}</div></fieldset>
-          <fieldset><legend>4. Deutung</legend><div class="opts">${optionList('interp', chem.INTERPRETATIONS, 'radio', null)}</div></fieldset>
-          <fieldset><legend>5. Stoffklasse</legend><div class="opts">${optionList('cls', chem.CLASSES, 'radio', null)}</div></fieldset>
+        ${note}
+        ${ds.formError ? `<div class="note bad" role="alert">${esc(ds.formError)}</div>` : ''}
+        <form id="protoForm" data-tube="${t.id}" novalidate>
+          ${fs('method', '1. Nachweisverfahren', `<div class="opts">${optionList('method', chem.METHODS, 'radio', d.method || null)}</div>`)}
+          ${fs('obs', '2. Beobachtung <span class="muted">(alles Zutreffende ankreuzen)</span>', `<div class="opts">${optionList('obs', chem.OBSERVATIONS, 'checkbox', d.observations || [])}</div>
+            <p class="muted" style="margin:10px 0 4px">Eigene Notiz (optional, bleibt nur in diesem Browser):</p><textarea name="note" maxlength="500">${esc(d.note || '')}</textarea>`)}
+          ${fs('result', '3. Ergebnis', `<div class="opts">${optionList('result', chem.RESULTS, 'radio', d.result || null)}</div>`)}
+          ${fs('interp', '4. Deutung', `<div class="opts">${optionList('interp', chem.INTERPRETATIONS, 'radio', d.interpretation || null)}</div>`)}
+          ${fs('cls', '5. Stoffklasse', `<div class="opts">${optionList('cls', chem.CLASSES, 'radio', d.cls || null)}</div>`)}
           <div class="row end">
             <button type="button" class="btn" data-proto="solution">Lösung anzeigen</button>
             <button type="submit" class="btn primary">Speichern und auswerten</button>
@@ -527,15 +586,30 @@
       if (!form) return;
       e.preventDefault();
       const ans = readForm(form);
-      if (!ans.method || !ans.observations.length || !ans.result || !ans.interpretation || !ans.cls) {
-        ds.formError = 'Bitte fülle alle fünf Teile aus (mindestens eine Beobachtung ankreuzen).';
+      const missing = [
+        ['method', !ans.method], ['obs', !ans.observations.length], ['result', !ans.result],
+        ['interp', !ans.interpretation], ['cls', !ans.cls]
+      ].filter((x) => x[1]).map((x) => x[0]);
+      if (missing.length) {
+        ds.formError = `Bitte fülle noch ${missing.length === 1 ? 'einen Teil' : missing.length + ' Teile'} aus (markiert). Bei der Beobachtung mindestens eine Aussage ankreuzen. Deine bisherigen Eingaben bleiben erhalten.`;
+        ds.formMissing = missing;
         renderDrawer();
         return;
       }
-      const rec = lab.recordProtocol(+form.dataset.tube, ans);
-      ds.lastRecord = rec.id; ds.formError = '';
+      const tube = lab.tubeById(+form.dataset.tube);
+      const rec = lab.recordProtocol(tube.id, ans);
+      delete ds.drafts[draftKey(tube)];
+      ds.lastRecord = rec.id; ds.formError = ''; ds.formMissing = [];
       save();
       renderDrawer();
+    });
+    drawerBody.addEventListener('input', (e) => {
+      const form = e.target.closest('#protoForm');
+      if (!form) return;
+      saveDraft(form);
+      // Markierung entfernen, sobald ein fehlendes Feld ausgefüllt wird
+      const fs = e.target.closest('fieldset.missing');
+      if (fs) { fs.classList.remove('missing'); fs.removeAttribute('aria-invalid'); const m = fs.querySelector('.miss'); if (m) m.remove(); ds.formMissing = ds.formMissing.filter((f) => f !== fs.dataset.field); }
     });
 
     drawerBody.addEventListener('click', (e) => {
@@ -548,7 +622,9 @@
         const rec = lab.recordProtocol(+form.dataset.tube, any ? Object.assign(ans, { partial: true }) : null, { solutionShown: true });
         if (any) rec.graded = chem.gradeProtocol(rec.model, ans);
         rec.solutionShown = true;
-        ds.lastRecord = rec.id;
+        const tube = lab.tubeById(rec.tubeId);
+        if (tube) delete ds.drafts[draftKey(tube)];
+        ds.lastRecord = rec.id; ds.formError = ''; ds.formMissing = [];
         save(); renderDrawer();
       } else if (b.dataset.goto) {
         if (b.dataset.goto === 'redox') { ds.redoxTest = b.dataset.test || ds.redoxTest; }
@@ -580,10 +656,11 @@
       const marks = (field) => (k, checked) => {
         if (!rec.solutionShown && !g) return '';
         if (field === 'obs') {
-          const req = m.obsRequired.includes(k), opt = m.obsOptional.includes(k);
+          const oneOf = m.obsOneOf || [];
+          const req = m.obsRequired.includes(k), opt = m.obsOptional.includes(k) || oneOf.includes(k);
           if (checked && (req || opt)) return 'right';
           if (checked && m.strictObs) return 'wrong';
-          if (!checked && req && rec.solutionShown) return 'right';
+          if (!checked && (req || oneOf.includes(k)) && rec.solutionShown) return 'right';
           return '';
         }
         const correct = { method: m.method, result: m.result, interp: m.interpretation, cls: m.cls }[field];
@@ -596,12 +673,15 @@
       ].map(([n, ok]) => `<li class="${ok ? 'y' : 'n'}">${n}</li>`).join('') : '';
       const allOk = g && g.allCorrect;
       const positive = m.outcome === 'positive';
+      const when = rec.simTime != null ? `${rec.simTime} s Simulationszeit, ${rec.temp} °C` : '';
       return `
         <h2>Auswertung · Reagenzglas ${rec.tubeId}</h2>
-        <dl class="facts"><dt>Stoffprobe</dt><dd>${esc(rec.sampleLabel)}</dd></dl>
+        <dl class="facts"><dt>Stoffprobe</dt><dd>${esc(rec.sampleLabel)}</dd>${when ? `<dt>Beobachtet</dt><dd>${when}${rec.interim ? ' · <span class="pill inv">Zwischenstand</span>' : ''}</dd>` : ''}</dl>
         ${g ? `<div class="note ${allOk ? 'ok' : 'warn'}"><b>${allOk ? 'Alles richtig ausgewertet!' : 'Deine Auswertung im Vergleich:'}</b><ul class="feedback-list">${fbItems}</ul>${g.obsMissing && g.obsMissing.length && !allOk ? 'Es fehlt mindestens eine zutreffende Beobachtung.' : ''}</div>` : ''}
         ${rec.solutionShown ? '<div class="note info">Die Musterlösung wurde auf Anfrage angezeigt.</div>' : ''}
         <div class="note ${m.outcome === 'positive' ? 'ok' : m.outcome === 'negative' ? 'info' : 'warn'}"><b>Musterauswertung: ${esc(m.title)}</b><br>${esc(m.explanation)}</div>
+        ${rec.interim && m.outcome === 'unfinished' ? '<div class="note info">Dieser Eintrag hält einen Zwischenstand fest. Läuft der Versuch weiter, kannst du ihn später erneut beobachten und auswerten – dieser Eintrag bleibt erhalten.</div>' : ''}
+        ${m.modelNote ? `<p class="model-note">${esc(m.modelNote)}</p>` : ''}
         <fieldset><legend>1. Nachweisverfahren</legend><div class="opts">${optionList('method', chem.METHODS, 'radio', ans && ans.method, marks('method'))}</div></fieldset>
         <fieldset><legend>2. Beobachtung</legend><div class="opts">${optionList('obs', chem.OBSERVATIONS, 'checkbox', (ans && ans.observations) || [], marks('obs'))}</div>${ans && ans.note ? `<p class="muted">Deine Notiz: ${esc(ans.note)}</p>` : ''}</fieldset>
         <fieldset><legend>3. Ergebnis</legend><div class="opts">${optionList('result', chem.RESULTS, 'radio', ans && ans.result, marks('result'))}</div></fieldset>
@@ -627,8 +707,13 @@
     }
     function recordCard(rec) {
       const m = rec.model;
-      return `<article class="record"><header><b>${esc(rec.sampleLabel)} · ${esc(chem.METHODS[m.method] || 'unvollständig')}</b><span>${outcomePill(m)} ${gradePill(rec)}</span></header>
-        <span class="muted">Reagenzglas ${rec.tubeId} · ${esc(m.title)}</span></article>`;
+      const t = lab.tubeById(rec.tubeId);
+      const sameTube = t && t.generation === rec.generation && t.recordedId === rec.id;
+      const moved = sameTube && !lab.recordCurrent(t);
+      const when = rec.simTime != null ? ` · ${rec.simTime} s` : '';
+      return `<article class="record"><header><b>${esc(rec.sampleLabel)} · ${esc(chem.METHODS[m.method] || 'unvollständig')}</b><span>${outcomePill(m)}${rec.interim ? ' <span class="pill inv">Zwischenstand</span>' : ''} ${gradePill(rec)}</span></header>
+        <span class="muted">Reagenzglas ${rec.tubeId}${when} · ${esc(m.title)}</span>
+        ${moved ? '<span class="stale">Der Versuch hat sich seitdem verändert – erneut beobachten und auswerten.</span>' : ''}</article>`;
     }
 
     // --------------------------------------------------------- Ergebnisübersicht
@@ -636,9 +721,15 @@
       const st = lab.state;
       const rows = lab.overview();
       const analysis = st.mode === 'analysis';
-      const cell = (rec) => rec ? `${outcomePill(rec.model)}${rec.graded && !rec.answers.partial ? (rec.graded.allCorrect ? ' ✓' : ' ✗') : ''}` : '<span class="muted">–</span>';
+      const mark = (rec) => rec.graded && !rec.answers.partial ? (rec.graded.allCorrect ? ' ✓' : ' ✗') : '';
+      // Letzter Versuch und letzte gültige Evidenz getrennt anzeigen
+      const cell = (rec, ev) => {
+        if (!rec) return '<span class="muted">–</span>';
+        if (!ev || ev === rec) return outcomePill(rec.model) + mark(rec);
+        return `${outcomePill(ev.model)}${mark(ev)}<br><small class="muted">letzter Versuch: ${rec.model.outcome === 'unfinished' ? 'nicht abgeschlossen' : 'ungültig'}</small>`;
+      };
       let checkRes = null;
-      if (analysis && st.analysisChecked) checkRes = Object.fromEntries(lab.checkAnalysisSilent().map((r) => [r.key, r]));
+      if (analysis && st.analysisChecked) checkRes = Object.fromEntries(lab.analysisResult(st.analysisAnswers).map((r) => [r.key, r]));
       const body = rows.map((r) => {
         const s = chem.SAMPLE_BY_ID[r.sampleId];
         let extra = '';
@@ -654,7 +745,7 @@
         } else {
           extra = `<td>${s.cls === 'aldehyd' ? 'Aldehyd' : 'Keton'} <span class="muted">${s.formula}</span></td>`;
         }
-        return `<tr><td><b>${esc(r.label)}</b></td><td>${cell(r.fehling)}</td><td>${cell(r.tollens)}</td>${extra}</tr>`;
+        return `<tr><td><b>${esc(r.label)}</b></td><td>${cell(r.fehling, r.fehlingEvidence)}</td><td>${cell(r.tollens, r.tollensEvidence)}</td>${extra}</tr>`;
       }).join('');
       const head = analysis
         ? `<th>Probe</th><th>Fehling</th><th>Tollens</th><th>Deine Einordnung</th>${st.analysisRevealed ? '<th>Auflösung</th>' : ''}`
@@ -662,8 +753,8 @@
       return `
         <h2>Ergebnisübersicht</h2>
         <p class="lead">${analysis
-          ? 'Vergleiche die Nachweise der unbekannten Proben A–F und ordne jede Probe begründet ein. Grundlage ist das jeweils zuletzt protokollierte Ergebnis.'
-          : 'Vergleiche, wie Aldehyde und Ketone in den beiden Nachweisen reagieren. Grundlage ist das jeweils zuletzt protokollierte Ergebnis.'}</p>
+          ? 'Vergleiche die Nachweise der unbekannten Proben A–F und ordne jede Probe begründet ein. Angezeigt wird das zuletzt gültige Ergebnis; ein späterer gescheiterter Versuch löscht es nicht.'
+          : 'Vergleiche, wie Aldehyde und Ketone in den beiden Nachweisen reagieren. Angezeigt wird das zuletzt gültige Ergebnis; ein späterer gescheiterter Versuch löscht es nicht.'}</p>
         <table class="ov"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
         ${analysis ? `<div class="row end" style="margin-top:12px">
             <button type="button" class="btn" data-an="check">Einordnung prüfen</button>
@@ -750,17 +841,18 @@
           </div>
         </div>
         ${ctxNote}
+        <div class="note fach-note"><b>Schreibweise R–COOH:</b> ${esc(redox.COOH_NOTE.replace(/^Schreibweise: /, ''))} Die fachlich genaue Form mit R–COO⁻ steht in der Musterlösung.</div>
         <div class="rx-steps">${steps}</div>
         ${tr.confirmFull
           ? `<div class="note warn" style="margin-top:14px">Du hast noch nicht alle Schritte bearbeitet. Möchtest du die vollständige Musterlösung wirklich schon anzeigen?
               <div class="row end" style="margin-top:8px"><button type="button" class="btn small" data-rx="fullCancel">Selbst weiterarbeiten</button><button type="button" class="btn small primary" data-rx="full">Ja, Musterlösung anzeigen</button></div></div>`
           : `<div class="row end" style="margin-top:14px"><button type="button" class="btn ${tr.full ? '' : 'primary'}" data-rx="full">${tr.full ? 'Musterlösung ausblenden' : 'Vollständige Musterlösung anzeigen'}</button></div>`}
-        ${tr.full ? fullSolutionHtml(test, learn ? sample : null) : ''}
-        <details class="fach"><summary>Fachlicher Hinweis zur Schreibweise R–COOH</summary><p>${esc(redox.COOH_NOTE)}</p></details>`;
+        ${tr.full ? fullSolutionHtml(test, learn ? sample : null) : ''}`;
     }
 
     function fullSolutionHtml(test, sample) {
       const E = redox.EQUATIONS[test];
+      const P = redox.EQUATIONS_PRECISE[test];
       const F = test === 'fehling';
       const bal = redox.balance(E.total);
       const els = Object.keys(bal.left.atoms);
@@ -781,6 +873,12 @@
           <h3>Kontrolle der Gesamtgleichung</h3>
           <table class="bal"><thead><tr><th>Atom</th><th>links</th><th>rechts</th></tr></thead><tbody>${balRows}<tr><td>Ladung</td><td>${bal.left.charge}</td><td>${bal.right.charge}</td></tr></tbody></table>
           <p class="muted">${F ? 'Die Bildung des tiefblauen Kupfer-Tartrat-Komplexes ist in dieser vereinfachten Gleichung nicht berücksichtigt.' : 'Der Silber-Ammin-Komplex [Ag(NH₃)₂]⁺ entsteht bei der Herstellung des Tollens-Reagenzes.'}</p>
+          <h3>Fachlich genauere Schreibweise (alkalischer Ansatz)</h3>
+          <p class="muted">Im alkalischen Reaktionsgemisch entsteht das Carboxylat-Ion R–COO⁻. Dafür wird ein zusätzliches OH⁻ verbraucht und ein weiteres H₂O gebildet:</p>
+          <p><b>Oxidation:</b></p><div class="eqline">${redox.eqToHtml(P.oxidation)}</div>
+          <p><b>Redoxreaktion:</b></p><div class="eqline">${redox.eqToHtml(P.total)}</div>
+          ${sample ? `<div class="eqline">${redox.eqToHtml(P.total).replace('R–CHO', sample.condensed).replace('R–COO<sup>–</sup>', sample.acidCondensed.replace(/COOH$/, 'COO<sup>–</sup>'))}</div>` : ''}
+          <p class="muted">Beide Schreibweisen sind ausgeglichen. Die Schulschreibweise vereinfacht nur, in welcher Form das Oxidationsprodukt vorliegt.</p>
         </section>`;
     }
 
@@ -813,18 +911,6 @@
       renderDrawer();
       drawerBody.scrollTop = y;
     }
-
-    // Prüfung ohne Ereignis (für die Anzeige)
-    lab.checkAnalysisSilent = function () {
-      const answers = lab.state.analysisAnswers;
-      return lab.overview().map((row) => {
-        const truth = chem.SAMPLE_BY_ID[row.sampleId];
-        const evidence = [row.fehling, row.tollens].filter((r) => r && (r.model.outcome === 'positive' || r.model.outcome === 'negative'));
-        const answer = answers[row.key] || '';
-        const expected = truth.reducing ? 'aldehyd' : 'keinAldehyd';
-        return { key: row.key, correct: answer === expected, hasEvidence: evidence.length > 0 };
-      });
-    };
 
     // ============================================================ Ereignisse
     lab.on('change', () => refreshLive());
