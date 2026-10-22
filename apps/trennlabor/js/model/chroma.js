@@ -26,8 +26,8 @@
 
   /** Laufmittel. k: Steiggeschwindigkeit der Front in cm²/s (h² = h0² + k·t). */
   const ELUENTS = {
-    water: { id: 'water', name: 'Wasser', short: 'Wasser', k: 0.11, flammable: false, color: [210, 230, 245, 0.35] },
-    ethanol: { id: 'ethanol', name: 'Ethanol-Wasser-Gemisch (7 : 3, Volumenanteile)', short: 'Ethanol-Wasser 7 : 3', k: 0.065, flammable: true, color: [225, 232, 238, 0.35] }
+    water: { id: 'water', name: 'Wasser', short: 'Wasser', k: 0.11, flammable: false, color: [150, 192, 228, 0.5] },
+    ethanol: { id: 'ethanol', name: 'Ethanol-Wasser-Gemisch (7 : 3, Volumenanteile)', short: 'Ethanol-Wasser 7 : 3', k: 0.065, flammable: true, color: [176, 200, 222, 0.5] }
   };
 
   /** Farbstoffkomponenten: Farbe, je Laufmittel {s: löslicher Anteil, rf}. */

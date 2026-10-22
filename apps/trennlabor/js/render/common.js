@@ -273,13 +273,14 @@
   }
 
   /** Stativ mit Stange und Fuß. */
-  function stand(ctx, x, yTop, yBase) {
+  function stand(ctx, x, yTop, yBase, side) {
     ctx.save();
     const g = ctx.createLinearGradient(x - 5, 0, x + 5, 0);
     g.addColorStop(0, '#8e99a4'); g.addColorStop(0.5, '#e3e8ec'); g.addColorStop(1, '#7c8792');
     ctx.fillStyle = g; ctx.fillRect(x - 5, yTop, 10, yBase - yTop);
-    ctx.fillStyle = '#4b5662'; roundRect(ctx, x - 70, yBase - 10, 150, 14, 4); ctx.fill();
-    ctx.fillStyle = '#5d6975'; roundRect(ctx, x - 70, yBase - 12, 150, 6, 3); ctx.fill();
+    const x0 = side === 'left' ? x - 140 : x - 70;
+    ctx.fillStyle = '#4b5662'; roundRect(ctx, x0, yBase - 10, 150, 14, 4); ctx.fill();
+    ctx.fillStyle = '#5d6975'; roundRect(ctx, x0, yBase - 12, 150, 6, 3); ctx.fill();
     ctx.restore();
   }
   function clampArm(ctx, x0, y, x1) {

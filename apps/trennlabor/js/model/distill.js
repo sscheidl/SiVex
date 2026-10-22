@@ -115,6 +115,8 @@
       log('ack', { code: st.safety.code });
       st.safety = null;
       st.warned.esc = false;
+      // Verlustzähler für die nächsten Stopps neu beginnen (Bilanz bleibt unverändert)
+      st.escBase = st.lost.escaped.E; st.leakBase = st.lost.leak.E;
       ev.emit('change', {});
       return { ok: true };
     }
@@ -438,7 +440,7 @@
         pE -= lE; pW -= lW; st.lost.leak.E += lE; st.lost.leak.W += lW;
         fx.leak = 1;
         if (!st.warned.leak) { st.warned.leak = true; msg('An den ungesicherten Schliffverbindungen tritt Dampf aus. Sichere die Verbindungen mit Klemmen.', 'warn'); mistake('unsecured'); }
-        if (st.lost.leak.E > ESC_STOP) {
+        if (st.lost.leak.E - (st.leakBase || 0) > ESC_STOP) {
           return void bail(pE, pW, 'leak', 'Sicherheitsstopp: undichte Apparatur',
             'An den Verbindungen ist so viel brennbarer Dampf ausgetreten, dass Brandgefahr besteht.',
             'Heizung aus, abkühlen lassen und die Schliffverbindungen mit Klemmen sichern.');
@@ -460,12 +462,12 @@
         st.lost.escaped.E += eE; st.lost.escaped.W += eW;
         fx.escape = clamp((eE + eW) / h / 0.08, 0, 1);
         if (eE + eW > 1e-6) {
-          if (st.lost.escaped.E > ESC_WARN && !st.warned.esc) {
+          if (st.lost.escaped.E - (st.escBase || 0) > ESC_WARN && !st.warned.esc) {
             st.warned.esc = true;
             msg('Am Ende des Kühlers tritt unkondensierter Dampf aus – die Kühlung reicht nicht.', 'warn');
             mistake('weakCooling');
           }
-          if (st.lost.escaped.E > ESC_STOP) escStop = true;
+          if (st.lost.escaped.E - (st.escBase || 0) > ESC_STOP) escStop = true;
         }
         // Kondensat läuft durch den Kühler (kleiner Vorrat im Kühlrohr), dann tropft es
         const hold = st.coolerHold;

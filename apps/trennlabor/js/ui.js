@@ -210,7 +210,7 @@
         const title = { water: 'Spritzflasche (kaltes Wasser, 20 °C)', kettle: 'Wasserkocher (heißes Wasser, ca. 90 °C)', hib: `Hibiskusblüten (noch ${fmt(st.hibiscusStock, 0)} g)`, magnet: 'Magnet (in Folie)' }[tool];
         html += `<div class="card" id="selCard"><div class="sel-head"><b>${esc(title)}</b></div>`;
         if (tool === 'water' || tool === 'kettle') html += amtSeg();
-        html += `<span class="lbl">${tool === 'magnet' ? 'Magnet einsetzen in …' : tool === 'hib' ? '2 g Blüten geben in …' : 'Wasser geben in …'}</span><div class="targets">${targets.map((id) => `<button type="button" class="btn" data-act="tool" data-tool="${tool}" data-to="${id}" ${busy ? 'disabled' : ''}>${esc(NAME(lab, id))}</button>`).join('')}</div>`;
+        html += `<span class="lbl">${tool === 'magnet' ? 'Magnet einsetzen in …' : tool === 'hib' ? '2 g Blüten geben in …' : 'Wasser geben in …'}</span><div class="targets">${targets.map((id) => `<button type="button" class="btn" data-act="tool" data-tool="${tool}" data-to="${id}">${esc(NAME(lab, id))}</button>`).join('')}</div>`;
         html += '<p class="muted" style="margin-top:6px">Tipp: Werkzeug gewählt lassen und dann auf der Bühne ein Gefäß antippen.</p></div>';
       } else if (sel) {
         const d = lab.describe(sel);
@@ -220,44 +220,44 @@
         if (canPour) {
           html += `<span class="lbl">${sel === 'S' ? 'Oben ausgießen' : 'Ausgießen'}</span>
             <div class="seg full" role="radiogroup" aria-label="Art des Gießens">${[['slow', 'Vorsichtig abgießen'], ['fast', 'Zügig ausgießen'], ['all', 'Vollständig umfüllen']].map(([m, n]) => `<button type="button" data-act="pmode" data-mode="${m}" aria-pressed="${ui.pourMode === m}">${n}</button>`).join('')}</div>
-            <div class="targets" style="margin-top:6px">${classicTargets(lab, sel).map(([id, n]) => `<button type="button" class="btn" data-act="pour" data-from="${sel}" data-to="${id}" ${busy ? 'disabled' : ''}>→ ${esc(n)}</button>`).join('')}</div>`;
+            <div class="targets" style="margin-top:6px">${classicTargets(lab, sel).map(([id, n]) => `<button type="button" class="btn" data-act="pour" data-from="${sel}" data-to="${id}">→ ${esc(n)}</button>`).join('')}</div>`;
         }
         if (st.vessels[sel]) {
           if (st.equip.water || st.equip.kettle) html += amtSeg();
           html += '<span class="lbl">Weitere Handlungen</span><div class="grid2">';
-          if (st.equip.rod) html += `<button type="button" class="btn" data-act="stir" data-id="${sel}" ${busy ? 'disabled' : ''}>Umrühren</button>`;
-          if (st.equip.water) html += `<button type="button" class="btn" data-act="tool" data-tool="water" data-to="${sel}" ${busy ? 'disabled' : ''}>${ui.waterAmt} mL Wasser (kalt)</button>`;
-          if (st.equip.kettle) html += `<button type="button" class="btn" data-act="tool" data-tool="kettle" data-to="${sel}" ${busy ? 'disabled' : ''}>${ui.waterAmt} mL Wasser (heiß)</button>`;
-          if (st.equip.hibiscus) html += `<button type="button" class="btn" data-act="tool" data-tool="hib" data-to="${sel}" ${busy ? 'disabled' : ''}>Hibiskusblüten (2 g)</button>`;
-          if (st.equip.magnet) html += `<button type="button" class="btn" data-act="tool" data-tool="magnet" data-to="${sel}" ${busy ? 'disabled' : ''}>Magnet einsetzen</button>`;
+          if (st.equip.rod) html += `<button type="button" class="btn" data-act="stir" data-id="${sel}">Umrühren</button>`;
+          if (st.equip.water) html += `<button type="button" class="btn" data-act="tool" data-tool="water" data-to="${sel}">${ui.waterAmt} mL Wasser (kalt)</button>`;
+          if (st.equip.kettle) html += `<button type="button" class="btn" data-act="tool" data-tool="kettle" data-to="${sel}">${ui.waterAmt} mL Wasser (heiß)</button>`;
+          if (st.equip.hibiscus) html += `<button type="button" class="btn" data-act="tool" data-tool="hib" data-to="${sel}">Hibiskusblüten (2 g)</button>`;
+          if (st.equip.magnet) html += `<button type="button" class="btn" data-act="tool" data-tool="magnet" data-to="${sel}">Magnet einsetzen</button>`;
           html += '</div><span class="lbl">Stellen</span><div class="grid2">';
           const place = st.vessels[sel].place;
-          if (st.F && place !== 'filter') html += `<button type="button" class="btn" data-act="move" data-id="${sel}" data-to="filter" ${busy || lab.vesselAt('filter') ? 'disabled' : ''}>Unter den Trichter</button>`;
-          if (st.S && place !== 'sep') html += `<button type="button" class="btn" data-act="move" data-id="${sel}" data-to="sep" ${busy || lab.vesselAt('sep') ? 'disabled' : ''}>Unter den Scheidetrichter</button>`;
-          if (place === 'filter' || place === 'sep') html += `<button type="button" class="btn" data-act="move" data-id="${sel}" data-to="bench" ${busy ? 'disabled' : ''}>Zurück auf den Tisch</button>`;
+          if (st.F && place !== 'filter') html += `<button type="button" class="btn" data-act="move" data-id="${sel}" data-to="filter">Unter den Trichter</button>`;
+          if (st.S && place !== 'sep') html += `<button type="button" class="btn" data-act="move" data-id="${sel}" data-to="sep">Unter den Scheidetrichter</button>`;
+          if (place === 'filter' || place === 'sep') html += `<button type="button" class="btn" data-act="move" data-id="${sel}" data-to="bench">Zurück auf den Tisch</button>`;
           html += '</div>';
         }
         if (sel === 'F') {
           const ins = st.insert;
           html += `<span class="lbl">Einsatz</span><div class="grid2">
-            <button type="button" class="btn" data-act="insert" data-kind="paper" ${busy || ins ? 'disabled' : ''}>Filterpapier (gefaltet) einlegen</button>
-            <button type="button" class="btn" data-act="insert" data-kind="paperFlat" ${busy || ins ? 'disabled' : ''}>Filterpapier ungefaltet hineindrücken</button>
-            ${st.equip.sieve ? `<button type="button" class="btn" data-act="insert" data-kind="sieve" ${busy || ins ? 'disabled' : ''}>Teesieb einsetzen</button>` : ''}
-            <button type="button" class="btn" data-act="removeInsert" ${busy || !ins ? 'disabled' : ''}>Einsatz mit Rückstand herausnehmen</button></div>
-            ${amtSeg('Ausspülen mit Wasser')}<div class="grid2" style="margin-top:6px"><button type="button" class="btn" data-act="tool" data-tool="water" data-to="F" ${busy ? 'disabled' : ''}>${ui.waterAmt} mL Wasser darauf</button>${st.equip.magnet ? `<button type="button" class="btn" data-act="tool" data-tool="magnet" data-to="F" ${busy ? 'disabled' : ''}>Magnet in den Rückstand</button>` : ''}</div>
+            <button type="button" class="btn" data-act="insert" data-kind="paper">Filterpapier (gefaltet) einlegen</button>
+            <button type="button" class="btn" data-act="insert" data-kind="paperFlat">Filterpapier ungefaltet hineindrücken</button>
+            ${st.equip.sieve ? `<button type="button" class="btn" data-act="insert" data-kind="sieve">Teesieb einsetzen</button>` : ''}
+            <button type="button" class="btn" data-act="removeInsert">Einsatz mit Rückstand herausnehmen</button></div>
+            ${amtSeg('Ausspülen mit Wasser')}<div class="grid2" style="margin-top:6px"><button type="button" class="btn" data-act="tool" data-tool="water" data-to="F">${ui.waterAmt} mL Wasser darauf</button>${st.equip.magnet ? `<button type="button" class="btn" data-act="tool" data-tool="magnet" data-to="F">Magnet in den Rückstand</button>` : ''}</div>
             <p class="muted" style="margin-top:6px">Darunter: ${lab.vesselAt('filter') ? esc(NAME(lab, lab.vesselAt('filter').id)) : '<b style="color:var(--bad)">kein Gefäß</b>'}</p>`;
         }
         if (sel === 'D') {
           html += `<span class="lbl">Brenner</span><div class="seg full" role="radiogroup" aria-label="Brenner">${[[0, 'Aus'], [1, 'Kleine Flamme'], [2, 'Große Flamme']].map(([l, n]) => `<button type="button" data-act="burner" data-level="${l}" aria-pressed="${st.burner === l}">${n}</button>`).join('')}</div>
             <p class="muted" style="margin-top:6px" data-live="dishT">Temperatur in der Schale: ${Math.round(st.D.T)} °C</p>
-            ${amtSeg()}<div class="grid2" style="margin-top:6px"><button type="button" class="btn" data-act="tool" data-tool="water" data-to="D" ${busy ? 'disabled' : ''}>${ui.waterAmt} mL Wasser zugeben</button><button type="button" class="btn" data-act="stir" data-id="D" ${busy ? 'disabled' : ''}>Umrühren</button></div>`;
+            ${amtSeg()}<div class="grid2" style="margin-top:6px"><button type="button" class="btn" data-act="tool" data-tool="water" data-to="D">${ui.waterAmt} mL Wasser zugeben</button><button type="button" class="btn" data-act="stir" data-id="D">Umrühren</button></div>`;
         }
         if (sel === 'S') {
           html += `<span class="lbl">Hahn</span><div class="seg full" role="radiogroup" aria-label="Hahn">${[['closed', 'Zu', 0], ['drop', 'Tropfenweise', 0.15], ['open', 'Offen', 1]].map(([v, n, x]) => `<button type="button" data-act="tap" data-v="${v}" aria-pressed="${st.tap === x}">${n}</button>`).join('')}</div>
-            <span class="lbl">Stopfen und Schütteln</span><div class="grid2"><button type="button" class="btn" data-act="stopper" data-v="${st.stopper ? 0 : 1}">${st.stopper ? 'Stopfen abnehmen' : 'Stopfen aufsetzen'}</button><button type="button" class="btn" data-act="shake" ${busy ? 'disabled' : ''}>Schütteln</button></div>
+            <span class="lbl">Stopfen und Schütteln</span><div class="grid2"><button type="button" class="btn" data-act="stopper" data-v="${st.stopper ? 0 : 1}">${st.stopper ? 'Stopfen abnehmen' : 'Stopfen aufsetzen'}</button><button type="button" class="btn" data-act="shake">Schütteln</button></div>
             <p class="muted" style="margin-top:6px">Darunter: ${lab.vesselAt('sep') ? esc(NAME(lab, lab.vesselAt('sep').id)) : '<b style="color:var(--bad)">kein Gefäß</b>'}</p>`;
         }
-        if (sel === 'R' && st.equip.magnet) html += `<div class="grid2"><button type="button" class="btn" data-act="tool" data-tool="magnet" data-to="R" ${busy ? 'disabled' : ''}>Magnet einsetzen</button></div>`;
+        if (sel === 'R' && st.equip.magnet) html += `<div class="grid2"><button type="button" class="btn" data-act="tool" data-tool="magnet" data-to="R">Magnet einsetzen</button></div>`;
         if (sel === 'waste') html += '<p class="muted">Was hier hineingegossen wird, ist verloren.</p>';
         html += '</div>';
       } else {
@@ -267,14 +267,16 @@
       return html;
     }
 
-    function balanceCard(lab) {
+    function balanceRows(lab) {
       const b = lab.balance();
       const names = { water: ['Wasser', 'mL'], oil: ['Öl', 'mL'], salt: ['Kochsalz', 'g'], sand: ['Sand', 'g'], iron: ['Eisen', 'g'], plant: ['Blütenreste', 'g'], dye: ['Farbstoffe', 'mg'] };
-      const rows = Object.keys(names).filter((k) => b.start[k] > 0.001 || b.now[k] > 0.001).map((k) => {
+      return Object.keys(names).filter((k) => b.start[k] > 0.001 || b.now[k] > 0.001).map((k) => {
         const where = b.where[k].sort((x, y) => y.amount - x.amount).map((w) => `<span class="${w.lost ? 'lost' : ''}">${esc(w.name)} ${fmt(w.amount, k === 'dye' ? 0 : 1)}</span>`).join(', ');
         return `<tr><th>${names[k][0]}</th><td class="n">${fmt(b.start[k], k === 'dye' ? 0 : 1)} ${names[k][1]}</td><td>${where || '–'}</td></tr>`;
       }).join('');
-      return `<div class="card"><details id="balance"><summary><b>Mengenbilanz</b> <span class="muted">Ausgangsmenge und Verbleib</span></summary><table class="bal" data-live="balance"><thead><tr><th>Stoff</th><th>gesamt</th><th>wo jetzt</th></tr></thead><tbody>${rows}</tbody></table><p class="muted" style="margin-top:6px">Rot: verloren (Ausguss, Tisch, verdampft, verspritzt). Nichts entsteht aus dem Nichts.</p></details></div>`;
+    }
+    function balanceCard(lab) {
+      return `<div class="card"><details id="balance"><summary><b>Mengenbilanz</b> <span class="muted">Ausgangsmenge und Verbleib</span></summary><table class="bal" data-live="balance"><thead><tr><th>Stoff</th><th>gesamt</th><th>wo jetzt</th></tr></thead><tbody>${balanceRows(lab)}</tbody></table><p class="muted" style="margin-top:6px">Rot: verloren (Ausguss, Tisch, verdampft, verspritzt). Nichts entsteht aus dem Nichts.</p></details></div>`;
     }
 
     // ============================================================ Versuch: Chromatographie
@@ -283,24 +285,24 @@
       const fresh = p && p.state === 'fresh';
       const dev = p && p.state === 'developing';
       let html = `<div class="card" id="cPaper"><h3>1 · Papier ${p ? `<small>Nr. ${p.no}: ${p.state === 'fresh' ? 'vorbereiten' : p.state === 'developing' ? 'in der Kammer' : p.state === 'drying' ? 'feucht' : 'trocken'}</small>` : ''}</h3>
-        <div class="grid2"><button type="button" class="btn" data-act="cpaper" data-type="sheet" ${dev ? 'disabled' : ''}>Neues breites Papier (3 Bahnen)</button><button type="button" class="btn" data-act="cpaper" data-type="strip" ${dev ? 'disabled' : ''}>Neuer schmaler Streifen</button></div></div>`;
+        <div class="grid2"><button type="button" class="btn" data-act="cpaper" data-type="sheet">Neues breites Papier (3 Bahnen)</button><button type="button" class="btn" data-act="cpaper" data-type="strip">Neuer schmaler Streifen</button></div></div>`;
       html += `<div class="card" id="cLine"><h3>2 · Startlinie ${p && p.line ? `<small>${p.line.tool === 'pencil' ? 'Bleistift' : 'Kugelschreiber'}, ${fmt(p.line.y)} cm</small>` : ''}</h3>
         <div class="row"><div class="seg" role="radiogroup" aria-label="Stift für die Startlinie">${[['pencil', 'Bleistift'], ['ballpoint', 'Kugelschreiber']].map(([t, n]) => `<button type="button" data-act="ltool" data-tool="${t}" aria-pressed="${ui.lineTool === t}">${n}</button>`).join('')}</div>
         <span class="stepper"><button type="button" class="btn small" data-act="lineY" data-d="-0.5" aria-label="Startlinie tiefer">−</button><output>${fmt(ui.lineY)} cm</output><button type="button" class="btn small" data-act="lineY" data-d="0.5" aria-label="Startlinie höher">+</button></span></div>
-        <button type="button" class="btn wide" style="margin-top:6px" data-act="cline" ${!fresh || (p && (p.line || p.spots.length)) ? 'disabled' : ''}>Startlinie zeichnen</button></div>`;
+        <button type="button" class="btn wide" style="margin-top:6px" data-act="cline">Startlinie zeichnen</button></div>`;
       const lanes = p ? p.lanes : 3;
       const spotOn = (l) => p && p.spots.find((s) => s.lane === l);
       html += `<div class="card" id="cSpot"><h3>3 · Proben auftragen</h3><div class="pens" role="radiogroup" aria-label="Probe">${CH.PENS.map((pen) => `<button type="button" class="pen" data-act="pen" data-pen="${pen.id}" aria-pressed="${st.selectedPen === pen.id}"><i style="background:rgb(${pen.color.join(',')})"></i>${esc(pen.name)}</button>`).join('')}</div>
         <span class="lbl">Bahn</span><div class="seg" role="radiogroup" aria-label="Bahn">${Array.from({ length: lanes }, (_, l) => { const s = spotOn(l); return `<button type="button" data-act="lane" data-lane="${l}" aria-pressed="${ui.lane === l}">Bahn ${l + 1}${s ? ` (${esc(CH.PEN_BY_ID[s.pen].name.split(' ')[0])} ×${s.load})` : ''}</button>`; }).join('')}</div>
-        <button type="button" class="btn wide primary" style="margin-top:6px" data-act="spot" ${!fresh ? 'disabled' : ''}>Einmal auftupfen</button></div>`;
+        <button type="button" class="btn wide primary" style="margin-top:6px" data-act="spot">Einmal auftupfen</button></div>`;
       html += `<div class="card" id="cChamber"><h3>4 · Entwicklungskammer <small data-live="chamber">${ch.eluent ? `${esc(CH.ELUENTS[ch.eluent].short)}, ${fmt(ch.level)} cm` : 'leer'}${ch.lid ? ', Deckel auf' : ''}</small></h3>
         <div class="seg full" role="radiogroup" aria-label="Laufmittel">${Object.values(CH.ELUENTS).map((e) => `<button type="button" data-act="eluent" data-el="${e.id}" aria-pressed="${ui.eluent === e.id}">${esc(e.short)}</button>`).join('')}</div>
         <div class="row" style="margin-top:6px"><span class="muted">Füllhöhe</span><span class="stepper"><button type="button" class="btn small" data-act="level" data-d="-0.5" aria-label="weniger">−</button><output>${fmt(ui.level)} cm</output><button type="button" class="btn small" data-act="level" data-d="0.5" aria-label="mehr">+</button></span></div>
-        <div class="grid2" style="margin-top:6px"><button type="button" class="btn" data-act="fill" ${dev ? 'disabled' : ''}>Laufmittel einfüllen</button><button type="button" class="btn" data-act="emptyCh" ${dev || !ch.eluent ? 'disabled' : ''}>Kammer leeren</button>
+        <div class="grid2" style="margin-top:6px"><button type="button" class="btn" data-act="fill">Laufmittel einfüllen</button><button type="button" class="btn" data-act="emptyCh">Kammer leeren</button>
         <button type="button" class="btn" data-act="lid" aria-pressed="${ch.lid}">${ch.lid ? 'Deckel abnehmen' : 'Deckel auflegen'}</button></div></div>`;
       html += `<div class="card" id="cDev"><h3>5 · Entwickeln <small data-live="front">${p && p.state !== 'fresh' ? `Front ${fmt(p.front)} cm` : ''}</small></h3>
-        <div class="grid2"><button type="button" class="btn primary" data-act="insertP" ${!fresh ? 'disabled' : ''}>Papier in die Kammer stellen</button><button type="button" class="btn" data-act="removeP" ${!dev ? 'disabled' : ''}>Papier herausnehmen</button>
-        <button type="button" class="btn" data-act="markF" ${!p || p.state !== 'drying' || p.frontMark ? 'disabled' : ''}>Laufmittelfront markieren</button></div>
+        <div class="grid2"><button type="button" class="btn primary" data-act="insertP">Papier in die Kammer stellen</button><button type="button" class="btn" data-act="removeP">Papier herausnehmen</button>
+        <button type="button" class="btn" data-act="markF">Laufmittelfront markieren</button></div>
         ${p && p.state === 'drying' && !p.frontMark ? '<p class="muted" style="margin-top:6px">Die Front ist nur sichtbar, solange das Papier feucht ist.</p>' : ''}</div>`;
       const papers = TL.tasks.chroma.papers(lab);
       html += `<div class="card" id="cArch"><h3>Chromatogramme <small>${papers.length}</small></h3>
@@ -333,7 +335,7 @@
       const st = lab.state, p = st.parts;
       const hot = st.flask.T > 40;
       const row = (on, name, controls, extra) => `<div class="part"><span class="ck ${on === 'bad' ? 'badpos' : on ? 'on' : ''}">${on ? CHECK : ''}</span><span>${name}${extra ? `<br><small class="muted">${extra}</small>` : ''}</span><span class="row">${controls}</span></div>`;
-      const b = (act, label, attrs, dis) => `<button type="button" class="btn small" data-act="${act}" ${attrs || ''} ${dis ? 'disabled' : ''}>${label}</button>`;
+      const b = (act, label, attrs) => `<button type="button" class="btn small" data-act="${act}" ${attrs || ''}>${label}</button>`;
       const POS = { correct: 'am seitlichen Abgang', high: 'zu hoch', deep: 'in der Flüssigkeit' };
       let html = `<div class="card" id="dBuild"><h3>Aufbau <small>${hot ? 'Apparatur heiß' : 'kalt'}</small></h3><div class="parts">
         ${row(p.mantle, 'Heizpilz', p.mantle ? b('dremove', 'Entfernen', 'data-part="mantle"', st.heater > 0) : b('dplace', 'Aufstellen', 'data-part="mantle"'))}
@@ -355,7 +357,7 @@
         <dl class="kv" style="margin-top:8px"><dt>Thermometer</dt><dd data-live="tread">–</dd><dt>Kolbeninhalt</dt><dd data-live="ftemp">–</dd><dt>Im Kolben</dt><dd data-live="fvol2">–</dd></dl></div>`;
       const rec = (id) => st.receivers[id];
       html += `<div class="card" id="dRec"><h3>Vorlagen</h3><div class="grid3">${['A', 'B', 'C'].map((id, i) => `<button type="button" class="btn small" data-act="recv" data-id="${id}" aria-pressed="${st.receiverAt === id}">Vorlage ${i + 1}<br><span data-live="rv${id}">${fmt(rec(id).E + rec(id).W, 1)} mL</span></button>`).join('')}</div>
-        <div class="grid2" style="margin-top:6px"><button type="button" class="btn small" data-act="recv" data-id="" ${!st.receiverAt ? 'disabled' : ''}>Vorlage wegnehmen</button><button type="button" class="btn small" data-act="rstop" ${!st.receiverAt ? 'disabled' : ''}>${st.receiverStopper ? 'Stopfen abnehmen' : 'Vorlage mit Stopfen verschließen'}</button></div>
+        <div class="grid2" style="margin-top:6px"><button type="button" class="btn small" data-act="recv" data-id="">Vorlage wegnehmen</button><button type="button" class="btn small" data-act="rstop">${st.receiverStopper ? 'Stopfen abnehmen' : 'Vorlage mit Stopfen verschließen'}</button></div>
         <p class="muted" style="margin-top:6px">Unter dem Vorstoß: ${st.receiverAt ? 'Vorlage ' + ('ABC'.indexOf(st.receiverAt) + 1) : '<b style="color:var(--bad)">keine Vorlage</b>'}</p></div>`;
       html += `<div class="card" id="dBurn"><h3>Brennprobe <small>getrennt von der Apparatur</small></h3>
         <span class="lbl">Probe (ca. 2 mL) entnehmen aus</span><div class="seg full" role="radiogroup" aria-label="Probenquelle">${[['A', 'Vorlage 1'], ['B', 'Vorlage 2'], ['C', 'Vorlage 3'], ['flask', 'Kolben']].map(([k, n]) => `<button type="button" data-act="ssrc" data-v="${k}" aria-pressed="${ui.sampleSrc === k}">${n}</button>`).join('')}</div>
@@ -373,14 +375,37 @@
       const sig = expSig(e, lab);
       if (sig === sigs.exp) return;
       sigs.exp = sig;
+      sigs.view = 'exp|' + lab + '|' + session.currentTaskId();
       const focus = document.activeElement && panel.contains(document.activeElement) ? focusKey(document.activeElement) : null;
-      tabBody.innerHTML = lab === 'classic' ? renderClassic(e) : lab === 'chroma' ? renderChroma(e) : renderDistill(e);
+      patch(tabBody, lab === 'classic' ? renderClassic(e) : lab === 'chroma' ? renderChroma(e) : renderDistill(e));
       const bal = $('#balance', tabBody);
       if (bal && ui.balanceOpen) bal.open = true;
       if (bal) bal.addEventListener('toggle', () => { ui.balanceOpen = bal.open; });
       if (focus) { const el = $(focus, tabBody); if (el) el.focus(); }
       if (ui.flash) { const el = $('#' + ui.flash, tabBody); if (el) { el.classList.add('flash'); el.scrollIntoView({ block: 'nearest' }); } ui.flash = null; }
       updateLive();
+    }
+    /**
+     * Nur geänderte Karten ersetzen: Unveränderte Bedienelemente bleiben dieselben
+     * DOM-Knoten – ein Antippen geht nicht verloren, während sich der Versuch ändert.
+     */
+    function patch(container, html) {
+      const tpl = document.createElement('template');
+      tpl.innerHTML = html;
+      const next = Array.from(tpl.content.children);
+      const cur = Array.from(container.children);
+      if (container.dataset.view !== sigs.view) { container.dataset.view = sigs.view || ''; container.replaceChildren(...next); return; }
+      next.forEach((n, i) => {
+        const c = cur[i];
+        if (!c) container.appendChild(n);
+        else if (c.outerHTML !== n.outerHTML) {
+          // Zustand aufgeklappter Details übernehmen
+          const d0 = c.querySelector && c.querySelector('details'), d1 = n.querySelector && n.querySelector('details');
+          if (d0 && d1 && d0.open) d1.open = true;
+          container.replaceChild(n, c);
+        }
+      });
+      for (let i = next.length; i < cur.length; i++) container.removeChild(cur[i]);
     }
     function focusKey(el) {
       const ds = el.dataset || {};
@@ -391,16 +416,15 @@
     function expSig(e, lab) {
       const st = e.state;
       if (lab === 'classic') {
-        const r = (c) => (c ? [c.water, c.oil, c.salt, c.dye].map((v) => Math.round(v * 10)).join(',') + CL.PKEYS.map((k) => Math.round((c.p[k].set + c.p[k].sus) * 20)).join(',') : '');
-        return [lab, session.currentTaskId(), ui.selected.classic, ui.pourMode, ui.waterAmt, st.op ? st.op.type + st.op.waiting : '', st.insert, st.burner, st.tap, st.stopper, st.hibiscusStock,
-          ...Object.values(st.vessels).map((v) => v.place + r(v.c)), r(st.F), r(st.D), r(st.S), r(st.E), r(st.R), Math.round(st.D ? st.D.T / 10 : 0)].join('|');
+        return [lab, session.currentTaskId(), ui.selected.classic, ui.pourMode, ui.waterAmt, st.op ? st.op.type + st.op.waiting : '', st.insert, st.burner, st.tap, st.stopper, Math.round(st.hibiscusStock),
+          ...Object.values(st.vessels).map((v) => v.place)].join('|');
       }
       if (lab === 'chroma') {
         const p = st.paper;
         return [lab, session.currentTaskId(), st.selectedPen, ui.lane, ui.lineTool, ui.lineY, ui.eluent, ui.level, ui.chromaView, session.state.expert, st.chamber.eluent, st.chamber.level, st.chamber.lid, st.archive.length,
           p ? [p.no, p.state, p.line && p.line.y, p.line && p.line.tool, JSON.stringify(p.spots), !!p.frontMark].join(',') : ''].join('|');
       }
-      return [lab, ui.thermoPos, ui.hoseIn, ui.sampleSrc, ui.igniteTarget, JSON.stringify(st.parts), st.stones, Math.round(e.flaskVol()), st.heater, st.cool, st.receiverAt, st.receiverStopper, st.flask.T > 40, !!st.dish, st.dish && st.dish.burned, st.burnTests.length, !!st.safety].join('|');
+      return [lab, ui.thermoPos, ui.hoseIn, ui.sampleSrc, ui.igniteTarget, JSON.stringify(st.parts), st.stones, st.heater, st.cool, st.receiverAt, st.receiverStopper, st.flask.T > 40, !!st.dish, st.dish && st.dish.burned, st.burnTests.length, !!st.safety].join('|');
     }
 
     /** Laufend aktualisierte Werte ohne Neuaufbau des Panels. */
@@ -410,6 +434,8 @@
       const lab = session.state.lab;
       const set = (k, v) => { const el = $(`[data-live="${k}"]`, panel); if (el && el.textContent !== v) el.textContent = v; };
       if (lab === 'classic') {
+        const bal = $('[data-live="balance"] tbody', panel);
+        if (bal) { const h = balanceRows(e); if (bal._h !== h) { bal._h = h; bal.innerHTML = h; } }
         const c = $('[data-live="contents"]', panel);
         if (c) set('contents', contentsText(e.describe(c.dataset.id)));
         if (e.state.D) set('dishT', `Temperatur in der Schale: ${Math.round(e.state.D.T)} °C`);
@@ -421,6 +447,7 @@
         set('fvol', `${fmt(e.flaskVol(), 0)} mL`);
         set('fvol2', `${fmt(e.flaskVol(), 1)} mL`);
         for (const id of ['A', 'B', 'C']) set('rv' + id, `${fmt(st.receivers[id].E + st.receivers[id].W, 1)} mL`);
+        set('dish', st.dish ? `In der Schale: ${fmt(st.dish.E + st.dish.W)} mL aus ${st.dish.label}${st.dish.burned ? ' (geprüft)' : ''}` : 'Porzellanschale leer');
         const chart = $('[data-live="chart"]', panel);
         if (chart && (chart._n !== st.tempLog.length)) { chart._n = st.tempLog.length; chart.innerHTML = chartSvg(e); }
       } else if (lab === 'chroma') {
@@ -437,7 +464,7 @@
         if (box) { const html = checklist(session.task().check(session.engine())); if (box._h !== html) { box._h = html; box.innerHTML = html; } }
         return;
       }
-      evalDirty = false; sigs.evalTask = session.currentTaskId(); sigs.evalTab = ui.tab;
+      evalDirty = false; sigs.evalTask = session.currentTaskId(); sigs.evalTab = ui.tab; tabBody.dataset.view = 'eval';
       const ev = session.evaluation();
       const m = session.meta();
       let html = `<div class="card"><h3>Versuchsziel <small>aus dem aktuellen Zustand</small></h3><div id="liveCheck">${checklist(ev.check)}</div></div>`;
@@ -493,7 +520,7 @@
       const th = session.theory();
       const sig = [session.currentTaskId(), th.unlocked, th.step].join('|');
       if (sig === sigs.note) return;
-      sigs.note = sig;
+      sigs.note = sig; tabBody.dataset.view = 'note';
       if (!th.unlocked) {
         tabBody.innerHTML = '<div class="card"><p class="locked">Erklärung und Muster-Hefteintrag erscheinen erst, wenn dein Versuch gelungen ist und du ihn richtig ausgewertet hast.</p></div>';
         return;

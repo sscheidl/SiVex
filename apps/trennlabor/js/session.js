@@ -142,6 +142,8 @@
       const t = task(tid), m = st.meta[tid];
       const e = engineFor(tid);
       const res = t.check(e);
+      // Schnappschuss erst, wenn keine Handlung mehr läuft (z. B. Gießen abgeschlossen)
+      if (e.busy()) return res;
       if (res.success && !m.completedAt) {
         const was = m.lastSuccess;
         if (!was) {

@@ -451,7 +451,7 @@
       const st = lab.state;
       if (!st.S) return;
       const S = st.S;
-      R.stand(ctx, SEP.x + 110, 110, BENCH);
+      R.stand(ctx, SEP.x + 110, 110, BENCH, 'left');
       R.clampArm(ctx, SEP.x + 110, SEP.neck + 6, SEP.x + 14);
       const w2 = SEP.w / 2;
       const body = () => {
@@ -466,11 +466,11 @@
       // Inhalt: Volumen → Höhe über Flächenprofil (Birne)
       ctx.save(); body(); ctx.closePath(); ctx.clip();
       const yOf = (vol) => {
-        // Kumuliertes Volumen von unten; Querschnitt ~ Breite² (vereinfacht numerisch)
+        // Kumuliertes Volumen von unten; Querschnitt ∝ Breite², skaliert auf 250 mL Nennvolumen
         let v = 0, y = SEP.tap - 14;
         while (y > SEP.neck && v < vol) {
           const wy = widthAt(y);
-          v += wy * wy * 0.0105; y -= 1;
+          v += wy * wy * SEP_K; y -= 1;
         }
         return y;
       };
@@ -523,6 +523,8 @@
       if (sel === 'S') R.selection(ctx, SEP.x - w2 - 6, SEP.top - 16, SEP.w + 12, SEP.stemB - SEP.top + 16, vis.t);
       R.label(ctx, `Scheidetrichter · Hahn ${open ? (open < 0.5 ? 'tropfenweise' : 'offen') : 'zu'}${st.stopper ? ' · Stopfen auf' : ''}`, SEP.x, SEP.top - 36, { size: 12 });
     }
+    let SEP_K = 0;
+    { let sum = 0; for (let y = SEP.tap - 14; y > SEP.bodyTop; y--) sum += widthAt(y) * widthAt(y); SEP_K = 250 / sum; }
     function widthAt(y) {
       // Breite des Scheidetrichters (Birnenform) in Abhängigkeit von y
       if (y <= SEP.bodyTop - 8) return 24;

@@ -1,0 +1,234 @@
+{
+  "date": "2026-10-22T17:08:05.343Z",
+  "browser": "Chromium 141.0.7390.37",
+  "root": "dist/trennlabor",
+  "smoke": false,
+  "passed": 28,
+  "failed": 0,
+  "results": [
+    {
+      "id": "S-00",
+      "title": "Startansicht mit drei Laboren, alle erreichbar (A-01)",
+      "status": "PASS",
+      "detail": "3 Labore geöffnet, je mit Bedienelementen",
+      "ms": 2127,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-01",
+      "title": "K-02 positiv: Lösen → Filtrieren → Eindampfen → Kristalle → Auswertung → Hefteintrag",
+      "status": "PASS",
+      "detail": "Salzkristalle 4.60 g, Schale 210 Helligkeit, Hefteintrag sichtbar",
+      "ms": 22009,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-02",
+      "title": "K-02 negativ: trocken filtriert → Salz nicht als getrennt gemeldet",
+      "status": "PASS",
+      "detail": "Filter: 9.8 g Sand + 4.9 g Salz, Ziel nicht erreicht",
+      "ms": 2738,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-03",
+      "title": "K-02 Verlust: Filtrat verworfen → kein Salz aus dem Nichts",
+      "status": "PASS",
+      "detail": "Salz im Ausguss 4.75 g; Hilfe: „Zu viel Salz ist verloren gegangen (Ausguss, Tisch oder vers…“",
+      "ms": 10403,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-04",
+      "title": "K-01: Sedimentieren; vorsichtiges vs. zügiges Dekantieren; trübes Ergebnis korrigiert",
+      "status": "PASS",
+      "detail": "zügig: 7.7 g Sand (trüb); korrigiert: 0.15 g (klar)",
+      "ms": 8675,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-05",
+      "title": "K-03: Magnet + Lösen/Filtrieren/Eindampfen → Eisen, Sand, Salz",
+      "status": "PASS",
+      "detail": "Uhrglas: 5,0 g Eisen | Trichter: 9,8 g Sand, 0,3 g Salz, 0,0 g Eisen | Abdampfschale: 4,6 g Salzkristalle, 0 mL Wasser, 0,0 g Sand, 0,0 g Eisen | keine",
+      "ms": 20093,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-06",
+      "title": "K-04: Scheidetrichter trennt beide Phasen; Hahnfehler erzeugt Mischfraktion bzw. Verlust",
+      "status": "PASS",
+      "detail": "getrennt: Becherglas 2: 60 mL Wasser, 1 % Öl | Becherglas 3: 40 mL Öl, 0 % Wasser | keine; Fehler: Mischfraktion 47 mL Wasser + 13 mL Öl",
+      "ms": 12491,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-07",
+      "title": "K-05: kaltes vs. heißes Wasser, Farbzunahme, Blütenreste abtrennen, Tee bleibt Stoffgemisch",
+      "status": "PASS",
+      "detail": "Farbstoffe nach Zeit: kalt 0.44, heiß 2.72 mg/mL; Tee 97 mL ohne Blütenreste",
+      "ms": 17373,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-08",
+      "title": "C-01 positiv: Schwarz/Grün/Blau nebeneinander → Front steigt → verschiedene Banden, gemeinsamer Farbstoff",
+      "status": "PASS",
+      "detail": "Banden 3/2/1, Front 3.0 → 6.1 → 9.1 cm",
+      "ms": 9553,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-09",
+      "title": "C-02 negativ: wasserfester Stift mit Wasser → Komponente wandert nicht",
+      "status": "PASS",
+      "detail": "Wasser: bleibt am Start; Ethanol-Wasser 7 : 3: wandert",
+      "ms": 19480,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-10",
+      "title": "C-03 negativ: Startlinie unter dem Flüssigkeitsspiegel → keine gültige Chromatographie",
+      "status": "PASS",
+      "detail": "Chromatogramm als unbrauchbar gekennzeichnet",
+      "ms": 5960,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-11",
+      "title": "C-04 negativ: zu viel Farbstoff → verbreiterte Flecken im Vergleich zur Normalprobe",
+      "status": "PASS",
+      "detail": "gefärbte Fläche normal 0.030 vs. überladen 0.225",
+      "ms": 9253,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-12",
+      "title": "C-05: Reinstoff → eine Bande; Standardmodus ohne Rf; Expertenmodus misst und rechnet korrekt",
+      "status": "PASS",
+      "detail": "Lineal: Front 9.6 cm, Zone 5.8 cm → Rf 0.6 (Modell 0.600)",
+      "ms": 10704,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-13",
+      "title": "D-01 positiv: Aufbau → Kühlwasser unten → Erhitzen → Temperatur → Destillat → Brennprobe → Auswertung",
+      "status": "PASS",
+      "detail": "erster Tropfen 83.7 °C, Verlauf 83.7 → 84.9 °C, Brennprobe: burns",
+      "ms": 11422,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-14",
+      "title": "D-02 negativ: Kühlwasser aus → deutlich weniger Kondensat, Dampf entweicht, Sicherheitsstopp",
+      "status": "PASS",
+      "detail": "Destillat nur 0.34 mL, entwichen 4.0 mL Ethanol",
+      "ms": 7298,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-15",
+      "title": "D-03 negativ: Thermometer falsch positioniert → keine verlässliche Messung, Messaufgabe nicht bestanden",
+      "status": "PASS",
+      "detail": "Anzeige 55.5 °C statt ca. 84 °C – Ziel nicht erreicht",
+      "ms": 8226,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-16",
+      "title": "D-04 negativ: Heizleistung 0 → auch nach Simulationszeit kein Destillat",
+      "status": "PASS",
+      "detail": "nach 25 min Versuchszeit: 0 mL Destillat",
+      "ms": 13130,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-17",
+      "title": "D-05 kritisch: geschlossene Apparatur erhitzen bzw. an der Apparatur zünden → sofortiger Sicherheitsstopp",
+      "status": "PASS",
+      "detail": "beide Stopps sofort; Wiederaufnahme nach Korrektur möglich",
+      "ms": 6949,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-18",
+      "title": "L-01: wiederholter Fehler → kleine Hilfe angeboten → konkrete Hilfe → Korrektur möglich",
+      "status": "PASS",
+      "detail": "kleine Hilfe: „Was soll im Trichter den Sand zurückhalten?…“; konkret: „Im Trichter fehlt das Filterpapier – der Sand läuft mit hind…“",
+      "ms": 9048,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-19",
+      "title": "L-02: falsche Beobachtung und falsch geschriebener Fachbegriff → gezieltes Feedback; Richtiges bleibt; Synonyme",
+      "status": "PASS",
+      "detail": "Beobachtung falsch markiert, „unlöslih“ toleriert, „Filtrat“ an falscher Stelle abgelehnt, „Abdampfen“ als Synonym akzeptiert",
+      "ms": 21493,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-20",
+      "title": "L-03: Hefteintrag gesperrt bis zur erfolgreichen Auswertung, danach vollständig",
+      "status": "PASS",
+      "detail": "4 Theorieschritte, dann vollständiger Hefteintrag",
+      "ms": 6482,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-21a",
+      "title": "V-01 Tablet 1180×820 (Touch): K-01 vollständig per Antippen auf Bühne und Bedienfeld",
+      "status": "PASS",
+      "detail": "Antippen auf der Bühne und im Bedienfeld, Auswertung abgeschlossen",
+      "ms": 5717,
+      "viewport": "1180×820 Touch"
+    },
+    {
+      "id": "E-21b",
+      "title": "V-01/V-03 Tablet 1024×768 (Touch): Chromatographie per Antippen, Destillation mit sichtbarem Thermometer",
+      "status": "PASS",
+      "detail": "Bühne 694×710 px, Thermometeranzeige sichtbar",
+      "ms": 13214,
+      "viewport": "1024×768 Touch"
+    },
+    {
+      "id": "E-21c",
+      "title": "V-03 Layout: 1440×900, 1180×820, 1024×768 ohne abgeschnittene Pflichtfunktionen; eingeklapptes Bedienfeld",
+      "status": "PASS",
+      "detail": "1440×900/classic: Bühne 1068 px; 1440×900/chroma: Bühne 1068 px; 1440×900/distill: Bühne 1068 px; 1180×820/classic: Bühne 836 px; 1180×820/chroma: Bühne 836 px; 1180×820/distill: Bühne 836 px; 1024×768/classic: Bühne 694 px; 1024×768/chroma: Bühne 694 px; 1024×768/distill: Bühne 694 px",
+      "ms": 6126,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-21d",
+      "title": "V-04 Tastatur: Bedienung ohne Maus (Tab/Enter/Leertaste)",
+      "status": "PASS",
+      "detail": "Auswahl mit Enter, Wasserzugabe mit Leertaste, Fokus erhalten",
+      "ms": 1325,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-21e",
+      "title": "A-05 optional: Ziehen (Drag-and-drop) als Alternative zum Antippen",
+      "status": "PASS",
+      "detail": "Ausgießen und Umstellen per Ziehen",
+      "ms": 4590,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-22a",
+      "title": "A-04 Zeitraffer/Pause: Pause hält an; 1× und 10× führen zum gleichen Modellzustand",
+      "status": "PASS",
+      "detail": "1×: 3.749 g gelöst bei 60.65 s; 10×: 3.862 g bei 66.95 s – jeweils identisch mit dem Modell",
+      "ms": 14644,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-22b",
+      "title": "Persistenz und Offline: offline bedienbar; Neuladen in derselben Sitzung erhält den Versuch",
+      "status": "PASS",
+      "detail": "offline weitergearbeitet; nach Neuladen: 25 mL Wasser in Becherglas 1, Reiter erhalten",
+      "ms": 4005,
+      "viewport": "1440×900"
+    }
+  ]
+}
