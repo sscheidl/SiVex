@@ -1,39 +1,39 @@
 # SiVex – Simulationen und virtuelle Experimente
 
-SiVex ist eine modular aufgebaute Sammlung interaktiver naturwissenschaftlicher Lernanwendungen für den schulischen Einsatz. Jede Simulation läuft eigenständig im Browser und soll sowohl auf Tablets als auch in der ByCS-Lernplattform (mebis) nutzbar sein.
+SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftlicher Lernanwendungen für den schulischen Einsatz. Die Simulationen laufen eigenständig im Browser und sollen auch in mebis (ByCS) nutzbar sein.
 
-## Anwendungen
+## Anwendungen – Chemie
 
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
-| Säure-Base-Titration | `apps/chemie/titration/` | **Claude V3 ausgewählt**; getestetes SCORM-1.2-Release vorhanden, Quellcode-Import nach GitHub ausstehend |
-| Fehling- und Tollens-Probe | `apps/chemie/redoxlabor/` | In Entwicklung durch Codex / Claude; noch kein Code eingecheckt |
+| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/chemie/titration/` | **Ausgewählt**; lauffähiges SCORM-1.2-Release liegt vor, Quellcode-Import ins Repo ausstehend |
+| Redoxlabor – Fehling- und Tollens-Probe | `apps/chemie/redoxlabor/` | In Entwicklung durch Codex / Claude, noch kein Code eingecheckt |
 | Esterbildung und chemisches Gleichgewicht | `apps/chemie/ester-gleichgewicht/` | In Planung |
 
-**Auswahlentscheidung:** Claude V3 ist die maßgebliche Titrationsversion. Die frühere Codex-Variante TitraLab 2 wird nicht weitergeführt und gehört nicht zum Zielstand dieses Repositories.
+Es gibt **keine separate ältere Titrationsversion** im Zielbestand. Die zuvor dokumentierte Codex-Version TitraLab 2 ist verworfen und wurde nicht als Quellcode eingecheckt.
+
+## Aufbau
+
+Die Verzeichnisse sind **nach Fach und Experiment**, nicht nach Jahrgangsstufe sortiert. Jahrgangsstufen stehen in `sivex.json`; das ermöglicht eine spätere Zuordnung zu mehreren LehrplanPLUS-Lernbereichen. Weitere Fächer sind derzeit nicht geplant.
 
 ## Veröffentlichungswege
 
 1. **Webserver:** Statische Dateien über HTTPS bereitstellen.
-2. **mebis:** SCORM-1.2-ZIP pro Simulation bauen und im Kurs als Aktivität „Lernpaket (SCORM)“ starten.
-
-Für Schülerinnen und Schüler sind keine KI-Konten und kein Backend erforderlich. Die endgültige Integration auf Schul-iPads muss separat getestet werden.
+2. **mebis:** SCORM-1.2-ZIP pro Simulation als Aktivität „Lernpaket (SCORM)“ starten.
 
 ## Qualitätsgrundsätze
 
-- Wissenschaftliche Richtigkeit und didaktische Angemessenheit
-- Reaktionen und Animationen sind an die Handlungen der Lernenden gekoppelt
-- Touch-Bedienbarkeit, klare Benutzerführung und möglichst barrierearme Gestaltung
-- Keine personenbezogenen Schülerdaten an externe Dienste
-- PASS/HOLD-Kriterien und dokumentierte Testnachweise je Experiment
+- Fachliche Richtigkeit und didaktische Angemessenheit
+- Handlungsgekoppelte Reaktionen und Animationen
+- Touchbedienbarkeit und verständliche Benutzerführung
+- Keine personenbezogenen Schülerdaten an Drittanbieter
+- Getestete Web- und mebis-Ausführung
 
 Siehe [mebis-Konzept](docs/MEBIS.md), [Architektur](docs/ARCHITECTURE.md) und [Qualitätsregeln](docs/QUALITY.md).
 
-## Stand des Repositories
+## Code-Stand
 
-Die GitHub-Projektstruktur und Dokumentation sind vorhanden. **Der lauffähige Claude-V3-Quellcode wurde bislang noch nicht eingecheckt.** Das vorhandene SCORM-1.2-Release enthält 14 lesbare Laufzeitdateien (HTML, CSS, JavaScript und Manifest); daraus wurde ein separat vorbereitetes Quellcodearchiv mit README erstellt. Dieser Rekonstruktionsstand ist noch in das Repository zu übertragen.
-
-Das Redoxlabor wird unabhängig durch Codex und Claude entwickelt; hier liegen vorerst nur Anforderungen und Metadaten.
+Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. **Die lauffähigen Dateien von TitraLab 3 (Claude) fehlen auf GitHub noch.** Das SCORM-Release wurde außerhalb des Repositories entpackt und als importierbares Quellcodearchiv aufbereitet; der Import ist ausstehend. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
 
 ## Lizenz
 
