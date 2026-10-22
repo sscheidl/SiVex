@@ -7,6 +7,7 @@ apps/
   titration/
     titralab3/        # geplanter Import des Claude-V3-Releases
   redoxlabor/
+  trennlabor/
   ester-gleichgewicht/
   _template/
 docs/
