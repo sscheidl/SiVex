@@ -48,8 +48,8 @@ Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`)
 2. **Reagenz ansetzen** – Reagenzflaschen antippen: Die Pipette gibt eine Portion in das gewählte Reagenzglas. Alternativ Flasche auf das Reagenzglas ziehen.
    - Fehling: Fehling I + Fehling II, dann *Schütteln* → tiefblaue Lösung
    - Tollens: Silbernitrat → Natronlauge (brauner Niederschlag) → Ammoniaklösung tropfenweise, bis die Lösung klar ist
-3. **Stoffprobe zugeben** – Probenflasche antippen (verdünnte Lösungen).
-4. **Erwärmen** – Heizplatte einschalten (60 °C / 80 °C, Steuerung unten im Bedienfeld), Reagenzglas *Ins Wasserbad* stellen (oder auf das Wasserbad ziehen). Der Gasbrenner liegt unter „Weitere Geräte“ und wird für diese Nachweise nicht gebraucht.
+3. **Stoffprobe zugeben** – Probenflasche antippen (verdünnte Lösungen). Im Lernmodus stehen zusätzlich vier Zucker als Feststoffe bereit (Glucose, Fructose, Saccharose, Maltose): Eine Spatelspitze wird zugegeben und löst sich beim Schütteln oder Erwärmen.
+4. **Erwärmen** – Heizplatte einschalten (60 °C / 80 °C, Steuerung unten im Bedienfeld), Reagenzglas *Ins Wasserbad* stellen (oder auf das Wasserbad ziehen). Ein Glas im Wasserbad antippen bringt es in den Ständer zurück. Der Gasbrenner liegt unter „Weitere Geräte“ und wird für diese Nachweise nicht gebraucht.
 5. **Beobachten** – in der Lupe, immer vor neutralem, weißem Hintergrund. Ein deutlich sichtbares Nachweisprodukt genügt für einen positiven Befund; für „negativ“ muss der fertig gemischte Ansatz lange genug beobachtet werden.
 6. **Beobachtung festhalten** – Protokoll ausfüllen, auswerten lassen oder Lösung anzeigen. Eingaben bleiben bei unvollständigem Formular erhalten; frühe Einträge werden mit Zeitpunkt als Zwischenstand gespeichert.
 7. **Redox-Trainer** – bei positiven Nachweisen die Redoxgleichungen in sechs Schritten erarbeiten.
@@ -84,10 +84,10 @@ Fachliche Einzelheiten: [docs/CHEMIE.md](docs/CHEMIE.md).
 ## Tests
 
 ```bash
-npm test            # 62 Unit-Tests (Node, ohne Abhängigkeiten), davon 16 Regressionstests zur Prüfung vom 22.10.2026
+npm test            # 71 Unit-Tests (Node, ohne Abhängigkeiten), u. a. Regressionstests zur Prüfung vom 22.10.2026 und Zucker-Tests
 npm run build       # statischer Build + Prüfung auf externe Ressourcen/absolute Pfade
 npm install         # einmalig für die Browser-Tests (Playwright)
-npm run test:e2e    # 32 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
+npm run test:e2e    # 36 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
 npm run package     # Release-ZIPs der aktuellen Version (Web + SCORM 1.2) nach release/; ältere Versionen bleiben erhalten
 npm run test:scorm  # 9 Prüfungen des SCORM-Pakets mit simuliertem LMS
 ```
@@ -104,5 +104,5 @@ Keine Anmeldung, keine Server, keine externen Dienste, keine Analyse-Skripte. Pr
 - **mebis/SCORM:** Ein SCORM-1.2-Paket liegt vor und ist mit einem simulierten LMS geprüft; ein Import in einen echten mebis-Kurs ist noch nicht getestet.
 - **Zeitraffer:** Im Wasserbad laufen die Reaktionen in 10–25 s statt in Minuten ab; die Tollens-Probe setzt bei Raumtemperatur langsam (einige Minuten) ein. Zeiten und Farbverlauf sind modelliert, keine Messdaten. Mengen sind abstrakte „Portionen“ – die Anwendung ist keine Herstellungs- oder Dosieranleitung.
 - **Darstellung:** 2,5D-Canvas-Grafik statt physikalischer Strömungs- oder Lichtsimulation; das Absetzen von Cu₂O und die Verteilung des Silbers (Film/fein verteilt) sind vereinfacht. Der Siedeverzug in der Flamme ist ein geskriptetes Lernszenario.
-- Glucose/Fructose (Expertenmodus) sind nicht umgesetzt.
+- Zucker nur im Lernmodus; im Analysemodus (A–F) bleiben Aldehyde und Ketone unter sich. Hydrolyse von Saccharose und Nebenreaktionen der Zucker im Alkalischen werden nicht modelliert (siehe [CHEMIE.md](docs/CHEMIE.md), Abschnitt 10).
 - Sehr alte Browser ohne `CanvasPattern.setTransform` zeigen die Trübungstextur gröber; die Funktion bleibt erhalten.

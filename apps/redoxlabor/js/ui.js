@@ -166,13 +166,17 @@
       const tabs = st.tubes.map((tb) => `<button type="button" class="tube-tab" data-tube="${tb.id}" aria-pressed="${st.activeTubeId === tb.id}" aria-label="Reagenzglas ${tb.id}">${tubeIcon(tb)}${tb.id}${chem.isObservable(tb.contents) && !lab.recordCurrent(tb) && !tb.contents.bumped ? '<span class="dot-ok" title="Beobachtung möglich"></span>' : ''}</button>`).join('');
       const reagentBtn = (r) => `<button type="button" class="sub-btn ${st.armed && st.armed.id === r.id ? 'armed' : ''}" data-reagent="${r.id}" ${busy ? 'disabled' : ''} title="${esc(r.name + ' – ' + r.desc)}" aria-label="${esc(r.name)}">${bottleIcon(r.id)}<span>${esc(PANEL_NAME[r.id][0])}</span><small>${esc(PANEL_NAME[r.id][1])}</small></button>`;
       const reagents = REAGENT_GROUPS.map((g) => `<div class="reagent-group"><span class="group-label">${g.title}</span><div class="substances reagents n${g.ids.length}">${g.ids.map((id) => reagentBtn(chem.REAGENT_BY_ID[id])).join('')}</div></div>`).join('');
-      const samples = st.samples.map((s) => {
+      const sampleBtn = (s) => {
         const sm = chem.SAMPLE_BY_ID[s.sampleId];
-        return `<button type="button" class="sub-btn ${st.armed && st.armed.id === s.sampleId ? 'armed' : ''}" data-sample="${s.sampleId}" ${busy ? 'disabled' : ''} title="${esc((learn ? s.label : s.key) + ' – verdünnte wässrige Lösung')}">
+        return `<button type="button" class="sub-btn ${st.armed && st.armed.id === s.sampleId ? 'armed' : ''}" data-sample="${s.sampleId}" ${busy ? 'disabled' : ''} title="${esc((learn ? s.label : s.key) + (sm.solid ? ' – Feststoff (Spatelspitze)' : ' – verdünnte wässrige Lösung'))}">
           <span class="nm">${esc(learn ? s.label : s.key)}</span><small>${learn ? sm.formula : 'unbekannt'}</small>
-          ${learn ? `<span class="info-btn" role="button" tabindex="0" data-info="${s.sampleId}" aria-label="Strukturformel ${esc(s.label)}">i</span>` : ''}
+          ${learn ? `<span class="info-btn" role="button" tabindex="0" data-info="${s.sampleId}" aria-label="Stoffinfo ${esc(s.label)}">i</span>` : ''}
         </button>`;
-      }).join('');
+      };
+      const liquidSamples = st.samples.filter((s) => !chem.SAMPLE_BY_ID[s.sampleId].solid);
+      const solidSamples = st.samples.filter((s) => chem.SAMPLE_BY_ID[s.sampleId].solid);
+      const samples = `<div class="substances samples">${liquidSamples.map(sampleBtn).join('')}</div>` +
+        (solidSamples.length ? `<span class="group-label sugar-label">Zucker (Feststoffe, Spatelspitze)</span><div class="substances samples sugars">${solidSamples.map(sampleBtn).join('')}</div>` : '');
       const bath = st.bath;
       const fk = focusKey(document.activeElement);
       const scrollY = panel.scrollTop;
@@ -188,7 +192,7 @@
         </section>
         <section class="card" aria-label="Stoffproben">
           <h3>Stoffproben <small>${learn ? 'verdünnte Lösungen' : 'Analysemodus: unbekannt'}</small></h3>
-          <div class="substances samples">${samples}</div>
+          ${samples}
         </section>
         <section class="card devices-card" aria-label="Geräte">
           <div class="devices">
@@ -308,7 +312,14 @@
       if (!hit) return;
       const t = lab.activeTube();
       switch (hit.type) {
-        case 'tube': lab.selectTube(hit.id); break;
+        case 'tube': {
+          // Glas im Wasserbad (oder in der Flamme) antippen: zurück in den Ständer –
+          // außer es ist gerade ein Stoff zum Zugeben ausgewählt.
+          const tb = lab.tubeById(hit.id);
+          if (!lab.state.armed && (tb.place === 'bath' || tb.place === 'flame')) lab.moveTube(hit.id, 'rack');
+          else lab.selectTube(hit.id);
+          break;
+        }
         case 'reagent': case 'sample': lab.chooseSubstance(hit.id); break;
         case 'hotplate': lab.cycleHotplate(); break;
         case 'bath': if (needTube()) { if (t.place === 'bath') toast(`Reagenzglas ${t.id} steht bereits im Wasserbad.`); else lab.moveTube(t.id, 'bath'); } break;
@@ -386,6 +397,23 @@
 
     function showSampleInfo(id) {
       const s = chem.SAMPLE_BY_ID[id];
+      if (s.solid) {
+        showModal(`
+          <h2>${esc(s.name)} <span class="muted">(${esc(s.trivial)})</span></h2>
+          <div class="sample-info">
+            <dl class="facts">
+              <dt>Stoffklasse</dt><dd>${esc(s.sugar)}</dd>
+              <dt>Summenformel</dt><dd class="formula">${s.formula}</dd>
+              ${s.condensed ? `<dt>offenkettige Form</dt><dd class="formula">${s.condensed}</dd>` : ''}
+              <dt>Probe</dt><dd>weißer Feststoff – eine Spatelspitze, löst sich im Reagenz</dd>
+            </dl>
+            <p>${esc(s.structure)}</p>
+            ${id === 'glucose' || id === 'fructose' ? '<p class="muted">Glucose und Fructose haben dieselbe Summenformel C₆H₁₂O₆ (Isomere).</p>' : ''}
+            ${id === 'saccharose' || id === 'maltose' ? '<p class="muted">Saccharose und Maltose haben dieselbe Summenformel C₁₂H₂₂O₁₁ – entscheidend ist, welche C-Atome glycosidisch verknüpft sind.</p>' : ''}
+          </div>
+          <div class="row end"><button type="button" class="btn primary" data-m="close">Schließen</button></div>`);
+        return;
+      }
       showModal(`
         <h2>${esc(s.name)} <span class="muted">(${esc(s.trivial)})</span></h2>
         <div class="sample-info">
@@ -511,6 +539,11 @@
       }
     }
 
+    function classDict() {
+      const sugars = lab.state.samples.some((s) => chem.SAMPLE_BY_ID[s.sampleId].solid);
+      return sugars ? chem.CLASSES : Object.fromEntries(Object.entries(chem.CLASSES).filter(([k]) => !chem.SUGAR_CLASSES.includes(k)));
+    }
+
     function optionList(name, dict, type, selected, marks) {
       return Object.entries(dict).map(([k, label]) => {
         const checked = Array.isArray(selected) ? selected.includes(k) : selected === k;
@@ -528,7 +561,7 @@
       const seq = compact.map((x) => x.n + (x.k > 1 ? ' ×' + x.k : '')).join(' → ') || '–';
       const heatTxt = c.maxTemp > 35 ? `ja, bis ca. ${Math.round(c.maxTemp)} °C` : 'nein';
       const sinceTxt = c.history.length ? (c.sinceAddMaxTemp > 35 ? `bis ca. ${Math.round(c.sinceAddMaxTemp)} °C` : 'nicht erwärmt') : '–';
-      return `<dl class="facts"><dt>Reagenzglas</dt><dd>${t.id}</dd><dt>Stoffprobe</dt><dd>${c.sampleId ? esc(lab.sampleEntry(c.sampleId).label) + ' <span class="muted">(verdünnte Lösung)</span>' : 'keine'}</dd><dt>Zugaben</dt><dd>${esc(seq)}</dd><dt>Erwärmt</dt><dd>${heatTxt}</dd><dt>seit letzter Zugabe</dt><dd>${sinceTxt}</dd><dt>Zeitpunkt</dt><dd>${Math.round(lab.state.time)} s Simulationszeit</dd></dl>`;
+      return `<dl class="facts"><dt>Reagenzglas</dt><dd>${t.id}</dd><dt>Stoffprobe</dt><dd>${c.sampleId ? esc(lab.sampleEntry(c.sampleId).label) + ` <span class="muted">(${chem.SAMPLE_BY_ID[c.sampleId].solid ? 'Feststoff' : 'verdünnte Lösung'})</span>` : 'keine'}</dd><dt>Zugaben</dt><dd>${esc(seq)}</dd><dt>Erwärmt</dt><dd>${heatTxt}</dd><dt>seit letzter Zugabe</dt><dd>${sinceTxt}</dd><dt>Zeitpunkt</dt><dd>${Math.round(lab.state.time)} s Simulationszeit</dd></dl>`;
     }
 
     function protocolHtml() {
@@ -565,7 +598,7 @@
             <p class="muted" style="margin:10px 0 4px">Eigene Notiz (optional, bleibt nur in diesem Browser):</p><textarea name="note" maxlength="500">${esc(d.note || '')}</textarea>`)}
           ${fs('result', '3. Ergebnis', `<div class="opts">${optionList('result', chem.RESULTS, 'radio', d.result || null)}</div>`)}
           ${fs('interp', '4. Deutung', `<div class="opts">${optionList('interp', chem.INTERPRETATIONS, 'radio', d.interpretation || null)}</div>`)}
-          ${fs('cls', '5. Stoffklasse', `<div class="opts">${optionList('cls', chem.CLASSES, 'radio', d.cls || null)}</div>`)}
+          ${fs('cls', '5. Stoffklasse', `<div class="opts">${optionList('cls', classDict(), 'radio', d.cls || null)}</div>`)}
           <div class="row end">
             <button type="button" class="btn" data-proto="solution">Lösung anzeigen</button>
             <button type="submit" class="btn primary">Speichern und auswerten</button>
@@ -686,7 +719,7 @@
         <fieldset><legend>2. Beobachtung</legend><div class="opts">${optionList('obs', chem.OBSERVATIONS, 'checkbox', (ans && ans.observations) || [], marks('obs'))}</div>${ans && ans.note ? `<p class="muted">Deine Notiz: ${esc(ans.note)}</p>` : ''}</fieldset>
         <fieldset><legend>3. Ergebnis</legend><div class="opts">${optionList('result', chem.RESULTS, 'radio', ans && ans.result, marks('result'))}</div></fieldset>
         <fieldset><legend>4. Deutung</legend><div class="opts">${optionList('interp', chem.INTERPRETATIONS, 'radio', ans && ans.interpretation, marks('interp'))}</div></fieldset>
-        <fieldset><legend>5. Stoffklasse</legend><div class="opts">${optionList('cls', chem.CLASSES, 'radio', ans && ans.cls, marks('cls'))}</div></fieldset>
+        <fieldset><legend>5. Stoffklasse</legend><div class="opts">${optionList('cls', classDict(), 'radio', ans && ans.cls, marks('cls'))}</div></fieldset>
         <div class="row end">
           ${positive ? `<button type="button" class="btn ok" data-goto="redox" data-test="${m.method}">Redoxreaktion erarbeiten →</button>` : ''}
           <button type="button" class="btn" data-goto="overview">Zur Ergebnisübersicht</button>
@@ -743,7 +776,7 @@
               ${cr ? (cr.correct ? (cr.hasEvidence ? ' <span class="pill ok">✓</span>' : ' <span class="pill">✓ aber ohne Nachweis</span>') : ' <span class="pill no">✗</span>') : ''}</td>`;
           if (st.analysisRevealed) extra += `<td>${esc(s.name)} <span class="muted">(${s.cls === 'aldehyd' ? 'Aldehyd' : 'Keton'})</span></td>`;
         } else {
-          extra = `<td>${s.cls === 'aldehyd' ? 'Aldehyd' : 'Keton'} <span class="muted">${s.formula}</span></td>`;
+          extra = `<td>${s.cls === 'zucker' ? esc(s.sugar) : s.cls === 'aldehyd' ? 'Aldehyd' : 'Keton'} <span class="muted">${s.formula}</span></td>`;
         }
         return `<tr><td><b>${esc(r.label)}</b></td><td>${cell(r.fehling, r.fehlingEvidence)}</td><td>${cell(r.tollens, r.tollensEvidence)}</td>${extra}</tr>`;
       }).join('');
@@ -804,7 +837,7 @@
       const sample = rec && rec.sampleId ? chem.SAMPLE_BY_ID[rec.sampleId] : null;
       const learn = lab.state.mode === 'learn' || lab.state.analysisRevealed;
       let ctxNote;
-      if (rec) ctxNote = `<div class="note ok">Grundlage: dein positiver ${test === 'fehling' ? 'Fehling' : 'Tollens'}-Nachweis mit <b>${esc(rec.sampleLabel)}</b> (Reagenzglas ${rec.tubeId}). ${learn && sample ? `Hier ist R = ${sample.R}.` : 'Welcher Aldehyd vorliegt, bestimmt der Nachweis nicht – daher allgemein mit R.'}</div>`;
+      if (rec) ctxNote = `<div class="note ok">Grundlage: dein positiver ${test === 'fehling' ? 'Fehling' : 'Tollens'}-Nachweis mit <b>${esc(rec.sampleLabel)}</b> (Reagenzglas ${rec.tubeId}). ${learn && sample && sample.R ? `Hier ist R = ${sample.R}.` : learn && sample && sample.cls === 'zucker' ? 'Bei diesem Zucker steht R für den übrigen Molekülteil; zur Herkunft der Aldehydgruppe siehe Musterlösung.' : 'Welcher Aldehyd vorliegt, bestimmt der Nachweis nicht – daher allgemein mit R.'}</div>`;
       else ctxNote = `<div class="note warn">Du hast noch keinen positiven ${test === 'fehling' ? 'Fehling' : 'Tollens'}-Nachweis protokolliert. Am besten führst du zuerst den Versuch durch – üben kannst du aber trotzdem.</div>`;
       let firstOpen = def.steps.findIndex((s) => !tr.solved[s.id]);
       if (firstOpen < 0) firstOpen = def.steps.length;
@@ -858,9 +891,12 @@
       const els = Object.keys(bal.left.atoms);
       const balRows = els.map((k) => `<tr><td>${k}</td><td>${bal.left.atoms[k]}</td><td>${bal.right.atoms[k] || 0}</td></tr>`).join('');
       let example = '';
-      if (sample) {
+      if (sample && sample.acidCondensed) {
         const eq = redox.eqToHtml(E.total).replace('R–CHO', sample.condensed).replace('R–COOH', sample.acidCondensed);
         example = `<h3>Beispiel: ${esc(sample.name)} → ${esc(sample.acid)}</h3><div class="eqline">${eq}</div>`;
+        if (sample.cls === 'zucker') example += `<p class="muted">${esc(sample.note)}</p>`;
+      } else if (sample && sample.cls === 'zucker') {
+        example = `<h3>Beispiel: ${esc(sample.name)}</h3><p class="muted">${esc(sample.note)} Die allgemeine Gleichung mit R–CHO beschreibt die oxidierte Aldehydgruppe.</p>`;
       }
       return `
         <section class="rx-step solved" style="margin-top:12px">
@@ -877,7 +913,7 @@
           <p class="muted">Im alkalischen Reaktionsgemisch entsteht das Carboxylat-Ion R–COO⁻. Dafür wird ein zusätzliches OH⁻ verbraucht und ein weiteres H₂O gebildet:</p>
           <p><b>Oxidation:</b></p><div class="eqline">${redox.eqToHtml(P.oxidation)}</div>
           <p><b>Redoxreaktion:</b></p><div class="eqline">${redox.eqToHtml(P.total)}</div>
-          ${sample ? `<div class="eqline">${redox.eqToHtml(P.total).replace('R–CHO', sample.condensed).replace('R–COO<sup>–</sup>', sample.acidCondensed.replace(/COOH$/, 'COO<sup>–</sup>'))}</div>` : ''}
+          ${sample && sample.acidCondensed ? `<div class="eqline">${redox.eqToHtml(P.total).replace('R–CHO', sample.condensed).replace('R–COO<sup>–</sup>', sample.acidCondensed.replace(/COOH$/, 'COO<sup>–</sup>'))}</div>` : ''}
           <p class="muted">Beide Schreibweisen sind ausgeglichen. Die Schulschreibweise vereinfacht nur, in welcher Form das Oxidationsprodukt vorliegt.</p>
         </section>`;
     }

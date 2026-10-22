@@ -91,11 +91,11 @@ test('Reagenzglas austauschen setzt nur dieses Glas zurück', () => {
 
 test('D-01/D-02/U-04: Lernmodus benennt Proben, Analysemodus mischt A–F neu', () => {
   const lab = newLab('learn');
-  assert.deepEqual(lab.state.samples.map((s) => s.label), ['Ethanal', 'Propanal', 'Butanal', 'Propanon', 'Butanon', 'Pentan-2-on']);
+  assert.deepEqual(lab.state.samples.map((s) => s.label), ['Ethanal', 'Propanal', 'Butanal', 'Propanon', 'Butanon', 'Pentan-2-on', 'Glucose', 'Fructose', 'Saccharose', 'Maltose']);
   lab.setMode('analysis');
   const first = lab.state.samples.map((s) => s.sampleId).join();
   assert.deepEqual(lab.state.samples.map((s) => s.label), ['Probe A', 'Probe B', 'Probe C', 'Probe D', 'Probe E', 'Probe F']);
-  assert.deepEqual(lab.state.samples.map((s) => s.sampleId).sort(), chem.SAMPLES.map((s) => s.id).sort());
+  assert.deepEqual(lab.state.samples.map((s) => s.sampleId).sort(), chem.BASIC_SAMPLE_IDS.slice().sort(), 'Analysemodus: nur Aldehyde und Ketone');
   let changed = false;
   for (let i = 0; i < 5 && !changed; i++) {
     lab.fullRestart();

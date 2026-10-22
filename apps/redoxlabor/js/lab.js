@@ -26,6 +26,7 @@
     move: 1.35, shake: 1.1, bump: 1.8
   };
   const BUMP_AFTER = 2.6; // s in der Flamme bis zum Siedeverzug
+  const BATH_COOLING = 25; // s, Zeitkonstante beim Abkühlen des Wasserbads
 
   const PHASES = [
     { id: 'notPrepared', label: 'Versuch nicht vorbereitet' },
@@ -94,8 +95,11 @@
       return !!t.recordedId && t.recordKey === observationKey(t.contents);
     }
 
+    /** Lernmodus: Aldehyde, Ketone und Zucker (beschriftet). Analysemodus: nur Aldehyde/Ketone als A–F. */
+    const sampleIdsFor = (mode) => (mode === 'analysis' ? chem.BASIC_SAMPLE_IDS : chem.SAMPLES.map((s) => s.id));
+
     function setupSamples() {
-      const ids = chem.SAMPLES.map((s) => s.id);
+      const ids = sampleIdsFor(state.mode);
       if (state.mode === 'analysis') {
         const mixed = shuffle(ids, opts.random);
         state.samples = mixed.map((sid, i) => ({ key: LETTERS[i], label: 'Probe ' + LETTERS[i], sampleId: sid }));
@@ -184,14 +188,16 @@
       state.activeTubeId = tubeId;
       state.armed = null;
       const dropwise = id === 'nh3';
+      const solid = chem.isSolid(id);
       state.op = {
-        type: 'add', tubeId, substance: id, t: 0, dropwise,
+        type: 'add', tubeId, substance: id, t: 0, dropwise, solid,
         dur: dropwise ? DUR.addDropwise : DUR.add,
         applyAt: dropwise ? DUR.applyDropwise : DUR.applyAdd, applied: false
       };
       message(dropwise
         ? `${substanceLabel(id)} wird tropfenweise in Reagenzglas ${tubeId} gegeben …`
-        : `${substanceLabel(id)} wird in Reagenzglas ${tubeId} pipettiert …`);
+        : solid ? `Eine Spatelspitze ${substanceLabel(id)} wird in Reagenzglas ${tubeId} gegeben …`
+          : `${substanceLabel(id)} wird in Reagenzglas ${tubeId} pipettiert …`);
       emit('change', { reason: 'op' });
       return { ok: true };
     }
@@ -286,7 +292,7 @@
           message('Hinweis: Die Heizplatte ist ausgeschaltet – das Wasserbad ist kalt.', 'info');
         }
       }
-      if (op.type === 'shake' && t) t.contents.mix = 1;
+      if (op.type === 'shake' && t) { t.contents.mix = 1; chem.dissolve(t.contents, 0.6); }
       state.op = null;
       emit('change', { reason: 'opDone', op });
     }
@@ -307,6 +313,12 @@
     /** Kurze sachliche Rückmeldung zum sichtbaren Ergebnis einer Zugabe. */
     function describeChange(t, id, before, after) {
       if (after.system === 'foreign' && before.system !== 'foreign') { message(after.reason, 'warn'); return; }
+      if (chem.isSolid(id)) {
+        message(chem.volume(t.contents) > 0
+          ? 'Weiße Kristalle sinken zu Boden. Sie lösen sich langsam – schneller beim Schütteln oder im warmen Wasserbad.'
+          : 'Die Kristalle liegen trocken im Reagenzglas. Gib das Nachweisreagenz dazu.', 'info');
+        return;
+      }
       if (after.system === 'fehling') {
         if (after.status === 'cuoh2' && before.status !== 'cuoh2') message('Ein hellblauer Niederschlag fällt aus.', 'info');
         else if (after.valid && !before.valid) message('Fehling I und II treffen aufeinander – es bildet sich eine tiefblaue Lösung. Durch Schütteln gut durchmischen.', 'info');
@@ -322,13 +334,13 @@
       if (dt <= 0) return;
       state.time += dt;
       // Wasserbad
+      // Heizen mit fester Leistung; Abkühlen nach dem Newtonschen Abkühlungsgesetz
+      // (im selben Zeitraffer: von 80 °C in rund 30 s auf etwa 40 °C).
       const b = state.bath;
-      if (b.setting > 0) {
-        const diff = b.setting - b.temp;
-        b.temp += Math.max(-1.0 * dt, Math.min(diff, (diff > 8 ? 5.5 : 0.8 + diff * 0.6) * dt));
-      } else {
-        b.temp += Math.max(ROOM - b.temp, -0.35 * dt);
-      }
+      const target = b.setting > 0 ? b.setting : ROOM;
+      const diff = target - b.temp;
+      if (diff > 0) b.temp += Math.min(diff, (diff > 8 ? 5.5 : 0.8 + diff * 0.6) * dt);
+      else b.temp += Math.max(diff, -(b.temp - ROOM) * dt / BATH_COOLING);
       // Laufende Handlung
       const op = state.op;
       if (op) {
@@ -363,6 +375,8 @@
     }
 
     function triggerBump(t) {
+      // Ohne Flüssigkeit kein Siedeverzug (leeres Glas oder nur trockener Feststoff)
+      if (chem.volume(t.contents) === 0 || t.place !== 'flame') return;
       t.contents.bumped = true;
       t.contents.lost = 0.45;
       state.op = { type: 'bump', tubeId: t.id, t: 0, dur: DUR.bump };
@@ -562,10 +576,11 @@
       };
     }
     function importSession(data) {
-      if (!data || data.v !== 1 || !Array.isArray(data.samples) || data.samples.length !== chem.SAMPLES.length) return false;
+      if (!data || data.v !== 1 || !Array.isArray(data.samples)) return false;
+      const mode = data.mode === 'analysis' ? 'analysis' : 'learn';
       const ids = data.samples.map((s) => s.sampleId).sort().join();
-      if (ids !== chem.SAMPLES.map((s) => s.id).sort().join()) return false;
-      state.mode = data.mode === 'analysis' ? 'analysis' : 'learn';
+      if (ids !== sampleIdsFor(mode).slice().sort().join()) return false;
+      state.mode = mode;
       state.samples = data.samples;
       state.protocol = Array.isArray(data.protocol) ? data.protocol : [];
       state.analysisAnswers = data.analysisAnswers || {};
