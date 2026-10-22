@@ -1,0 +1,19 @@
+{
+  "id": "chemie/trennlabor",
+  "title": "Virtuelles Trennlabor",
+  "description": "Stofftrennung im freien virtuellen Labor: klassische Trennverfahren (Sedimentieren, Dekantieren, Filtrieren, Lösen/Extrahieren, Eindampfen, Magnettrennung, Scheidetrichter), Papierchromatographie mit sieben Proben und zwei Laufmitteln sowie Destillation eines Ethanol-Wasser-Gemischs mit Brennprobe.",
+  "subject": "Chemie",
+  "topics": [
+    "Stoffgemische und Reinstoffe",
+    "Trennverfahren",
+    "Papierchromatographie",
+    "Destillation"
+  ],
+  "grades": [
+    8,
+    9
+  ],
+  "version": "1.0.0",
+  "status": "prototype",
+  "entry": "index.html"
+}
