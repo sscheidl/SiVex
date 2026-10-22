@@ -1,17 +1,20 @@
-# Virtuelle Säure-Base-Titration – Claude V3
+# TitraLab 3 (Claude)
 
-**Ausgewählte Version: Claude V3.** Diese Version wurde im Vergleich zur Codex-Titration als gestalterisch und didaktisch überzeugender ausgewählt. TitraLab 2 wird nicht weitergeführt.
+Virtuelle Säure-Base-Titration für SiVex.
 
-## Verfügbarkeit
+**Einzige ausgewählte Titrationsversion: TitraLab 3 von Claude.** Die frühere Codex-Variante TitraLab 2 wurde verworfen und gehört nicht zum Projektbestand.
 
-- Ein funktionierendes SCORM-1.2-Release für mebis liegt außerhalb des Repositories vor.
-- Das Release enthält lesbare HTML-, CSS- und JavaScript-Quelldateien, ein SCORM-Manifest und einen Service Worker.
-- Der Quellcode wurde aus dem Release in ein separates Importarchiv (`claude-v3/`) extrahiert. **Der Upload dieser Dateien auf GitHub ist noch ausstehend.**
-- SCORM in mebis ist getestet; Anzeige in separatem Fenster funktioniert. Schul-iPad-Test weiterhin offen.
-- Weitere lokale Entwicklungsunterlagen und die ursprüngliche Commit-Historie können gegebenenfalls noch auf der heimischen HDD liegen.
+## Aktueller Stand
 
-## Beabsichtigte Ablage
+- Das funktionsfähige SCORM-1.2-Release liegt außerhalb von GitHub vor.
+- Im Release enthalten: `index.html`, CSS, lesbare JavaScript-Module, Grafiken, Service Worker und `imsmanifest.xml`.
+- Alle 10 JavaScript-Dateien haben den Syntaxcheck bestanden.
+- Die praktische Einbindung in mebis und die Darstellung in einem separaten Browserfenster wurden bestätigt.
+- Der vollständige Test auf Schul-iPads steht noch aus.
+- **Der eigentliche Anwendungscode ist noch nicht in diesem Repository eingecheckt.**
 
-`apps/chemie/titration/claude-v3/` mit direkt startbarer `index.html`, den Laufzeitressourcen und `imsmanifest.xml`.
+## Vorgesehener Quellcode-Import
 
-Nicht mit einem vollständigen Source-Import verwechseln: Dokumentation und Projektmanifest allein machen die Simulation im Repository noch nicht ausführbar.
+`apps/chemie/titration/` bleibt die kanonische Anwendung. Die aus dem SCORM-Release rekonstruierte Ausgabe soll zunächst in `apps/chemie/titration/titralab3/` abgelegt werden. Dort muss sie mit `index.html` und ihren relativen Ressourcen lauffähig sein.
+
+Die ursprüngliche lokale Entwicklungshistorie und nicht im Release enthaltene Hilfsdateien können nur aus weiteren Backups wiederhergestellt werden.
