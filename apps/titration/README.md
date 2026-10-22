@@ -6,7 +6,7 @@ Virtuelle Säure-Base-Titration für SiVex.
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket herunterladen (SiVex-Titration-Claude-v3-mebis-SCORM12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-Version (SiVex-Titration-Claude-v3-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/titration/release/SiVex-Titration-Claude-v3-web.zip)
+**[⬇ SCORM-1.2-Paket herunterladen (SiVex-Titration-Claude-v3-mebis-SCORM12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-Version (SiVex-Titration-Claude-v3-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
 
@@ -25,6 +25,6 @@ Webserver: Web-ZIP entpacken und den Ordner `titration/` per HTTPS bereitstellen
 
 ## Vorgesehener Quellcode-Import
 
-`apps/chemie/titration/` bleibt die kanonische Anwendung. Die aus dem SCORM-Release rekonstruierte Ausgabe soll zunächst in `apps/chemie/titration/titralab3/` abgelegt werden. Dort muss sie mit `index.html` und ihren relativen Ressourcen lauffähig sein.
+`apps/titration/` bleibt die kanonische Anwendung. Die aus dem SCORM-Release rekonstruierte Ausgabe soll zunächst in `apps/titration/titralab3/` abgelegt werden. Dort muss sie mit `index.html` und ihren relativen Ressourcen lauffähig sein.
 
 Die ursprüngliche lokale Entwicklungshistorie und nicht im Release enthaltene Hilfsdateien können nur aus weiteren Backups wiederhergestellt werden.

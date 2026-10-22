@@ -8,7 +8,7 @@ Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fe
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.0.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.0.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-web.zip)
+**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.0.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.0.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.0.0-web.zip)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
 

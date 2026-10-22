@@ -1,20 +1,19 @@
 # SiVex – Architektur
 
-## Fach- und experimentorientiertes Monorepo
+## Experimentorientiertes Monorepo
 
 ```text
 apps/
-  chemie/
-    titration/
-      titralab3/        # geplanter Import des Claude-V3-Releases
-    redoxlabor/
-    ester-gleichgewicht/
+  titration/
+    titralab3/        # geplanter Import des Claude-V3-Releases
+  redoxlabor/
+  ester-gleichgewicht/
   _template/
 docs/
 prompts/
 ```
 
-Verzeichnisse werden **nach Fach und Experiment**, nicht nach Jahrgangsstufe angelegt. Unterrichtsthemen und Jahrgangsstufen werden je Anwendung über `sivex.json` erfasst.
+Verzeichnisse werden **nach Experiment**, nicht nach Fach oder Jahrgangsstufe angelegt. Fach, Unterrichtsthemen und Jahrgangsstufen werden je Anwendung über `sivex.json` erfasst.
 
 ## Leitlinien
 
