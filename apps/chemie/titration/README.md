@@ -1,14 +1,17 @@
-# TitraLab 2 – Virtuelle Säure-Base-Titration
+# Virtuelle Säure-Base-Titration – Claude V3
 
-**Aktuelle Auswahl: TitraLab 2** aus `TitraLab-2-Web.zip` (neuere Codex-Version, ZIP-Zeitstempel 18.10.2026). Dies ist **nicht** die gleiche Codebasis wie die früher bereitgestellte Claude-Titration.
+**Ausgewählte Version: Claude V3.** Diese Version wurde im Vergleich zur Codex-Titration als gestalterisch und didaktisch überzeugender ausgewählt. TitraLab 2 wird nicht weitergeführt.
 
-## Stand
-- Die neue Version enthält umfangreichere Canvas-Laborgrafik, animierte Tropfen und Volumenbilanzierung.
-- Säure-Base-Referenztests (0,1 mol/L, 25 mL HCl/NaOH) und der SCORM-Build bestanden lokal.
-- SCORM 1.2 für mebis lokal erzeugt, direkte Ausführung dieses neuen Pakets in mebis und auf iPads noch nicht verifiziert.
-- **Die GitHub-Quelldateien sind noch nicht eingespielt.** Dazu den bereitgestellten Import-ZIP im geklonten Repository entpacken und committen. Der Status bleibt bis dahin `planned`.
+## Verfügbarkeit
 
-Nach dem Import kann der Status auf `prototype` wechseln. Die fachliche Unterrichtsfreigabe steht separat aus.
+- Ein funktionierendes SCORM-1.2-Release für mebis liegt außerhalb des Repositories vor.
+- Das Release enthält lesbare HTML-, CSS- und JavaScript-Quelldateien, ein SCORM-Manifest und einen Service Worker.
+- Der Quellcode wurde aus dem Release in ein separates Importarchiv (`claude-v3/`) extrahiert. **Der Upload dieser Dateien auf GitHub ist noch ausstehend.**
+- SCORM in mebis ist getestet; Anzeige in separatem Fenster funktioniert. Schul-iPad-Test weiterhin offen.
+- Weitere lokale Entwicklungsunterlagen und die ursprüngliche Commit-Historie können gegebenenfalls noch auf der heimischen HDD liegen.
 
-## Bestandsschutz
-Die vorherige Claude-Titration wird nicht mit TitraLab 2 verwechselt: anderes Dateilayout und unabhängiger Entwicklungszweig.
+## Beabsichtigte Ablage
+
+`apps/chemie/titration/claude-v3/` mit direkt startbarer `index.html`, den Laufzeitressourcen und `imsmanifest.xml`.
+
+Nicht mit einem vollständigen Source-Import verwechseln: Dokumentation und Projektmanifest allein machen die Simulation im Repository noch nicht ausführbar.
