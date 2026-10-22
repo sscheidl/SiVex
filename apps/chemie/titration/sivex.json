@@ -1,7 +1,7 @@
 {
   "id": "chemie/titration",
-  "title": "TitraLab 2 – Virtuelle Säure-Base-Titration",
-  "description": "Neuere Codex-Version mit animierten Tropfen und pH-Kurve; Quellcode-Import ausstehend.",
+  "title": "Claude V3 – Virtuelle Säure-Base-Titration",
+  "description": "Gewählte Claude-V3-Fassung; SCORM-Release getestet, Quellcode-Import ins Repository noch ausstehend.",
   "subject": "Chemie",
   "grades": [
     10,
