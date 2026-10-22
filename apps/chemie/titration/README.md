@@ -6,12 +6,12 @@ Virtuelle Säure-Base-Titration für SiVex.
 
 ## Aktueller Stand
 
-- Das funktionsfähige SCORM-1.2-Release liegt außerhalb von GitHub vor.
+- **Das funktionsfähige SCORM-1.2-Release liegt im Repository:** [`release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip`](release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip) – in mebis im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“.
 - Im Release enthalten: `index.html`, CSS, lesbare JavaScript-Module, Grafiken, Service Worker und `imsmanifest.xml`.
 - Alle 10 JavaScript-Dateien haben den Syntaxcheck bestanden.
 - Die praktische Einbindung in mebis und die Darstellung in einem separaten Browserfenster wurden bestätigt.
 - Der vollständige Test auf Schul-iPads steht noch aus.
-- **Der eigentliche Anwendungscode ist noch nicht in diesem Repository eingecheckt.**
+- Der Anwendungscode ist vollständig im SCORM-Paket enthalten; als entpackter Quellcode (`titralab3/`) ist er noch nicht eingecheckt.
 
 ## Vorgesehener Quellcode-Import
 

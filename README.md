@@ -6,8 +6,8 @@ SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftli
 
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
-| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/chemie/titration/` | **Ausgewählt**; lauffähiges SCORM-1.2-Release liegt vor, Quellcode-Import ins Repo ausstehend |
-| [Redoxlabor – Fehling- und Tollens-Probe](apps/chemie/redoxlabor/) | `apps/chemie/redoxlabor/` | **prototype** – Redoxlabor 1.0 (Claude Code), lauffähig im Repo; Test auf Schul-iPads und in mebis ausstehend ([Testbericht](apps/chemie/redoxlabor/docs/TESTBERICHT.md)) |
+| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/chemie/titration/` | **Ausgewählt**; läuft in mebis. Download: [SCORM 1.2](apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip). Import als entpackter Quellcode ausstehend |
+| [Redoxlabor – Fehling- und Tollens-Probe](apps/chemie/redoxlabor/) | `apps/chemie/redoxlabor/` | **prototype** – Redoxlabor 1.0 (Claude Code), Quellcode im Repo. Download: [SCORM 1.2](apps/chemie/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip) · [Web-ZIP](apps/chemie/redoxlabor/release/redoxlabor-1.0.0-web.zip) · [Testbericht](apps/chemie/redoxlabor/docs/TESTBERICHT.md) |
 | Esterbildung und chemisches Gleichgewicht | `apps/chemie/ester-gleichgewicht/` | In Planung |
 
 Es gibt **keine separate ältere Titrationsversion** im Zielbestand. Die zuvor dokumentierte Codex-Version TitraLab 2 ist verworfen und wurde nicht als Quellcode eingecheckt.
@@ -33,7 +33,7 @@ Siehe [mebis-Konzept](docs/MEBIS.md), [Architektur](docs/ARCHITECTURE.md) und [Q
 
 ## Code-Stand
 
-Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. **Die lauffähigen Dateien von TitraLab 3 (Claude) fehlen auf GitHub noch.** Das SCORM-Release wurde außerhalb des Repositories entpackt und als importierbares Quellcodearchiv aufbereitet; der Import ist ausstehend. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
+Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. Die SCORM-1.2-Pakete liegen jeweils im Ordner `release/` der Anwendung: TitraLab 3 unter [`apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip`](apps/chemie/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip), das Redoxlabor unter [`apps/chemie/redoxlabor/release/`](apps/chemie/redoxlabor/release/). Das Redoxlabor ist zusätzlich als Quellcode mit Tests eingecheckt; bei TitraLab 3 steht der Import als entpackter Quellcode noch aus. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
 
 ## Lizenz
 
