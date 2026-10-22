@@ -510,7 +510,9 @@
       let target2 = headTarget;
       if (st.parts.thermo === 'high') target2 = ROOM + (headTarget - ROOM) * 0.55;
       if (st.parts.thermo === 'deep') target2 = f.T + (vapE + vapW > 0 ? 1.5 + 0.8 * st.heater : 0);
-      st.thermoT += (target2 - st.thermoT) * (1 - Math.exp(-h / 2.5));
+      // Ohne Dampfstrom kühlt die Thermometerkugel im heißen Aufsatz nur langsam ab (τ = 90 s)
+      const tau = target2 < st.thermoT && vapE + vapW <= 0 && st.parts.thermo !== 'deep' ? 90 : 2.5;
+      st.thermoT += (target2 - st.thermoT) * (1 - Math.exp(-h / tau));
 
       if (st.tempLog.length === 0 || st.t - st.tempLog[st.tempLog.length - 1].t >= 3) {
         st.tempLog.push({ t: +st.t.toFixed(1), read: st.parts.thermo ? +st.thermoT.toFixed(2) : null, flask: +f.T.toFixed(2) });

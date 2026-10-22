@@ -58,3 +58,15 @@ test('R5: Wenig Gemisch im Kolben → Warnung vor dem Heizen', () => {
   lab.setHeater(3);
   assert.ok(msgs.some((m) => /nur wenig Gemisch/.test(m)));
 });
+
+test('R6: Nach dem Abschalten der Heizung kühlt das Thermometer im Aufsatz langsam ab (kein Sprung auf Raumtemperatur)', () => {
+  const lab = buildDistill();
+  lab.setHeater(3);
+  lab.advance(600);
+  const hot = lab.reading();
+  lab.setHeater(0);
+  lab.advance(30);
+  assert.ok(lab.reading() > 60, `nach 30 s noch warm: ${lab.reading()} (vorher ${hot})`);
+  lab.advance(900);
+  assert.ok(lab.reading() < 35, 'nach 15 min fast Raumtemperatur: ' + lab.reading());
+});

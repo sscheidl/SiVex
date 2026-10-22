@@ -323,10 +323,16 @@
       ctx.beginPath(); ctx.moveTo(x - 46, y - 18); ctx.quadraticCurveTo(x - 40, y + 4, x, y + 2); ctx.quadraticCurveTo(x + 40, y + 4, x + 46, y - 18); ctx.closePath(); ctx.fill(); ctx.stroke();
       if (st.dish && st.dish.E + st.dish.W > 0.02) { ctx.fillStyle = 'rgba(185,212,236,0.8)'; ctx.beginPath(); ctx.ellipse(x, y - 12, 30, 5, 0, 0, 6.29); ctx.fill(); }
       ctx.restore();
-      if (st.fx.flame > 0 && st.burnTests.length) {
-        const res = st.burnTests[st.burnTests.length - 1].result;
+      // Flamme in Echtzeit zeigen (unabhängig vom Zeitraffer gut sichtbar)
+      if (st.burnTests.length !== vis.burnN) {
+        if (vis.burnN != null && st.burnTests.length > vis.burnN) vis.flame = { t0: vis.t, res: st.burnTests[st.burnTests.length - 1].result };
+        vis.burnN = st.burnTests.length;
+      }
+      const fl0 = vis.flame && vis.flame.res !== 'none' ? (vis.flame.res === 'burns' ? 6 : 1.5) - (vis.t - vis.flame.t0) : 0;
+      if (fl0 > 0) {
+        const res = vis.flame.res;
         const hgt = res === 'burns' ? 70 : 34;
-        const a = clamp(st.fx.flame / (res === 'burns' ? 3 : 1.5), 0, 1);
+        const a = clamp(fl0 / 1.5, 0, 1);
         const fl = Math.sin(vis.t * 25) * 3;
         ctx.save();
         const g = ctx.createLinearGradient(0, y - 18 - hgt, 0, y - 16);

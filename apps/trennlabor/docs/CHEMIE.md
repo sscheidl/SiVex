@@ -173,7 +173,7 @@ Tabellierte Gleichgewichtsdaten bei 101,3 kPa nach Carey und Lewis [3], linear i
 
 ### 4.4 Thermometer
 
-Anzeige mit τ = 2,5 s. Am **seitlichen Abgang** (richtig) zeigt es die Siedetemperatur des Gemischs, sobald der Dampf die Thermometerkugel erreicht (ab einer Aufsatz-Erwärmung von 50–90 %). **Zu hoch** (außerhalb des Dampfstroms): nur 55 % des Anstiegs über Raumtemperatur (z. B. 55 °C statt 84 °C). **In der Flüssigkeit:** Temperatur des Kolbeninhalts, beim Sieden zusätzlich überhitzt um 1,5 °C + 0,8 °C je Heizstufe. Messwerte mit falscher Thermometerposition werden in der Auswertung **nicht** als verwertbare Messung gewertet. Das Verlaufsdiagramm zeigt die Thermometeranzeige (durchgezogen) und – deutlich unterschieden – die Kolbentemperatur als Modellwert (gestrichelt).
+Anzeige mit τ = 2,5 s; ohne Dampfstrom (Heizung aus) kühlt die Thermometerkugel im heißen Aufsatz nur langsam ab (τ = 90 s). Am **seitlichen Abgang** (richtig) zeigt es die Siedetemperatur des Gemischs, sobald der Dampf die Thermometerkugel erreicht (ab einer Aufsatz-Erwärmung von 50–90 %). **Zu hoch** (außerhalb des Dampfstroms): nur 55 % des Anstiegs über Raumtemperatur (z. B. 55 °C statt 84 °C). **In der Flüssigkeit:** Temperatur des Kolbeninhalts, beim Sieden zusätzlich überhitzt um 1,5 °C + 0,8 °C je Heizstufe. Messwerte mit falscher Thermometerposition werden in der Auswertung **nicht** als verwertbare Messung gewertet. Das Verlaufsdiagramm zeigt die Thermometeranzeige (durchgezogen) und – deutlich unterschieden – die Kolbentemperatur als Modellwert (gestrichelt).
 
 ### 4.5 Sicherheitsregeln (Sicherheitsstopp)
 

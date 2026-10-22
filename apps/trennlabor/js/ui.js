@@ -846,8 +846,8 @@
         liveClock = 0.2;
         refresh();
         updateLive();
-        renderHud();
       }
+      renderHud(); // Messanzeige in jedem Bild (nur Textänderungen), synchron zur Bühne
       saveTimer -= dt;
       if (saveTimer <= 0) { saveTimer = 2; save(); }
     }
