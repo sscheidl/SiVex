@@ -8,7 +8,7 @@ Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fe
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.1.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.1.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.1.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.1.0-web.zip)
+**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.2.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.2.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.2.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.2.0-web.zip)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
 
@@ -30,15 +30,17 @@ Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefo
 
 ## Release-Pakete
 
-**Aktuell: 1.1.0** (überarbeitet nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22-UMSETZUNG.md))
+**Aktuell: 1.2.0** – überarbeitet nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22-UMSETZUNG.md), dazu Zucker als Feststoffe und die Rückmeldungen aus dem mebis-Test (siehe [Testbericht](docs/TESTBERICHT.md))
 
 | Paket | Verwendung |
 | --- | --- |
-| [`release/redoxlabor-1.1.0-scorm12.zip`](release/redoxlabor-1.1.0-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). |
-| [`release/redoxlabor-1.1.0-web.zip`](release/redoxlabor-1.1.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
+| [`release/redoxlabor-1.2.0-scorm12.zip`](release/redoxlabor-1.2.0-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). |
+| [`release/redoxlabor-1.2.0-web.zip`](release/redoxlabor-1.2.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
 | [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt) | Prüfsummen aller Pakete |
 
-Ältere Fassung: `release/redoxlabor-1.0.0-*.zip` – Stand **vor** der Überarbeitung (enthält die Befunde R1–R6). Nur zum Vergleich aufbewahrt, nicht mehr für den Unterricht verwenden.
+Ältere Fassungen, nur zum Vergleich aufbewahrt:
+- `release/redoxlabor-1.1.0-*.zip` – überarbeiteter Stand ohne Zucker; in mebis getestet (keine Fehler).
+- `release/redoxlabor-1.0.0-*.zip` – Stand **vor** der Überarbeitung (enthält die Befunde R1–R6); nicht mehr für den Unterricht verwenden.
 
 Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`); es überträgt keine Noten, Fortschritte oder personenbezogenen Daten. Mit einem simulierten SCORM-1.2-LMS geprüft (eingebettet und im neuen Fenster), **in mebis selbst noch nicht getestet**. Neu erzeugen: `npm run package` (reproduzierbar, gleiche Quelle → identische ZIP-Dateien).
 

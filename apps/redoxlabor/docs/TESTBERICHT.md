@@ -28,7 +28,9 @@ Während der Browser-Tests gefunden und behoben: Beim Zugeben eines Zuckers brac
 
 Neue Screenshots: `zucker-00-labortisch-tablet.png`, `zucker-01-glucose-kristalle.png`, `zucker-02-glucose-positiv.png`, `zucker-03-saccharose-negativ.png`.
 
-**Nicht durchgeführt:** neues Release-Paket mit diesen Änderungen (die Pakete 1.1.0 enthalten sie noch nicht), Test auf Schul-iPads mit Safari, Unterrichtstest, Screenreader-Test.
+**Release 1.2.0:** `redoxlabor-1.2.0-web.zip` und `redoxlabor-1.2.0-scorm12.zip` mit diesen Änderungen gebaut. Prüfung: zweiter Build byte-identisch, ZIP-Integrität OK (Web 11, SCORM 12 Einträge inkl. Manifest-Version 1.2.0), SCORM-Prüfung mit simuliertem LMS gegen das fertige Paket **9/9**, Unit-Tests 71/71. Die Pakete 1.0.0 und 1.1.0 liegen unverändert daneben.
+
+**Nicht durchgeführt:** mebis-Test von 1.2.0 (1.1.0 wurde in mebis getestet), Test auf Schul-iPads mit Safari, Unterrichtstest, Screenreader-Test.
 
 ---
 
@@ -199,4 +201,4 @@ Nach diesen Änderungen lief die vollständige Suite zweimal hintereinander mit 
 
 1. Build auf Schul-iPads in Safari öffnen (Querformat): kompletter Fehling- und Tollens-Versuch nur per Finger, Bildrate beobachten.
 2. Kurzer Klassentest (2–3 Schülergruppen) zu D-08.
-3. Danach `release/redoxlabor-1.1.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.
+3. Danach `release/redoxlabor-1.2.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.
