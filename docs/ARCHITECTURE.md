@@ -1,12 +1,12 @@
-# Architektur
+# SiVex – Architektur
 
-## Monorepo nach Experiment
+## Fach- und experimentorientiertes Monorepo
 
 ```text
 apps/
   chemie/
     titration/
-      claude-v3/          # vorgesehener Import des getesteten SCORM-Releases
+      titralab3/        # geplanter Import des Claude-V3-Releases
     redoxlabor/
     ester-gleichgewicht/
   _template/
@@ -14,17 +14,17 @@ docs/
 prompts/
 ```
 
-Eine Anwendung liegt in `apps/<fach>/<slug>/`, startet über `index.html` und bringt sämtliche benötigten lokalen Browserressourcen selbst mit. Eine `sivex.json` beschreibt Kennung, Titel, Fach, Jahrgangsstufen und Status (`planned`, `prototype`, `ready`).
+Verzeichnisse werden **nach Fach und Experiment**, nicht nach Jahrgangsstufe angelegt. Unterrichtsthemen und Jahrgangsstufen werden je Anwendung über `sivex.json` erfasst.
 
-## Grundprinzipien
+## Leitlinien
 
-- Experimente unabhängig voneinander entwickeln, testen und deployen.
-- Für die Titration ist **Claude V3** verbindlich ausgewählt; die Codex-Titration ist verworfen.
-- Redoxlabor wird extern durch Codex / Claude entwickelt und erst nach Review importiert.
-- Statisches Deployment ohne serverseitige Anwendungslogik.
-- SCORM-1.2-Pakete für mebis mit eigenen Testnachweisen.
-- `ready` verlangt fachliche und gerätespezifische Freigabe.
+- Eine Anwendung pro Experiment; unabhängig entwickelbar, testbar und verteilbar.
+- **TitraLab 3 von Claude** ist die einzige gewählte Titrationsversion. TitraLab 2 wird nicht verwendet.
+- Redoxlabor: Implementierung durch Codex / Claude, anschließend Review und Import.
+- Browseranwendungen laufen nach Möglichkeit statisch ohne externes Backend.
+- SCORM-1.2-Pakete werden für mebis erstellt und separat getestet.
+- `ready` setzt fachliche und gerätespezifische Freigabe voraus.
 
 ## Status
 
-Der vollständige Claude-V3-Code ist im geprüften `main`-Stand derzeit **nicht** enthalten. Das getrennt bereitgestellte Importarchiv muss noch eingespielt werden.
+Die Quellcode-Dateien des TitraLab-3-Releases müssen noch auf GitHub importiert werden. Das aktuell eingecheckte Experimentverzeichnis enthält daher nur Dokumentation und Metadaten.
