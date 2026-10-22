@@ -6,6 +6,12 @@ Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fe
 
 ![Labortisch](docs/screenshots/01-labortisch.png)
 
+## Download
+
+**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.0.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.0.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/chemie/redoxlabor/release/redoxlabor-1.0.0-web.zip)
+
+In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
+
 | Fehling-Probe mit Ethanal | Tollens-Probe mit Ethanal |
 | --- | --- |
 | ![Fehling-Verlauf](docs/screenshots/seq-fehling-ethanal.png) | ![Tollens-Verlauf](docs/screenshots/seq-tollens-ethanal.png) |
@@ -22,7 +28,7 @@ Die Anwendung ist vollständig statisch (HTML, CSS, JavaScript) und braucht wede
 
 Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefox.
 
-## Downloads (Release 1.0.0)
+## Release-Pakete 1.0.0
 
 | Paket | Verwendung |
 | --- | --- |
