@@ -23,6 +23,8 @@
 | Build (`npm run build`) | statische Kopie; Prüfung auf externe Ressourcen, absolute Pfade, Netzwerkzugriffe, fehlende Dateien | **OK** (10 Dateien, 227 KiB) |
 | Browser-Tests (`npm run test:e2e`) | 26 Prüfungen mit echter Bedienung (Maus, Touch-Antippen, Drag-and-drop), Pixelmessungen in der gerenderten Lupe über die Zeit, Screenshots | **26/26 bestanden** (167 s; zweimal hintereinander stabil, siehe unten) |
 | Start per `file://` und `npm start` | manuell per Skript | App startet fehlerfrei; HTTP 200 |
+| SCORM-Paket (`npm run test:scorm`) | 9 Prüfungen: Manifest (SCORM 1.2, SCO, alle Dateien gelistet, keine externen Ressourcen), Start im simulierten LMS eingebettet und als neues Fenster, Kernversuch Fehling/Ethanal, `LMSInitialize`/`LMSFinish`, keine Datenübertragung | **9/9 bestanden** ([`scorm-results.json`](../tests/e2e/scorm-results.json), Screenshot `17-scorm-im-mock-lms.png`) |
+| Paketierung (`npm run package`) | Web-ZIP und SCORM-ZIP, Integritätstest mit `unzip -t`, zweiter Build byte-identisch | **OK** |
 
 Rohdaten: [`tests/e2e/results.json`](../tests/e2e/results.json). Screenshots: [`docs/screenshots/`](screenshots/).
 
@@ -128,7 +130,7 @@ Nach diesen Änderungen lief die vollständige Suite zweimal hintereinander mit 
 
 - Kein Test auf echtem iPad/Safari (WebKit) – **offen**.
 - Kein Test mit Lernenden (D-08) – **offen**.
-- Kein mebis-/SCORM-Import (nicht Teil des Auftrags).
+- SCORM-1.2-Paket nur mit simuliertem LMS geprüft; Import in einen echten mebis-Kurs **offen**.
 - Zeitraffer und Portionsmodell; keine reale Kinetik, keine Strömungsmechanik.
 - Tollens bei Raumtemperatur im Modell ohne Reaktion (real langsam möglich).
 - Das Absetzen von Cu₂O ist vereinfacht dargestellt.
@@ -139,4 +141,4 @@ Nach diesen Änderungen lief die vollständige Suite zweimal hintereinander mit 
 
 1. Build auf Schul-iPads in Safari öffnen (Querformat): kompletter Fehling- und Tollens-Versuch nur per Finger, Bildrate beobachten.
 2. Kurzer Klassentest (2–3 Schülergruppen) zu D-08.
-3. Danach SCORM-Paket bauen und in mebis („Neues Fenster“) testen.
+3. Danach `release/redoxlabor-1.0.0-scorm12.zip` in einem mebis-Testkurs („Neues Fenster“) hochladen und auf Schul-iPads starten.

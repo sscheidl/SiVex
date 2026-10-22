@@ -22,6 +22,16 @@ Die Anwendung ist vollständig statisch (HTML, CSS, JavaScript) und braucht wede
 
 Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefox.
 
+## Downloads (Release 1.0.0)
+
+| Paket | Verwendung |
+| --- | --- |
+| [`release/redoxlabor-1.0.0-scorm12.zip`](release/redoxlabor-1.0.0-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../../docs/MEBIS.md)). |
+| [`release/redoxlabor-1.0.0-web.zip`](release/redoxlabor-1.0.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
+| [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt) | Prüfsummen |
+
+Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`); es überträgt keine Noten, Fortschritte oder personenbezogenen Daten. Mit einem simulierten SCORM-1.2-LMS geprüft (eingebettet und im neuen Fenster), **in mebis selbst noch nicht getestet**. Neu erzeugen: `npm run package` (reproduzierbar, gleiche Quelle → identische ZIP-Dateien).
+
 ## Bedienung (Kurzfassung)
 
 1. **Reagenzglas wählen** – im Ständer antippen (oder Nummer im Bedienfeld).
@@ -48,9 +58,12 @@ js/render.js          Canvas-2D-Darstellung des Labortisches (liest nur den Zust
 js/ui.js              Bedienfeld, Eingabe (Tippen/Ziehen), Hilfe, Auswertung, Dialoge
 js/structures.js      Halbstrukturformeln als SVG
 js/app.js             Start und Animationsschleife
-scripts/              Build (statische Kopie + Prüfungen) und Testserver
+js/scorm.js           SCORM-1.2-Adapter (nur Anmelden/Abmelden beim LMS, sonst inaktiv)
+scripts/              Build (statische Kopie + Prüfungen), Paketierung (ZIP, SCORM 1.2), Testserver
+release/              fertige Pakete: Web-ZIP, SCORM-1.2-ZIP, Prüfsummen
 tests/unit/           Node-Tests (Chemie, Zustandsmaschine, Gleichungen)
 tests/e2e/run.mjs     Browser-Tests mit Playwright (Pixelmessungen, Screenshots)
+tests/e2e/scorm.mjs   Prüfung des SCORM-Pakets mit simuliertem LMS
 docs/                 Chemische Modellierung, Testbericht, Screenshots
 ```
 
@@ -65,6 +78,8 @@ npm test            # 45 Unit-Tests (Node, ohne Abhängigkeiten)
 npm run build       # statischer Build + Prüfung auf externe Ressourcen/absolute Pfade
 npm install         # einmalig für die Browser-Tests (Playwright)
 npm run test:e2e    # 26 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
+npm run package     # Release-ZIPs (Web + SCORM 1.2) nach release/
+npm run test:scorm  # 9 Prüfungen des SCORM-Pakets mit simuliertem LMS
 ```
 
 Für die Browser-Tests wird Chromium benötigt (`npx playwright install chromium`, falls nicht vorhanden). Ergebnisse: `tests/e2e/results.json`, Bericht: [docs/TESTBERICHT.md](docs/TESTBERICHT.md).
@@ -76,7 +91,7 @@ Keine Anmeldung, keine Server, keine externen Dienste, keine Analyse-Skripte. Pr
 ## Technische Einschränkungen
 
 - **iPad:** Touch-Bedienung und Tablet-Layout sind in Chromium mit Touch-Emulation (1180×820, 1024×768) geprüft, aber **nicht auf einem echten iPad mit Safari**. Dieser Gerätetest ist offen.
-- **mebis/SCORM:** nicht Teil dieses Auftrags; die App ist für den Import vorbereitet (statisch, relative Pfade, keine externen Ressourcen), aber nicht in mebis getestet.
+- **mebis/SCORM:** Ein SCORM-1.2-Paket liegt vor und ist mit einem simulierten LMS geprüft; ein Import in einen echten mebis-Kurs ist noch nicht getestet.
 - **Zeitraffer:** Reaktionen laufen in 10–25 s statt in Minuten ab. Mengen sind abstrakte „Portionen“ – die Anwendung ist keine Herstellungs- oder Dosieranleitung.
 - **Darstellung:** 2,5D-Canvas-Grafik statt physikalischer Strömungs- oder Lichtsimulation; das Absetzen von Cu₂O ist vereinfacht.
 - Glucose/Fructose (Expertenmodus) sind nicht umgesetzt.
