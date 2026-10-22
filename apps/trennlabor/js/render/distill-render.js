@@ -7,7 +7,6 @@
   'use strict';
   const TL = root.TL;
   const R = TL.render;
-  const DI = TL.distill;
   const { clamp, lerp, rng, fmt } = TL.util;
 
   const BENCH = 700;
@@ -20,7 +19,6 @@
   const OUT = { x: 795 };
   const SPARE = { A: 905, B: 985, C: 1065 };
   const TAP = { x: 1160, y: 600 };
-  const SINK = { x: 58, y: BENCH };
   const DISH = { x: 1120, y: 760 };
   const TRAY = { x: 860, y: 150, w: 326, h: 300 };
   const THERMO_Y = { correct: 296, high: 238, deep: 572 };
@@ -238,10 +236,7 @@
       ctx.strokeStyle = '#8f9aa5'; ctx.lineWidth = 9; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(TAP.x + 30, TAP.y - 40); ctx.lineTo(TAP.x, TAP.y - 40); ctx.lineTo(TAP.x, TAP.y); ctx.stroke();
       ctx.fillStyle = st.cool ? '#1f6fe5' : '#5d6975'; ctx.beginPath(); ctx.arc(TAP.x + 12, TAP.y - 52, 8, 0, 6.29); ctx.fill();
-      ctx.fillStyle = '#9aa6b1'; R.roundRect(ctx, SINK.x - 50, SINK.y - 26, 100, 28, 6); ctx.fill();
-      ctx.fillStyle = '#6d7984'; R.roundRect(ctx, SINK.x - 42, SINK.y - 20, 84, 16, 5); ctx.fill();
       ctx.restore();
-      R.text(ctx, 'Ausguss', SINK.x, SINK.y + 14, { size: 11, weight: 600, color: '#4a5866' });
       R.text(ctx, 'Wasserhahn', TAP.x - 10, TAP.y - 70, { size: 11, weight: 600, color: '#4a5866' });
       if (!p.hoseIn) return;
       const lower = nipple('lower'), upper = nipple('upper');
@@ -251,10 +246,11 @@
       ctx.strokeStyle = '#2f6db5';
       ctx.beginPath(); ctx.moveTo(TAP.x, TAP.y + 2); ctx.bezierCurveTo(TAP.x - 10, TAP.y + 90, inlet.x + 200, inlet.y + (p.hoseIn === 'bottom' ? 70 : -150), inlet.x, inlet.y); ctx.stroke();
       ctx.strokeStyle = '#7ea6cf';
-      ctx.beginPath(); ctx.moveTo(outlet.x, outlet.y); ctx.bezierCurveTo(outlet.x + (p.hoseIn === 'bottom' ? 10 : 60), outlet.y - 190, SINK.x + 30, 60, SINK.x + 10, SINK.y - 20); ctx.stroke();
+      // Ablauf: nach oben aus dem Bild zum Ausguss (hinter dem Aufbau)
+      ctx.beginPath(); ctx.moveTo(outlet.x, outlet.y); ctx.bezierCurveTo(outlet.x + 30, outlet.y - 120, outlet.x + 120, 120, outlet.x + 150, -10); ctx.stroke();
       ctx.restore();
       R.label(ctx, 'Zulauf', inlet.x + 30, inlet.y + (p.hoseIn === 'bottom' ? 36 : -30), { size: 11, bg: 'rgba(225,238,255,0.95)', color: '#1d4f8f' });
-      R.label(ctx, 'Ablauf', outlet.x - 10, outlet.y + (p.hoseIn === 'bottom' ? -30 : 36), { size: 11 });
+      R.label(ctx, 'Ablauf → Ausguss', outlet.x + 60, outlet.y + (p.hoseIn === 'bottom' ? -40 : 36), { size: 11 });
     }
 
     function drawAdapter(lab) {

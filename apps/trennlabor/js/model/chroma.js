@@ -154,7 +154,6 @@
       p.state = 'developing';
       p.eluent = st.chamber.eluent; p.level = st.chamber.level; p.lid = st.chamber.lid;
       p.front = p.level; p.frontVirtual = p.level; p.tIn = 0;
-      const E = ELUENTS[p.eluent];
       // Zonen anlegen: je Komponente der Probe und der Kugelschreiberlinie
       p.zones = [];
       for (const s of p.spots) {

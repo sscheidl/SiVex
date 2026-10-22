@@ -187,7 +187,6 @@
     function renderClassic(lab) {
       const st = lab.state;
       let sel = ui.selected.classic;
-      const busy = lab.busy();
       const op = st.op;
       const devices = [...Object.keys(st.vessels).map((id) => [id, NAME(lab, id)])];
       if (st.F) devices.push(['F', 'Trichter']);
@@ -199,7 +198,7 @@
       let html = '';
       if (op) {
         const what = { pour: `Gießen: ${NAME(lab, op.from)} → ${NAME(lab, op.to)}${op.waiting ? ' (wartet, bis der Trichter Platz hat)' : ''}`, water: 'Wasser wird zugegeben …', stir: 'Es wird umgerührt …', magnet: 'Der Magnet wird durch das Gemisch geführt …', move: 'Becherglas wird umgestellt …', insert: 'Einsatz wird eingelegt …', removeInsert: 'Einsatz wird herausgenommen …', hibiscus: 'Blüten werden zugegeben …', shake: 'Scheidetrichter wird geschüttelt …' }[op.type] || '';
-        html += `<div class="card"><div class="busy" style="margin:0"><span>${esc(what)}</span>${op.type === 'pour' ? '<button type="button" class="btn small" data-act="stop">Gießen stoppen</button>' : ''}</div></div>`;
+        html += `<div class="card" id="busyCard"><div class="busy" style="margin:0"><span>${esc(what)}</span>${op.type === 'pour' ? '<button type="button" class="btn small" data-act="stop">Gießen stoppen</button>' : ''}</div></div>`;
       }
       html += `<div class="card" id="devCard"><h3>Geräte <small>antippen oder auf der Bühne wählen</small></h3><div class="devlist">${devices.map(([id, n]) => `<button type="button" class="btn" data-act="sel" data-id="${id}" aria-pressed="${sel === id}">${esc(n)}</button>`).join('')}</div></div>`;
       if (sel && !lab.container(sel) && !['water', 'kettle', 'hib', 'magnet', 'burner', 'waste'].includes(sel)) sel = ui.selected.classic = null;
@@ -238,7 +237,6 @@
           html += '</div>';
         }
         if (sel === 'F') {
-          const ins = st.insert;
           html += `<span class="lbl">Einsatz</span><div class="grid2">
             <button type="button" class="btn" data-act="insert" data-kind="paper">Filterpapier (gefaltet) einlegen</button>
             <button type="button" class="btn" data-act="insert" data-kind="paperFlat">Filterpapier ungefaltet hineindrücken</button>
@@ -276,14 +274,12 @@
       }).join('');
     }
     function balanceCard(lab) {
-      return `<div class="card"><details id="balance"><summary><b>Mengenbilanz</b> <span class="muted">Ausgangsmenge und Verbleib</span></summary><table class="bal" data-live="balance"><thead><tr><th>Stoff</th><th>gesamt</th><th>wo jetzt</th></tr></thead><tbody>${balanceRows(lab)}</tbody></table><p class="muted" style="margin-top:6px">Rot: verloren (Ausguss, Tisch, verdampft, verspritzt). Nichts entsteht aus dem Nichts.</p></details></div>`;
+      return `<div class="card" id="balCard"><details id="balance"><summary><b>Mengenbilanz</b> <span class="muted">Ausgangsmenge und Verbleib</span></summary><table class="bal" data-live="balance"><thead><tr><th>Stoff</th><th>gesamt</th><th>wo jetzt</th></tr></thead><tbody>${balanceRows(lab)}</tbody></table><p class="muted" style="margin-top:6px">Rot: verloren (Ausguss, Tisch, verdampft, verspritzt). Nichts entsteht aus dem Nichts.</p></details></div>`;
     }
 
     // ============================================================ Versuch: Chromatographie
     function renderChroma(lab) {
       const st = lab.state, p = st.paper, ch = st.chamber;
-      const fresh = p && p.state === 'fresh';
-      const dev = p && p.state === 'developing';
       let html = `<div class="card" id="cPaper"><h3>1 · Papier ${p ? `<small>Nr. ${p.no}: ${p.state === 'fresh' ? 'vorbereiten' : p.state === 'developing' ? 'in der Kammer' : p.state === 'drying' ? 'feucht' : 'trocken'}</small>` : ''}</h3>
         <div class="grid2"><button type="button" class="btn" data-act="cpaper" data-type="sheet">Neues breites Papier (3 Bahnen)</button><button type="button" class="btn" data-act="cpaper" data-type="strip">Neuer schmaler Streifen</button></div></div>`;
       html += `<div class="card" id="cLine"><h3>2 · Startlinie ${p && p.line ? `<small>${p.line.tool === 'pencil' ? 'Bleistift' : 'Kugelschreiber'}, ${fmt(p.line.y)} cm</small>` : ''}</h3>
@@ -393,19 +389,23 @@
       const tpl = document.createElement('template');
       tpl.innerHTML = html;
       const next = Array.from(tpl.content.children);
-      const cur = Array.from(container.children);
       if (container.dataset.view !== sigs.view) { container.dataset.view = sigs.view || ''; container.replaceChildren(...next); return; }
+      // Karten über ihre id zuordnen (Einfügen einer Karte verschiebt die anderen nicht)
       next.forEach((n, i) => {
-        const c = cur[i];
-        if (!c) container.appendChild(n);
-        else if (c.outerHTML !== n.outerHTML) {
-          // Zustand aufgeklappter Details übernehmen
-          const d0 = c.querySelector && c.querySelector('details'), d1 = n.querySelector && n.querySelector('details');
+        const cur = container.children[i];
+        let match = null;
+        if (n.id) match = Array.from(container.children).find((c) => c.id === n.id) || null;
+        else if (cur && !cur.id) match = cur;
+        let node = n;
+        if (match && match.outerHTML === n.outerHTML) node = match;
+        else if (match) {
+          const d0 = match.querySelector('details'), d1 = n.querySelector('details');
           if (d0 && d1 && d0.open) d1.open = true;
-          container.replaceChild(n, c);
+          container.replaceChild(n, match);
         }
+        if (container.children[i] !== node) container.insertBefore(node, container.children[i] || null);
       });
-      for (let i = next.length; i < cur.length; i++) container.removeChild(cur[i]);
+      while (container.children.length > next.length) container.removeChild(container.lastElementChild);
     }
     function focusKey(el) {
       const ds = el.dataset || {};
@@ -537,17 +537,32 @@
     // ============================================================ HUD und Sicherheitsstopp
     function renderHud() {
       const e = session.engine();
-      if (!e) { hud.innerHTML = ''; return; }
+      if (!e) { hud.innerHTML = ''; hud._lab = null; return; }
       const lab = session.state.lab;
-      let html = `<div class="box">Versuchszeit <b>${fmtTime(e.state.t)}</b>${session.state.paused ? ' · <b>Pause</b>' : ''}</div>`;
+      // Gerüst nur beim Laborwechsel aufbauen, danach nur Texte aktualisieren (stabile Elemente)
+      if (hud._lab !== lab) {
+        hud._lab = lab;
+        hud.classList.toggle('right', lab === 'distill');
+        hud.innerHTML = (lab === 'distill' ? '<div class="temp" id="tempHud"><small>Dampftemperatur (Thermometer am Aufsatz)</small><div class="v" data-h="v"></div><div class="sub" data-h="sub"></div></div>' : '')
+          + '<div class="box" data-h="time"></div><div class="box" data-h="measure" hidden></div>';
+      }
+      const set = (k, v) => { const el = $(`[data-h="${k}"]`, hud); if (el && el.textContent !== v) el.textContent = v; return el; };
+      const time = $('[data-h="time"]', hud);
+      const th = `Versuchszeit <b>${fmtTime(e.state.t)}</b>${session.state.paused ? ' · <b>Pause</b>' : ''}`;
+      if (time && time._h !== th) { time._h = th; time.innerHTML = th; }
       if (lab === 'distill') {
         const r = e.reading();
         const pos = e.state.parts.thermo;
-        html = `<div class="temp" id="tempHud"><small>Dampftemperatur (Thermometer am Aufsatz)</small><div class="v ${r == null ? 'na' : ''}">${r == null ? 'kein Thermometer' : fmt(r) + ' °C'}</div><div class="sub">${pos && pos !== 'correct' ? '⚠ Thermometer sitzt nicht am seitlichen Abgang' : 'Kolbeninhalt: ' + fmt(e.state.flask.T, 0) + ' °C'}</div></div>` + html;
+        const v = set('v', r == null ? 'kein Thermometer' : fmt(r) + ' °C');
+        if (v) v.classList.toggle('na', r == null);
+        set('sub', pos && pos !== 'correct' ? '⚠ Thermometer sitzt nicht am seitlichen Abgang' : 'Kolbeninhalt: ' + fmt(e.state.flask.T, 0) + ' °C');
       }
-      if (lab === 'chroma' && ui.measure) html += `<div class="box">Lineal: <b>${fmt(ui.measure.cm)} cm</b> ab Startlinie (Chromatogramm Nr. ${ui.measure.no})</div>`;
-      hud.classList.toggle('right', lab === 'distill');
-      if (hud._h !== html) { hud._h = html; hud.innerHTML = html; }
+      const m = $('[data-h="measure"]', hud);
+      if (m) {
+        const show = lab === 'chroma' && ui.measure;
+        m.hidden = !show;
+        if (show) set('measure', `Lineal: ${fmt(ui.measure.cm)} cm ab Startlinie (Chromatogramm Nr. ${ui.measure.no})`);
+      }
     }
 
     function showSafety() {

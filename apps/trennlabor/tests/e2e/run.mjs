@@ -22,6 +22,7 @@ const PORT = +(process.env.E2E_PORT || 8137);
 const BASE = `http://localhost:${PORT}/index.html?neu`;
 const RESULTS = argVal('--results') || path.join(HERE, SMOKE ? 'smoke-results.json' : 'results.json');
 fs.mkdirSync(SHOTS, { recursive: true });
+for (const f of fs.readdirSync(SHOTS)) if (f.startsWith('fail-')) fs.rmSync(path.join(SHOTS, f));
 
 const results = [];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -326,9 +327,12 @@ async function main() {
       await T.speed(1);
       await T.shot('k01-02-abgesetzt');
       await T.click('[data-act="sel"][data-id="B1"]');
+      // Regression R-V2: Bedienfeld bleibt während einer laufenden Handlung stabil (keine verlorenen Klicks)
+      await T.page.evaluate(() => { window.__dev = document.querySelector('#devCard'); });
       await T.click('[data-act="pmode"][data-mode="fast"]');
       await T.click('[data-act="pour"][data-from="B1"][data-to="B2"]');
       await sleep(900);
+      assert(await T.page.evaluate(() => window.__dev.isConnected), 'Gerätekarte wurde während des Gießens nicht ersetzt');
       await T.shot('k01-03-zuegig-ausgiessen');
       await T.idle();
       const fast = await T.st(() => window.Trennlabor.session.engine().describe('B2'));
@@ -391,6 +395,17 @@ async function main() {
       await T.shot('k04-01-emulsion');
       await T.until(() => window.Trennlabor.session.engine().describe('S').disp < 0.5);
       await T.shot('k04-02-zwei-phasen');
+      // Regression R-V1: Inhalt des Scheidetrichters sichtbar (Ölschicht gelb über Wasser)
+      const oilPx = await T.st(() => {
+        const { stage } = window.Trennlabor;
+        const h = stage.hits.find((x) => x.id === 'S');
+        const p0 = stage.toClient(h.x + h.w / 2, h.y), p1 = stage.toClient(h.x + h.w / 2, h.y + h.h);
+        const r = stage.canvas.getBoundingClientRect(); const k = stage.canvas.width / r.width;
+        const d = stage.canvas.getContext('2d').getImageData(Math.round((p0.x - r.left) * k), Math.round((p0.y - r.top) * k), 3, Math.round((p1.y - p0.y) * k)).data;
+        let yellow = 0, blue = 0; for (let i = 0; i < d.length; i += 4) { if (d[i] - d[i + 2] > 60 && d[i + 1] > 150) yellow++; if (d[i + 2] - d[i] > 25) blue++; }
+        return { r: yellow, b: blue };
+      });
+      assert(oilPx.r > 30 && oilPx.b > 30, 'Öl- und Wasserschicht im Scheidetrichter sichtbar: ' + JSON.stringify(oilPx));
       await T.click('[data-act="sel"][data-id="B2"]'); await T.click('[data-act="move"][data-id="B2"][data-to="sep"]'); await T.idle();
       await T.click('[data-act="sel"][data-id="S"]');
       await T.speed(4);
@@ -623,6 +638,10 @@ async function main() {
     await T.shot('d01-03-destillat');
     const tempVis = await T.page.locator('#tempHud').isVisible();
     assert(tempVis, 'Anzeige bleibt sichtbar');
+    // Regression R-V3: Temperaturanzeige ist ein stabiles Element (wird nur im Text aktualisiert)
+    await T.page.evaluate(() => { window.__hud = document.querySelector('#tempHud'); });
+    await sleep(800);
+    assert(await T.page.evaluate(() => window.__hud.isConnected && window.__hud === document.querySelector('#tempHud')), 'Anzeige stabil');
     await T.click('[data-act="heat"][data-level="0"]');
     await T.click('[data-act="ssrc"][data-v="A"]'); await T.click('[data-act="sample"]');
     await T.click('[data-act="itgt"][data-v="dish"]'); await T.click('[data-act="ignite"]');

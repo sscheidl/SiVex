@@ -10,7 +10,8 @@
     "test:e2e": "node tests/e2e/run.mjs",
     "package": "node scripts/package.mjs",
     "test:scorm": "node tests/e2e/scorm.mjs",
-    "test:all": "npm test && npm run package && npm run test:e2e && npm run test:scorm"
+    "test:all": "npm test && npm run package && npm run test:e2e && npm run test:scorm && npm run test:webzip",
+    "test:webzip": "node tests/e2e/webzip.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1"

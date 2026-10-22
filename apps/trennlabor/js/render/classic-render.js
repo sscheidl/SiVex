@@ -397,7 +397,6 @@
       ctx.save(); bowl(); ctx.closePath(); ctx.fillStyle = '#f3f1ec'; ctx.fill(); ctx.restore();
       ctx.save(); bowl(); ctx.closePath(); ctx.clip();
       const liq = D.water + D.oil;
-      const sol = TL.classic.helpers.solidsMass(D);
       const yb = DISH.rim + DISH.depth;
       if (liq > 0.05) {
         const h = Math.min(DISH.depth - 2, Math.sqrt(liq / 70) * (DISH.depth - 3));

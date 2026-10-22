@@ -41,7 +41,6 @@
   }
 
   function createSession(options) {
-    const opts = Object.assign({}, options);
     const ev = util.emitter();
     const st = {
       lab: null,

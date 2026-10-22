@@ -14,7 +14,7 @@
   const S = 30; // px je cm im Labor
   const CHAMBER = { x: 320, top: 150, bottom: 676, w: 316 };
   const BOARD = { x: 800, bottom: 640 };
-  const PEN_Y = 742, PEN_X0 = 560, PEN_DX = 88;
+  const PEN_Y = 742, PEN_X0 = 560;
 
   function create(stage) {
     const ctx = stage.ctx;

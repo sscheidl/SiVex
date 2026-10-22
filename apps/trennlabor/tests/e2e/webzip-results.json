@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-22T17:12:00.967Z",
+  "browser": "Chromium 141.0.7390.37",
+  "root": "../../../../../tmp/trennlabor-web-vrbetd/trennlabor",
+  "smoke": true,
+  "passed": 6,
+  "failed": 0,
+  "results": [
+    {
+      "id": "S-00",
+      "title": "Startansicht mit drei Laboren, alle erreichbar (A-01)",
+      "status": "PASS",
+      "detail": "3 Labore geöffnet, je mit Bedienelementen",
+      "ms": 2206,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-01",
+      "title": "K-02 positiv: Lösen → Filtrieren → Eindampfen → Kristalle → Auswertung → Hefteintrag",
+      "status": "PASS",
+      "detail": "Salzkristalle 4.60 g, Schale 210 Helligkeit, Hefteintrag sichtbar",
+      "ms": 22400,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-08",
+      "title": "C-01 positiv: Schwarz/Grün/Blau nebeneinander → Front steigt → verschiedene Banden, gemeinsamer Farbstoff",
+      "status": "PASS",
+      "detail": "Banden 3/2/1, Front 3.1 → 6.0 → 9.1 cm",
+      "ms": 9623,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-13",
+      "title": "D-01 positiv: Aufbau → Kühlwasser unten → Erhitzen → Temperatur → Destillat → Brennprobe → Auswertung",
+      "status": "PASS",
+      "detail": "erster Tropfen 83.7 °C, Verlauf 83.7 → 84.9 °C, Brennprobe: burns",
+      "ms": 11286,
+      "viewport": "1440×900"
+    },
+    {
+      "id": "E-21a",
+      "title": "V-01 Tablet 1180×820 (Touch): K-01 vollständig per Antippen auf Bühne und Bedienfeld",
+      "status": "PASS",
+      "detail": "Antippen auf der Bühne und im Bedienfeld, Auswertung abgeschlossen",
+      "ms": 5748,
+      "viewport": "1180×820 Touch"
+    },
+    {
+      "id": "E-21b",
+      "title": "V-01/V-03 Tablet 1024×768 (Touch): Chromatographie per Antippen, Destillation mit sichtbarem Thermometer",
+      "status": "PASS",
+      "detail": "Bühne 694×710 px, Thermometeranzeige sichtbar",
+      "ms": 12997,
+      "viewport": "1024×768 Touch"
+    }
+  ],
+  "fileProtocol": "PASS"
+}

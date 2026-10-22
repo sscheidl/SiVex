@@ -1,0 +1,2 @@
+ceef476911b495af20854b252f49b18b325d161163ca7b01a572ac2e0b43aa13  trennlabor-1.0.0-web.zip
+8076eac61243d3a8071de8ac7235b3d04bbdfebb58cf8a611e392c07dd57d1f2  trennlabor-1.0.0-scorm12.zip

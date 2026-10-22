@@ -22,7 +22,7 @@
   else (root.TL = root.TL || {}).distill = api;
 })(typeof self !== 'undefined' ? self : this, function (util) {
   'use strict';
-  const { clamp, interp, clone, fmt } = util; // eslint-disable-line no-unused-vars
+  const { clamp, interp, clone, fmt } = util;
 
   const H = 0.1;
   const ROOM = 20;
@@ -137,7 +137,6 @@
     }
 
     // ---------------------------------------------------------- Aufbau
-    const PART_NAMES = { mantle: 'Heizpilz', flask: 'Rundkolben', head: 'Destillationsaufsatz', thermo: 'Thermometer', cooler: 'Liebigkühler', adapter: 'Vorstoß', clamps: 'Klemmen' };
     function place(part, opt) {
       const b = blocked(); if (b) return b;
       const p = st.parts;
@@ -238,7 +237,11 @@
         return stop('empty', 'Sicherheitsstopp: leerer Kolben',
           'Ein leerer Kolben im Heizpilz würde überhitzen.', 'Fülle zuerst das Ethanol-Wasser-Gemisch ein.');
       }
-      if (level === 1 && !st.warned.weak) { st.warned.weak = true; }
+      if (level > 0 && flaskVol() < 40 && !st.warned.small) {
+        st.warned.small = true;
+        msg('Im Kolben ist nur wenig Gemisch: Es entsteht nur wenig Destillat, und der Kolben kann schnell trocken laufen.', 'warn');
+        mistake('smallVolume');
+      }
       ev.emit('change', {});
       return { ok: true };
     }
