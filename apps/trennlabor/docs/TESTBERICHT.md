@@ -1,10 +1,10 @@
 # Technische Abnahme · Trennlabor 1.0.0
 
-Datum: 22.10.2026 (Europe/Berlin). Repository: [sscheidl/SiVex](https://github.com/sscheidl/SiVex), Branch `feat/trennlabor`. Schulpraktische Freigabe und Merge verbleiben bei der Lehrkraft. `sivex.json` bleibt bewusst `prototype`.
+Datum: 22.10.2026 (Europe/Berlin). Repository: [sscheidl/SiVex](https://github.com/sscheidl/SiVex), Branch `feat/trennlabor`. [Pull Request #10](https://github.com/sscheidl/SiVex/pull/10). Getesteter Implementierungscommit: [`994caa4c4446cfec3948131d4cad7f0d43efc826`](https://github.com/sscheidl/SiVex/commit/994caa4c4446cfec3948131d4cad7f0d43efc826); nachfolgend ausschließlich dieser Abschlussbericht ergänzt. Schulpraktische Freigabe und Merge verbleiben bei der Lehrkraft. `sivex.json` bleibt bewusst `prototype`.
 
 ## Stand der Prüfung
 
-**Technischer Funktions- und Pakettest: PASS.** 39/39 Unit-/Regressionstests und 80/80 Browser-/Paketprüfungen bestanden: 38 am Quellcode, 19 aus dem entpackten Web-ZIP, 20 aus dem entpackten SCORM-ZIP im simulierten LMS, 3 zusätzliche Prüfungen (neues Fenster, file://, offline). Commit/Push/PR werden als letzter Lieferschritt nachgetragen.
+**Technischer Funktions- und Pakettest: PASS.** 39/39 Unit-/Regressionstests und 80/80 Browser-/Paketprüfungen bestanden: 38 am Quellcode, 19 aus dem entpackten Web-ZIP, 20 aus dem entpackten SCORM-ZIP im simulierten LMS, 3 zusätzliche Prüfungen (neues Fenster, file://, offline). Implementierung lokal committed und nach GitHub gepusht; PR #10 enthält alle Lieferobjekte. **Alle 39 Kriterien unten: PASS.** Keine offenen technischen HOLD-Kriterien. Der nachfolgende Dokumentationscommit verändert keine geprüften Laufzeitdateien oder Pakete.
 
 Enthalten: K-01 Sand/Wasser, K-02 Sand/Kochsalz, K-03 Eisen/Sand/Kochsalz, K-04 Öl/Wasser, K-05 Hibiskustee, Papierchromatographie mit sieben Proben/zwei Laufmitteln sowie ausschließlich Ethanol/Wasser-Destillation. Fehler, Hilfen, Auswertung und Hefteintrag sind in allen Bereichen implementiert. Die Modelle sind in [CHEMIE.md](CHEMIE.md) einschließlich aller didaktischen Parameter und Grenzen dokumentiert.
 
@@ -27,7 +27,7 @@ Reproduzierbare Start-/Installationsbefehle stehen in der [README](../README.md)
 
 ## Kriterienmatrix
 
-`U` = [Modelltests](../tests/unit/models.test.js), `R` = [Regressionen](../tests/unit/regression.test.js), `E` = [Browser-Szenarien](../tests/e2e/scenarios.mjs). E-Nummern entsprechen den Bezeichnern im JSON-Bericht. `P` = [Paket-/LMS-Test](../tests/e2e/packages.mjs) und [ZIP/XML-Prüfung](../tests/check_packages.py). Alle Funktions- und Paketkriterien wurden nachgewiesen; die PR-Lieferung wird zuletzt eingetragen. Die Pakete enthalten bytegenau die aktuellen Laufzeitdateien des Branches (zusätzliche Integritätsprüfung).
+`U` = [Modelltests](../tests/unit/models.test.js), `R` = [Regressionen](../tests/unit/regression.test.js), `E` = [Browser-Szenarien](../tests/e2e/scenarios.mjs). E-Nummern entsprechen den Bezeichnern im JSON-Bericht. `P` = [Paket-/LMS-Test](../tests/e2e/packages.mjs) und [ZIP/XML-Prüfung](../tests/check_packages.py). Alle Funktions-, Paket- und Lieferkriterien wurden nachgewiesen. Die Pakete enthalten bytegenau die aktuellen Laufzeitdateien des Branches (zusätzliche Integritätsprüfung).
 
 | Kennung | Status | Nachweis / Befund |
 | --- | --- | --- |
@@ -69,7 +69,7 @@ Reproduzierbare Start-/Installationsbefehle stehen in der [README](../README.md)
 | T-05 | PASS | 38/38 E grün; alle drei Labore und zentrale Fehlversuche über die echte UI |
 | T-06 | PASS | Start, Zwischenstände, Ergebnisse, Fehlerfälle und Tablet-Screenshots; Sichtprüfung unten dokumentiert |
 | T-07 | PASS | README, Fachmodell, Bedienung, Testbericht, sivex.json, Screenshots, grüne Rohberichte und beide reproduzierbaren Release-ZIPs mit SHA-256 |
-| T-08 | HOLD – unverified | Wird nach abgeschlossenem Testlauf mit Commit/Push/PR vervollständigt; kein Merge nach main |
+| T-08 | PASS | [PR #10](https://github.com/sscheidl/SiVex/pull/10), Branch feat/trennlabor, Implementierungscommit 994caa4; sämtliche Quellen, Tests, Bilder und ZIPs gepusht; kein Merge nach main |
 
 ## Sichtprüfung und behobene Defekte
 
