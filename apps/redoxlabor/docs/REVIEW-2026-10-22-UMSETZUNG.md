@@ -51,7 +51,7 @@ Alle Befunde wurden vor der Überarbeitung mit einem eigenen Skript über die ö
 
 - **Neutrale Lupe:** kein Wasserbad mehr hinter dem Reagenzglas, sondern immer der weiße Beobachtungshintergrund; Hinweis „aus dem Wasserbad gehoben betrachtet“.
 - **Bläschen:** einzelne Entgasungsbläschen, die nach dem Aufheizen abklingen (je Glas und im Bad). Weniger Dunst über dem Bad, kein Dauersprudeln.
-- **Sediment:** Cu₂O setzt sich in ruhender Flüssigkeit langsam ab, auch warm. Im heißen Bad hält Konvektion es teilweise in Schwebe; Schütteln oder Umsetzen wirbelt es auf.
+- **Sediment:** Cu₂O setzt sich in ruhender Flüssigkeit langsam ab, auch warm. Im heißen Bad hält Konvektion den Großteil in Schwebe (höchstens 20 % setzen sich ab); Schütteln oder Umsetzen wirbelt es auf.
 
 ### Gleichungen (`js/redox.js`)
 

@@ -338,3 +338,26 @@ table.bal td, table.bal th { border: 1px solid var(--line); padding: 4px 10px; t
 @media (prefers-reduced-motion: reduce) {
   .toast, .drawer, .modal { animation: none; }
 }
+
+/* ---------------------------------------------------------------- GHS-Gefahrstoffkennzeichnung */
+.ghs-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; margin: -2px 0 8px; font-size: 12.5px; }
+.ghs-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); cursor: pointer; min-height: 32px; }
+.ghs-toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+.link-btn { border: 0; background: transparent; color: var(--accent); font-weight: 600; font-size: 12.5px; padding: 6px 0; min-height: 32px; text-decoration: underline; }
+/* ⓘ als Eckabzeichen: verdeckt keinen Text der schmalen Reagenzkacheln */
+.substances.reagents { gap: 9px; padding: 4px 4px 0 0; }
+.reagents .sub-btn .info-btn.badge-corner { top: -8px; right: -8px; bottom: auto; width: 24px; height: 24px; font-size: 12.5px; background: #fff; box-shadow: 0 1px 3px rgba(20, 30, 45, 0.25); z-index: 1; }
+.hazard { border: 1px solid #f0c4c0; background: #fffafa; border-radius: 12px; padding: 10px 12px; margin: 10px 0 4px; }
+.hazard-head { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.hazard-picts { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 4px; }
+.hazard-picts figure, .legend-grid figure { margin: 0; text-align: center; }
+.hazard-picts figcaption { font-size: 11.5px; color: var(--ink-2); max-width: 84px; line-height: 1.2; }
+.ghs-img { display: block; margin: 0 auto; }
+.signal { margin: 6px 0; }
+.sw-danger { color: #b3261e; text-transform: uppercase; letter-spacing: 0.04em; }
+.sw-warn { color: #8a5a00; text-transform: uppercase; letter-spacing: 0.04em; }
+.hsatz { margin: 4px 0 8px; padding-left: 18px; font-size: 14px; line-height: 1.45; }
+.small { font-size: 12px; }
+.legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 10px 0; }
+.legend-grid figcaption { font-size: 13px; line-height: 1.3; margin-top: 4px; }
+.modal.wide { max-width: 760px; }

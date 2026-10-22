@@ -8,7 +8,7 @@ Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fe
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.2.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.2.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.2.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.2.0-web.zip)
+**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.3.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.3.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-web.zip)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
 
@@ -30,15 +30,16 @@ Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefo
 
 ## Release-Pakete
 
-**Aktuell: 1.2.0** – überarbeitet nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22-UMSETZUNG.md), dazu Zucker als Feststoffe und die Rückmeldungen aus dem mebis-Test (siehe [Testbericht](docs/TESTBERICHT.md))
+**Aktuell: 1.3.0** – überarbeitet nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22-UMSETZUNG.md), Zucker als Feststoffe, Rückmeldungen aus dem mebis-Test und GHS-Gefahrstoffkennzeichnung (siehe [Testbericht](docs/TESTBERICHT.md))
 
 | Paket | Verwendung |
 | --- | --- |
-| [`release/redoxlabor-1.2.0-scorm12.zip`](release/redoxlabor-1.2.0-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). |
-| [`release/redoxlabor-1.2.0-web.zip`](release/redoxlabor-1.2.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
+| [`release/redoxlabor-1.3.0-scorm12.zip`](release/redoxlabor-1.3.0-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). |
+| [`release/redoxlabor-1.3.0-web.zip`](release/redoxlabor-1.3.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
 | [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt) | Prüfsummen aller Pakete |
 
 Ältere Fassungen, nur zum Vergleich aufbewahrt:
+- `release/redoxlabor-1.2.0-*.zip` – mit Zuckern, ohne GHS-Kennzeichnung.
 - `release/redoxlabor-1.1.0-*.zip` – überarbeiteter Stand ohne Zucker; in mebis getestet (keine Fehler).
 - `release/redoxlabor-1.0.0-*.zip` – Stand **vor** der Überarbeitung (enthält die Befunde R1–R6); nicht mehr für den Unterricht verwenden.
 
@@ -52,7 +53,7 @@ Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`)
    - Tollens: Silbernitrat → Natronlauge (brauner Niederschlag) → Ammoniaklösung tropfenweise, bis die Lösung klar ist
 3. **Stoffprobe zugeben** – Probenflasche antippen (verdünnte Lösungen). Im Lernmodus stehen zusätzlich vier Zucker als Feststoffe bereit (Glucose, Fructose, Saccharose, Maltose): Eine Spatelspitze wird zugegeben und löst sich beim Schütteln oder Erwärmen.
 4. **Erwärmen** – Heizplatte einschalten (60 °C / 80 °C, Steuerung unten im Bedienfeld), Reagenzglas *Ins Wasserbad* stellen (oder auf das Wasserbad ziehen). Ein Glas im Wasserbad antippen bringt es in den Ständer zurück. Der Gasbrenner liegt unter „Weitere Geräte“ und wird für diese Nachweise nicht gebraucht.
-5. **Beobachten** – in der Lupe, immer vor neutralem, weißem Hintergrund. Ein deutlich sichtbares Nachweisprodukt genügt für einen positiven Befund; für „negativ“ muss der fertig gemischte Ansatz lange genug beobachtet werden.
+5. **Beobachten** – in der Lupe, immer vor neutralem, weißem Hintergrund. Die Reagenzflaschen tragen die GHS-Gefahrenpiktogramme (im Bedienfeld ausblendbar); ⓘ an jeder Reagenzkachel zeigt Signalwort, H-Sätze und Schutzmaßnahmen, „Was bedeuten sie?“ erklärt alle neun Symbole. Ein deutlich sichtbares Nachweisprodukt genügt für einen positiven Befund; für „negativ“ muss der fertig gemischte Ansatz lange genug beobachtet werden.
 6. **Beobachtung festhalten** – Protokoll ausfüllen, auswerten lassen oder Lösung anzeigen. Eingaben bleiben bei unvollständigem Formular erhalten; frühe Einträge werden mit Zeitpunkt als Zwischenstand gespeichert.
 7. **Redox-Trainer** – bei positiven Nachweisen die Redoxgleichungen in sechs Schritten erarbeiten.
 
@@ -86,10 +87,10 @@ Fachliche Einzelheiten: [docs/CHEMIE.md](docs/CHEMIE.md).
 ## Tests
 
 ```bash
-npm test            # 71 Unit-Tests (Node, ohne Abhängigkeiten), u. a. Regressionstests zur Prüfung vom 22.10.2026 und Zucker-Tests
+npm test            # 74 Unit-Tests (Node, ohne Abhängigkeiten), u. a. Regressionstests zur Prüfung vom 22.10.2026 und Zucker-Tests
 npm run build       # statischer Build + Prüfung auf externe Ressourcen/absolute Pfade
 npm install         # einmalig für die Browser-Tests (Playwright)
-npm run test:e2e    # 36 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
+npm run test:e2e    # 38 Browser-Prüfungen, schreibt Screenshots nach docs/screenshots/
 npm run package     # Release-ZIPs der aktuellen Version (Web + SCORM 1.2) nach release/; ältere Versionen bleiben erhalten
 npm run test:scorm  # 9 Prüfungen des SCORM-Pakets mit simuliertem LMS
 ```

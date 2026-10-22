@@ -74,7 +74,7 @@ Modell der Auflösung: Anteil gelöst = min(1, NH₃-Portionen / (2 · AgNO₃-P
 
 **Darstellung des Silberspiegels:** Zunächst färbt kolloidales Silber die Lösung grau. An der benetzten Innenwand entstehen an zufällig verteilten Keimstellen kleine Inseln, die wachsen und zusammenwachsen. Die Schicht endet scharf am Flüssigkeitsspiegel. Der Belag bleibt erhalten, auch wenn danach andere Reagenzien zugegeben werden.
 
-**Handhabung:** Beim Fertigstellen des Reagenzes erscheint der Hinweis „immer frisch ansetzen und nicht aufbewahren“; beim Austauschen eines silberhaltigen Glases „Reste nicht aufbewahren – nach Anweisung der Lehrkraft entsorgen“. Konkrete Entsorgungswege werden bewusst nicht vorgegeben, weil sie von den regionalen Schulregeln abhängen.
+**Handhabung:** Beim Fertigstellen des Reagenzes erscheint der Hinweis „immer frisch ansetzen und nicht aufbewahren“ (vgl. RiSU II – 2.2.5: Aus ammoniakalischer Silbersalzlösung kann explosives Silbernitrid entstehen, Lösungen nach Gebrauch entsorgen); beim Austauschen eines silberhaltigen Glases „Reste nicht aufbewahren – nach Anweisung der Lehrkraft entsorgen“. Konkrete Entsorgungswege werden bewusst nicht vorgegeben, weil sie von den regionalen Schulregeln abhängen.
 
 ## 7. Erwärmen, Bläschen und Siedeverzug
 
@@ -120,6 +120,35 @@ Im Lernmodus stehen in einer zweiten Reihe vier Zucker als **Feststoffe** (Pulve
 
 **Redox-Trainer:** Die allgemeine Gleichung mit R–CHO gilt für die Aldehydgruppe der (offenkettigen) Aldose. Für Glucose zeigt die Musterlösung ein Beispiel mit Gluconsäure und den Glucoson-Hinweis; für Fructose und Maltose einen erklärenden Text statt einer Beispielgleichung.
 
+## 11. Gefahrstoffkennzeichnung (GHS/CLP)
+
+Die Schülerinnen und Schüler sollen die GHS-Kennzeichnung kennenlernen, wie sie auch auf realen Versuchsanleitungen Pflicht ist. Umsetzung in `js/ghs.js`:
+
+- **Labortisch:** kleine amtliche Piktogramme über dem Etikett der Reagenzflaschen. Sie lassen sich über „GHS-Symbole auf den Flaschen“ im Bedienfeld ausblenden (gilt für den Browser-Tab; Voreinstellung „an“, für die Lehrkraft auch per URL-Parameter `?ghs=0`).
+- **Gefahrstoffinfo (ⓘ an jeder Reagenzkachel):** Piktogramme in voller Größe mit Namen, Signalwort, H-Sätze im Wortlaut, Schutzmaßnahmen und Quelle. Das entspricht der RiSU-Regel für kleine Gefäße im Unterricht: Symbole, Signalwort und H-Nummern auf dem Gefäß genügen, wenn der Wortlaut der H-Sätze bekannt ist (RiSU KMK 2023, I – 3.12.1).
+- **Legende „Was bedeuten sie?“:** alle neun GHS-Piktogramme mit Bedeutung in Schülersprache.
+- **Stoffproben:** Die Stoffinfo zeigt die Einstufung des **Reinstoffs** (Vorratsflasche) – ausdrücklich gekennzeichnet, weil die verdünnte Probelösung anders eingestuft sein kann. Auf den Probenflaschen auf dem Labortisch stehen deshalb keine Symbole.
+
+| Stoff (angenommene Form) | Piktogramme | Signalwort | H-Sätze | Quelle |
+| --- | --- | --- | --- | --- |
+| Fehling I (CuSO₄-Lösung, ca. 7 %) | GHS05, GHS09 | Gefahr | H318, H410 | Carl Roth SDB N055 (09.05.2019) |
+| Fehling II (NaOH ca. 10 %, Tartrat) | GHS05 | Gefahr | H290, H314 | Dutscher SDB 2277 (28.09.2021) |
+| Silbernitratlösung 0,1 mol/L | GHS05, GHS09 | Achtung | H290, H315, H319, H410 | Carl Roth SDB 9526 (10.01.2020) |
+| Natronlauge 2 mol/L | GHS05 | Gefahr | H290, H314 | ITW Reagents SDB 182158 (01.06.2023) |
+| Ammoniaklösung 2 mol/L | GHS05 | Gefahr | H315, H318, H412 | Carl Roth SDB 255N (12.06.2025) |
+| Ethanal (Reinstoff) | GHS02, GHS07, GHS08 | Gefahr | H224, H302, H319, H335, H341, H350 | Carl Roth SDB 3004 (04.08.2025) |
+| Propanal (Reinstoff) | GHS02, GHS05, GHS07 | Gefahr | H225, H302+H332, H315, H318, H335 | GESTIS* |
+| Butanal (Reinstoff) | GHS02, GHS07 | Gefahr | H225, H319 | GESTIS* |
+| Propanon, Butanon (Reinstoff) | GHS02, GHS07 | Gefahr | H225, H319, H336, EUH066 | GESTIS* |
+| Pentan-2-on (Reinstoff) | GHS02, GHS07 | Gefahr | H225, H302, H319 | GESTIS* |
+| Glucose, Fructose, Saccharose, Maltose | – | – | – | nicht als gefährlich eingestuft |
+
+\* GESTIS-Stoffdatenbank des IFA, übernommen aus der Stoffbox der deutschsprachigen Wikipedia (Abruf 22.10.2026); vor Verwendung in der Schule mit GESTIS bzw. DEGINTU abgleichen.
+
+**Ethanal:** Ethanal ist inzwischen als krebserzeugend Kategorie 1B (H350) und keimzellmutagen Kategorie 2 (H341) eingestuft – nach der DGUV-Stoffliste auch eine 1-%-Lösung. Nach RiSU (KMK 2023, I – 3.6, Tabelle 3b) ist es in der realen Schule für Schülerversuche nicht zugelassen. Im virtuellen Labor besteht keine Gefährdung; Ethanal bleibt deshalb als Probe erhalten, die Stoffinfo weist auf die reale Einschränkung hin.
+
+**Hinweise:** Das Ätzsymbol bei Silbernitratlösung 0,1 mol/L beruht auf H290 (korrosiv gegenüber Metallen). Bei Ammoniaklösung 2 mol/L entfällt das Ausrufezeichen neben dem Ätzsymbol (Rangfolgeregel, CLP Art. 26). Die Einstufungen hängen vom Produkt und der Ausgabe des Sicherheitsdatenblatts ab; verbindlich sind Etikett, Sicherheitsdatenblatt und Gefährdungsbeurteilung der Schule. Die Piktogramme sind die amtlichen UNECE-Vorlagen von Wikimedia Commons (gemeinfrei) und in die App eingebettet – es wird nichts nachgeladen.
+
 ## Quellen
 
 - University of Strathclyde, Dissertation, Kap. 7 „Studying the Tollens’ test“ (S. 157–168 der Arbeit): Silberspiegel oder Teilspiegel mit überwiegend schwarzem, kolloidalem Silber als positiver Befund; Silberspiegel bzw. Reaktion bei Raumtemperatur für mehrere Substrate. <https://stax.strath.ac.uk/downloads/kh04dq07h?locale=en>
@@ -129,4 +158,7 @@ Im Lernmodus stehen in einer zweiten Reihe vier Zucker als **Feststoffe** (Pulve
 - ITW Reagents (PanReac AppliChem), Produktinformation „Fehling’s A Reagent“: Hauptprodukt von Glucose mit Cu(II) ist Glucoson (2-Ketoglucose), das unter C–C-Spaltung weiter oxidiert wird; Fructose reagiert schneller als Glucose; Reduktion über Endiolat-Ionen. Herstellerangabe ohne Literaturzitat – deshalb in der App als Hinweis formuliert. <https://itwreagents.com/rest-of-world/en/product/fehlingx0027-s-a-reagent-for-clinical-diagnosis/251563>
 - C. A. Lobry de Bruyn, W. Alberda van Ekenstein, Recueil des Travaux Chimiques des Pays-Bas 14 (1895) 203–216: Umlagerung von Glucose, Fructose und Mannose in alkalischer Lösung (Endiol-Zwischenstufe).
 - Boston University, Biochemie-Skript „Carbohydrates“: Saccharose ohne freies anomeres C-Atom (nicht reduzierend), Maltose mit freiem Halbacetal (reduzierend). <https://www.bu.edu/aldolase/biochemistry/html_docs/22_Carbohydrates_25.pdf>
+- Richtlinie zur Sicherheit im Unterricht (RiSU), KMK, Fassung vom 21.09.2023: I – 3.6 Tätigkeitsbeschränkungen (Tabelle 3b), I – 3.12.1 Kennzeichnung, II – 2.2.5 Silbernitrid aus ammoniakalischer Silbersalzlösung. <https://www.kmk.org/fileadmin/veroeffentlichungen_beschluesse/1994/1994_09_09-Sicherheit-im-Unterricht.pdf>
+- Sicherheitsdatenblätter der Reagenzien und von Acetaldehyd: siehe Tabelle in Abschnitt 11.
+- GHS-Piktogramme: Wikimedia Commons, „GHS-pictogram-*.svg“, gemeinfrei (nach UNECE-Vorlagen).
 - NIST Chemistry WebBook, Acetaldehyd: Normalsiedetemperatur 294,0 ± 0,8 K. <https://webbook.nist.gov/cgi/cbook.cgi?ID=C75070&Mask=4&Units=CAL>

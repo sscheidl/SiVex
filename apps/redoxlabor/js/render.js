@@ -480,8 +480,39 @@
         const inUse = op && op.type === 'add' && op.substance === r.id;
         const armed = lab.state.armed && lab.state.armed.id === r.id;
         const hover = pointer.hover && pointer.hover.type === 'reagent' && pointer.hover.id === r.id;
-        drawBottle(x, L.shelf.y - 4, reagentSpec(r.id), inUse, armed ? 1 : hover ? 0.5 : 0);
+        const spec = reagentSpec(r.id);
+        drawBottle(x, L.shelf.y - 4, spec, inUse, armed ? 1 : hover ? 0.5 : 0);
+        if (options.ghs) drawHazardRow(x, L.shelf.y - 4 - 18 - spec.labelH - 4, r.id);
       }
+    }
+
+    // GHS-Piktogramme (amtliche Symbole) als Bilder; werden einmal aus den eingebetteten SVGs erzeugt
+    const options = { ghs: true };
+    const ghsImg = {};
+    function hazardImage(code) {
+      if (!RL.ghs) return null;
+      if (!ghsImg[code]) { ghsImg[code] = new Image(); ghsImg[code].src = RL.ghs.dataUri(code); }
+      return ghsImg[code].complete && ghsImg[code].naturalWidth ? ghsImg[code] : null;
+    }
+    /** Kleine Piktogrammreihe über dem Flaschenetikett (unten = Etikettoberkante). */
+    function drawHazardRow(x, bottom, id) {
+      const lab0 = RL.ghs && RL.ghs.LABELS[id];
+      if (!lab0 || !lab0.pict.length) return;
+      const size = 40, gap = 2; // höchstens zwei Symbole je Reagenzflasche
+      const n = lab0.pict.length;
+      let x0 = x - (n * size + (n - 1) * gap) / 2;
+      ctx.save();
+      for (const code of lab0.pict) {
+        const img = hazardImage(code);
+        if (img) {
+          // weißer Grund, damit das Symbol auch auf der braunen Flasche lesbar bleibt
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.beginPath(); ctx.moveTo(x0 + size / 2, bottom - size + 2); ctx.lineTo(x0 + size - 2, bottom - size / 2); ctx.lineTo(x0 + size / 2, bottom - 2); ctx.lineTo(x0 + 2, bottom - size / 2); ctx.closePath(); ctx.fill();
+          ctx.drawImage(img, x0, bottom - size, size, size);
+        }
+        x0 += size + gap;
+      }
+      ctx.restore();
     }
 
     /** Lage einer Probe auf dem Tisch: Flüssigkeiten in der hinteren Reihe, Zucker davor. */
@@ -811,7 +842,7 @@
         // heißen Wasserbad nur teilweise; Schütteln oder Umsetzen wirbelt es wieder auf.
         const solid = c.cu2o > 0.5;
         const convecting = t.place === 'bath' && c.temp > 50;
-        const settleMax = convecting ? 0.45 : 1;
+        const settleMax = convecting ? 0.2 : 1; // Konvektion hält den Großteil in Schwebe
         if (solid && !pose.moving && !pose.shake) {
           if (v.settle < settleMax) v.settle = Math.min(settleMax, v.settle + dt / (convecting ? 90 : c.temp > 38 ? 50 : 28));
           else v.settle = Math.max(settleMax, v.settle - dt * 0.05);
@@ -1670,7 +1701,7 @@
     }
 
     return {
-      frame, resize, toLogical, toClient, hitTest, anchor, pointer, layout: L,
+      frame, resize, toLogical, toClient, hitTest, anchor, pointer, layout: L, options,
       // Messpunkte für automatisierte Prüfung der Darstellung (Lupe)
       probe() {
         const D = L.detail;

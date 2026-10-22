@@ -32,6 +32,16 @@
     // drafts: Formularentwürfe je Reagenzglas und Generation (nur im Arbeitsspeicher)
     const ds = { tab: 'protocol', formTube: null, lastRecord: null, redoxTest: 'fehling', trainers: {}, formError: '', formMissing: [], drafts: {} };
     let panelSig = '';
+    const GHS_KEY = 'redoxlabor.ghs';
+    function initGhs() {
+      let on = !/[?&]ghs=0/.test(root.location.search);
+      try { const v = root.sessionStorage.getItem(GHS_KEY); if (v != null) on = v === '1'; } catch (e) { /* */ }
+      renderer.options.ghs = on;
+    }
+    function setGhs(on) {
+      renderer.options.ghs = on;
+      try { root.sessionStorage.setItem(GHS_KEY, on ? '1' : '0'); } catch (e) { /* */ }
+    }
     let helpShown = 0, helpSig = '';
 
     // ============================================================ Sitzung
@@ -164,7 +174,7 @@
         tubeHtml = '<p class="muted" style="margin:4px 0 2px">Wähle ein Reagenzglas: Tippe im Ständer darauf oder oben auf eine Nummer.</p>';
       }
       const tabs = st.tubes.map((tb) => `<button type="button" class="tube-tab" data-tube="${tb.id}" aria-pressed="${st.activeTubeId === tb.id}" aria-label="Reagenzglas ${tb.id}">${tubeIcon(tb)}${tb.id}${chem.isObservable(tb.contents) && !lab.recordCurrent(tb) && !tb.contents.bumped ? '<span class="dot-ok" title="Beobachtung möglich"></span>' : ''}</button>`).join('');
-      const reagentBtn = (r) => `<button type="button" class="sub-btn ${st.armed && st.armed.id === r.id ? 'armed' : ''}" data-reagent="${r.id}" ${busy ? 'disabled' : ''} title="${esc(r.name + ' – ' + r.desc)}" aria-label="${esc(r.name)}">${bottleIcon(r.id)}<span>${esc(PANEL_NAME[r.id][0])}</span><small>${esc(PANEL_NAME[r.id][1])}</small></button>`;
+      const reagentBtn = (r) => `<button type="button" class="sub-btn ${st.armed && st.armed.id === r.id ? 'armed' : ''}" data-reagent="${r.id}" ${busy ? 'disabled' : ''} title="${esc(r.name + ' – ' + r.desc)}" aria-label="${esc(r.name)}">${bottleIcon(r.id)}<span>${esc(PANEL_NAME[r.id][0])}</span><small>${esc(PANEL_NAME[r.id][1])}</small><span class="info-btn badge-corner" role="button" tabindex="0" data-hazard="${r.id}" aria-label="Gefahrstoffinfo ${esc(r.name)}" title="Gefahrstoffinfo">i</span></button>`;
       const reagents = REAGENT_GROUPS.map((g) => `<div class="reagent-group"><span class="group-label">${g.title}</span><div class="substances reagents n${g.ids.length}">${g.ids.map((id) => reagentBtn(chem.REAGENT_BY_ID[id])).join('')}</div></div>`).join('');
       const sampleBtn = (s) => {
         const sm = chem.SAMPLE_BY_ID[s.sampleId];
@@ -188,6 +198,7 @@
         </section>
         <section class="card" aria-label="Reagenzien">
           <h3>Reagenzien <small>antippen = zugeben</small></h3>
+          <div class="ghs-bar"><label class="ghs-toggle"><input type="checkbox" data-ghs ${renderer.options.ghs ? 'checked' : ''}> GHS-Symbole auf den Flaschen</label><button type="button" class="link-btn" data-legend="1">Was bedeuten sie?</button></div>
           ${reagents}
         </section>
         <section class="card" aria-label="Stoffproben">
@@ -230,6 +241,10 @@
     panel.addEventListener('click', (e) => {
       const info = e.target.closest('[data-info]');
       if (info) { e.stopPropagation(); showSampleInfo(info.dataset.info); return; }
+      const hz = e.target.closest('[data-hazard]');
+      if (hz) { e.stopPropagation(); showHazard(hz.dataset.hazard); return; }
+      if (e.target.closest('[data-legend]')) { showLegend(); return; }
+      if (e.target.closest('label.ghs-toggle')) return;
       const b = e.target.closest('button');
       if (!b || b.disabled) return;
       if (b.dataset.tube) lab.selectTube(+b.dataset.tube);
@@ -239,10 +254,15 @@
       else if (b.dataset.action) doAction(b.dataset.action);
       refreshLive();
     });
+    panel.addEventListener('change', (e) => {
+      if (e.target.matches('[data-ghs]')) setGhs(e.target.checked);
+    });
     // Strukturinfo ist in die Probenkachel eingebettet: eigene Tastaturbedienung
     panel.addEventListener('keydown', (e) => {
       const info = e.target.closest('[data-info]');
       if (info && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); showSampleInfo(info.dataset.info); }
+      const hz = e.target.closest('[data-hazard]');
+      if (hz && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); showHazard(hz.dataset.hazard); }
     });
 
     function needTube() {
@@ -380,6 +400,7 @@
       if (!b) return;
       const act = b.dataset.m;
       if (act === 'close') closeModal();
+      else if (act === 'legend') { showLegend(); return; }
       else if (act === 'resetBench') { lab.resetBench(); closeModal(); toast('Laboraufbau wurde zurückgesetzt. Das Protokoll bleibt erhalten.'); }
       else if (act === 'fullRestart') { lab.fullRestart(); closeModal(); ds.trainers = {}; ds.formTube = null; ds.lastRecord = null; toast(lab.state.mode === 'analysis' ? 'Neustart: Die Proben A–F wurden neu gemischt.' : 'Neustart durchgeführt.'); }
       else if (act === 'mode') { lab.setMode(b.dataset.mode); closeModal(); ds.trainers = {}; ds.formTube = null; ds.lastRecord = null; syncMode(); toast(b.dataset.mode === 'analysis' ? 'Analysemodus: Untersuche die unbekannten Proben A–F.' : 'Lernmodus: Die Proben sind beschriftet.'); }
@@ -394,6 +415,40 @@
         else if (!helpPop.hidden) toggleHelp(false);
       }
     });
+
+    const pictImg = (code, size) => `<img class="ghs-img" src="${RL.ghs.dataUri(code)}" width="${size}" height="${size}" alt="${esc(code + ' ' + RL.ghs.PICTOGRAMS[code].name)}">`;
+    /** Gefahrstoffkennzeichnung eines Stoffs: Symbole, Signalwort, H-Sätze im Wortlaut, Quelle. */
+    function hazardHtml(id) {
+      const L = RL.ghs && RL.ghs.LABELS[id];
+      if (!L) return '';
+      if (!L.pict.length) return `<div class="hazard"><p class="muted" style="margin:0"><b>GHS:</b> nicht als gefährlicher Stoff eingestuft – keine Gefahrenpiktogramme.</p></div>`;
+      return `<div class="hazard">
+        <div class="hazard-head"><b>${esc(L.form)}</b>${L.pure ? ' <span class="pill">Einstufung des Reinstoffs</span>' : ''}</div>
+        <div class="hazard-picts">${L.pict.map((c) => `<figure>${pictImg(c, 64)}<figcaption>${esc(RL.ghs.PICTOGRAMS[c].name)}</figcaption></figure>`).join('')}</div>
+        <p class="signal">Signalwort: <b class="${L.signal === 'Gefahr' ? 'sw-danger' : 'sw-warn'}">${esc(L.signal)}</b></p>
+        <ul class="hsatz">${L.h.map((h) => `<li><b>${esc(h)}</b> ${esc(RL.ghs.H[h])}</li>`).join('')}</ul>
+        ${L.protect ? `<p><b>Schutzmaßnahmen:</b> ${esc(L.protect)}</p>` : ''}
+        ${L.note ? `<p class="muted">${esc(L.note)}</p>` : ''}
+        ${L.school ? `<div class="note warn" style="margin:8px 0">${esc(L.school)}</div>` : ''}
+        <p class="muted small">Quelle: ${esc(L.source)}. ${esc(RL.ghs.NOTE)}</p>
+      </div>`;
+    }
+    function showHazard(id) {
+      const r = chem.REAGENT_BY_ID[id];
+      showModal(`
+        <h2>${esc(r.name)} <span class="muted">– Gefahrstoffinformation</span></h2>
+        ${hazardHtml(id)}
+        <div class="row end"><button type="button" class="btn" data-m="legend">Alle GHS-Symbole erklärt</button><button type="button" class="btn primary" data-m="close">Schließen</button></div>`);
+    }
+    function showLegend() {
+      const P = RL.ghs.PICTOGRAMS;
+      showModal(`
+        <h2>GHS-Gefahrenpiktogramme</h2>
+        <p class="muted">Die rot umrandeten Rauten kennzeichnen gefährliche Stoffe weltweit einheitlich (GHS, in der EU: CLP-Verordnung). Dazu gehören das <b>Signalwort</b> – „Gefahr“ (schwerwiegend) oder „Achtung“ – und die <b>H-Sätze</b> (Gefahrenhinweise).</p>
+        <div class="legend-grid">${Object.keys(P).map((c) => `<figure>${pictImg(c, 58)}<figcaption><b>${c}</b> ${esc(P[c].name)}<br><span class="muted">${esc(P[c].meaning)}</span></figcaption></figure>`).join('')}</div>
+        <p class="muted small">Amtliche Piktogramme (UNECE), gemeinfrei. In der Schule genügen auf kleinen Gefäßen Symbole, Signalwort und H-Nummern, wenn der Wortlaut der H-Sätze bekannt ist (RiSU I – 3.12.1) – den Wortlaut zeigt die Gefahrstoffinfo (ⓘ) jedes Reagenzes.</p>
+        <div class="row end"><button type="button" class="btn primary" data-m="close">Schließen</button></div>`, 'wide');
+    }
 
     function showSampleInfo(id) {
       const s = chem.SAMPLE_BY_ID[id];
@@ -410,6 +465,7 @@
             <p>${esc(s.structure)}</p>
             ${id === 'glucose' || id === 'fructose' ? '<p class="muted">Glucose und Fructose haben dieselbe Summenformel C₆H₁₂O₆ (Isomere).</p>' : ''}
             ${id === 'saccharose' || id === 'maltose' ? '<p class="muted">Saccharose und Maltose haben dieselbe Summenformel C₁₂H₂₂O₁₁ – entscheidend ist, welche C-Atome glycosidisch verknüpft sind.</p>' : ''}
+            ${hazardHtml(id)}
           </div>
           <div class="row end"><button type="button" class="btn primary" data-m="close">Schließen</button></div>`);
         return;
@@ -430,6 +486,7 @@
             : 'Die Carbonylgruppe steht innerhalb der Kette; das Carbonyl-C-Atom ist mit zwei C-Atomen verbunden und trägt kein H-Atom.'}
           ${id === 'propanal' || id === 'propanon' ? ' Propanal und Propanon haben dieselbe Summenformel C₃H₆O (Isomere).' : ''}
           ${id === 'butanal' || id === 'butanon' ? ' Butanal und Butanon haben dieselbe Summenformel C₄H₈O (Isomere).' : ''}</p>
+          ${hazardHtml(id)}
         </div>
         <div class="row end"><button type="button" class="btn primary" data-m="close">Schließen</button></div>`);
     }
@@ -955,6 +1012,7 @@
     lab.on('observable', () => refreshLive());
 
     load();
+    initGhs();
     syncMode();
     renderPanel();
     setInterval(refreshLive, 250);
