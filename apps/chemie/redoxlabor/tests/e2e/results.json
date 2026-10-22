@@ -1,0 +1,814 @@
+{
+  "date": "2026-10-22T08:36:21.270Z",
+  "browser": "Chromium (Playwright 1.56.1)",
+  "durationSeconds": 167,
+  "passed": 26,
+  "failed": 0,
+  "results": [
+    {
+      "id": "VIS-1",
+      "title": "Unbenutzter Labortisch wird gerendert",
+      "status": "PASS",
+      "seconds": 2,
+      "evidence": {
+        "screenshot": "docs/screenshots/01-labortisch.png",
+        "counts": {
+          "reagents": 5,
+          "samples": 6,
+          "tubes": 4
+        }
+      }
+    },
+    {
+      "id": "C-01/C-02",
+      "title": "Fehling I hellblau, Fehling II farblos (gerenderte Pixel in der Lupe)",
+      "status": "PASS",
+      "seconds": 5,
+      "evidence": {
+        "Fehling I (Reagenzglas 1)": {
+          "h": 207,
+          "s": 0.84,
+          "l": 0.76,
+          "c": 101
+        },
+        "Fehling II (Reagenzglas 2)": {
+          "h": 205,
+          "s": 0.34,
+          "l": 0.95,
+          "c": 9
+        },
+        "screenshot": "docs/screenshots/02-fehling-I-und-II-vor-dem-Mischen.png"
+      }
+    },
+    {
+      "id": "C-03",
+      "title": "Beim Mischen entsteht sichtbar die tiefblaue Fehling-Lösung",
+      "status": "PASS",
+      "seconds": 4,
+      "evidence": {
+        "gemischt": {
+          "h": 229,
+          "s": 0.64,
+          "l": 0.47,
+          "c": 154
+        },
+        "screenshots": [
+          "docs/screenshots/02b-fehling-schichtung-beim-zugeben.png",
+          "docs/screenshots/03-fehling-tiefblau-nach-dem-Mischen.png"
+        ]
+      }
+    },
+    {
+      "id": "E-08a",
+      "title": "Aldehyd zugegeben, nicht erwärmt: Probe sichtbar, Zustand aktualisiert, keine Reaktion",
+      "status": "PASS",
+      "seconds": 6,
+      "evidence": {
+        "zustand": {
+          "place": "rack",
+          "vol": 3,
+          "progress": 0,
+          "temp": 20,
+          "observable": false,
+          "outcome": "unfinished",
+          "phase": "sampleAdded",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "ethanal"
+        },
+        "farbe": {
+          "h": 230,
+          "s": 0.79,
+          "l": 0.4,
+          "c": 161
+        }
+      }
+    },
+    {
+      "id": "N-01/C-05/T-06",
+      "title": "Propanon + Fehling ohne Netzwerk: kein Cu₂O, Lösung bleibt blau",
+      "status": "PASS",
+      "seconds": 23,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 3,
+          "progress": 0,
+          "temp": 80,
+          "observable": true,
+          "outcome": "negative",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "propanon"
+        },
+        "farbe": {
+          "h": 228,
+          "s": 0.61,
+          "l": 0.48,
+          "c": 151
+        },
+        "screenshot": "docs/screenshots/06-fehling-negativ-propanon.png"
+      }
+    },
+    {
+      "id": "F-02/U-02",
+      "title": "Propanal + Fehling nur per Antippen auf dem Labortisch (Touch, Tablet-Querformat)",
+      "status": "PASS",
+      "seconds": 22,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 3,
+          "progress": 0.98,
+          "temp": 80,
+          "observable": true,
+          "outcome": "positive",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "propanal"
+        },
+        "farbe": {
+          "h": 12,
+          "s": 0.53,
+          "l": 0.47,
+          "c": 127
+        },
+        "layout": {
+          "scrollW": 1180,
+          "innerW": 1180,
+          "canvasW": 868,
+          "panelW": 312
+        },
+        "screenshot": "docs/screenshots/09-tablet-querformat-1180x820.png"
+      }
+    },
+    {
+      "id": "E-10",
+      "title": "Korrekt durchgeführter negativer Nachweis wird erfolgreich ausgewertet",
+      "status": "PASS",
+      "seconds": 2,
+      "evidence": {
+        "screenshot": "docs/screenshots/14-protokoll-negativ.png"
+      }
+    },
+    {
+      "id": "T-10",
+      "title": "Keine Anfragen an externe Server",
+      "status": "PASS",
+      "seconds": 0,
+      "evidence": {
+        "anfragen": 9,
+        "extern": 0
+      }
+    },
+    {
+      "id": "U-02b/D-03/U-05",
+      "title": "Gestufte Hilfe per Touch, drei Stufen, kontextabhängig",
+      "status": "PASS",
+      "seconds": 3,
+      "evidence": {
+        "kontextVorher": "Beobachtung möglich",
+        "kontextNachher": "Reagenzglas 3 ist leer",
+        "stufen": [
+          "Hilfe 1 – DenkimpulsWas hat sich im Vergleich zum Beginn verändert?",
+          "Hilfe 2 – KonkretisierungHalte deine Beobachtung fest – Farbe, Trübung, Niederschlag.",
+          "Hilfe 3 – Konkrete AnleitungTippe auf „Beobachtung festhalten“."
+        ],
+        "screenshot": "docs/screenshots/13-hilfe-drei-stufen.png"
+      }
+    },
+    {
+      "id": "F-01/V-03/V-04",
+      "title": "Ethanal + Fehling + Wasserbad: kontinuierlicher Farbumschlag bis ziegelrot mit Trübung",
+      "status": "PASS",
+      "seconds": 15,
+      "evidence": {
+        "endfarbe": {
+          "h": 10,
+          "s": 0.5,
+          "l": 0.46,
+          "c": 116
+        },
+        "farbstufen": 9,
+        "rauheit": {
+          "klareLoesung": 1.27,
+          "vorErwaermen": 1.49,
+          "ende": 3.62
+        },
+        "verlauf": [
+          {
+            "t": 0,
+            "progress": 0,
+            "temp": 22,
+            "h": 230,
+            "s": 0.8,
+            "l": 0.4,
+            "rough": 1.62
+          },
+          {
+            "t": 2,
+            "progress": 0.013,
+            "temp": 56,
+            "h": 229,
+            "s": 0.79,
+            "l": 0.4,
+            "rough": 0.98
+          },
+          {
+            "t": 3.2,
+            "progress": 0.073,
+            "temp": 66,
+            "h": 220,
+            "s": 0.58,
+            "l": 0.49,
+            "rough": 0.85
+          },
+          {
+            "t": 4.6,
+            "progress": 0.185,
+            "temp": 73,
+            "h": 201,
+            "s": 0.45,
+            "l": 0.48,
+            "rough": 3.66
+          },
+          {
+            "t": 6.3,
+            "progress": 0.348,
+            "temp": 76,
+            "h": 120,
+            "s": 0.18,
+            "l": 0.54,
+            "rough": 2.13
+          },
+          {
+            "t": 8.2,
+            "progress": 0.559,
+            "temp": 79,
+            "h": 41,
+            "s": 0.52,
+            "l": 0.55,
+            "rough": 3.51
+          },
+          {
+            "t": 9.7,
+            "progress": 0.73,
+            "temp": 79,
+            "h": 24,
+            "s": 0.57,
+            "l": 0.54,
+            "rough": 4.4
+          },
+          {
+            "t": 11.2,
+            "progress": 0.908,
+            "temp": 80,
+            "h": 15,
+            "s": 0.54,
+            "l": 0.5,
+            "rough": 3.7
+          }
+        ],
+        "screenshots": [
+          "docs/screenshots/04-fehling-positiv-waehrend-Farbumschlag.png",
+          "docs/screenshots/05-fehling-ziegelrot-ausgebildet.png",
+          "docs/screenshots/seq-fehling-ethanal.png"
+        ]
+      }
+    },
+    {
+      "id": "U-06/D-04/D-05",
+      "title": "Beobachtung eintragen und auswerten (positiv)",
+      "status": "PASS",
+      "seconds": 2,
+      "evidence": {
+        "screenshot": "docs/screenshots/12-protokoll-auswertung-positiv.png"
+      }
+    },
+    {
+      "id": "U-07/D-06/D-07",
+      "title": "Redox-Trainer bearbeiten (6 Schritte) und Musterlösung anzeigen",
+      "status": "PASS",
+      "seconds": 5,
+      "evidence": {
+        "schritte": 6,
+        "bilanz": "Atom links rechts R 1 1 C 1 1 H 5 5 O 5 5 Cu 2 2 Ladung 0 0",
+        "screenshots": [
+          "docs/screenshots/10-redox-auswertung.png",
+          "docs/screenshots/10b-redox-musterloesung.png"
+        ]
+      }
+    },
+    {
+      "id": "T-03a",
+      "title": "Keine Laufzeitfehler im Fehling-Ablauf",
+      "status": "PASS",
+      "seconds": 0,
+      "evidence": {
+        "fehler": 0
+      }
+    },
+    {
+      "id": "E-02/Tollens-Vorbereitung",
+      "title": "AgNO₃ → brauner Ag₂O-Niederschlag mit NaOH → klare Lösung durch NH₃",
+      "status": "PASS",
+      "seconds": 13,
+      "evidence": {
+        "AgNO3": {
+          "h": 205,
+          "s": 0.34,
+          "l": 0.95,
+          "c": 9
+        },
+        "nach NaOH": {
+          "h": 27,
+          "s": 0.23,
+          "l": 0.41,
+          "c": 47
+        },
+        "nach 1× NH3": {
+          "h": 27,
+          "s": 0.13,
+          "l": 0.54,
+          "c": 31
+        },
+        "nach 2× NH3": {
+          "h": 204,
+          "s": 0.33,
+          "l": 0.95,
+          "c": 8
+        },
+        "screenshot": "docs/screenshots/07a-tollens-silberoxid-niederschlag.png"
+      }
+    },
+    {
+      "id": "F-04/U-01",
+      "title": "Butanal + Tollens per Drag-and-drop mit der Maus",
+      "status": "PASS",
+      "seconds": 36,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 5,
+          "progress": 0.973,
+          "temp": 60,
+          "observable": true,
+          "outcome": "positive",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 1,
+          "sample": "butanal"
+        },
+        "belag": {
+          "dark": 0.47271509876129897,
+          "mean": 164.3302077000338,
+          "std": 51.52777422034189,
+          "sat": 0.045627405706812146,
+          "aboveDark": 0,
+          "range": 149.63379999999995
+        }
+      }
+    },
+    {
+      "id": "F-03/C-07/C-09/V-05/V-06",
+      "title": "Ethanal + Tollens im Wasserbad: Silberspiegel wächst auf der Innenwand",
+      "status": "PASS",
+      "seconds": 30,
+      "evidence": {
+        "vorher": {
+          "dark": 0.00033478406427854036,
+          "mean": 242.8969609641786,
+          "std": 4.0380591818439955,
+          "sat": 0.03213171911946161,
+          "aboveDark": 0,
+          "range": 14.2808
+        },
+        "ende": {
+          "dark": 0.44928021426180115,
+          "mean": 167.10087037161085,
+          "std": 48.36734640818818,
+          "sat": 0.04271948522003791,
+          "aboveDark": 0,
+          "range": 141.5616
+        },
+        "stufen": 6,
+        "verlauf": [
+          {
+            "t": 0,
+            "progress": 0,
+            "mirror": 0,
+            "dark": 0,
+            "std": 7,
+            "sat": 0.14,
+            "above": 0
+          },
+          {
+            "t": 1.4,
+            "progress": 0.001,
+            "mirror": 0,
+            "dark": 0,
+            "std": 7,
+            "sat": 0.14,
+            "above": 0
+          },
+          {
+            "t": 2.7,
+            "progress": 0.023,
+            "mirror": 0,
+            "dark": 0,
+            "std": 7,
+            "sat": 0.14,
+            "above": 0
+          },
+          {
+            "t": 4,
+            "progress": 0.077,
+            "mirror": 0,
+            "dark": 0,
+            "std": 8,
+            "sat": 0.15,
+            "above": 0
+          },
+          {
+            "t": 5.4,
+            "progress": 0.156,
+            "mirror": 0.02,
+            "dark": 0,
+            "std": 13,
+            "sat": 0.13,
+            "above": 0
+          },
+          {
+            "t": 6.8,
+            "progress": 0.245,
+            "mirror": 0.09,
+            "dark": 0.129,
+            "std": 19,
+            "sat": 0.1,
+            "above": 0
+          },
+          {
+            "t": 8.6,
+            "progress": 0.374,
+            "mirror": 0.26,
+            "dark": 0.572,
+            "std": 25,
+            "sat": 0.08,
+            "above": 0
+          },
+          {
+            "t": 9.9,
+            "progress": 0.463,
+            "mirror": 0.4,
+            "dark": 0.675,
+            "std": 31,
+            "sat": 0.05,
+            "above": 0
+          },
+          {
+            "t": 11.4,
+            "progress": 0.567,
+            "mirror": 0.58,
+            "dark": 0.535,
+            "std": 41,
+            "sat": 0.03,
+            "above": 0
+          },
+          {
+            "t": 12.7,
+            "progress": 0.659,
+            "mirror": 0.73,
+            "dark": 0.479,
+            "std": 50,
+            "sat": 0.04,
+            "above": 0
+          },
+          {
+            "t": 14.2,
+            "progress": 0.766,
+            "mirror": 0.88,
+            "dark": 0.478,
+            "std": 53,
+            "sat": 0.05,
+            "above": 0
+          },
+          {
+            "t": 15.5,
+            "progress": 0.857,
+            "mirror": 0.96,
+            "dark": 0.497,
+            "std": 53,
+            "sat": 0.05,
+            "above": 0
+          },
+          {
+            "t": 16.8,
+            "progress": 0.954,
+            "mirror": 1,
+            "dark": 0.475,
+            "std": 51,
+            "sat": 0.05,
+            "above": 0
+          }
+        ],
+        "screenshots": [
+          "docs/screenshots/07-tollens-beginnende-silberabscheidung.png",
+          "docs/screenshots/08-tollens-silberspiegel-ausgebildet.png",
+          "docs/screenshots/08b-tollens-silberspiegel-im-staender.png",
+          "docs/screenshots/seq-tollens-ethanal.png"
+        ]
+      }
+    },
+    {
+      "id": "N-03",
+      "title": "Ethanal + nur Fehling I + Wasserbad: kein gültiger Nachweis",
+      "status": "PASS",
+      "seconds": 21,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 2,
+          "progress": 0,
+          "temp": 80,
+          "observable": true,
+          "outcome": "invalid",
+          "phase": "observable",
+          "status": "incomplete",
+          "mirror": 0,
+          "sample": "ethanal"
+        },
+        "farbe": {
+          "h": 206,
+          "s": 0.79,
+          "l": 0.77,
+          "c": 95
+        }
+      }
+    },
+    {
+      "id": "N-05",
+      "title": "Ethanal + unvollständiges Tollens-Reagenz (ohne Ammoniak) + Wasserbad: kein Silberspiegel",
+      "status": "PASS",
+      "seconds": 25,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 3,
+          "progress": 0,
+          "temp": 60,
+          "observable": true,
+          "outcome": "invalid",
+          "phase": "observable",
+          "status": "precipitate",
+          "mirror": 0,
+          "sample": "ethanal"
+        }
+      }
+    },
+    {
+      "id": "N-02/C-08",
+      "title": "Butanon + Tollens: kein Silberspiegel",
+      "status": "PASS",
+      "seconds": 32,
+      "evidence": {
+        "zustand": {
+          "place": "bath",
+          "vol": 5,
+          "progress": 0,
+          "temp": 60,
+          "observable": true,
+          "outcome": "negative",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "butanon"
+        },
+        "belag": {
+          "dark": 0.00033478406427854036,
+          "mean": 225.0784802142591,
+          "std": 7.675719144762117,
+          "sat": 0.14428781957378436,
+          "aboveDark": 0,
+          "range": 24.747800000000012
+        },
+        "screenshot": "docs/screenshots/15-tollens-negativ-butanon.png"
+      }
+    },
+    {
+      "id": "N-04",
+      "title": "Ethanal + vollständige Fehling-Lösung ohne Erwärmen: kein abgeschlossener Nachweis",
+      "status": "PASS",
+      "seconds": 33,
+      "evidence": {
+        "zustand": {
+          "place": "rack",
+          "vol": 3,
+          "progress": 0,
+          "temp": 20,
+          "observable": false,
+          "outcome": "unfinished",
+          "phase": "sampleAdded",
+          "status": "ready",
+          "mirror": 0,
+          "sample": "ethanal"
+        },
+        "farbe": {
+          "h": 230,
+          "s": 0.79,
+          "l": 0.4,
+          "c": 160
+        },
+        "wartezeit_s": 25
+      }
+    },
+    {
+      "id": "V-08/T-05",
+      "title": "Layout bei Tablet- und Desktopgrößen (kein horizontales Scrollen, Bedienelemente sichtbar)",
+      "status": "PASS",
+      "seconds": 6,
+      "evidence": {
+        "screenshot": "docs/screenshots/09b-tablet-1024x768.png",
+        "1024x768": {
+          "scrollW": 1024,
+          "innerW": 1024,
+          "canvas": [
+            740,
+            710
+          ],
+          "panel": 284,
+          "btnH": 46,
+          "scene": [
+            740,
+            529
+          ]
+        },
+        "1180x820": {
+          "scrollW": 1180,
+          "innerW": 1180,
+          "canvas": [
+            868,
+            762
+          ],
+          "panel": 312,
+          "btnH": 46,
+          "scene": [
+            868,
+            620
+          ]
+        },
+        "1366x1024": {
+          "scrollW": 1366,
+          "innerW": 1366,
+          "canvas": [
+            1022,
+            966
+          ],
+          "panel": 344,
+          "btnH": 46,
+          "scene": [
+            1022,
+            730
+          ]
+        },
+        "1920x1080": {
+          "scrollW": 1920,
+          "innerW": 1920,
+          "canvas": [
+            1576,
+            1022
+          ],
+          "panel": 344,
+          "btnH": 46,
+          "scene": [
+            1431,
+            1022
+          ]
+        },
+        "1280x800": {
+          "scrollW": 1280,
+          "innerW": 1280,
+          "canvas": [
+            968,
+            742
+          ],
+          "panel": 312,
+          "btnH": 46,
+          "scene": [
+            968,
+            691
+          ]
+        }
+      }
+    },
+    {
+      "id": "U-03/E-09",
+      "title": "Experiment zurücksetzen und erneut durchführen",
+      "status": "PASS",
+      "seconds": 7,
+      "evidence": {
+        "nachReset": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "U-04/D-01/D-02",
+      "title": "Wechsel Lern-/Analysemodus, Proben A–F, neues Mischen beim Neustart",
+      "status": "PASS",
+      "seconds": 2,
+      "evidence": {
+        "lernmodus": [
+          "Ethanal",
+          "Propanal",
+          "Butanal",
+          "Propanon",
+          "Butanon",
+          "Pentan-2-on"
+        ],
+        "analysemodus": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      }
+    },
+    {
+      "id": "V-02/E-07/V-07",
+      "title": "Zugeben und Schütteln sind bewegte Animationen (Pixelmessung über die Zeit)",
+      "status": "PASS",
+      "seconds": 9,
+      "evidence": {
+        "ruhe": 0.056,
+        "pipettenbewegung": [
+          0.42,
+          0.64,
+          0.59,
+          0.46
+        ],
+        "fuellhoehePixel": [
+          0,
+          2,
+          32,
+          38,
+          40
+        ],
+        "schuetteln": [
+          6.01,
+          11.53,
+          12.04,
+          4.92
+        ]
+      }
+    },
+    {
+      "id": "OPT-Siedeverzug",
+      "title": "Optional: Direktes Erhitzen in der Flamme → Siedeverzug + Sicherheitshinweis",
+      "status": "PASS",
+      "seconds": 10,
+      "evidence": {
+        "zustand": {
+          "place": "flame",
+          "vol": 2,
+          "progress": 0,
+          "temp": 131,
+          "observable": true,
+          "outcome": "invalid",
+          "phase": "observable",
+          "status": "ready",
+          "mirror": 0,
+          "sample": null
+        },
+        "screenshots": [
+          "docs/screenshots/11a-siedeverzug.png",
+          "docs/screenshots/11b-sicherheitshinweis.png"
+        ]
+      }
+    },
+    {
+      "id": "D-02b",
+      "title": "Analysemodus: zwei unbekannte Proben untersuchen, vergleichen, einordnen",
+      "status": "PASS",
+      "seconds": 40,
+      "evidence": {
+        "zeilen": [
+          "Probe A negativ – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Propanon (Keton)",
+          "Probe B – positiv – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✓ Butanal (Aldehyd)",
+          "Probe C – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Pentan-2-on (Keton)",
+          "Probe D – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Butanon (Keton)",
+          "Probe E – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Ethanal (Aldehyd)",
+          "Probe F – – – wählen – Aldehyd (reduzierend) kein Aldehyd (Keton) ✗ Propanal (Aldehyd)"
+        ],
+        "screenshot": "docs/screenshots/16-analysemodus-ergebnisuebersicht.png"
+      }
+    }
+  ]
+}

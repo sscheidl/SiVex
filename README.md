@@ -7,7 +7,7 @@ SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftli
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
 | **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/chemie/titration/` | **Ausgewählt**; lauffähiges SCORM-1.2-Release liegt vor, Quellcode-Import ins Repo ausstehend |
-| Redoxlabor – Fehling- und Tollens-Probe | `apps/chemie/redoxlabor/` | In Entwicklung durch Codex / Claude, noch kein Code eingecheckt |
+| [Redoxlabor – Fehling- und Tollens-Probe](apps/chemie/redoxlabor/) | `apps/chemie/redoxlabor/` | **prototype** – Redoxlabor 1.0 (Claude Code), lauffähig im Repo; Test auf Schul-iPads und in mebis ausstehend ([Testbericht](apps/chemie/redoxlabor/docs/TESTBERICHT.md)) |
 | Esterbildung und chemisches Gleichgewicht | `apps/chemie/ester-gleichgewicht/` | In Planung |
 
 Es gibt **keine separate ältere Titrationsversion** im Zielbestand. Die zuvor dokumentierte Codex-Version TitraLab 2 ist verworfen und wurde nicht als Quellcode eingecheckt.
@@ -33,7 +33,10 @@ Siehe [mebis-Konzept](docs/MEBIS.md), [Architektur](docs/ARCHITECTURE.md) und [Q
 
 ## Code-Stand
 
-Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. **Die lauffähigen Dateien von TitraLab 3 (Claude) fehlen auf GitHub noch.** Das SCORM-Release wurde außerhalb des Repositories entpackt und als importierbares Quellcodearchiv aufbereitet; der Import ist ausstehend. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
+Im Repository liegen Projektstruktur, Dokumentation und Manifeste.
+
+- **Redoxlabor 1.0** ist vollständig eingecheckt (Quellcode, Unit- und Browser-Tests, Dokumentation, Screenshots). Start: `apps/chemie/redoxlabor/index.html` öffnen oder `npm start` im App-Verzeichnis. Abnahmestatus: HOLD – nicht verifiziert (offen sind nur der Test auf echten iPads und ein Test mit Lernenden).
+- **Die lauffähigen Dateien von TitraLab 3 (Claude) fehlen auf GitHub noch.** Das SCORM-Release wurde außerhalb des Repositories entpackt und als importierbares Quellcodearchiv aufbereitet; der Import ist ausstehend. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
 
 ## Lizenz
 

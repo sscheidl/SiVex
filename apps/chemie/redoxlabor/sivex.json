@@ -1,12 +1,13 @@
 {
   "id": "chemie/redoxlabor",
   "title": "Virtuelles Redoxlabor",
-  "description": "Fehling- und Tollens-Probe mit Experimentsteuerung und Redoxauswertung.",
+  "description": "Fehling- und Tollens-Probe mit Aldehyden und Ketonen: interaktive Experimentsteuerung, animierte Reaktionen (Cu₂O, Silberspiegel), Protokoll, Analysemodus und Redoxtrainer.",
   "subject": "Chemie",
   "grades": [
     10,
     11,
     12
   ],
-  "status": "planned"
+  "status": "prototype",
+  "entry": "index.html"
 }

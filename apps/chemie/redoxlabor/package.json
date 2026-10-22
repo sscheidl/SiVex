@@ -1,0 +1,17 @@
+{
+  "name": "sivex-redoxlabor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Virtuelles Redoxlabor: Fehling- und Tollens-Probe (statische Webanwendung)",
+  "scripts": {
+    "start": "node scripts/serve.mjs . 8080",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/unit/*.test.js",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "test:all": "npm test && npm run build && npm run test:e2e"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  },
+  "license": "UNLICENSED"
+}
