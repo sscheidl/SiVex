@@ -1,6 +1,6 @@
 # SiVex-Anwendungsvorlage
 
-Neue Experimente unter `apps/<fach>/<slug>/` anlegen.
+Neue Experimente unter `apps/<slug>/` anlegen.
 
 Pflichtdateien für lauffähige Module:
 
