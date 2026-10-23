@@ -1,6 +1,6 @@
 # Redoxlabor: Fehling- und Tollens-Probe
 
-**Status: prototype** (fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); am 23.10.2026 von der Lehrkraft auf einem iPad (Safari, iPadOS 26.6.2, auch Version 1.3.1) sowie in Edge und Firefox unter Windows 11 als funktionsfähig und lesbar bestätigt; einige Grafikfehler werden getrennt behoben – siehe [Testbericht](docs/TESTBERICHT.md))
+**Status: ready** (am 23.10.2026 von der Lehrkraft freigegeben: Version 1.3.1 in mebis auf dem iPad getestet, keine weiteren Tests erforderlich; zuvor fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); am 23.10.2026 von der Lehrkraft auf einem iPad (Safari, iPadOS 26.6.2, auch Version 1.3.1) sowie in Edge und Firefox unter Windows 11 als funktionsfähig und lesbar bestätigt; einige Grafikfehler werden getrennt behoben – siehe [Testbericht](docs/TESTBERICHT.md))
 
 Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fehling- und Tollens-Reagenz selbst an, geben Stoffproben (drei Aldehyde, drei Ketone) zu, erwärmen im Wasserbad, beobachten die Reaktion in einer Lupe, protokollieren und erarbeiten anschließend die Redoxgleichungen.
 
@@ -45,7 +45,7 @@ Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefo
 - `release/redoxlabor-1.1.0-*.zip` – überarbeiteter Stand ohne Zucker; in mebis getestet (keine Fehler).
 - `release/redoxlabor-1.0.0-*.zip` – Stand **vor** der Überarbeitung (enthält die Befunde R1–R6); nicht mehr für den Unterricht verwenden.
 
-Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`); es überträgt keine Noten, Fortschritte oder personenbezogenen Daten. Mit einem simulierten SCORM-1.2-LMS geprüft (eingebettet und im neuen Fenster), **in mebis selbst noch nicht getestet**. Neu erzeugen: `npm run package` (reproduzierbar, gleiche Quelle → identische ZIP-Dateien).
+Das SCORM-Paket meldet sich beim LMS nur an und ab (`LMSInitialize`/`LMSFinish`); es überträgt keine Noten, Fortschritte oder personenbezogenen Daten. Mit einem simulierten SCORM-1.2-LMS geprüft (eingebettet und im neuen Fenster) und **in mebis getestet** (1.1.0; 1.3.1 auch auf dem iPad). Neu erzeugen: `npm run package` (reproduzierbar, gleiche Quelle → identische ZIP-Dateien).
 
 ## Bedienung (Kurzfassung)
 
