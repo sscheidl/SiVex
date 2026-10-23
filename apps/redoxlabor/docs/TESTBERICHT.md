@@ -1,5 +1,21 @@
 # Testbericht und PASS/HOLD-Abnahme – Redoxlabor
 
+## Nachtrag 4 (23.10.2026) – Praxistest auf iPad und Windows-Browsern
+
+**Durch die Lehrkraft (Rückmeldung vom 23.10.2026):** Das Redoxlabor wurde auf einem **iPad mit Safari (iPadOS 26.6.2)** sowie in **Microsoft Edge** und **Mozilla Firefox** (jeweils aktuelle Version unter **Windows 11**) geprüft. Ergebnis: **grundsätzlich funktionsfähig und lauffähig**, alle Abläufe bedienbar, alles erkennbar.
+
+| Gerät / Browser | Ergebnis |
+| --- | --- |
+| iPad, Safari (iPadOS 26.6.2) | **PASS** – bedienbar, Darstellung erkennbar |
+| Windows 11, Edge (aktuell) | **PASS** |
+| Windows 11, Firefox (aktuell) | **PASS** |
+
+**Bekannt:** einige Grafikfehler; sie werden getrennt erfasst und behoben (Einzelheiten folgen).
+
+**Nicht erfasst:** iPad-Modell, ob über mebis („Neues Fenster“) oder direkt als Web-Version gestartet. Ein Test auf verwalteten Schul-iPads und mit einer Lerngruppe steht weiterhin aus.
+
+---
+
 ## Nachtrag 3 (22.10.2026) – GHS-Kennzeichnung und Release 1.3.0
 
 **Umgesetzt:** amtliche GHS-Piktogramme auf den Reagenzflaschen (ein-/ausblendbar), Gefahrstoffinfo (ⓘ) mit Signalwort, H-Sätzen im Wortlaut, Schutzmaßnahmen und Quelle, Legende aller neun Symbole, Reinstoff-Einstufung in der Stoffinfo der Proben, Hinweis zu Ethanal (Carc. 1B; reale Schule: kein Schülerversuch nach RiSU; im virtuellen Labor zulässig). Einstufungen und Quellen: [CHEMIE.md](CHEMIE.md), Abschnitt 11.
