@@ -16,6 +16,22 @@
 
 ---
 
+## Nachtrag 4 (23.10.2026) – Rückmeldungen aus dem iPad-Test, Release 1.3.1
+
+**Rückmeldung der Lehrkraft (iPad, Safari):** (1) Buttons „Ins Wasserbad“ und „Beobachtung festhalten“ ragen über ihren Kasten hinaus; (2) Wunsch nach verschiebbarer Breite zwischen Labor und Bedienfeld; (3) die Wasserbad-Karte bleibt beim Scrollen im Vordergrund.
+
+**Umgesetzt:**
+- Trennlinie zwischen Labortisch und Bedienfeld nach der Vorgabe in `docs/QUALITY.md` (wie TitraLab 3): Maus, Finger (Touch-Fläche 44 px), Pfeiltasten, Doppelklick setzt zurück, Breite nur lokal gemerkt, unter 900 px untereinander. Zusätzlich ein Ziehgriff am linken Rand der Auswertung.
+- Standardbreite des Bedienfelds abhängig von der Displaybreite (272–400 px).
+- Buttons: eigene SVG-Symbole statt ♨/🔥/✎ (auf iPads breite Farb-Emojis), Raster mit `minmax(0, 1fr)`, Anordnung je nach Breite des Bedienfelds ein-, zwei- oder dreispaltig (Container Queries); veraltetes `-webkit-overflow-scrolling` entfernt.
+- Wasserbad-Karte nicht mehr angeheftet (sie verdeckte beim Scrollen die Reagenzien), sondern direkt unter dem Reagenzglas – ohne Scrollen erreichbar.
+
+**Geprüft (Chromium mit Touch-Emulation):** 1024×768, 1080×810, 1180×820 und 1366×1024 – kein Button ragt über seinen Kasten hinaus, weder bei Standardbreite noch nach Ziehen auf breit oder schmal; Trennlinie per Finger verschiebbar; Breite bleibt nach dem Neuladen erhalten; Doppelklick setzt zurück; Auswertung per Ziehgriff verbreiterbar; keine Laufzeitfehler.
+
+**Nicht durchgeführt:** Unit-, Browser- und SCORM-Testsuite (auf Wunsch nicht ausgeführt), erneuter Test auf dem iPad mit Safari.
+
+---
+
 ## Nachtrag 3 (22.10.2026) – GHS-Kennzeichnung und Release 1.3.0
 
 **Umgesetzt:** amtliche GHS-Piktogramme auf den Reagenzflaschen (ein-/ausblendbar), Gefahrstoffinfo (ⓘ) mit Signalwort, H-Sätzen im Wortlaut, Schutzmaßnahmen und Quelle, Legende aller neun Symbole, Reinstoff-Einstufung in der Stoffinfo der Proben, Hinweis zu Ethanal (Carc. 1B; reale Schule: kein Schülerversuch nach RiSU; im virtuellen Labor zulässig). Einstufungen und Quellen: [CHEMIE.md](CHEMIE.md), Abschnitt 11.

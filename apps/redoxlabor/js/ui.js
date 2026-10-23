@@ -13,6 +13,16 @@
   const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a == null ? c[3] : a})`;
   const PLACE = { rack: 'im Ständer', bath: 'im Wasserbad', flame: 'in der Brennerflamme', moving: 'wird umgesetzt' };
   const STORE_KEY = 'redoxlabor.session.v1';
+  // Eigene Symbole als SVG: Zeichen wie ♨ oder 🔥 erscheinen auf iPads als breite Farb-Emojis.
+  const svg = (d) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const ICON = {
+    shake: svg('<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>'),
+    bath: svg('<path d="M3 17c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0"/><path d="M8 4c-1 1.5 1 2.5 0 4M12 4c-1 1.5 1 2.5 0 4M16 4c-1 1.5 1 2.5 0 4"/>'),
+    rack: svg('<path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>'),
+    flame: svg('<path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1.5 1 2 2.5 2 3.5 1-1.5 1.5-4.5 1-7.5z"/>'),
+    replace: svg('<path d="M4 12a8 8 0 0 1 13.7-5.7L20 8"/><path d="M20 3v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.7L4 16"/><path d="M4 21v-5h5"/>'),
+    record: svg('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>')
+  };
   // Kurzname und Zusatz für die Kacheln;   verhindert „Fehling / I“, ­ erlaubt sinnvolle Trennung.
   const PANEL_NAME = {
     fehling1: ['Fehling I', 'CuSO₄-Lsg.'], fehling2: ['Fehling II', 'Tartrat, alkal.'],
@@ -160,15 +170,15 @@
           <div class="phase ${warn ? 'warn' : observable ? 'ok' : ''}" id="phaseBox">Zustand ${ph.index}/${ph.total}: <b>${ph.label}</b>${warn ? '<br>' + esc(warn) : ''}${staleNote}</div>
           <p class="sr-only" id="tubeObs" aria-live="polite">${esc('Sichtbar: ' + chem.describe(c))}</p>
           <div class="actions">
-            <button type="button" class="btn" data-action="shake" ${busy || inFlame || !chem.volume(c) ? 'disabled' : ''}><span class="i">≈</span>Schütteln</button>
+            <button type="button" class="btn" data-action="shake" ${busy || inFlame || !chem.volume(c) ? 'disabled' : ''}>${ICON.shake}<span>Schütteln</span></button>
             ${t.place === 'bath' || inFlame
-              ? `<button type="button" class="btn" data-action="rack" ${busy ? 'disabled' : ''}><span class="i">⇩</span>In den Ständer</button>`
-              : `<button type="button" class="btn" data-action="bath" ${busy ? 'disabled' : ''}><span class="i">♨</span>Ins Wasserbad</button>`}
+              ? `<button type="button" class="btn" data-action="rack" ${busy ? 'disabled' : ''}>${ICON.rack}<span>In den Ständer</span></button>`
+              : `<button type="button" class="btn" data-action="bath" ${busy ? 'disabled' : ''}>${ICON.bath}<span>Ins Wasserbad</span></button>`}
             ${inFlame
-              ? `<button type="button" class="btn" data-action="bath" ${busy ? 'disabled' : ''}><span class="i">♨</span>Ins Wasserbad</button>`
-              : `<button type="button" class="btn" data-action="replace" ${busy ? 'disabled' : ''}><span class="i">⟲</span>Austauschen</button>`}
-            ${st.burner.on && !inFlame ? `<button type="button" class="btn subtle wide" data-action="flame" ${busy ? 'disabled' : ''}><span class="i">🔥</span>In die Flamme halten (nicht empfohlen)</button>` : ''}
-            <button type="button" class="btn ${observable ? 'ok' : 'primary'} wide" data-action="record" ${canRecord ? '' : 'disabled'}><span class="i">✎</span>Beobachtung festhalten</button>
+              ? `<button type="button" class="btn" data-action="bath" ${busy ? 'disabled' : ''}>${ICON.bath}<span>Ins Wasserbad</span></button>`
+              : `<button type="button" class="btn" data-action="replace" ${busy ? 'disabled' : ''}>${ICON.replace}<span>Austauschen</span></button>`}
+            ${st.burner.on && !inFlame ? `<button type="button" class="btn subtle wide" data-action="flame" ${busy ? 'disabled' : ''}>${ICON.flame}<span>In die Flamme halten (nicht empfohlen)</span></button>` : ''}
+            <button type="button" class="btn ${observable ? 'ok' : 'primary'} wide" data-action="record" ${canRecord ? '' : 'disabled'}>${ICON.record}<span>Beobachtung festhalten</span></button>
           </div>`;
       } else {
         tubeHtml = '<p class="muted" style="margin:4px 0 2px">Wähle ein Reagenzglas: Tippe im Ständer darauf oder oben auf eine Nummer.</p>';
@@ -196,15 +206,6 @@
           <div class="tube-tabs">${tabs}</div>
           ${tubeHtml}
         </section>
-        <section class="card" aria-label="Reagenzien">
-          <h3>Reagenzien <small>antippen = zugeben</small></h3>
-          <div class="ghs-bar"><label class="ghs-toggle"><input type="checkbox" data-ghs ${renderer.options.ghs ? 'checked' : ''}> GHS-Symbole auf den Flaschen</label><button type="button" class="link-btn" data-legend="1">Was bedeuten sie?</button></div>
-          ${reagents}
-        </section>
-        <section class="card" aria-label="Stoffproben">
-          <h3>Stoffproben <small>${learn ? 'verdünnte Lösungen' : 'Analysemodus: unbekannt'}</small></h3>
-          ${samples}
-        </section>
         <section class="card devices-card" aria-label="Geräte">
           <div class="devices">
             <div class="device-row"><span>Wasserbad <span class="temp-live" id="bathLive">${Math.round(bath.temp)} °C</span></span>
@@ -216,7 +217,17 @@
               </div>
             </details>
           </div>
-        </section>`;
+        </section>
+        <section class="card" aria-label="Reagenzien">
+          <h3>Reagenzien <small>antippen = zugeben</small></h3>
+          <div class="ghs-bar"><label class="ghs-toggle"><input type="checkbox" data-ghs ${renderer.options.ghs ? 'checked' : ''}> GHS-Symbole auf den Flaschen</label><button type="button" class="link-btn" data-legend="1">Was bedeuten sie?</button></div>
+          ${reagents}
+        </section>
+        <section class="card" aria-label="Stoffproben">
+          <h3>Stoffproben <small>${learn ? 'verdünnte Lösungen' : 'Analysemodus: unbekannt'}</small></h3>
+          ${samples}
+        </section>
+`;
       panel.scrollTop = scrollY;
       if (fk) { const el = panel.querySelector(fk); if (el) el.focus({ preventScroll: true }); }
       panelSig = signature();
@@ -362,6 +373,65 @@
         if (map[target.type]) lab.moveTube(src.id, map[target.type]);
       }
     }
+
+    // ============================================================ Breiten verschieben
+    /**
+     * Ziehgriff für eine Breite (Maus, Finger, Tastatur) wie im TitraLab 3.
+     * Die Breite wird nur im eigenen Browser gemerkt; Doppelklick/-tipp setzt zurück.
+     */
+    function makeResizer(o) {
+      const h = o.handle;
+      if (!h) return;
+      let drag = null;
+      const read = () => { try { return Number(root.localStorage.getItem(o.key)) || 0; } catch (e) { return 0; } };
+      const write = (w) => { try { if (w) root.localStorage.setItem(o.key, String(Math.round(w))); else root.localStorage.removeItem(o.key); } catch (e) { /* ohne Speicher */ } };
+      const set = (w, save) => {
+        const v = Math.round(Math.max(o.min(), Math.min(o.max(), w)));
+        o.apply(v);
+        h.setAttribute('aria-valuenow', String(v));
+        h.setAttribute('aria-valuemin', String(Math.round(o.min())));
+        h.setAttribute('aria-valuemax', String(Math.round(o.max())));
+        if (save) write(v);
+      };
+      const reset = () => { o.apply(null); write(0); h.removeAttribute('aria-valuenow'); };
+      h.addEventListener('pointerdown', (e) => {
+        drag = { id: e.pointerId };
+        try { h.setPointerCapture(e.pointerId); } catch (err) { /* ignorieren */ }
+        h.classList.add('dragging'); document.body.classList.add('resizing');
+        e.preventDefault();
+      });
+      h.addEventListener('pointermove', (e) => { if (drag && drag.id === e.pointerId) set(o.fromPointer(e.clientX), false); });
+      const end = (e) => {
+        if (!drag || drag.id !== e.pointerId) return;
+        drag = null; h.classList.remove('dragging'); document.body.classList.remove('resizing');
+        set(o.fromPointer(e.clientX), true);
+      };
+      h.addEventListener('pointerup', end);
+      h.addEventListener('pointercancel', end);
+      h.addEventListener('dblclick', reset);
+      h.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { set(o.current() + (e.key === 'ArrowLeft' ? 24 : -24), true); e.preventDefault(); }
+        else if (e.key === 'Home') { reset(); e.preventDefault(); }
+      });
+      const saved = read();
+      if (saved) set(saved, false);
+      root.addEventListener('resize', () => { const sv = read(); if (sv) set(sv, false); });
+    }
+    const layoutEl = $('.layout');
+    makeResizer({
+      handle: $('#splitter'), key: 'redoxlabor.panelWidth',
+      min: () => 260, max: () => Math.max(300, Math.min(680, layoutEl.getBoundingClientRect().width - 420)),
+      fromPointer: (x) => layoutEl.getBoundingClientRect().right - x - 6,
+      current: () => panel.getBoundingClientRect().width,
+      apply: (w) => { if (w == null) layoutEl.style.removeProperty('--panel-w'); else layoutEl.style.setProperty('--panel-w', w + 'px'); }
+    });
+    makeResizer({
+      handle: $('#drawerGrip'), key: 'redoxlabor.drawerWidth',
+      min: () => Math.min(360, root.innerWidth), max: () => root.innerWidth,
+      fromPointer: (x) => root.innerWidth - x,
+      current: () => drawer.getBoundingClientRect().width,
+      apply: (w) => { if (w == null) drawer.style.removeProperty('width'); else drawer.style.width = w + 'px'; }
+    });
 
     // ============================================================ Hilfe
     function renderHelp(reset) {
