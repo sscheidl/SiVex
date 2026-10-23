@@ -1,6 +1,6 @@
 # Redoxlabor: Fehling- und Tollens-Probe
 
-**Status: prototype** (fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); am 23.10.2026 von der Lehrkraft auf einem iPad sowie in Edge und Firefox unter Windows 11 als grundsätzlich lauffähig bestätigt; einige Grafikfehler werden getrennt behoben – siehe [Testbericht](docs/TESTBERICHT.md))
+**Status: prototype** (fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); am 23.10.2026 von der Lehrkraft auf einem iPad (Safari, iPadOS 26.6.2) sowie in Edge und Firefox unter Windows 11 als grundsätzlich lauffähig bestätigt; einige Grafikfehler werden getrennt behoben – siehe [Testbericht](docs/TESTBERICHT.md))
 
 Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fehling- und Tollens-Reagenz selbst an, geben Stoffproben (drei Aldehyde, drei Ketone) zu, erwärmen im Wasserbad, beobachten die Reaktion in einer Lupe, protokollieren und erarbeiten anschließend die Redoxgleichungen.
 
@@ -103,7 +103,7 @@ Keine Anmeldung, keine Server, keine externen Dienste, keine Analyse-Skripte. Pr
 
 ## Technische Einschränkungen
 
-- **iPad:** Von der Lehrkraft auf einem iPad im Browser geprüft (23.10.2026): grundsätzlich funktionsfähig, bedienbar und erkennbar. Zusätzlich in Edge und Firefox unter Windows 11 bestätigt. Automatisiert wurde nur Chromium mit Touch-Emulation (1180×820, 1024×768) getestet. Offen: Test auf verwalteten Schul-iPads und mit einer Lerngruppe.
+- **iPad:** Von der Lehrkraft auf einem iPad mit Safari (iPadOS 26.6.2) geprüft (23.10.2026): grundsätzlich funktionsfähig, bedienbar und erkennbar. Zusätzlich in Edge und Firefox unter Windows 11 bestätigt. Automatisiert wurde nur Chromium mit Touch-Emulation (1180×820, 1024×768) getestet. Offen: Test auf verwalteten Schul-iPads und mit einer Lerngruppe.
 - **Grafik:** Einige Grafikfehler sind bekannt und werden getrennt behoben.
 - **mebis/SCORM:** Ein SCORM-1.2-Paket liegt vor und ist mit einem simulierten LMS geprüft; ein Import in einen echten mebis-Kurs ist noch nicht getestet.
 - **Zeitraffer:** Im Wasserbad laufen die Reaktionen in 10–25 s statt in Minuten ab; die Tollens-Probe setzt bei Raumtemperatur langsam (einige Minuten) ein. Zeiten und Farbverlauf sind modelliert, keine Messdaten. Mengen sind abstrakte „Portionen“ – die Anwendung ist keine Herstellungs- oder Dosieranleitung.

@@ -2,17 +2,17 @@
 
 ## Nachtrag 4 (23.10.2026) – Praxistest auf iPad und Windows-Browsern
 
-**Durch die Lehrkraft (Rückmeldung vom 23.10.2026):** Das Redoxlabor wurde auf einem **iPad im Browser** sowie in **Microsoft Edge** und **Mozilla Firefox** (jeweils aktuelle Version unter **Windows 11**) geprüft. Ergebnis: **grundsätzlich funktionsfähig und lauffähig**, alle Abläufe bedienbar, alles erkennbar.
+**Durch die Lehrkraft (Rückmeldung vom 23.10.2026):** Das Redoxlabor wurde auf einem **iPad mit Safari (iPadOS 26.6.2)** sowie in **Microsoft Edge** und **Mozilla Firefox** (jeweils aktuelle Version unter **Windows 11**) geprüft. Ergebnis: **grundsätzlich funktionsfähig und lauffähig**, alle Abläufe bedienbar, alles erkennbar.
 
 | Gerät / Browser | Ergebnis |
 | --- | --- |
-| iPad, Browser | **PASS** – bedienbar, Darstellung erkennbar |
+| iPad, Safari (iPadOS 26.6.2) | **PASS** – bedienbar, Darstellung erkennbar |
 | Windows 11, Edge (aktuell) | **PASS** |
 | Windows 11, Firefox (aktuell) | **PASS** |
 
 **Bekannt:** einige Grafikfehler; sie werden getrennt erfasst und behoben (Einzelheiten folgen).
 
-**Nicht erfasst:** iPad-Modell, iPadOS- und Browserversion, ob über mebis („Neues Fenster“) oder direkt als Web-Version gestartet. Ein Test auf verwalteten Schul-iPads und mit einer Lerngruppe steht weiterhin aus.
+**Nicht erfasst:** iPad-Modell, ob über mebis („Neues Fenster“) oder direkt als Web-Version gestartet. Ein Test auf verwalteten Schul-iPads und mit einer Lerngruppe steht weiterhin aus.
 
 ---
 
