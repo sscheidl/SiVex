@@ -7,6 +7,7 @@ apps/
   titration/
     titralab3/        # geplanter Import des Claude-V3-Releases
   redoxlabor/
+  trennlabor/         # klassische Trennverfahren, Chromatographie, Destillation (Jgst. 8/9)
   ester-gleichgewicht/
   _template/
 docs/
@@ -20,6 +21,7 @@ Verzeichnisse werden **nach Experiment**, nicht nach Fach oder Jahrgangsstufe an
 - Eine Anwendung pro Experiment; unabhängig entwickelbar, testbar und verteilbar.
 - **TitraLab 3 von Claude** ist die einzige gewählte Titrationsversion. TitraLab 2 wird nicht verwendet.
 - Redoxlabor: Implementierung durch Codex / Claude, anschließend Review und Import.
+- Trennlabor: Implementierung durch Claude Code nach dem Muster des Redoxlabors (DOM-freie Fachmodelle, Canvas-Renderer, Unit-/Browser-/SCORM-Tests).
 - Browseranwendungen laufen nach Möglichkeit statisch ohne externes Backend.
 - SCORM-1.2-Pakete werden für mebis erstellt und separat getestet.
 - `ready` setzt fachliche und gerätespezifische Freigabe voraus.
