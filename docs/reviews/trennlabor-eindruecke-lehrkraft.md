@@ -24,6 +24,22 @@ Ein erneuter Klick oder Tap auf ein Arbeitsgerät bzw. Gefäß **entfernt es wie
 
 *Noch festzulegen:* das Verhalten bei benutztem oder gefülltem Gerät (z. B. Becherglas mit Filtrat).
 
+### G-03 Flüssigkeiten und Glas wie im TitraLab 3
+
+Das Titrierlabor (TitraLab 3) hat die überzeugendste Flüssigkeitsdarstellung: Tropfen, Lösungen mit **Meniskus** (z. B. im Erlenmeyerkolben) und eine sehr elegante Darstellung der **Glasgefäße**. Diese Darstellung ist Vorbild für alle drei Trenn-Apps.
+
+*Fundort:* Release `apps/titration/release/SiVex-Titration-Claude-v3-web.zip`, darin `titration/js/view/lab-renderer.js` (Gefäße, Flüssigkeit, Meniskus, Tropfen) und `titration/js/view/geometry.js`. Der Quellcode ist noch nicht entpackt eingecheckt; das TitraLab selbst bleibt unverändert.
+
+### G-04 Verschiebbare Trennlinie zwischen Labor und Bedienfeld
+
+Wie im TitraLab 3: Die linke Hälfte (virtuelles Labor) und die rechte Hälfte (Einstellungen) lassen sich mit einer Trennlinie **dynamisch horizontal verschieben**, sodass jeder die Breiten selbst einstellen kann.
+
+*Fundort:* `titration/js/ui/app.js` (`bindSplitter`) und `titration/css/styles.css` (`.splitter`): bedienbar mit Maus, Finger (44 px breite Touch-Fläche) und Tastatur; auf schmalen Bildschirmen ausgeblendet.
+
+## Geräte- und Browsertests anderer SiVex-Apps (Bezugspunkt)
+
+Rückmeldung der Lehrkraft vom 23.10.2026: Redoxlabor und TitraLab 3 laufen auf einem **iPad im Browser** sowie in **Edge** und **Firefox** (jeweils aktuelle Version, Windows 11); alles ist bedienbar und erkennbar. Das Redoxlabor hat noch einige Grafikfehler, die getrennt behoben werden. Die Trenn-Apps sollen dieselbe Gerätebreite abdecken.
+
 ## Einzelbeobachtungen je App
 
 *(wird ergänzt)*

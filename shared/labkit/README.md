@@ -46,3 +46,10 @@ Ausgangsmaterial für den Baukasten. Welche Umsetzung jeweils übernommen wird, 
 | Testhilfen | `tests/unit/helpers.js`, `tests/e2e/zip.mjs`, Mock-LMS in `tests/e2e/scorm.mjs` | `tests/unit/helpers.js`, Mock-LMS in `tests/e2e/scorm.mjs` |
 
 Die Build- und Paketskripte beider Fassungen gehen auf die des Redoxlabors zurück. Das Redoxlabor selbst bleibt unverändert.
+
+## Gestalterische Vorbilder
+
+- **Flüssigkeiten, Tropfen, Meniskus, Glasgefäße:** TitraLab 3 (`apps/titration/release/SiVex-Titration-Claude-v3-web.zip` → `titration/js/view/lab-renderer.js`, `geometry.js`)
+- **Verschiebbare Trennlinie Labor | Bedienfeld:** TitraLab 3 (`titration/js/ui/app.js` → `bindSplitter`, `titration/css/styles.css` → `.splitter`)
+
+Siehe [Eindrücke der Lehrkraft](../../docs/reviews/trennlabor-eindruecke-lehrkraft.md), G-03 und G-04.
