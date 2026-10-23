@@ -38,7 +38,7 @@ Wie im TitraLab 3: Die linke Hälfte (virtuelles Labor) und die rechte Hälfte (
 
 ## Geräte- und Browsertests anderer SiVex-Apps (Bezugspunkt)
 
-Rückmeldung der Lehrkraft vom 23.10.2026: Redoxlabor und TitraLab 3 laufen auf einem **iPad im Browser** sowie in **Edge** und **Firefox** (jeweils aktuelle Version, Windows 11); alles ist bedienbar und erkennbar. Das Redoxlabor hat noch einige Grafikfehler, die getrennt behoben werden. Die Trenn-Apps sollen dieselbe Gerätebreite abdecken.
+Rückmeldung der Lehrkraft vom 23.10.2026: Redoxlabor und TitraLab 3 laufen auf einem **iPad mit Safari (iPadOS 26.6.2)** sowie in **Edge** und **Firefox** (jeweils aktuelle Version, Windows 11); alles ist bedienbar und erkennbar. Das Redoxlabor hat noch einige Grafikfehler, die getrennt behoben werden. Die Trenn-Apps sollen dieselbe Gerätebreite abdecken.
 
 ## Einzelbeobachtungen je App
 
