@@ -1,10 +1,31 @@
 # Testbericht und PASS/HOLD-Abnahme – Redoxlabor
 
+## Nachtrag 7 (23.10.2026) – mebis-Test 1.3.1, Freigabe
+
+**Durch die Lehrkraft:** `redoxlabor-1.3.1-scorm12.zip` wurde in mebis getestet und läuft auf dem iPad. Die Lehrkraft hält **keine weiteren Tests für erforderlich**; damit entfallen der Unterrichtstest mit einer Lerngruppe (D-08) und der gesonderte Test auf verwalteten Schul-iPads.
+
+**Aktueller Stand der PASS/HOLD-Abnahme** (ersetzt die Übersicht aus Nachtrag 6):
+
+| Prüfbereich | Ergebnis |
+| --- | --- |
+| Chemische Korrektheit (C-01 – C-11) | **PASS** |
+| Experimentelle Interaktivität (E-01 – E-10) | **PASS** |
+| Grafische Qualität (V-01 – V-08) | **PASS** – einzelne bekannte Grafikfehler werden getrennt behoben |
+| Didaktische Funktionen (D-01 – D-08) | **PASS** – D-01 bis D-07 geprüft; D-08 (Test mit Lerngruppe) durch die Lehrkraft für nicht erforderlich erklärt |
+| Technische Qualität (T-01 – T-10) | **PASS** – mebis-Test mit 1.3.1 auf dem iPad, iPad-Gerätetest (Safari, iPadOS 26.6.2), Edge und Firefox unter Windows 11 |
+| **Gesamtprojekt** | **PASS – freigegeben**, Status `ready` |
+
+**Nicht erfasst:** iPad-Modell und Darstellungseinstellung in mebis beim Test von 1.3.1.
+
+**Bekannt:** einige Grafikfehler (siehe Nachtrag 5); sie sind kein Hinderungsgrund für die Freigabe und werden getrennt behoben.
+
+---
+
 ## Nachtrag 6 (23.10.2026) – iPad bestätigt für 1.3.1, aktueller Gesamtstatus
 
 **Durch die Lehrkraft:** Auch Version **1.3.1** (mit verschiebbarer Trennlinie und überarbeitetem Bedienfeld) ist auf dem iPad mit Safari **funktionsfähig und lesbar**. Die Rückmeldung gilt für alle bisher erstellten SiVex-Labore (Redoxlabor und TitraLab 3).
 
-**Aktueller Stand der PASS/HOLD-Abnahme** (ersetzt die Übersicht des ursprünglichen Berichts vom 22.10.2026 weiter unten):
+**Stand der PASS/HOLD-Abnahme nach Nachtrag 6** (überholt durch Nachtrag 7; ersetzte die Übersicht des ursprünglichen Berichts vom 22.10.2026 weiter unten):
 
 | Prüfbereich | Ergebnis |
 | --- | --- |
