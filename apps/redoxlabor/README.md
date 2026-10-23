@@ -1,6 +1,6 @@
 # Redoxlabor: Fehling- und Tollens-Probe
 
-**Status: prototype** (fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); Test auf echten Schul-iPads und in mebis steht noch aus – siehe [Testbericht](docs/TESTBERICHT.md))
+**Status: prototype** (fachlich und im Desktop-Browser geprüft, nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22.md) überarbeitet – siehe [Umsetzung](docs/REVIEW-2026-10-22-UMSETZUNG.md); am 23.10.2026 von der Lehrkraft auf einem iPad (Safari, iPadOS 26.6.2, auch Version 1.3.1) sowie in Edge und Firefox unter Windows 11 als funktionsfähig und lesbar bestätigt; einige Grafikfehler werden getrennt behoben – siehe [Testbericht](docs/TESTBERICHT.md))
 
 Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fehling- und Tollens-Reagenz selbst an, geben Stoffproben (drei Aldehyde, drei Ketone) zu, erwärmen im Wasserbad, beobachten die Reaktion in einer Lupe, protokollieren und erarbeiten anschließend die Redoxgleichungen.
 
@@ -8,7 +8,7 @@ Virtuelles Chemielabor für die Jahrgangsstufe 10 (NTG). Die Lernenden setzen Fe
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.3.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.3.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-web.zip)
+**[⬇ SCORM-1.2-Paket für mebis (redoxlabor-1.3.1-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-scorm12.zip)** · [⬇ Web-Version (redoxlabor-1.3.1-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-web.zip)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
 
@@ -30,12 +30,14 @@ Empfohlene Browser: aktuelle Versionen von Safari (iPadOS), Chrome, Edge, Firefo
 
 ## Release-Pakete
 
-**Aktuell: 1.3.0** – überarbeitet nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22-UMSETZUNG.md), Zucker als Feststoffe, Rückmeldungen aus dem mebis-Test und GHS-Gefahrstoffkennzeichnung (siehe [Testbericht](docs/TESTBERICHT.md))
+**Aktuell: 1.3.1** – Rückmeldungen aus dem iPad-Test: Trennlinie zwischen Labortisch und Bedienfeld sowie Rand der Auswertung mit Finger, Maus oder Tastatur verschiebbar (Doppelklick: Standardbreite), Standardbreite passt sich dem Display an, Buttons passen immer in ihren Kasten (ein- bis dreispaltig je nach Breite, eigene Symbole statt Emoji-Zeichen), Wasserbad-Karte direkt unter dem Reagenzglas statt angeheftet.
+
+**1.3.0** – überarbeitet nach der [Prüfung vom 22.10.2026](docs/REVIEW-2026-10-22-UMSETZUNG.md), Zucker als Feststoffe, Rückmeldungen aus dem mebis-Test und GHS-Gefahrstoffkennzeichnung (siehe [Testbericht](docs/TESTBERICHT.md))
 
 | Paket | Verwendung |
 | --- | --- |
-| [`release/redoxlabor-1.3.0-scorm12.zip`](release/redoxlabor-1.3.0-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). |
-| [`release/redoxlabor-1.3.0-web.zip`](release/redoxlabor-1.3.0-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
+| [`release/redoxlabor-1.3.1-scorm12.zip`](release/redoxlabor-1.3.1-scorm12.zip) | **mebis/Moodle:** im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ wählen (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). |
+| [`release/redoxlabor-1.3.1-web.zip`](release/redoxlabor-1.3.1-web.zip) | **Webserver:** entpacken und den Ordner `redoxlabor/` per HTTPS bereitstellen, oder lokal `redoxlabor/index.html` öffnen. |
 | [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt) | Prüfsummen aller Pakete |
 
 Ältere Fassungen, nur zum Vergleich aufbewahrt:
@@ -103,7 +105,8 @@ Keine Anmeldung, keine Server, keine externen Dienste, keine Analyse-Skripte. Pr
 
 ## Technische Einschränkungen
 
-- **iPad:** Touch-Bedienung und Tablet-Layout sind in Chromium mit Touch-Emulation (1180×820, 1024×768) geprüft, aber **nicht auf einem echten iPad mit Safari**. Dieser Gerätetest ist offen.
+- **iPad:** Von der Lehrkraft auf einem iPad mit Safari (iPadOS 26.6.2) geprüft (23.10.2026, auch Version 1.3.1): funktionsfähig, bedienbar und lesbar. Zusätzlich in Edge und Firefox unter Windows 11 bestätigt. Automatisiert wurde nur Chromium mit Touch-Emulation (1180×820, 1024×768) getestet. Offen: Test auf verwalteten Schul-iPads und mit einer Lerngruppe.
+- **Grafik:** Einige Grafikfehler sind bekannt und werden getrennt behoben.
 - **mebis/SCORM:** Ein SCORM-1.2-Paket liegt vor und ist mit einem simulierten LMS geprüft; ein Import in einen echten mebis-Kurs ist noch nicht getestet.
 - **Zeitraffer:** Im Wasserbad laufen die Reaktionen in 10–25 s statt in Minuten ab; die Tollens-Probe setzt bei Raumtemperatur langsam (einige Minuten) ein. Zeiten und Farbverlauf sind modelliert, keine Messdaten. Mengen sind abstrakte „Portionen“ – die Anwendung ist keine Herstellungs- oder Dosieranleitung.
 - **Darstellung:** 2,5D-Canvas-Grafik statt physikalischer Strömungs- oder Lichtsimulation; das Absetzen von Cu₂O und die Verteilung des Silbers (Film/fein verteilt) sind vereinfacht. Der Siedeverzug in der Flamme ist ein geskriptetes Lernszenario.

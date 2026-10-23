@@ -23,9 +23,9 @@
     </div>
     <nav class="top-actions" aria-label="Werkzeuge">
       <button type="button" id="btnHelp" class="tb"><span class="ic">?</span><span class="lbl">Hilfe</span></button>
-      <button type="button" id="btnEval" class="tb"><span class="ic">✎</span><span class="lbl">Auswertung</span><span class="badge" id="evalBadge" hidden>0</span></button>
+      <button type="button" id="btnEval" class="tb"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span><span class="lbl">Auswertung</span><span class="badge" id="evalBadge" hidden>0</span></button>
       <button type="button" id="btnRedox" class="tb"><span class="ic">e⁻</span><span class="lbl">Redox-Trainer</span></button>
-      <button type="button" id="btnRestart" class="tb"><span class="ic">↺</span><span class="lbl">Neustart</span></button>
+      <button type="button" id="btnRestart" class="tb"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5"/><path d="M4 3v5.5h5.5"/></svg></span><span class="lbl">Neustart</span></button>
     </nav>
   </header>
 
@@ -39,11 +39,13 @@
         <div class="help-foot"><button type="button" id="helpMore" class="btn primary">Hilfe 1 – Denkimpuls</button></div>
       </div>
     </section>
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" tabindex="0" aria-controls="panel" aria-label="Breite des Bedienfelds ändern" title="Ziehen, um die Breite zu ändern · Doppelklick: Standard"><span class="grip"></span></div>
     <aside class="panel" id="panel" aria-label="Bedienfeld"></aside>
   </main>
 
   <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
   <section class="drawer" id="drawer" hidden aria-label="Auswertung">
+    <div class="drawer-grip" id="drawerGrip" role="separator" aria-orientation="vertical" tabindex="0" aria-label="Breite der Auswertung ändern" title="Ziehen, um die Breite zu ändern · Doppelklick: Standard"><span class="grip"></span></div>
     <header class="drawer-head">
       <div class="tabs" role="tablist">
         <button type="button" role="tab" data-tab="protocol">Protokoll</button>

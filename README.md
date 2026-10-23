@@ -6,8 +6,9 @@ SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftli
 
 | Anwendung | Verzeichnis | Status |
 | --- | --- | --- |
-| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/titration/` | **Ausgewählt**; läuft in mebis. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip). Import als entpackter Quellcode ausstehend |
-| [Redoxlabor – Fehling- und Tollens-Probe](apps/redoxlabor/) | `apps/redoxlabor/` | **prototype** – Redoxlabor 1.3 (Claude Code; überarbeitet nach Prüfung vom 22.10.2026, Zucker als Feststoffe, GHS-Kennzeichnung), Quellcode im Repo. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-web.zip) · [Testbericht](apps/redoxlabor/docs/TESTBERICHT.md) |
+| **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/titration/` | **Ausgewählt**; läuft in mebis, auf dem iPad (Safari, iPadOS 26.6.2) sowie in Edge und Firefox (Windows 11) getestet. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip). Import als entpackter Quellcode ausstehend |
+| [Redoxlabor – Fehling- und Tollens-Probe](apps/redoxlabor/) | `apps/redoxlabor/` | **prototype** – Redoxlabor 1.3.1 (Claude Code; überarbeitet nach Prüfung vom 22.10.2026, Zucker als Feststoffe, GHS-Kennzeichnung, Bedienfeld nach iPad-Test verschiebbar), Quellcode im Repo. Auf dem iPad (Safari, iPadOS 26.6.2, auch 1.3.1) funktionsfähig und lesbar, ebenso in Edge und Firefox (Windows 11); einzelne Grafikfehler werden getrennt behoben. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-web.zip) · [Testbericht](apps/redoxlabor/docs/TESTBERICHT.md) |
+| [Trennlabor – Stofftrennung](apps/trennlabor/) | `apps/trennlabor/` | **prototype** – Trennlabor 1.0 (Claude Code): klassische Trennverfahren (K-01–K-05), Papierchromatographie, Destillation Ethanol/Wasser; Jgst. 8/9, Quellcode mit Tests. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/trennlabor/release/trennlabor-1.0.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/trennlabor/release/trennlabor-1.0.0-web.zip) · [Testbericht](apps/trennlabor/docs/TESTBERICHT.md) |
 | [Trennverfahren – Stoffgemische trennen](apps/trennverfahren/) | `apps/trennverfahren/` | In Planung – Aufteilung des Trennlabors ([Begründung](docs/decisions/2026-10-23-trennlabor-aufteilung.md)) |
 | [Papierchromatographie](apps/chromatographie/) | `apps/chromatographie/` | In Planung – Aufteilung des Trennlabors |
 | [Destillation Ethanol/Wasser](apps/destillation/) | `apps/destillation/` | In Planung – Aufteilung des Trennlabors |
@@ -20,7 +21,12 @@ Es gibt **keine separate ältere Titrationsversion** im Zielbestand. Die zuvor d
 | TitraLab 3 – Säure-Base-Titration | Redoxlabor – Fehling- und Tollens-Probe |
 | --- | --- |
 | [![TitraLab 3](apps/titration/docs/titralab3-screenshot.png)](apps/titration/) | [![Redoxlabor](apps/redoxlabor/docs/screenshots/01-labortisch.png)](apps/redoxlabor/) |
-| **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip) | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-web.zip) |
+| **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip) | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-web.zip) |
+
+| Trennlabor – Stofftrennung |
+| --- |
+| [![Trennlabor](apps/trennlabor/docs/screenshots/01-startansicht.png)](apps/trennlabor/) |
+| **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/trennlabor/release/trennlabor-1.0.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/trennlabor/release/trennlabor-1.0.0-web.zip) |
 
 ## Aufbau
 
@@ -43,7 +49,7 @@ Siehe [mebis-Konzept](docs/MEBIS.md), [Architektur](docs/ARCHITECTURE.md) und [Q
 
 ## Code-Stand
 
-Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. Die SCORM-1.2-Pakete liegen jeweils im Ordner `release/` der Anwendung: TitraLab 3 unter [`apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip`](apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip), das Redoxlabor unter [`apps/redoxlabor/release/`](apps/redoxlabor/release/). Das Redoxlabor ist zusätzlich als Quellcode mit Tests eingecheckt; bei TitraLab 3 steht der Import als entpackter Quellcode noch aus. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
+Im Repository liegen derzeit Projektstruktur, Dokumentation und Manifeste. Die SCORM-1.2-Pakete liegen jeweils im Ordner `release/` der Anwendung: TitraLab 3 unter [`apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip`](apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip), das Redoxlabor unter [`apps/redoxlabor/release/`](apps/redoxlabor/release/). Das Trennlabor liegt unter [`apps/trennlabor/release/`](apps/trennlabor/release/). Redoxlabor und Trennlabor sind zusätzlich als Quellcode mit Tests eingecheckt; bei TitraLab 3 steht der Import als entpackter Quellcode noch aus. Die Herkunft aus dem SCORM-Release ist beim Import zu kennzeichnen.
 
 ## Lizenz
 

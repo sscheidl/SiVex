@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-22T21:19:11.968Z",
+  "package": "trennlabor-1.0.0-scorm12.zip",
+  "browser": "msedge",
+  "passed": 10,
+  "failed": 0,
+  "results": [
+    {
+      "id": "SCORM-1",
+      "status": "PASS",
+      "detail": "imsmanifest.xml im Paketstamm, SCORM 1.2, SCO mit Startpunkt index.html"
+    },
+    {
+      "id": "SCORM-2",
+      "status": "PASS",
+      "detail": "Manifest listet alle 15 Dateien des Pakets"
+    },
+    {
+      "id": "SCORM-3",
+      "status": "PASS",
+      "detail": "alle 13 Verweise in index.html relativ und im Paket vorhanden, keine externen Ressourcen"
+    },
+    {
+      "id": "WEB-1",
+      "status": "PASS",
+      "detail": "Web-ZIP enthält dieselben 15 Laufzeitdateien im Ordner trennlabor/"
+    },
+    {
+      "id": "SCORM-4",
+      "status": "PASS",
+      "detail": "iframe: API gefunden, LMSInitialize erfolgreich"
+    },
+    {
+      "id": "SCORM-5",
+      "status": "PASS",
+      "detail": "iframe: alle drei Labore bedienbar (K-01 gelöst, Grün in 2 Zonen, Destillat), 0 Laufzeitfehler"
+    },
+    {
+      "id": "SCORM-6",
+      "status": "PASS",
+      "detail": "iframe: LMSFinish genau einmal beim Verlassen"
+    },
+    {
+      "id": "SCORM-7",
+      "status": "PASS",
+      "detail": "iframe: keine Noten, Fortschritte oder personenbezogenen Daten (Aufrufe: LMSInitialize, LMSFinish)"
+    },
+    {
+      "id": "SCORM-8",
+      "status": "PASS",
+      "detail": "neues Fenster: API über window.opener gefunden, alle Labore bedienbar, LMSFinish beim Schließen, keine Datenübertragung"
+    },
+    {
+      "id": "SCORM-9",
+      "status": "PASS",
+      "detail": "ohne LMS: Adapter inaktiv, App läuft normal"
+    }
+  ]
+}
