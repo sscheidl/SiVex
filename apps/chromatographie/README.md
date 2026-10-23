@@ -15,14 +15,16 @@ Grundlage ist Abschnitt 3B des [Masterauftrags](../../prompts/trennlabor-v1.0-cl
 
 ## Ausgangsmaterial
 
-Welche Fassung die Basis wird, wird nach dem [Codex-Review](../../prompts/trennlabor-review-codex.md) und dem Praxistest in mebis entschieden. Pfade jeweils unter `apps/trennlabor/`:
+Übernommen wird **bausteinweise**, was korrekt ist, gefällt und funktioniert; Fehlendes wird geändert oder ergänzt (siehe [Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md), Punkt 4). Grundlage sind das [Codex-Review](../../prompts/trennlabor-review-codex.md) und die [Eindrücke der Lehrkraft](../../docs/reviews/trennlabor-eindruecke-lehrkraft.md). Pfade jeweils unter `apps/trennlabor/`:
 
-| Fassung A (`486f370`, Branch `ccr-ade6cdbf-5npcyu`) | Fassung B (`a5d6d0e`, Branch `trennlabor/v1.0`) |
+| Fassung A (`486f370`, Tag `archiv/trennlabor-ccr`) | Fassung B (`a5d6d0e`, auf `main`) |
 | --- | --- |
 | `js/model/chroma.js` | `js/chroma.js` |
 | `js/tasks/chroma-tasks.js` | C-Aufgaben in `js/tasks.js` |
 | `js/render/chroma-render.js` | `js/render-chroma.js` |
 | `tests/unit/chroma.test.js` | `tests/unit/chroma.test.js` |
+
+Der Codex-Versuch (PR #10, `dde56a0`) ist nicht nach Bereichen getrennt: Fachlogik in `js/chemistry.js` und `js/lab.js`, Darstellung als SVG in `js/render.js`. Wie man A und den Codex-Versuch holt, steht in der Entscheidung unter „Ausgangslage“.
 
 Bereits bekannte Unterschiede, die im Review bewertet werden:
 
