@@ -1,5 +1,39 @@
 # Testbericht und PASS/HOLD-Abnahme – Redoxlabor
 
+## Nachtrag 6 (23.10.2026) – iPad bestätigt für 1.3.1, aktueller Gesamtstatus
+
+**Durch die Lehrkraft:** Auch Version **1.3.1** (mit verschiebbarer Trennlinie und überarbeitetem Bedienfeld) ist auf dem iPad mit Safari **funktionsfähig und lesbar**. Die Rückmeldung gilt für alle bisher erstellten SiVex-Labore (Redoxlabor und TitraLab 3).
+
+**Aktueller Stand der PASS/HOLD-Abnahme** (ersetzt die Übersicht des ursprünglichen Berichts vom 22.10.2026 weiter unten):
+
+| Prüfbereich | Ergebnis |
+| --- | --- |
+| Chemische Korrektheit (C-01 – C-11) | **PASS** |
+| Experimentelle Interaktivität (E-01 – E-10) | **PASS** |
+| Grafische Qualität (V-01 – V-08) | **PASS** – V-08 jetzt auch auf echtem iPad bestätigt; einzelne bekannte Grafikfehler werden getrennt behoben |
+| Didaktische Funktionen (D-01 – D-08) | **HOLD – nicht verifiziert** (nur D-08: noch kein Test mit einer Lerngruppe) |
+| Technische Qualität (T-01 – T-10) | **PASS** – T-04/T-05 und iPad-Gerätetest (Safari, iPadOS 26.6.2) durch die Lehrkraft bestätigt; dazu Edge und Firefox unter Windows 11, mebis-Test mit 1.1.0 |
+| **Gesamtprojekt** | **HOLD – nicht verifiziert** (einziger offener Pflichtnachweis: D-08) |
+
+**Weiterhin offen:** Unterrichtstest mit Lernenden der Jahrgangsstufe 10 (D-08); verwaltete Schul-iPads und das Verhalten von „Neues Fenster“ in mebis auf dem iPad (siehe [`docs/MEBIS.md`](../../../docs/MEBIS.md)).
+
+---
+
+## Nachtrag 5 (23.10.2026) – Rückmeldungen aus dem iPad-Test, Release 1.3.1
+
+**Rückmeldung der Lehrkraft (iPad, Safari):** (1) Buttons „Ins Wasserbad“ und „Beobachtung festhalten“ ragen über ihren Kasten hinaus; (2) Wunsch nach verschiebbarer Breite zwischen Labor und Bedienfeld; (3) die Wasserbad-Karte bleibt beim Scrollen im Vordergrund.
+
+**Umgesetzt:**
+- Trennlinie zwischen Labortisch und Bedienfeld nach der Vorgabe in `docs/QUALITY.md` (wie TitraLab 3): Maus, Finger (Touch-Fläche 44 px), Pfeiltasten, Doppelklick setzt zurück, Breite nur lokal gemerkt, unter 900 px untereinander. Zusätzlich ein Ziehgriff am linken Rand der Auswertung.
+- Standardbreite des Bedienfelds abhängig von der Displaybreite (272–400 px).
+- Buttons: eigene SVG-Symbole statt ♨/🔥/✎ (auf iPads breite Farb-Emojis), Raster mit `minmax(0, 1fr)`, Anordnung je nach Breite des Bedienfelds ein-, zwei- oder dreispaltig (Container Queries); veraltetes `-webkit-overflow-scrolling` entfernt.
+- Wasserbad-Karte nicht mehr angeheftet (sie verdeckte beim Scrollen die Reagenzien), sondern direkt unter dem Reagenzglas – ohne Scrollen erreichbar.
+
+**Geprüft (Chromium mit Touch-Emulation):** 1024×768, 1080×810, 1180×820 und 1366×1024 – kein Button ragt über seinen Kasten hinaus, weder bei Standardbreite noch nach Ziehen auf breit oder schmal; Trennlinie per Finger verschiebbar; Breite bleibt nach dem Neuladen erhalten; Doppelklick setzt zurück; Auswertung per Ziehgriff verbreiterbar; keine Laufzeitfehler.
+
+**Nicht durchgeführt:** Unit-, Browser- und SCORM-Testsuite (auf Wunsch nicht ausgeführt). Der erneute iPad-Test von 1.3.1 erfolgte durch die Lehrkraft (Nachtrag 6).
+
+---
 ## Nachtrag 4 (23.10.2026) – Praxistest auf iPad und Windows-Browsern
 
 **Durch die Lehrkraft (Rückmeldung vom 23.10.2026):** Das Redoxlabor wurde auf einem **iPad mit Safari (iPadOS 26.6.2)** sowie in **Microsoft Edge** und **Mozilla Firefox** (jeweils aktuelle Version unter **Windows 11**) geprüft. Ergebnis: **grundsätzlich funktionsfähig und lauffähig**, alle Abläufe bedienbar, alles erkennbar.
@@ -16,21 +50,6 @@
 
 ---
 
-## Nachtrag 4 (23.10.2026) – Rückmeldungen aus dem iPad-Test, Release 1.3.1
-
-**Rückmeldung der Lehrkraft (iPad, Safari):** (1) Buttons „Ins Wasserbad“ und „Beobachtung festhalten“ ragen über ihren Kasten hinaus; (2) Wunsch nach verschiebbarer Breite zwischen Labor und Bedienfeld; (3) die Wasserbad-Karte bleibt beim Scrollen im Vordergrund.
-
-**Umgesetzt:**
-- Trennlinie zwischen Labortisch und Bedienfeld nach der Vorgabe in `docs/QUALITY.md` (wie TitraLab 3): Maus, Finger (Touch-Fläche 44 px), Pfeiltasten, Doppelklick setzt zurück, Breite nur lokal gemerkt, unter 900 px untereinander. Zusätzlich ein Ziehgriff am linken Rand der Auswertung.
-- Standardbreite des Bedienfelds abhängig von der Displaybreite (272–400 px).
-- Buttons: eigene SVG-Symbole statt ♨/🔥/✎ (auf iPads breite Farb-Emojis), Raster mit `minmax(0, 1fr)`, Anordnung je nach Breite des Bedienfelds ein-, zwei- oder dreispaltig (Container Queries); veraltetes `-webkit-overflow-scrolling` entfernt.
-- Wasserbad-Karte nicht mehr angeheftet (sie verdeckte beim Scrollen die Reagenzien), sondern direkt unter dem Reagenzglas – ohne Scrollen erreichbar.
-
-**Geprüft (Chromium mit Touch-Emulation):** 1024×768, 1080×810, 1180×820 und 1366×1024 – kein Button ragt über seinen Kasten hinaus, weder bei Standardbreite noch nach Ziehen auf breit oder schmal; Trennlinie per Finger verschiebbar; Breite bleibt nach dem Neuladen erhalten; Doppelklick setzt zurück; Auswertung per Ziehgriff verbreiterbar; keine Laufzeitfehler.
-
-**Nicht durchgeführt:** Unit-, Browser- und SCORM-Testsuite (auf Wunsch nicht ausgeführt), erneuter Test auf dem iPad mit Safari.
-
----
 
 ## Nachtrag 3 (22.10.2026) – GHS-Kennzeichnung und Release 1.3.0
 
@@ -114,6 +133,8 @@ Neue Screenshots: `review-r2-silber-bleibt.png`, `review-r3-entwurf-bleibt.png`,
 **Stand:** 22.10.2026 · **Prüfumgebung:** Linux-Container, Node.js 22, Chromium (Playwright 1.56.1, headless) · **Geprüft wurde der statische Build** `dist/redoxlabor/`.
 
 ## Ergebnisübersicht
+
+> Stand der Erstabnahme (Version 1.0, 22.10.2026). Aktueller Gesamtstatus: siehe Nachtrag 6.
 
 | Prüfbereich | Ergebnis |
 | --- | --- |
