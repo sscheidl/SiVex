@@ -16,7 +16,8 @@ SiVex-Simulationen sollen im mebis-Kurs unmittelbar im Browser starten, ohne Dow
 - **PASS (durch Lehrkraft bestätigt):** Das SCORM-Paket der Titrationssimulation lässt sich grundsätzlich in mebis einbinden und dort starten.
 - **PASS (durch Lehrkraft bestätigt):** In den SCORM-Darstellungseinstellungen lässt sich das Lernpaket in einem **eigenen Browserfenster** öffnen. Dies ist die bevorzugte Darstellung für die SiVex-Simulationen.
 - **BEKANNT:** Bei Anzeige innerhalb des mebis-Kursfensters wirkt die Simulation verkleinert; dafür ist gegenwärtig keine gesonderte Kompaktversion erforderlich.
-- **OPEN:** Vollständige Bedienbarkeit auf Schüler-iPads einschließlich Fenster-/Tab-Verhalten, Layout und Touch-Steuerung noch nicht abschließend verifiziert.
+- **PASS (durch Lehrkraft bestätigt, 23.10.2026):** TitraLab 3 und Redoxlabor (auch 1.3.1) laufen auf einem iPad mit Safari (iPadOS 26.6.2): funktionsfähig, bedienbar und lesbar. Zusätzlich in Edge und Firefox (jeweils aktuell) unter Windows 11 bestätigt. Beim Redoxlabor werden einige Grafikfehler getrennt behoben.
+- **OPEN:** Verwaltete Schul-iPads mit Lerngruppe sowie das Fenster-/Tab-Verhalten von „Neues Fenster“ auf dem iPad sind noch nicht abschließend verifiziert.
 
 Diese Befunde nicht mit einer vollständigen mebis- oder iPad-Freigabe gleichsetzen.
 
