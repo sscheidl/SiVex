@@ -21,3 +21,5 @@
 | Gesamtprojekt | HOLD – nicht verifiziert |
 
 Nachweise: 45 Unit-Tests, 26 Browser-Prüfungen (Chromium) mit Pixelmessungen und Screenshots. Einzelheiten im [Testbericht](../apps/redoxlabor/docs/TESTBERICHT.md).
+
+**Nachtrag 23.10.2026:** Der iPad-Gerätetest (Safari, iPadOS 26.6.2) wurde von der Lehrkraft bestanden, zuletzt mit Version 1.3.1. Damit ist „Technische Qualität“ PASS; offen bleibt nur D-08 (Test mit Lernenden). Aktueller Stand: [Testbericht, Nachtrag 6](../apps/redoxlabor/docs/TESTBERICHT.md).
