@@ -2,7 +2,7 @@
 
 **Status: planned** · noch kein Code eingecheckt · Begründung: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)
 
-Der Baukasten sorgt dafür, dass sich [Trennverfahren](../../apps/trennverfahren/), [Papierchromatographie](../../apps/chromatographie/) und [Destillation](../../apps/destillation/) wie **ein** Labor anfühlen: gleicher Look, gleiche Bedienlogik, gleicher Ablauf von der Aufgabe bis zum Hefteintrag.
+Der Baukasten sorgt dafür, dass sich [Trennverfahren](../../apps/trennverfahren/), [Papierchromatographie](../../apps/chromatographie/) und [Destillation](../../apps/destillation/) wie **ein** Labor anfühlen: gleicher Stil, gleiche Bedienlogik und gleiche Auswertungslogik – Aufgaben, Hilfestellung, Verbesserung und Hefteintrag nach der [Lern- und Auswertungsstruktur](../../docs/QUALITY.md#verbindliche-lern--und-auswertungsstruktur-für-weitere-apps). Die Inhalte entwickelt jede App unabhängig.
 
 ## Was hineingehört – und was nicht
 
@@ -30,9 +30,9 @@ Der Baukasten sorgt dafür, dass sich [Trennverfahren](../../apps/trennverfahren
 - **Eigene Tests** für alle Bausteine. Änderungen am Baukasten werden gegen alle drei Apps getestet, bevor sie gemergt werden.
 - **Gestaltungs- und Bedienregeln** werden zuerst in `DESIGN.md` festgelegt (nach Review und Praxistest), erst danach wird Code zusammengeführt.
 
-## Bestand in den beiden Fassungen
+## Bestand in den vorhandenen Fassungen
 
-Ausgangsmaterial für den Baukasten. Welche Umsetzung jeweils übernommen wird, entscheidet sich nach dem Review.
+Ausgangsmaterial für den Baukasten. Je Baustein wird übernommen, was korrekt ist, gefällt und funktioniert; Fehlendes wird geändert oder ergänzt. Fassung A liegt im Tag `archiv/trennlabor-ccr`, Fassung B auf `main` (jeweils unter `apps/trennlabor/`).
 
 | Baustein | Fassung A (`486f370`) | Fassung B (`a5d6d0e`) |
 | --- | --- | --- |
@@ -44,6 +44,8 @@ Ausgangsmaterial für den Baukasten. Welche Umsetzung jeweils übernommen wird, 
 | SCORM-1.2-Adapter | `js/scorm.js` | `js/scorm.js` |
 | Build, Paket, Server | `scripts/build.mjs`, `package.mjs`, `serve.mjs` | `scripts/build.mjs`, `package.mjs`, `serve.mjs` |
 | Testhilfen | `tests/unit/helpers.js`, `tests/e2e/zip.mjs`, Mock-LMS in `tests/e2e/scorm.mjs` | `tests/unit/helpers.js`, Mock-LMS in `tests/e2e/scorm.mjs` |
+
+Der Codex-Versuch (PR #10) bietet zusätzlich `js/ui.js`, `js/scorm.js`, `scripts/build.mjs`, `package.mjs`, `serve.mjs` sowie eine Paketprüfung in `tests/e2e/packages.mjs`; seine Darstellung ist SVG statt Canvas.
 
 Die Build- und Paketskripte beider Fassungen gehen auf die des Redoxlabors zurück. Das Redoxlabor selbst bleibt unverändert.
 
