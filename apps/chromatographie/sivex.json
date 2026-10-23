@@ -1,0 +1,16 @@
+{
+  "id": "chemie/chromatographie",
+  "title": "Papierchromatographie",
+  "description": "Papierchromatographie mit sieben Modellproben und zwei Laufmitteln: Startlinie, Probenauftrag, Entwicklung, Laufmittelfront, Vergleich von Stiften; im Expertenmodus Rf-Werte.",
+  "subject": "Chemie",
+  "topics": [
+    "Stoffgemische und Reinstoffe",
+    "Trennverfahren",
+    "Papierchromatographie"
+  ],
+  "grades": [
+    8,
+    9
+  ],
+  "status": "planned"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "chemie/destillation",
+  "title": "Destillation Ethanol/Wasser",
+  "description": "Destillation eines Ethanol-Wasser-Gemischs im eigenen Aufbau: Thermometer im Dampfweg, Kühlwasser, Temperaturverlauf, ethanolreicheres Destillat und getrennte Brennprobe.",
+  "subject": "Chemie",
+  "topics": [
+    "Trennverfahren",
+    "Destillation"
+  ],
+  "grades": [
+    8,
+    9
+  ],
+  "status": "planned"
+}

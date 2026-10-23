@@ -8,6 +8,9 @@ SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftli
 | --- | --- | --- |
 | **TitraLab 3 (Claude)** – Säure-Base-Titration | `apps/titration/` | **Ausgewählt**; läuft in mebis. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip). Import als entpackter Quellcode ausstehend |
 | [Redoxlabor – Fehling- und Tollens-Probe](apps/redoxlabor/) | `apps/redoxlabor/` | **prototype** – Redoxlabor 1.3 (Claude Code; überarbeitet nach Prüfung vom 22.10.2026, Zucker als Feststoffe, GHS-Kennzeichnung), Quellcode im Repo. **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.0-web.zip) · [Testbericht](apps/redoxlabor/docs/TESTBERICHT.md) |
+| [Trennverfahren – Stoffgemische trennen](apps/trennverfahren/) | `apps/trennverfahren/` | In Planung – Aufteilung des Trennlabors ([Begründung](docs/decisions/2026-10-23-trennlabor-aufteilung.md)) |
+| [Papierchromatographie](apps/chromatographie/) | `apps/chromatographie/` | In Planung – Aufteilung des Trennlabors |
+| [Destillation Ethanol/Wasser](apps/destillation/) | `apps/destillation/` | In Planung – Aufteilung des Trennlabors |
 | Esterbildung und chemisches Gleichgewicht | `apps/ester-gleichgewicht/` | In Planung |
 
 Es gibt **keine separate ältere Titrationsversion** im Zielbestand. Die zuvor dokumentierte Codex-Version TitraLab 2 ist verworfen und wurde nicht als Quellcode eingecheckt.
