@@ -20,7 +20,7 @@ Webserver: Web-ZIP entpacken und den Ordner `titration/` per HTTPS bereitstellen
 - Im Release enthalten: `index.html`, CSS, lesbare JavaScript-Module, Grafiken, Service Worker und `imsmanifest.xml`.
 - Alle 10 JavaScript-Dateien haben den Syntaxcheck bestanden.
 - Die praktische Einbindung in mebis und die Darstellung in einem separaten Browserfenster wurden bestätigt.
-- Der vollständige Test auf Schul-iPads steht noch aus.
+- Von der Lehrkraft am 23.10.2026 auf einem **iPad im Browser** sowie in **Edge** und **Firefox** (jeweils aktuell, Windows 11) geprüft: grundsätzlich funktionsfähig und lauffähig, bedienbar und gut erkennbar. Offen bleibt ein Test auf verwalteten Schul-iPads mit einer Lerngruppe.
 - Der Anwendungscode ist vollständig im SCORM-Paket enthalten; als entpackter Quellcode (`titralab3/`) ist er noch nicht eingecheckt.
 
 ## Vorgesehener Quellcode-Import
