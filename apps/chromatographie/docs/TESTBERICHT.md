@@ -59,7 +59,7 @@ Nachbesserungen nach der Sichtprüfung von Entwurf 1: kräftigere Zonen und Flü
 | T-03 | PASS | Screenshots in `docs/screenshots/` (Liste unten) und **inhaltlich angesehen** (siehe Sichtprüfung). |
 | T-04 | PASS | Build-Prüfung (keine externen Verweise, keine Netzwerk-APIs); E15: 33 Anfragen über alle Szenarien, davon 0 extern, 0 Konsolenfehler; WEB-2: entpacktes Web-ZIP per `file://` bedient, Aufgabe A belegt, keine Netzanfragen, keine Fehler. |
 | T-05 | PASS | SCORM-1–3 (Manifest, alle Dateien gelistet, relative Verweise); im Mock-LMS eingebettet und im neuen Fenster mit echter Bedienung (Versuch, Aufgabe A belegt); `LMSInitialize`/`LMSFinish` je genau einmal; kein `LMSGetValue`/`LMSSetValue`/`LMSCommit`. `50-scorm-iframe.png`, `50-scorm-popup.png`. |
-| T-06 | PASS | README, `docs/CHEMIE.md`, `docs/UEBERNAHME.md` (Bausteinliste A/B/Codex/neu), dieser Testbericht, `CHANGELOG.md`, Tests, `release/SHA256SUMS.txt`, Screenshots; Pull Request gegen `main`, nicht gemergt. |
+| T-06 | PASS | README, `docs/CHEMIE.md`, `docs/UEBERNAHME.md` (Bausteinliste A/B/Codex/neu), dieser Testbericht, `CHANGELOG.md`, Tests, `release/SHA256SUMS.txt`, Screenshots; [Pull Request #20](https://github.com/sscheidl/SiVex/pull/20) gegen `main`, nicht gemergt. |
 
 ## Sichtprüfung der Screenshots
 
