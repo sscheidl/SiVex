@@ -1,6 +1,6 @@
 # SiVex-Labkit – gemeinsamer Baukasten der Trenn-Apps
 
-**Status: planned** · noch kein Code eingecheckt · Begründung: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)
+**Version 0.1.0** · erste Bausteine für die [Papierchromatographie](../../apps/chromatographie/): `js/core.js`, `js/splitter.js`, `js/scorm.js`, `css/labkit.css`, Regeln in [`DESIGN.md`](DESIGN.md) · Begründung: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)
 
 Der Baukasten sorgt dafür, dass sich [Trennverfahren](../../apps/trennverfahren/), [Papierchromatographie](../../apps/chromatographie/) und [Destillation](../../apps/destillation/) wie **ein** Labor anfühlen: gleicher Look, gleiche Bedienlogik, gleicher Ablauf von der Aufgabe bis zum Hefteintrag.
 

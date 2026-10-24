@@ -9,7 +9,7 @@ apps/
   redoxlabor/
   trennlabor/         # klassische Trennverfahren, Chromatographie, Destillation (Jgst. 8/9)
   trennverfahren/     # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3A)
-  chromatographie/    # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3B)
+  chromatographie/    # Papierchromatographie 0.1.0 (prototype), Neustart auf Basis des Labkits
   destillation/       # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3C)
   ester-gleichgewicht/
   _template/
