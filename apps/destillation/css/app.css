@@ -1,0 +1,102 @@
+/* Destillation – app-eigene Gestaltung (Grundstil: labkit/css/labkit.css) */
+
+.clock { font-variant-numeric: tabular-nums; color: #c9d3de; font-weight: 600; min-width: 52px; text-align: right; }
+.clock.paused { color: #ffcf7a; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Handlungsleiste über der Bühne: links Handlungen, rechts Ansicht */
+.actionbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; align-items: center; padding: 6px 10px; background: #f7f9fb; border-bottom: 1px solid var(--line); }
+.acts, .views { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.actionbar .lk-btn { min-height: 44px; padding: 0 11px; font-size: 14px; }
+.views .lk-btn { padding: 0 9px; font-size: 13.5px; font-weight: 600; }
+.views .lk-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.grp { display: inline-flex; align-items: center; gap: 4px; padding: 0 0 0 8px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.grp .lk-btn { min-width: 44px; padding: 0 8px; border: 0; border-left: 1px solid var(--line); border-radius: 0; }
+.grp .lk-btn:last-child { border-radius: 0 9px 9px 0; }
+.grp.hint { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(31,111,209,.25); }
+.grp-l { font-size: 13px; font-weight: 600; color: var(--muted); }
+.views .grp-l { margin-right: 2px; }
+
+.canvas-wrap { position: relative; flex: 1 1 auto; min-height: 0; }
+#lab { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+
+/* Unsichtbare, fokussierbare Trefferflächen über der Zeichnung */
+.hits { position: absolute; inset: 0; pointer-events: none; }
+.hit { position: absolute; pointer-events: auto; background: transparent; border: 0; border-radius: 10px; cursor: pointer; padding: 0; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .hit:hover { background: rgba(31, 111, 209, 0.06); } }
+.hit:focus-visible { outline: 3px solid var(--accent); outline-offset: 0; background: rgba(31, 111, 209, 0.08); }
+.hit[aria-pressed="true"] { outline: 2px dashed var(--accent); outline-offset: 2px; }
+
+.toast { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: min(92%, 760px); padding: 9px 16px; border-radius: 10px; background: rgba(23, 33, 44, 0.92); color: #fff; font-size: 14.5px; line-height: 1.35; opacity: 0; transition: opacity .25s; pointer-events: none; text-align: center; }
+.toast.show { opacity: 1; }
+.toast.warn { background: rgba(122, 64, 4, 0.94); }
+
+/* Sicherheitsstopp: Leiste oben auf der Bühne, Schalter bleiben bedienbar */
+.safety { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: min(94%, 620px); background: #fff; border: 2px solid var(--bad); border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(20, 30, 40, 0.25); z-index: 4; }
+.safety h2 { margin: 0 0 6px; font-size: 17px; color: var(--bad); }
+.safety p { margin: 0 0 8px; }
+.safety .fix { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; }
+
+.partinfo { position: absolute; left: 10px; bottom: 54px; max-width: min(380px, 70%); background: #fff; border: 1px solid #b7d0f2; border-left: 5px solid var(--accent); border-radius: 10px; padding: 10px 12px; box-shadow: 0 6px 18px rgba(20, 30, 40, 0.15); z-index: 3; }
+.partinfo h3 { margin: 0 0 4px; font-size: 16px; }
+.partinfo p { margin: 0; font-size: 14px; }
+
+/* Schalter für Heizung und Kühlwasser – immer sichtbar */
+.deck { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; justify-content: center; padding: 7px 10px; background: #f7f9fb; border-top: 1px solid var(--line); }
+.ctl { display: flex; align-items: center; gap: 8px; }
+.switch { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; min-width: 150px; padding: 0 12px; border-radius: 10px; border: 2px solid var(--line-2); background: #fff; font-weight: 600; cursor: pointer; }
+.switch .lamp { width: 14px; height: 14px; border-radius: 50%; background: #9aa6b3; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.12); }
+.switch b { margin-left: auto; font-size: 15px; letter-spacing: .02em; }
+.switch[aria-pressed="true"] { border-color: #c2410c; background: #fff2ea; }
+.switch[aria-pressed="true"] .lamp { background: #ff6a2a; box-shadow: 0 0 0 4px rgba(255, 106, 42, 0.25); }
+.switch[aria-pressed="true"] b { color: #c2410c; }
+.switch.water[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.switch.water[aria-pressed="true"] .lamp { background: #3b8ff0; box-shadow: 0 0 0 4px rgba(59, 143, 240, 0.25); }
+.switch.water[aria-pressed="true"] b { color: var(--accent-2); }
+.seg2 { display: inline-flex; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: #fff; }
+.seg2 button { border: 0; background: transparent; min-height: 44px; min-width: 62px; padding: 0 8px; font-weight: 600; cursor: pointer; color: var(--text-2); }
+.seg2 button + button { border-left: 1px solid var(--line); }
+.seg2 button[aria-pressed="true"] { background: #2b3440; color: #fff; }
+
+/* Bedienfeld */
+.taskchips { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.taskchips button { flex: 1 1 0; min-height: 44px; border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; padding: 0 8px; font-size: 14px; }
+.taskchips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.taskchips button .done { color: var(--ok); margin-left: 4px; }
+.taskchips button[aria-pressed="true"] .done { color: #c8f5d8; }
+.material { font-size: 13.5px; color: var(--muted); }
+details.model { margin: 6px 0 2px; font-size: 13.5px; }
+details.model summary { cursor: pointer; font-weight: 600; color: var(--accent-2); min-height: 32px; display: flex; align-items: center; }
+details.model p { margin: 6px 0 0; }
+.tipbox { border-left: 4px solid var(--warn); }
+.tipbox p { margin: 4px 0; }
+.tipbox .lvl { font-weight: 700; color: var(--warn); }
+.numrow { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.numrow input { width: 120px; min-height: 44px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 6px 8px; background: #fff; font-size: 16px; }
+.numrow input.right { border-color: var(--ok); background: var(--ok-soft); }
+.numrow input.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.trainer-grid { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 6px 8px; align-items: center; }
+.trainer-grid .no { width: 28px; height: 28px; border-radius: 50%; background: #17212c; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.trainer-grid select { width: 100%; min-height: 44px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 6px 8px; background: #fff; }
+.trainer-grid select.right { border-color: var(--ok); background: var(--ok-soft); }
+.trainer-grid select.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.trainer-grid .lk-fb { grid-column: 2; margin-top: -2px; }
+table.res { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.res th, table.res td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.res th { color: var(--muted); font-weight: 600; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: #e9eef3; color: var(--text-2); margin: 2px 4px 2px 0; }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+
+@media (max-width: 1100px) {
+  .lk-head { gap: 8px; padding: 0 10px; }
+  .lk-brand small { display: none; }
+  .switch { min-width: 132px; }
+  .seg2 button { min-width: 56px; }
+}
+@media (max-width: 899px) {
+  .lk-head { flex: 0 0 auto; flex-wrap: wrap; height: auto; padding: 6px 10px; row-gap: 6px; }
+  .lk-brand { flex: 1 0 100%; }
+  .lk-stage { height: 78vh; min-height: 560px; }
+}
