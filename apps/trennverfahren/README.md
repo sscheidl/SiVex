@@ -16,9 +16,9 @@ Grundlage ist Abschnitt 3A des [Masterauftrags](../../prompts/trennlabor-v1.0-cl
 
 ## Ausgangsmaterial
 
-Welche Fassung die Basis wird, wird nach dem [Codex-Review](../../prompts/trennlabor-review-codex.md) und dem Praxistest in mebis entschieden. Pfade jeweils unter `apps/trennlabor/`:
+Welche Fassung die Basis wird, wird nach dem [Codex-Review](../../prompts/trennlabor-review-codex.md) und dem Praxistest in mebis entschieden. Pfade jeweils unter `apps/trennlabor/` im jeweiligen Tag (das Trennlabor liegt nicht mehr auf `main`):
 
-| Fassung A (`486f370`, Branch `ccr-ade6cdbf-5npcyu`) | Fassung B (`a5d6d0e`, Branch `trennlabor/v1.0`) |
+| Fassung A (`486f370`, Tag `archiv/trennlabor-ccr`) | Fassung B (`a5d6d0e`, Tag `archiv/trennlabor-1.0.0`) |
 | --- | --- |
 | `js/model/classic.js` | `js/classic.js` |
 | `js/tasks/classic-tasks.js` | K-Aufgaben in `js/tasks.js` |
