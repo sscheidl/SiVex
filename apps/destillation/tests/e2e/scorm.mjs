@@ -99,8 +99,11 @@ async function operate(frame) {
   await idleOk();
   await frame.locator('#speed [data-speed="30"]').click();
   await frame.waitForFunction(() => { const c = window.DS.app.engine.state.receiver.c; return c.E + c.W > 8; }, null, { timeout: 180000 });
+  await frame.locator('#btnHeat').click();
+  await act('toggleReceiver');
+  await frame.waitForTimeout(1100);
   await tap('pipette'); await tap('receiver'); await tap('dish'); await tap('lighter'); await tap('dish');
-  await frame.waitForFunction(() => window.DS.app.engine.state.fx.flame > 0.2, null, { timeout: 10000 });
+  await frame.waitForFunction(() => window.DS.app.engine.state.fx.flame > 0.2, null, { timeout: 20000 });
   await frame.locator('#btnCheck').click();
   return /Ergebnis belegt/.test(await frame.locator('#panelBody').innerText());
 }

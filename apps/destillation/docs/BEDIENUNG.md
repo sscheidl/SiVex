@@ -4,10 +4,10 @@
 
 | Bereich | Inhalt |
 | --- | --- |
-| Kopfzeile | Zeitraffer (❚❚ Pause, 1×, 10×, 30×), Versuchszeit, Expertenmodus, Hefteintrag, Bedienfeld ein/aus |
-| Handlungsleiste | links die gerade sinnvollen Handlungen (Einfüllen, Siedesteine, Thermometer ▲/▼, Vorlage weg/hin bzw. Vorlage wechseln); rechts „Ansicht“: Namen, Erkunden, Kühler, Teilchen, Diagramm (Experte) |
-| Laborbühne | fertig montierte Apparatur; alle Geräte sind antippbar (unsichtbare, mit Tab erreichbare Schaltflächen) |
-| Schalterleiste unten | **Heizung EIN/AUS** + Heizstufe niedrig/mittel/hoch; **Kühlwasser EIN/AUS** + Durchfluss gering/mittel/stark – unabhängig voneinander, immer sichtbar |
+| Kopfzeile | Zeitraffer (❚❚ Pause, 1×, 10×, 30×), Versuchszeit, **Neu beginnen**, Expertenmodus, Hefteintrag, Bedienfeld ein/aus |
+| Ansicht (über der Bühne) | Namen und Erkunden (nur vor dem Versuch), Kühler, Teilchen, Diagramm |
+| Laborbühne | fertig montierte Apparatur; alle Geräte sind antippbar (unsichtbare, mit Tab erreichbare Schaltflächen); Meldungen erscheinen oben in einem freien Band |
+| Fußleiste (alle Bedienelemente) | Zeile 1: Einfüllen, Siedesteine, Thermometer ▲/▼, Vorlage abnehmen/unterstellen, (Experte) Vorlage wechseln, Stopfen. Zeile 2: **Heizung EIN/AUS** + Heizstufe niedrig/mittel/hoch; **Kühlwasser EIN/AUS** + Durchfluss gering/mittel/stark – unabhängig voneinander |
 | Trennlinie | Breite des Bedienfelds mit Maus, Finger (44 px Griff) oder Pfeiltasten; Doppelklick oder Pos1 setzt zurück |
 | Bedienfeld | Reiter Aufgabe · Ergebnisse · Trainer · Hefteintrag |
 
@@ -20,20 +20,20 @@ Die Reihenfolge ist frei, soweit sie physikalisch und sicherheitstechnisch vertr
 1. **Gemisch einfüllen:** Flasche antippen oder „Einfüllen“. Trichter und Becherglas erscheinen, der Spiegel im Kolben steigt.
 2. **Siedesteine:** Schälchen antippen oder „Siedesteine“ (nur unter 50 °C).
 3. **Thermometer prüfen:** Es sitzt am Anfang zu hoch. Mit „Thermometer ▼“ die Kugel auf Höhe des seitlichen Abgangs schieben (nur bei ausgeschalteter Heizung und ohne Sieden).
-4. **Kühlwasser anschließen:** freies Schlauchende am Wasserhahn (Zulauf) antippen, dann einen Anschluss am Kühler; ebenso das Ende am Ausguss (Ablauf). Ein angeschlossener Stutzen wird durch erneutes Antippen wieder frei (nur bei abgedrehtem Wasser).
+4. **Kühlwasser anschließen:** freies Schlauchende an der Laborarmatur (Zulauf, hängt ins Becken) antippen, dann einen Anschluss am Kühler; ebenso das Ende am Ausguss (Ablauf). Ein angeschlossener Stutzen wird durch erneutes Antippen wieder frei (nur bei abgedrehtem Wasser).
 5. **Kühlwasser EIN**, Durchfluss wählen. Das Wasser füllt den Mantel sichtbar von unten nach oben.
 6. **Heizung EIN**, Heizstufe wählen (mittel). Zeitraffer 10× oder 30×.
 7. **Beobachten:** Siedeblasen, Thermometer und Digitalanzeige, Kondensat im Innenrohr, Tropfen in die Vorlage.
-8. **Brennprobe** (nur Ethanol/Wasser): Pipette antippen → Vorlage antippen → Porzellanschale antippen → Stabfeuerzeug antippen → Schale antippen.
-9. **Heizung AUS**, dann Kühlwasser AUS, sobald nichts mehr übergeht.
+8. **Heizung AUS**, sobald die Temperatur über den Abschnitt steigt (die App warnt vorher, bevor Wasser übergeht).
+9. **Brennprobe** (nur Ethanol/Wasser): „Vorlage abnehmen“ – sie kommt zum Prüfplatz. Pipette antippen → Vorlage antippen (Probe wird gezogen) → Porzellanschale antippen (Probe wird überführt) → Stabfeuerzeug antippen → Schale antippen (Feuerzeug fährt hin, Funke, Flamme). Danach Vorlage antippen, um sie zurückzustellen; Kühlwasser AUS.
 10. **Auswertung:** „Ergebnis prüfen“, Protokoll ausfüllen, „Antworten prüfen“; Tipps 1/3–3/3; „Lösung anzeigen“.
 
 ## Weitere Bedienelemente
 
-- **Vorlage weg/hin** (Standard) bzw. **Vorlage wechseln** (Experte, alte Vorlage wandert auf den Tisch und bleibt erhalten).
-- **Stopfen** neben der Vorlage: auf die Vorlage setzen verschließt die Apparatur (Fehlfall, Sicherheitsstopp beim Heizen).
-- **Versuch neu beginnen** (Aufgabe): Apparatur in den Startzustand, frühere Vorlagen bleiben unter „Ergebnisse“.
-- **Namen:** Beschriftung aller Geräte. **Erkunden:** Gerät antippen → Hervorhebung, Name und Funktion (Handlungen sind solange gesperrt). **Kühler:** vergrößerter Schnitt durch den Liebigkühler (gleicher Modellzustand). **Teilchen:** Erklärmodus mit Dampfteilchen, ausdrücklich gekennzeichnet (Dampf ist in Wirklichkeit unsichtbar). **Diagramm:** Temperatur-Zeit-Diagramm (Experte).
+- **Vorlage abnehmen/unterstellen** oder Antippen der Vorlage (hin und zurück); im Expertenmodus zusätzlich **Vorlage wechseln** (alte Vorlage wandert auf den Tisch und bleibt erhalten).
+- **Stopfen** (Fußleiste): verschließt die Apparatur (Fehlfall, Sicherheitsstopp beim Heizen).
+- **Neu beginnen** (Kopfzeile, mit Rückfrage): Apparatur in den Startzustand, frühere Vorlagen bleiben unter „Ergebnisse“.
+- **Namen:** Beschriftung aller Geräte. **Erkunden:** Gerät antippen → Hervorhebung, Name und Funktion. Beides nur vor dem Versuch; solange sind alle Handgriffe gesperrt und es erscheinen keine Meldungen. **Kühler:** vergrößerter Schnitt durch den Liebigkühler (gleicher Modellzustand). **Teilchen:** Erklärmodus mit Dampfteilchen, ausdrücklich gekennzeichnet (Dampf ist in Wirklichkeit unsichtbar). **Diagramm:** Temperatur-Zeit-Diagramm (in allen Modi).
 - **Trainer:** Nummern an der Apparatur benennen, Funktionen zuordnen, Kurztheorie.
 
 ## Tastatur

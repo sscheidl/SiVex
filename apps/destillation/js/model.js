@@ -83,7 +83,7 @@
   const THERMO_ORDER = ['high', 'correct', 'low'];
   const ESC_WARN = 0.05, ESC_STOP_FLAM = 4, ESC_STOP_ALL = 8; // mL ausgetretener Dampf (als Flüssigkeit gerechnet)
   const MAX_FRACTIONS = 6;
-  const OPS = { fill: { dur: 5 }, stones: { dur: 1.4 }, burn: { dur: 0 } };
+  const OPS = { fill: { dur: 5 }, stones: { dur: 1.4 }, sample: { dur: 1.6, at: 0.55 }, toDish: { dur: 1.8, at: 0.7 }, light: { dur: 1.5, at: 0.72 }, burn: { dur: 0 } };
 
   // ------------------------------------------------------------------ Hilfen Stoffmengen
   const zero = () => ({ P: 0, E: 0, W: 0 });
@@ -391,6 +391,9 @@
     }
 
     // ----- Probe und Brennprobe
+    // Handgriffe mit Bewegung (Pipette, Feuerzeug): Wirkung zu einem festen Zeitpunkt des Handgriffs
+    const startOp = (type, extra) => { st.op = Object.assign({ type, t: 0, dur: OPS[type].dur, at: OPS[type].at, applied: false }, extra || {}); };
+
     function takeSample(source) {
       if (source === 'flask') {
         mistake('hotSample');
@@ -399,19 +402,18 @@
       }
       if (st.mix !== 'ew') return fail('Die Brennprobe gehört zum Ethanol-Wasser-Versuch.', 'noBurnTest');
       if (st.pipette) return fail('In der Pipette ist schon eine Probe. Gib sie in die Porzellanschale.', 'pipetteFull');
-      const r = source && source.startsWith('fraction:') ? st.fractions.find((f) => f.n === Number(source.slice(9))) : st.receiver;
+      const r = source && String(source).startsWith('fraction:') ? st.fractions.find((f) => f.n === Number(String(source).slice(9))) : st.receiver;
       if (!r) return fail('Unbekannte Vorlage.', 'source');
+      if (r === st.receiver && r.present) return fail('An der laufenden Apparatur wird keine Probe entnommen. Nimm zuerst die Vorlage ab („Vorlage abnehmen“) – sie kommt zum Prüfplatz.', 'receiverMounted');
       if (vol(r.c) < 0.3) return fail('In der Vorlage ist noch zu wenig Destillat für eine Probe.', 'emptySample');
-      st.pipette = { c: take(r.c, SAMPLE_ML), from: r.n };
-      return ok(`Mit der Pipette ${core.fmt(vol(st.pipette.c), 1)} mL Destillat aus Vorlage ${r.n} entnommen. Gib die Probe in die Porzellanschale.`);
+      startOp('sample', { from: r.n });
+      return ok('');
     }
     function sampleToDish() {
       if (!st.pipette) return fail('In der Pipette ist keine Probe. Entnimm zuerst eine Probe aus der Vorlage.', 'pipetteEmpty');
       if (st.dish && st.dish.burning) return fail('In der Schale brennt noch eine Probe.', 'burning');
-      if (st.dish) add(st.lost.sample, st.dish.c);
-      st.dish = { c: st.pipette.c, from: st.pipette.from, result: null, burning: false, phi0: null };
-      st.pipette = null;
-      return ok('Probe in die Porzellanschale am getrennten Prüfplatz gegeben. Zünde sie mit dem Stabfeuerzeug an.');
+      startOp('toDish');
+      return ok('');
     }
     function ignite(target) {
       if (target !== 'dish') { mistake('ignite'); return stop('ignite'); }
@@ -419,17 +421,33 @@
       if (!d || vol(d.c) < 0.02) return fail('In der Porzellanschale ist keine Probe.', 'dishEmpty');
       if (d.burning) return fail('Die Probe brennt bereits.', 'burning');
       if (d.result) return fail('Diese Probe ist schon geprüft. Entnimm für eine neue Brennprobe eine neue Probe.', 'tested');
-      const s = share(d.c);
-      d.phi0 = s.E + s.P;
-      d.result = burnResult(d.c);
-      d.t0 = st.t;
-      d.burning = d.result !== 'none';
-      d.flicker = d.result === 'flicker' ? 1.6 : 0;
-      st.burnTests.push({ t: +st.t.toFixed(1), from: d.from, phi: +d.phi0.toFixed(3), result: d.result, run: st.run });
-      if (d.burning) st.op = { type: 'burn', t: 0, dur: 0 };
-      const text = { burns: 'Die Probe brennt mit bläulicher, kaum leuchtender Flamme.', flicker: 'Die Probe flackert kurz auf und erlischt.', none: 'Die Probe lässt sich nicht entzünden – keine anhaltende Flamme.' }[d.result];
-      msg(text, d.result === 'none' ? 'warn' : 'info', 'burn');
-      return { ok: true, result: d.result, message: text };
+      startOp('light');
+      return ok('');
+    }
+    /** Wirkung der Handgriffe mit Bewegung. */
+    function applyMotionOp(op) {
+      op.applied = true;
+      if (op.type === 'sample') {
+        const r = op.from === st.receiver.n ? st.receiver : st.fractions.find((f) => f.n === op.from);
+        st.pipette = { c: take(r.c, SAMPLE_ML), from: r.n };
+        msg(`Mit der Pipette ${core.fmt(vol(st.pipette.c), 1)} mL Destillat aus Vorlage ${r.n} entnommen. Tippe auf die Porzellanschale.`, 'info', 'sample');
+      } else if (op.type === 'toDish') {
+        if (st.dish) add(st.lost.sample, st.dish.c);
+        st.dish = { c: st.pipette.c, from: st.pipette.from, result: null, burning: false, phi0: null };
+        st.pipette = null;
+        msg('Probe in die Porzellanschale gegeben. Zünde sie mit dem Stabfeuerzeug an.', 'info', 'toDish');
+      } else if (op.type === 'light') {
+        const d = st.dish;
+        const s = share(d.c);
+        d.phi0 = s.E + s.P;
+        d.result = burnResult(d.c);
+        d.t0 = st.t;
+        d.burning = d.result !== 'none';
+        d.flicker = d.result === 'flicker' ? 1.6 : 0;
+        st.burnTests.push({ t: +st.t.toFixed(1), from: d.from, phi: +d.phi0.toFixed(3), result: d.result, run: st.run });
+        const text = { burns: 'Die Probe brennt mit bläulicher, kaum leuchtender Flamme.', flicker: 'Die Probe flackert kurz auf und erlischt.', none: 'Die Probe lässt sich nicht entzünden – keine anhaltende Flamme.' }[d.result];
+        msg(text, d.result === 'none' ? 'warn' : 'info', 'burn');
+      }
     }
 
     function ackSafety() {
@@ -461,7 +479,7 @@
     function act(name, ...args) {
       const fn = ACTIONS[name];
       if (!fn) return fail('Unbekannte Handlung ' + name, 'unknown');
-      if (st.op && (st.op.type === 'fill' || st.op.type === 'stones') && !['restart', 'setHeatLevel', 'setFlow', 'setExpert', 'setWater', 'setHeater'].includes(name)) return fail('Einen Moment – der letzte Handgriff ist noch nicht fertig.', 'busy');
+      if (st.op && st.op.type !== 'burn' && !['restart', 'setHeatLevel', 'setFlow', 'setExpert', 'setWater', 'setHeater'].includes(name)) return fail('Einen Moment – der letzte Handgriff ist noch nicht fertig.', 'busy');
       if (st.safety && !DURING_SAFETY.has(name)) return fail('Erst den Sicherheitsstopp lesen und bestätigen.', 'safetyOpen');
       if (st.safety && name === 'setHeater' && args[0]) return fail('Erst den Sicherheitsstopp lesen und bestätigen.', 'safetyOpen');
       const r = fn(...args);
@@ -516,6 +534,12 @@
           if (op.t >= op.dur - 1e-9) { st.filled = true; st.op = null; bus.emit('change', { action: 'opDone', op: 'fill' }); }
         } else if (op.type === 'stones') {
           if (op.t >= op.dur - 1e-9) { st.stones = true; st.op = null; bus.emit('change', { action: 'opDone', op: 'stones' }); }
+        } else if (op.type === 'sample' || op.type === 'toDish' || op.type === 'light') {
+          if (!op.applied && op.t >= op.at * op.dur - 1e-9) applyMotionOp(op);
+          if (op.t >= op.dur - 1e-9) {
+            st.op = st.dish && st.dish.burning && op.type === 'light' ? { type: 'burn', t: 0, dur: 0 } : null;
+            bus.emit('change', { action: 'opDone', op: op.type });
+          }
         } else if (op.type === 'burn' && !(st.dish && st.dish.burning)) {
           st.op = null;
           bus.emit('change', { action: 'opDone', op: 'burn' });
@@ -667,6 +691,16 @@
       while (vol(st.tip) >= DROP_VOL - 1e-12 && guard++ < 50) {
         const d = take(st.tip, DROP_VOL);
         recordDrop(st.receiver.present ? 'receiver' : 'table', d);
+      }
+
+      // --- Warnung: der leichter siedende Stoff ist fast übergegangen, der nächste kündigt sich an
+      const rv = st.receiver;
+      if (st.heater.on && rv.present && vol(rv.c) >= 2) {
+        const k = mainComponent(rv.c);
+        if ((k === 'P' || k === 'E') && st.charged[k] > 0 && f.c[k] < 0.05 * st.charged[k]) {
+          const next = KEYS.filter((q) => SUBSTANCES[q].bp > SUBSTANCES[k].bp && f.c[q] > 0.5).sort((a, b) => SUBSTANCES[a].bp - SUBSTANCES[b].bp)[0];
+          if (next) warnOnce('breakthrough' + rv.n, `Achtung: Das ${SUBSTANCES[k].name} ist fast vollständig übergegangen. Steigt die Temperatur weiter Richtung ${SUBSTANCES[next].bp} °C, geht ${SUBSTANCES[next].name} über und verunreinigt das Destillat in Vorlage ${rv.n}. Heizung ausschalten${st.expert ? ' oder Vorlage wechseln' : ''}.`);
+        }
       }
 
       // --- Thermometer: misst dort, wo seine Kugel sitzt

@@ -6,8 +6,8 @@
  * seines Vorgängers berechnet:
  *   Kolbenmitte → Kolbenhals → Destillationsaufsatz → seitlicher Abgang
  *   → Innenrohr des Liebigkühlers → Vorstoß → Tropfspitze → Vorlage,
- * Laborboys und Stativklemmen richten sich nach diesen Punkten, die Schläuche
- * nach den Kühleranschlüssen. Die Bühne wird als Ganzes gleichmäßig skaliert
+ * Laborboys und Stativarm richten sich nach diesen Punkten, die Schläuche
+ * nach Kühleranschlüssen und Laborarmatur. Die Bühne wird als Ganzes gleichmäßig skaliert
  * (fit); deshalb bleiben alle Verbindungen bei jeder Bildschirmgröße und
  * Trennlinienstellung geschlossen. connections() liefert die Sollverbindungen
  * für die automatischen Tests.
@@ -26,7 +26,7 @@
 
   // ------------------------------------------------------------------ Maße
   const DIM = {
-    flaskR: 46,          // Rundkolben 250 mL (Außenradius, leicht vergrößert gezeichnet)
+    flaskR: 50,          // Rundkolben 250 mL (Außenradius, gegenüber dem Kühler vergrößert gezeichnet)
     glass: 2.2,          // Wandstärke
     neckHW: 13,          // Kolbenhals NS 29 (halbe Außenbreite)
     neckLen: 40,         // Hals über dem Kugelansatz
@@ -36,13 +36,13 @@
     armAngle: 16,        // Neigung des Abgangs und des Kühlers (Grad unter der Waagrechten)
     armHW: 7.5,
     armLen: 64,
-    condLen: 390,        // Innenrohr des Liebigkühlers
+    condLen: 355,        // Innenrohr des Liebigkühlers
     jacket0: 46,         // Kühlmantel von … bis … (entlang der Achse)
-    jacket1: 340,
+    jacket1: 310,
     jacketHW: 18,
     tubeHW: 6,
     nozzleHigh: 70,      // oberer Anschluss (Ablauf) nahe dem Aufsatz
-    nozzleLow: 316,      // unterer Anschluss (Zulauf) nahe dem Vorstoß
+    nozzleLow: 286,      // unterer Anschluss (Zulauf) nahe dem Vorstoß
     nozzleLen: 22,
     nozzleHW: 4.5,
     adapterStraight: 30, // Vorstoß: gerades Stück, Bogen, senkrechtes Stück
@@ -120,12 +120,9 @@
     g.mantle.knob = P(g.mantle.outer * 0.62, g.mantle.base - 16);
     g.jack = { x: 0, w: D.jackW, top: g.mantle.base, h: -g.mantle.base };
 
-    // Stativ 1 mit Klemme am Kolbenhals
+    // Stativ mit Doppelmuffe; der Arm hält den Kolbenhals von hinten
     const rodX = -112;
     g.stand1 = { rodX, base: { x0: -175, x1: -28, h: 12 }, top: g.neck.y1 - 30, clamps: [{ y: g.neck.y1 + 16, x1: -D.neckHW - 1, hw: D.neckHW }] };
-    // Stativ 2 mit Klemme am Kühlmantel
-    const cm = g.cond.at((D.jacket0 + D.jacket1) / 2 - 20, 0);
-    g.stand2 = { rodX: cm.x, base: { x0: cm.x - 44, x1: cm.x + 50, h: 12 }, clampAt: cm, top: cm.y - 30 };
 
     // Thermometer: Kugelmitte je nach Position
     const armLow = g.arm.o.y + D.armHW;               // Unterkante der Abgangsöffnung (auf der Achse)
@@ -142,26 +139,26 @@
       return g.thermo.bulb[pos] + s.off0 + (s.off1 - s.off0) * (T - s.t0) / (s.t1 - s.t0);
     };
 
-    // Wasserarmatur (Zulauf) und Ausguss (Ablauf)
-    const nl = g.nozzles.low.tip;
-    g.tap = { x: nl.x - 50, base: 0, top: -150 };
-    g.tap.outlet = P(g.tap.x + 14, g.tap.top - 6);
-    g.tap.handle = P(g.tap.x, g.tap.top + 26);
+    // Ausguss mit Laborarmatur: Zulauf aus der Armatur, Ablauf ins Becken
     g.sink = { x0: g.receiver.x + 92, x1: g.receiver.x + 196, y: 0, depth: 26 };
-    g.sink.drop = P((g.sink.x0 + g.sink.x1) / 2 + 6, -14);
+    const tapX = g.sink.x0 + 56;
+    g.tap = { x: tapX, base: 0, top: -150, olive: P(g.sink.x0 + 14, -108), handle: P(tapX, -86) };
+    g.tap.outlet = g.tap.olive;
+    g.sink.drop = P(g.sink.x1 - 18, -14);
 
     // Schlauchwege als kubische Bézierketten [p0, c1, c2, p1, c3, c4, p2, …], aus den tatsächlichen Anschlusspunkten
     const nh = g.nozzles.high.tip;
     const hoseTopY = nh.y - 64;
     const sd = g.sink.drop;
+    const ol = g.tap.olive;
     g.hoseRoutes = {
-      // Zulauf: Armatur → Anschluss
+      // Zulauf: Armatur → hinter der Vorlage über den Tisch → Anschluss
       inlet: (nozzle) => {
         const end = g.nozzles[nozzle];
-        const a = g.tap.outlet;
-        if (nozzle === 'low') return [a, P(a.x + 6, a.y - 40), addv(end.tip, end.dir, 34), end.tip];
+        const bench = [ol, P(ol.x, -34), P(ol.x - 12, -6), P(ol.x - 60, -6)];
+        if (nozzle === 'low') return bench.concat([P(end.tip.x + 60, -6), addv(end.tip, end.dir, 70), end.tip]);
         // falsch: Zulauf am oberen Anschluss – Schlauch führt vor dem Kühler nach oben
-        return [a, P(a.x + 10, a.y - 120), addv(end.tip, end.dir, 110), end.tip];
+        return bench.concat([P(end.tip.x + 40, -6), addv(end.tip, end.dir, 150), end.tip]);
       },
       // Ablauf: Anschluss → Ausguss
       outlet: (nozzle) => {
@@ -173,36 +170,37 @@
             P(sd.x, -100), P(sd.x, -60), sd];
         }
         // falsch: Ablauf am unteren Anschluss – Schlauch hängt nach unten und läuft über den Tisch
-        return [end.tip, addv(end.tip, end.dir, 60), P(end.tip.x + 10, -8), P(end.tip.x + 60, -7),
-          P(end.tip.x + 140, -6), P(sd.x - 60, -6), sd];
+        return [end.tip, addv(end.tip, end.dir, 60), P(end.tip.x + 10, -14), P(end.tip.x + 60, -14),
+          P(end.tip.x + 200, -14), P(sd.x - 30, -40), sd];
       },
       // lose Schlauchenden, solange nicht angeschlossen
-      looseInlet: () => { const a = g.tap.outlet; return [a, P(a.x + 18, a.y - 16), P(a.x + 46, -30), P(a.x + 62, -4)]; },
-      looseOutlet: () => [sd, P(sd.x - 4, -64), P(sd.x + 30, -66), P(sd.x + 30, -24)]
+      looseInlet: () => [ol, P(ol.x, -70), P(ol.x + 4, -40), P(ol.x + 8, -16)],
+      looseOutlet: () => [sd, P(sd.x + 4, -52), P(g.sink.x1 + 12, -52), P(g.sink.x1 + 14, -8)]
     };
     g.hoseTopY = hoseTopY;
 
     // Flasche mit dem Gemisch und Schälchen mit Siedesteinen auf dem Tisch
     g.bottle = { x: g.jack.w / 2 + 30, base: 0, w: 44, h: 92 };
     g.stonesDish = { x: g.bottle.x + 54, base: 0, w: 42, h: 12 };
-    g.stopper = { x: g.receiver.x + 66, y: -6 };
 
     // Getrennter Prüfplatz (nur Ethanol/Wasser)
     if (o.station) {
-      const x1 = g.stand1.base.x0 - 26, x0 = x1 - 214;
-      g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 166, -8), pipette: P(x0 + 22, -8), lighter: P(x0 + 84, -12) };
+      const x1 = g.stand1.base.x0 - 22, x0 = x1 - 300;
+      g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 150, -8), pipette: P(x0 + 22, -8), lighter: P(x0 + 70, -12), recv: P(x0 + 250, -8) };
     }
+    // Abgenommene Vorlage: zum Prüfplatz (Ethanol/Wasser) bzw. auf den Tisch neben dem Aufbau – gleiche Größe
+    g.receiverAway = g.station ? { x: g.station.recv.x, base: g.station.recv.y } : { x: g.receiver.x - 130, base: 0 };
 
-    // Große Digitalanzeige links neben dem Thermometer, Einblendflächen rechts oben
+    // Große Digitalanzeige links neben dem Thermometer (über dem Aufsatz), Einblendflächen rechts oben
     const tTop = g.thermo.top('high');
-    g.display = { x0: -168, x1: -20, y0: tTop + 6, y1: tTop + 82 };
-    g.display.leader = P(-g.thermo.hw - 2, tTop + 44);
+    g.display = { x0: -168, x1: -20, y1: g.thermo.cap.y0 - 34 };
+    g.display.y0 = g.display.y1 - 76;
     const ovX0 = g.cond.at(D.jacket0 + 150, 0).x;
     g.overlay = { x0: ovX0, x1: g.sink.x1, y0: tTop - 4, y1: Math.min(hoseTopY - 26, g.cond.at(D.jacket0 + 150, 0).y - 140) };
 
     // Szenengrenzen (alles, was immer sichtbar sein muss)
     const x0 = o.station ? g.station.x0 - 12 : g.stand1.base.x0 - 16;
-    g.bounds = { x0, x1: g.sink.x1 + 14, y0: tTop - 12, y1: 34 };
+    g.bounds = { x0, x1: g.sink.x1 + 44, y0: tTop - 12, y1: 34 }; // rechts Abstand zum Griffbereich der Trennlinie
     return g;
   }
 
@@ -220,7 +218,7 @@
       { name: 'Laborboy ↔ Tisch', a: P(g.jack.x, g.jack.top + g.jack.h), b: P(g.jack.x, 0) },
       { name: 'Oberer Anschluss am Kühlmantel', a: g.nozzles.high.base, b: g.cond.at(DIM.nozzleHigh, DIM.jacketHW) },
       { name: 'Unterer Anschluss am Kühlmantel', a: g.nozzles.low.base, b: g.cond.at(DIM.nozzleLow, -DIM.jacketHW) },
-      { name: 'Stativklemme ↔ Kühlmantel', a: g.stand2.clampAt, b: P(g.stand2.rodX, g.stand2.clampAt.y) }
+      { name: 'Zulaufschlauch ↔ Laborarmatur', a: g.hoseRoutes.inlet('low')[0], b: g.tap.olive }
     ];
   }
 
@@ -237,10 +235,12 @@
     ok('Thermometerkugel (richtig) auf Höhe des Abgangs', Math.abs(g.thermo.bulb.correct - g.arm.o.y) < DIM.armHW + DIM.bulbLen);
     ok('Thermometerkugel (zu hoch) über dem Abgang, aber im Aufsatz', g.thermo.bulb.high + DIM.bulbLen / 2 < g.arm.o.y - DIM.armHW && g.thermo.bulb.high - DIM.bulbLen / 2 > g.head.y1);
     ok('Thermometerkugel (zu tief) im Kolbenhals', g.thermo.bulb.low > g.neck.y1 && g.thermo.bulb.low < g.neck.y0);
-    ok('Stativstange 2 trifft den Kühlmantel', Math.abs(g.stand2.rodX - g.stand2.clampAt.x) < 1e-9);
     ok('Einblendfläche liegt über dem Ablaufschlauch', g.overlay.y1 < g.hoseTopY);
     ok('Digitalanzeige links vom Thermometer', g.display.x1 < -g.thermo.hw);
     ok('Stativstange 1 endet unter der Digitalanzeige', g.stand1.top > g.display.y1);
+    ok('Digitalanzeige über dem Aufsatz, unter dem Thermometer-Oberende', g.display.y1 < g.thermo.cap.y0 && g.display.y0 > g.thermo.top('high'));
+    ok('Armatur am Ausguss, Ablauf rechts der Armatur', g.tap.x > g.sink.x0 && g.tap.x < g.sink.x1 && g.sink.drop.x > g.tap.x + 20);
+    ok('Abgenommene Vorlage steht frei', g.station ? g.receiverAway.x + DIM.recvBaseHW < g.station.x1 && g.receiverAway.x - DIM.recvBaseHW > g.station.dish.x + 36 : g.receiverAway.x + DIM.recvBaseHW < g.receiver.jack.x - g.receiver.jack.w / 2);
     ok('Ausguss rechts der Vorlage', g.sink.x0 > g.receiver.x + g.receiver.jack.w / 2);
     if (g.station) ok('Prüfplatz getrennt links vom Stativ', g.station.x1 < g.stand1.base.x0 - 20);
     return r;
@@ -248,12 +248,14 @@
 
   // ------------------------------------------------------------------ Bildschirmabbildung
   /** Gleichmäßige Skalierung der Szenengrenzen in eine Fläche w × h (CSS-Pixel). */
-  function fit(bounds, w, h, pad) {
+  /** padTop: oben freigehaltenes Band (CSS-Pixel) für Meldungen. */
+  function fit(bounds, w, h, pad, padTop) {
     const p = pad == null ? 10 : pad;
+    const top = Math.max(p, padTop || 0);
     const bw = bounds.x1 - bounds.x0, bh = bounds.y1 - bounds.y0;
-    const scale = Math.max(0.05, Math.min((w - 2 * p) / bw, (h - 2 * p) / bh));
+    const scale = Math.max(0.05, Math.min((w - 2 * p) / bw, (h - p - top) / bh));
     const ox = (w - bw * scale) / 2 - bounds.x0 * scale;
-    const oy = (h - bh * scale) / 2 - bounds.y0 * scale;
+    const oy = top + (h - p - top - bh * scale) / 2 - bounds.y0 * scale;
     return { scale, ox, oy, w, h };
   }
   const toScreen = (v, pt) => P(pt.x * v.scale + v.ox, pt.y * v.scale + v.oy);

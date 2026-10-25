@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const T = require('../../js/tasks.js');
 const { M, act, setup, runUntil, vol } = require('./helpers.js');
 
-function burnTest(e) { act(e, 'takeSample', 'receiver'); act(e, 'sampleToDish'); const r = act(e, 'ignite', 'dish'); e.advance(30); return r; }
+function burnTest(e) { if (e.state.receiver.present) act(e, 'toggleReceiver'); act(e, 'takeSample', 'receiver'); act(e, 'sampleToDish'); act(e, 'ignite', 'dish'); const r = { result: e.state.dish.result }; e.advance(30); act(e, 'toggleReceiver'); return r; }
 
 test('L-01 Ergebnis prüfen hängt vom Versuchszustand ab (Aufgabe 1)', () => {
   const e0 = M.createEngine();

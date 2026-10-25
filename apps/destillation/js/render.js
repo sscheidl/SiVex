@@ -15,9 +15,11 @@
   'use strict';
   const M = root.DS.model;
   const G = root.DS.geometry;
-  const { clamp, lerp, fmt } = root.LK.core;
+  const { clamp, lerp, fmt, easeInOut } = root.LK.core;
   const D = G.DIM;
 
+  const TOP_BAND = 54; // px oben frei für Meldungen
+  const GRAVITY = 2600; // Welteinheiten/s² für fallende Tropfen (wie TitraLab 3)
   const FONT = '"Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
   const C = {
     glassFill: 'rgba(214,230,246,0.28)',
@@ -57,7 +59,7 @@
   const PARTS = [
     { id: 'flask', anchor: (g) => P(-g.flask.R * 0.8, g.flask.c.y - g.flask.R * 0.35), label: (g) => P(g.stand1.rodX - 72, g.flask.c.y - 34) },
     { id: 'mantle', anchor: (g) => P(-g.mantle.outer + 6, g.mantle.base - 34), label: (g) => P(g.stand1.rodX - 72, g.mantle.base - 30) },
-    { id: 'stones', anchor: (g) => P(10, g.flask.c.y + g.flask.R - 7), label: (g) => P(g.mantle.outer + 52, g.mantle.base - 4) },
+    { id: 'stones', anchor: (g, st) => (st.stones ? P(10, g.flask.c.y + g.flask.R - 7) : P(g.stonesDish.x + 6, -12)), label: (g, st) => (st.stones ? P(g.mantle.outer + 52, g.mantle.base - 4) : P(g.stonesDish.x + 76, -66)) },
     { id: 'head', anchor: (g) => P(-g.head.hw, g.arm.o.y + 18), label: (g) => P(g.stand1.rodX - 50, g.arm.o.y + 6) },
     { id: 'thermo', anchor: (g, st) => P(g.thermo.hw, g.thermo.bulb[st.thermo] - 210), label: (g, st) => P(g.thermo.hw + 76, g.thermo.bulb[st.thermo] - 236) },
     { id: 'condenser', anchor: (g) => g.cond.at(D.jacket0 + 150, D.jacketHW), label: (g) => g.cond.at(D.jacket0 + 150, D.jacketHW + 52) },
@@ -66,8 +68,12 @@
     { id: 'adapter', anchor: (g) => P(g.adapter.a2.x + D.adapterHW, g.adapter.a2.y + 10), label: (g) => P(g.adapter.a2.x + 78, g.adapter.a2.y - 30) },
     { id: 'receiver', anchor: (g) => P(g.receiver.x + g.receiver.baseHW - 10, g.receiver.base - 26), label: (g) => P(g.receiver.x + 100, g.receiver.base - 66) },
     { id: 'distillate', anchor: (g) => P(g.receiver.x - 10, g.receiver.base - 6), label: (g) => P(g.receiver.x - 92, g.receiver.base - 26) },
+    { id: 'mixture', extra: true, anchor: (g) => P(g.bottle.x, -24), label: (g) => P(g.bottle.x, 18) },
     { id: 'stand', anchor: (g) => P(g.stand1.rodX, g.stand1.clamps[0].y - 26), label: (g) => P(g.stand1.rodX - 72, g.stand1.clamps[0].y - 36) }
   ];
+
+  /** Zusätzliche Geräte im Modus „Erkunden“ (nicht Teil des Geräte-Trainers). */
+  const EXPLORE_EXTRA = ['tap', 'sink', 'pipette', 'dish', 'lighter'];
 
   // ------------------------------------------------------------------ Renderer
   function createRenderer(canvas, getState, getUi) {
@@ -77,7 +83,7 @@
     const view = { scale: 1, ox: 0, oy: 0, w: 1, h: 1, dpr: 1 };
     let reduce = false;
     try { reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* ohne */ }
-    const vis = { lastT: null, time: 0, water: 0, film: 0, hose: 0, bubbles: [], bubbleSeq: 0, drops: [], lastDrop: 0, stream: 0, swap: null, nFractions: null, lastRealDrops: [] };
+    const vis = { lastT: null, time: 0, water: 0, film: 0, hose: 0, bubbles: [], bubbleSeq: 0, drops: [], lastDrop: 0, stream: 0, swap: null, nFractions: null, lastRealDrops: [], rings: [], splashes: [], wave: 0, recvPose: null, recvDrawn: null };
 
     function ensureGeo(st) {
       const key = st.mix === 'ew' ? 'S' : 'N';
@@ -93,7 +99,7 @@
       const changed = ensureGeo(getState());
       if (!changed && w === view.w && h === view.h && dpr === view.dpr) return false;
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-      Object.assign(view, G.fit(geo.bounds, w, h, 8), { dpr });
+      Object.assign(view, G.fit(geo.bounds, w, h, 8, TOP_BAND), { dpr });
       renderBackground();
       return true;
     }
@@ -183,41 +189,17 @@
 
     // ------------------------------------------------------------------ Stative, Laborboys
     function drawStands(st) {
-      const g = geo;
-      const s1 = g.stand1, s2 = g.stand2;
-      for (const s of [s1, s2]) {
-        const pg = ctx.createLinearGradient(0, -s.base.h, 0, 0);
-        pg.addColorStop(0, '#4a5462'); pg.addColorStop(0.3, '#2c333d'); pg.addColorStop(1, '#1b2028');
-        ctx.fillStyle = pg; roundRect(ctx, s.base.x0, -s.base.h, s.base.x1 - s.base.x0, s.base.h, 3); ctx.fill();
-      }
+      // Stativ mit Doppelmuffe; die Stange zum Kolbenhals liegt hinter dem Glas (keine sichtbare Klemme)
+      const s1 = geo.stand1;
+      const pg = ctx.createLinearGradient(0, -s1.base.h, 0, 0);
+      pg.addColorStop(0, '#4a5462'); pg.addColorStop(0.3, '#2c333d'); pg.addColorStop(1, '#1b2028');
+      ctx.fillStyle = pg; roundRect(ctx, s1.base.x0, -s1.base.h, s1.base.x1 - s1.base.x0, s1.base.h, 3); ctx.fill();
       metalRod(s1.rodX, s1.top, s1.rodX, -s1.base.h, 11);
-      metalRod(s2.rodX, s2.top, s2.rodX, -s2.base.h, 11);
-      ctx.fillStyle = '#c9d1db';
-      roundRect(ctx, s1.rodX - 6.5, s1.top - 4, 13, 7, 3); ctx.fill();
-      roundRect(ctx, s2.rodX - 6.5, s2.top - 4, 13, 7, 3); ctx.fill();
-    }
-    function clampArm(rodX, x1, y, hw, angle, at) {
-      // Doppelmuffe am Stab, Stange, Klemmbacken um das Glas
-      if (at) {
-        // Stab hinter dem Kühler: Muffe unterhalb, kurzer Klemmenhals nach oben
-        const by = y + hw + 22;
-        metalRod(rodX, by, rodX, y + hw + 4, 7);
-        ctx.fillStyle = '#2f3640'; roundRect(ctx, rodX - 13, by - 12, 26, 24, 5); ctx.fill();
-        ctx.fillStyle = '#7c8794'; ctx.beginPath(); ctx.arc(rodX + 18, by, 4.5, 0, Math.PI * 2); ctx.fill();
-      } else {
-        metalRod(rodX, y, x1 - hw - 8, y, 8);
-        ctx.fillStyle = '#2f3640'; roundRect(ctx, rodX - 13, y - 15, 26, 30, 5); ctx.fill();
-        ctx.fillStyle = '#7c8794'; ctx.beginPath(); ctx.arc(rodX - 18, y, 4.5, 0, Math.PI * 2); ctx.fill();
-      }
-      ctx.save(); ctx.translate(at ? at.x : x1, at ? at.y : y); ctx.rotate(angle || 0);
-      ctx.fillStyle = '#b48a5a';
-      ctx.fillRect(-hw - 6, -12, 5, 24); ctx.fillRect(hw + 1, -12, 5, 24);
-      const jaw = ctx.createLinearGradient(0, -14, 0, 14);
-      jaw.addColorStop(0, '#c8d0da'); jaw.addColorStop(0.5, '#6d7784'); jaw.addColorStop(1, '#353c46');
-      ctx.fillStyle = jaw;
-      roundRect(ctx, -hw - 12, -13, 6, 26, 2); ctx.fill();
-      roundRect(ctx, hw + 6, -13, 6, 26, 2); ctx.fill();
-      ctx.restore();
+      ctx.fillStyle = '#c9d1db'; roundRect(ctx, s1.rodX - 6.5, s1.top - 4, 13, 7, 3); ctx.fill();
+      const y = s1.clamps[0].y;
+      metalRod(s1.rodX, y, 0, y, 7);
+      ctx.fillStyle = '#2f3640'; roundRect(ctx, s1.rodX - 12, y - 13, 24, 26, 5); ctx.fill();
+      ctx.fillStyle = '#7c8794'; ctx.beginPath(); ctx.arc(s1.rodX - 17, y, 4, 0, Math.PI * 2); ctx.fill();
     }
     function drawJack(x, w, top, h) {
       const y1 = top + h;
@@ -227,7 +209,6 @@
       const k = w * 0.36;
       ctx.beginPath(); ctx.moveTo(x - k, top + 8); ctx.lineTo(x + k, y1 - 8); ctx.moveTo(x + k, top + 8); ctx.lineTo(x - k, y1 - 8); ctx.stroke();
       ctx.fillStyle = '#5a6573'; ctx.beginPath(); ctx.arc(x, top + h / 2, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#8b96a3'; roundRect(ctx, x + w / 2 - 2, top + h / 2 - 3, 14, 6, 2); ctx.fill();
     }
 
     // ------------------------------------------------------------------ Heizpilz (aufgeschnitten dargestellt)
@@ -246,16 +227,12 @@
       const sg = ctx.createLinearGradient(-m.outer, 0, m.outer, 0);
       sg.addColorStop(0, '#2e3540'); sg.addColorStop(0.45, '#4d5866'); sg.addColorStop(1, '#262c35');
       body(); ctx.fillStyle = sg; ctx.fill();
-      // Heizgewebe innen (Rückseite der Schale), glüht mit der Temperatur des Heizpilzes
-      const hot = clamp((st.mantleT - 35) / 110, 0, 1);
+      // Heizgewebe innen (Rückseite der Schale), neutral; die Temperatur zeigt die Heizschicht im Schnitt
       ctx.save();
       ctx.beginPath(); ctx.arc(c.x, c.y, m.inner, 0, Math.PI); ctx.closePath();
-      ctx.fillStyle = '#d9d0c3'; ctx.fill();
-      if (hot > 0) {
-        const hg = ctx.createRadialGradient(c.x, c.y + m.inner * 0.7, 4, c.x, c.y + m.inner * 0.5, m.inner * 1.1);
-        hg.addColorStop(0, `rgba(255,120,40,${0.75 * hot})`); hg.addColorStop(0.6, `rgba(240,90,30,${0.45 * hot})`); hg.addColorStop(1, `rgba(200,60,20,${0.15 * hot})`);
-        ctx.fillStyle = hg; ctx.fill();
-      }
+      const fg = ctx.createLinearGradient(0, c.y, 0, c.y + m.inner);
+      fg.addColorStop(0, '#e7e9ec'); fg.addColorStop(1, '#cfd4da');
+      ctx.fillStyle = fg; ctx.fill();
       ctx.restore();
     }
     function drawMantleFront(st, ui) {
@@ -442,7 +419,7 @@
       const g = geo;
       ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillRect(-g.head.hw + 3, g.head.y1 + 8, 2, g.head.y0 - g.head.y1 - 20);
       // Schliffverbindung Kolben/Aufsatz
-      joint(0, g.head.joint.y + 2, 0, g.neck.hw, 14);
+      joint(0, g.head.joint.y + 2, Math.PI / 2, g.neck.hw, 14);
       // Thermometeradapter (Schraubkappe)
       const cp = g.thermo.cap;
       ctx.fillStyle = '#2f6fb5'; roundRect(ctx, -cp.hw, cp.y0, 2 * cp.hw, cp.y1 - cp.y0, 3); ctx.fill();
@@ -688,21 +665,30 @@
       if (V > 0.005) {
         ctx.save();
         erlenPath(r, D.glass); ctx.closePath(); ctx.clip();
-        const fakeG = { receiver: r };
-        const lev = G.receiverLevel(fakeG, V);
+        const lev = G.receiverLevel({ receiver: r }, V);
+        const wob = o.wave || 0;
         const lg = ctx.createLinearGradient(0, lev.y, 0, r.base);
         lg.addColorStop(0, rgba([110, 165, 228], 0.70)); lg.addColorStop(1, rgba([90, 145, 215], 0.88));
-        ctx.fillStyle = lg; ctx.fillRect(r.x - r.baseHW, lev.y, 2 * r.baseHW, r.base - lev.y);
-        ctx.strokeStyle = 'rgba(40,90,160,0.85)'; ctx.lineWidth = px(1.3);
-        ctx.beginPath(); ctx.moveTo(r.x - lev.half, lev.y); ctx.lineTo(r.x + lev.half, lev.y); ctx.stroke();
+        ctx.fillStyle = lg;
+        ctx.beginPath();
+        ctx.moveTo(r.x - r.baseHW, lev.y);
+        for (let k = 0; k <= 16; k++) { const u = k / 16; ctx.lineTo(r.x - lev.half + 2 * lev.half * u, lev.y + Math.sin(u * Math.PI * 3 + vis.time * 14) * wob); }
+        ctx.lineTo(r.x + r.baseHW, lev.y); ctx.lineTo(r.x + r.baseHW, r.base); ctx.lineTo(r.x - r.baseHW, r.base); ctx.closePath(); ctx.fill();
         const ry = Math.max(1, lev.half * 0.1);
         ctx.fillStyle = 'rgba(235,245,255,0.5)'; ctx.beginPath(); ctx.ellipse(r.x, lev.y, lev.half, ry, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = 'rgba(80,120,170,0.6)'; ctx.lineWidth = px(1);
+        ctx.strokeStyle = 'rgba(40,90,160,0.75)'; ctx.lineWidth = px(1.2);
         ctx.beginPath(); ctx.ellipse(r.x, lev.y, lev.half, ry, 0, 0, Math.PI); ctx.stroke();
         ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = px(1.1);
         ctx.beginPath(); ctx.moveTo(r.x - lev.half, lev.y - 2); ctx.quadraticCurveTo(r.x - lev.half + 3, lev.y, r.x - lev.half + 7, lev.y); ctx.stroke();
+        // Ringwellen nach dem Auftreffen eines Tropfens (TitraLab 3)
+        for (const ring of o.rings || []) {
+          const t = ring.age / ring.life;
+          const rx = 2 + t * lev.half * 0.9;
+          ctx.strokeStyle = `rgba(255,255,255,${(0.6 * (1 - t)).toFixed(3)})`; ctx.lineWidth = px(1);
+          ctx.beginPath(); ctx.ellipse(r.x, lev.y, rx, rx * 0.1 + 0.6, 0, 0, Math.PI * 2); ctx.stroke();
+        }
         ctx.restore();
-        o.surface && o.surface(lev.y);
+        if (o.surface) o.surface(lev.y, lev.half);
       }
       erlenPath(r, 0); ctx.strokeStyle = C.glassEdge; ctx.lineWidth = px(1.4); ctx.stroke();
       ctx.strokeStyle = 'rgba(235,245,255,0.9)'; ctx.lineWidth = px(1.8);
@@ -710,96 +696,123 @@
       ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.beginPath(); ctx.moveTo(r.x - r.neckHW - 3, r.base - (r.h - 34) + 16); ctx.lineTo(r.x - r.neckHW - 1, r.base - (r.h - 34) + 16); ctx.lineTo(r.x - r.baseHW + 12, r.base - 14); ctx.lineTo(r.x - r.baseHW + 8, r.base - 14); ctx.closePath(); ctx.fill();
       if (o.scale) {
-        // Volumenskala
-        ctx.strokeStyle = 'rgba(40,52,66,0.75)'; ctx.lineWidth = px(1);
-        for (const ml of [20, 40, 60, 80, 100]) {
+        // Volumenskala wie aufgedruckt: Striche auf einer senkrechten Linie, Zahlen links davon
+        ctx.strokeStyle = 'rgba(40,52,66,0.8)'; ctx.lineWidth = px(1);
+        for (const ml of [20, 40, 60, 80]) {
           const lev = G.receiverLevel({ receiver: r }, ml);
-          const xr = r.x + lev.half * 0.35;
-          ctx.beginPath(); ctx.moveTo(xr, lev.y); ctx.lineTo(xr + 9, lev.y); ctx.stroke();
-          if (ml % 40 === 0) text(String(ml), xr + 11, lev.y, { size: 9, align: 'left', color: '#2a3542' });
-          if (ml === 100) text('100 mL', xr + 11, lev.y - 1, { size: 9, align: 'left', color: '#2a3542' });
+          const len = ml % 40 === 0 ? 8 : 5;
+          ctx.beginPath(); ctx.moveTo(r.x + 1, lev.y); ctx.lineTo(r.x + 1 + len, lev.y); ctx.stroke();
+          if (ml === 40) text('40 mL', r.x - 2, lev.y, { size: 9, align: 'right', color: '#2a3542' });
+          if (ml === 80) text('80', r.x - 2, lev.y, { size: 9, align: 'right', color: '#2a3542' });
         }
       }
     }
+    /** Lage der aktuellen Vorlage (unter dem Vorstoß oder abgestellt), mit Bewegung beim Wechsel. */
+    function receiverPose(st, dtVis) {
+      const g = geo;
+      const target = st.receiver.present ? { x: g.receiver.x, base: g.receiver.base } : { x: g.receiverAway.x, base: g.receiverAway.base };
+      let p = vis.recvPose;
+      if (!p || p.geoKey !== geoKey) p = vis.recvPose = { x: target.x, base: target.base, fx: target.x, fb: target.base, tx: target.x, tb: target.base, t: 1, geoKey };
+      if (Math.abs(p.tx - target.x) > 0.5 || Math.abs(p.tb - target.base) > 0.5) {
+        p.fx = p.x; p.fb = p.base; p.tx = target.x; p.tb = target.base; p.t = 0;
+      }
+      if (p.t < 1) p.t = Math.min(1, p.t + (dtVis > 0 ? dtVis : 0.016) / 0.9);
+      const u = easeInOut(p.t);
+      p.x = lerp(p.fx, p.tx, u);
+      p.base = lerp(p.fb, p.tb, u);
+      const lift = p.t < 1 ? Math.sin(Math.PI * u) * 40 : 0;
+      const r = Object.assign({}, g.receiver, { x: p.x, base: p.base - lift, rim: p.base - lift - g.receiver.h });
+      return { r, moving: p.t < 1, home: st.receiver.present && p.t >= 1 };
+    }
     function drawReceiver(st, dtVis) {
-      const g = geo, r = g.receiver;
+      const g = geo, rj = g.receiver.jack;
       const rc = st.receiver;
-      drawJack(r.jack.x, r.jack.w, r.jack.top, r.jack.h);
-      // Wechselanimation (Expertenmodus): alte Vorlage gleitet nach links auf den Tisch, neue kommt
+      drawJack(rj.x, rj.w, rj.top, rj.h);
+      // Wechselanimation (Expertenmodus): alte Vorlage gleitet auf den Tisch, neue kommt
       const nF = st.fractions.length;
       if (vis.nFractions == null) vis.nFractions = nF;
       if (nF !== vis.nFractions) { vis.swap = nF > vis.nFractions ? { t: 0 } : null; vis.nFractions = nF; }
       if (vis.swap && dtVis > 0) { vis.swap.t += dtVis; if (vis.swap.t > 0.9) vis.swap = null; }
       const sw = vis.swap ? clamp(vis.swap.t / 0.9, 0, 1) : 1;
-      // abgestellte Fraktionen links neben der Vorlage
+      const R0 = g.receiver;
       const shelf = st.fractions.slice(-3);
       shelf.forEach((f, i) => {
         const k = shelf.length - 1 - i;
-        const small = scaledErlen(r, 0.62, r.x - 92 - k * 50, 0);
+        const small = scaledErlen(R0, 0.62, R0.x - 92 - k * 50, 0);
         let rr = small;
-        if (i === shelf.length - 1 && vis.swap) {
-          const from = { x: r.x, base: r.base };
-          rr = scaledErlen(r, lerp(1, 0.62, sw), lerp(from.x, small.x, sw), lerp(r.base, 0, sw));
-          rr.rim = rr.base - rr.h;
-        }
+        if (i === shelf.length - 1 && vis.swap) rr = scaledErlen(R0, lerp(1, 0.62, sw), lerp(R0.x, small.x, sw), lerp(R0.base, 0, sw));
         drawErlenmeyer(rr, M.vol(f.c), {});
         text(`V${f.n}`, rr.x, 11, { size: 10, color: '#22303d', weight: 700 });
         text(`${fmt(M.vol(f.c), 1)} mL`, rr.x, 24, { size: 9, color: '#22303d' });
       });
-      if (!rc.present) {
-        text('Keine Vorlage unter dem Vorstoß', r.x, r.jack.top - 30, { size: 11, color: '#7a4004', bg: 'rgba(253,241,220,0.95)', border: '#ecc98d' });
-        // Vorlage steht abseits auf dem Tisch
-        const off = scaledErlen(r, 0.75, r.x + 66, 0);
-        drawErlenmeyer(off, M.vol(rc.c), {});
-        return;
-      }
-      let rr = r;
-      if (vis.swap) { rr = Object.assign({}, r, { x: lerp(r.x + 90, r.x, sw) }); rr.rim = r.rim; }
-      let surfY = r.base - D.glass;
-      drawErlenmeyer(rr, M.vol(rc.c), { scale: true, surface: (y) => { surfY = y; } });
-      // Stopfen
-      if (rc.stopper) {
+      const pose = receiverPose(st, dtVis);
+      let r = pose.r;
+      if (vis.swap) r = Object.assign({}, r, { x: lerp(R0.x + 90, R0.x, sw) });
+      vis.recvDrawn = r;
+      let surf = null;
+      drawErlenmeyer(r, M.vol(rc.c), { scale: true, rings: pose.home ? vis.rings : [], wave: pose.home ? vis.wave : 0, surface: (y, half) => { surf = { y, half }; } });
+      if (rc.stopper && rc.present) {
         ctx.fillStyle = '#4a4f57';
         ctx.beginPath(); ctx.moveTo(r.x - r.neckHW - 3, r.rim - 8); ctx.lineTo(r.x + r.neckHW + 3, r.rim - 8); ctx.lineTo(r.x + r.neckHW - 1, r.rim + 12); ctx.lineTo(r.x - r.neckHW + 1, r.rim + 12); ctx.closePath(); ctx.fill();
       }
-      // Volumenangabe auf dem Laborboy
-      text(`Vorlage ${rc.n}: ${fmt(M.vol(rc.c), 1)} mL`, r.x, r.jack.top + r.jack.h / 2 + 1, { size: 11, color: '#fff', weight: 700, bg: 'rgba(31,37,45,0.85)' });
-      return surfY;
+      if (rc.present || pose.moving) text(`Vorlage ${rc.n}: ${fmt(M.vol(rc.c), 1)} mL`, rj.x, rj.top + rj.h / 2 + 1, { size: 11, color: '#fff', weight: 700, bg: 'rgba(31,37,45,0.85)' });
+      else {
+        text(`Vorlage ${rc.n}: ${fmt(M.vol(rc.c), 1)} mL`, r.x, 18, { size: 11, color: '#22303d', weight: 700 });
+        text('Keine Vorlage unter dem Vorstoß', rj.x, rj.top - 30, { size: 11, color: '#7a4004', bg: 'rgba(253,241,220,0.95)', border: '#ecc98d' });
+      }
+      return pose.home ? surf : null;
     }
     function scaledErlen(r, f, x, base) {
       return { x, base, h: r.h * f, rim: base - r.h * f, baseHW: r.baseHW * f, neckHW: r.neckHW * f };
     }
-    function drawDrops(st, dtVis, surfY) {
+    function drawDrops(st, dtVis, surf) {
       const a = geo.adapter;
       const tipY = a.tip.y + 6;
-      // Neue Tropfen aus dem Modell übernehmen (Tropfenzähler)
       const list = st.drops.list;
       const newest = list.length ? list[list.length - 1].n : 0;
-      // Beim ersten Bild oder nach einem Neustart keine alten Tropfen nachholen
       if (vis.lastDrop > newest || vis.dropInit !== st.run) { vis.lastDrop = newest; vis.dropInit = st.run; }
       const fresh = list.filter((d) => d.n > vis.lastDrop);
       vis.lastDrop = newest;
       const now = vis.time;
       vis.lastRealDrops = vis.lastRealDrops.filter((t) => now - t < 1);
-      for (const d of fresh) vis.lastRealDrops.push(now);
-      const realRate = vis.lastRealDrops.length; // Tropfen pro Sekunde Echtzeit
-      const target = st.receiver.present ? (surfY != null ? surfY : geo.receiver.base) : -6;
-      const fall = Math.max(10, target - tipY);
-      if (realRate > 7 && !reduce) {
-        // im Zeitraffer: dünner Strahl statt Einzeltropfen
-        ctx.strokeStyle = 'rgba(120,170,230,0.55)'; ctx.lineWidth = 1.6; ctx.setLineDash([3, 4]); ctx.lineDashOffset = -vis.time * 60;
-        ctx.beginPath(); ctx.moveTo(a.tip.x, tipY); ctx.lineTo(a.tip.x, target); ctx.stroke(); ctx.setLineDash([]);
-      } else {
-        for (const d of fresh.slice(-6)) vis.drops.push({ t: 0, to: d.to });
+      for (let i = 0; i < fresh.length; i++) vis.lastRealDrops.push(now);
+      const realRate = vis.lastRealDrops.length;
+      const target = surf ? surf.y : st.receiver.present ? geo.receiver.base - D.glass : geo.receiver.jack.top - 1;
+      const stream = realRate > 7 && !reduce;
+      if (stream) {
+        // im Zeitraffer: zusammenhängender Strahl, nach unten dünner (TitraLab 3)
+        const w = clamp(0.8 + realRate / 25, 0.8, 2.2);
+        const sg = ctx.createLinearGradient(a.tip.x - w, 0, a.tip.x + w, 0);
+        sg.addColorStop(0, 'rgba(120,170,230,0.45)'); sg.addColorStop(0.5, 'rgba(225,240,255,0.75)'); sg.addColorStop(1, 'rgba(120,170,230,0.45)');
+        ctx.fillStyle = sg;
+        ctx.beginPath(); ctx.moveTo(a.tip.x - 1.6, tipY); ctx.lineTo(a.tip.x + 1.6, tipY); ctx.lineTo(a.tip.x + w * 0.6, target); ctx.lineTo(a.tip.x - w * 0.6, target); ctx.closePath(); ctx.fill();
       }
-      if (dtVis > 0) vis.drops.forEach((d) => { d.t += dtVis; });
-      const T = 0.32;
-      vis.drops = vis.drops.filter((d) => d.t < T);
-      for (const d of vis.drops) {
-        const u = d.t / T;
-        drawDrop(a.tip.x, tipY + 3 + fall * u * u, 2.2, 1 + 0.4 * u);
+      for (const d of fresh.slice(-6)) vis.drops.push({ t: 0, n: d.n, landed: false });
+      if (dtVis > 0) {
+        vis.drops.forEach((d) => { d.t += dtVis; });
+        vis.rings.forEach((r) => { r.age += dtVis; });
+        vis.splashes.forEach((p) => { p.age += dtVis; p.x += p.vx * dtVis; p.y += p.vy * dtVis; p.vy += GRAVITY * 0.6 * dtVis; });
+        vis.wave *= Math.exp(-dtVis * 3);
       }
-      // hängender Tropfen an der Spitze (Menge aus dem Modell)
+      const x = a.tip.x;
+      vis.drops = vis.drops.filter((d) => {
+        const y = tipY + 2 + 0.5 * GRAVITY * d.t * d.t;
+        if (y >= target) {
+          if (surf && !reduce) {
+            vis.rings.push({ age: 0, life: 0.9 });
+            vis.wave = Math.min(1.4, vis.wave + 0.6);
+            for (let k = 0; k < 2; k++) vis.splashes.push({ x, y: target, vx: (hash(d.n * 3 + k) - 0.5) * 90, vy: -110 - hash(d.n + k) * 80, age: 0, life: 0.3 });
+          }
+          return false;
+        }
+        if (!stream) drawDrop(x, y, 2.3, 1 + Math.min(0.45, (GRAVITY * d.t) / 3000));
+        return true;
+      });
+      vis.rings = vis.rings.filter((r) => r.age < r.life).slice(-6);
+      vis.splashes = vis.splashes.filter((p) => p.age < p.life);
+      ctx.fillStyle = 'rgba(210,232,255,0.85)';
+      for (const p of vis.splashes) { ctx.beginPath(); ctx.arc(p.x, p.y, 1.1, 0, Math.PI * 2); ctx.fill(); }
+      // hängender Tropfen an der Spitze wächst mit dem Modell und reißt ab
       const tv = M.vol(st.tip);
       if (tv > 0.002) { const rr = 1 + 1.6 * Math.cbrt(tv / M.DROP_VOL); drawDrop(a.tip.x, tipY + rr * 0.9, rr, 1.15); }
     }
@@ -820,44 +833,50 @@
       chain(ctx, pts); ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1.2; ctx.stroke();
       ctx.restore();
     }
-    function drawHoses(st, ui, dtVis) {
+    /** Zulaufschlauch (liegt hinter der Vorlage auf dem Tisch) – vor dem Laborboy gezeichnet. */
+    function drawInletHose(st, ui, dtVis) {
       const g = geo, h = st.hoses;
       const flowing = st.fx.flow > 0;
       if (flowing && dtVis > 0) vis.hose += dtVis * (20 + 8 * st.fx.flow);
-      const selIn = ui.selected === 'hose:inlet', selOut = ui.selected === 'hose:outlet';
-      drawHose(h.inlet ? g.hoseRoutes.inlet(h.inlet) : g.hoseRoutes.looseInlet(), flowing, selIn, flowing ? 1 : 0);
-      drawHose(h.outlet ? g.hoseRoutes.outlet(h.outlet) : g.hoseRoutes.looseOutlet(), flowing || (h.outlet && st.jacket.fill > 0.5), selOut, flowing ? 1 : 0);
-      // offene Schlauchenden markieren
-      const endOf = (pts) => pts[pts.length - 1];
-      if (!h.inlet) { const e = endOf(g.hoseRoutes.looseInlet()); ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 3, 5, 0.3, 0, Math.PI * 2); ctx.fill(); }
-      if (!h.outlet) { const e = endOf(g.hoseRoutes.looseOutlet()); ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 4.5, 2.6, 0, 0, Math.PI * 2); ctx.fill(); }
-      // Wasser fließt in den Ausguss
+      drawHose(h.inlet ? g.hoseRoutes.inlet(h.inlet) : g.hoseRoutes.looseInlet(), flowing, ui.selected === 'hose:inlet', flowing ? 1 : 0);
+      if (!h.inlet) { const pts = g.hoseRoutes.looseInlet(), e = pts[pts.length - 1]; ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 3, 5, 0.2, 0, Math.PI * 2); ctx.fill(); }
+    }
+    function drawOutletHose(st, ui) {
+      const g = geo, h = st.hoses;
+      const flowing = st.fx.flow > 0;
+      drawHose(h.outlet ? g.hoseRoutes.outlet(h.outlet) : g.hoseRoutes.looseOutlet(), flowing || (h.outlet && st.jacket.fill > 0.5), ui.selected === 'hose:outlet', flowing ? 1 : 0);
+      if (!h.outlet) { const pts = g.hoseRoutes.looseOutlet(), e = pts[pts.length - 1]; ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 4.5, 2.6, 0, 0, Math.PI * 2); ctx.fill(); }
       if (flowing && h.outlet) {
         const s = g.sink.drop;
         ctx.strokeStyle = rgba(C.water, 0.6); ctx.lineWidth = 2.4;
         ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x, 10); ctx.stroke();
       }
     }
+    /** Laborarmatur am Ausguss: Standrohr, Ventilhebel, Schwanenhals mit Schlaucholive. */
     function drawTap(st) {
       const t = geo.tap;
-      metalRod(t.x, t.top + 6, t.x, 0, 12);
-      ctx.fillStyle = '#3a434f'; roundRect(ctx, t.x - 16, -8, 32, 8, 2); ctx.fill();
-      // Ventilkörper und Olive
-      ctx.fillStyle = '#7d8896'; roundRect(ctx, t.x - 9, t.top - 6, 18, 22, 4); ctx.fill();
-      tubeStroke(() => { ctx.beginPath(); ctx.moveTo(t.x + 6, t.top + 2); ctx.lineTo(t.outlet.x, t.outlet.y); }, 3.6, '#c9d1db');
-      // Hebel: quer = zu, längs = offen (zusätzlich farbige Markierung und Text)
+      metalRod(t.x, t.top + 8, t.x, 0, 12);
+      ctx.fillStyle = '#3a434f'; roundRect(ctx, t.x - 14, -6, 28, 6, 2); ctx.fill();
+      ctx.save(); ctx.lineCap = 'round';
+      ctx.strokeStyle = '#6d7784'; ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.moveTo(t.x, t.top + 10); ctx.quadraticCurveTo(t.x, t.top - 10, t.x - 20, t.top - 10); ctx.quadraticCurveTo(t.olive.x, t.top - 10, t.olive.x, t.olive.y - 8); ctx.stroke();
+      ctx.strokeStyle = '#c9d1db'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(t.x - 2, t.top + 8); ctx.quadraticCurveTo(t.x - 2, t.top - 7, t.x - 20, t.top - 7); ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#9aa4b0'; roundRect(ctx, t.olive.x - 3.5, t.olive.y - 10, 7, 12, 2); ctx.fill();
+      // Ventil mit Hebel: quer = zu, längs = offen (Zustand steht zusätzlich am Schalter)
       const open = st.water.on;
       const ang = open ? -Math.PI / 2 + (st.water.level === 'low' ? 0.5 : st.water.level === 'mid' ? 0.25 : 0) : 0;
+      ctx.fillStyle = '#7d8896'; roundRect(ctx, t.x - 9, t.handle.y - 10, 18, 20, 4); ctx.fill();
       ctx.save(); ctx.translate(t.handle.x, t.handle.y); ctx.rotate(ang);
-      ctx.fillStyle = open ? '#1f6fd1' : '#c62f3a'; roundRect(ctx, -3, -4, 34, 8, 3); ctx.fill();
+      ctx.fillStyle = open ? '#1f6fd1' : '#c62f3a'; roundRect(ctx, -3, -4, 30, 8, 3); ctx.fill();
       ctx.restore();
-      ctx.fillStyle = '#2f3640'; ctx.beginPath(); ctx.arc(t.handle.x, t.handle.y, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2f3640'; ctx.beginPath(); ctx.arc(t.handle.x, t.handle.y, 5.5, 0, Math.PI * 2); ctx.fill();
     }
 
     // ------------------------------------------------------------------ Tischgeräte
     function drawBench(st, ui) {
       const g = geo;
-      // Flasche mit dem gewählten Gemisch
       const b = g.bottle;
       const filling = st.op && st.op.type === 'fill';
       if (!filling) {
@@ -872,18 +891,12 @@
         text(mix.short.split('/')[0], b.x, top + 55, { size: 9, color: '#222', weight: 700 });
         text(mix.id === 'pew' ? '+ Ethanol + Wasser' : '+ Wasser', b.x, top + 67, { size: 8, color: '#333', weight: 600 });
       }
-      // Schälchen mit Siedesteinen
       const s = g.stonesDish;
       ctx.fillStyle = '#f3f1ec'; ctx.strokeStyle = '#9a9286'; ctx.lineWidth = px(1);
       ctx.beginPath(); ctx.ellipse(s.x, -s.h / 2, s.w / 2, s.h / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       if (!st.stones) for (let i = 0; i < 6; i++) { ctx.fillStyle = '#ddd7cc'; ctx.beginPath(); ctx.arc(s.x - 12 + i * 5, -s.h / 2 - 1 + (i % 2) * 2, 2.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
-      // Stopfen auf dem Tisch
-      if (!st.receiver.stopper) {
-        const p = g.stopper;
-        ctx.fillStyle = '#4a4f57';
-        ctx.beginPath(); ctx.moveTo(p.x - 12, p.y - 10); ctx.lineTo(p.x + 12, p.y - 10); ctx.lineTo(p.x + 9, p.y + 6); ctx.lineTo(p.x - 9, p.y + 6); ctx.closePath(); ctx.fill();
-      }
     }
+
     function drawFilling(st) {
       if (!(st.op && st.op.type === 'fill')) return;
       const g = geo, u = clamp(st.op.t / st.op.dur, 0, 1);
@@ -906,20 +919,72 @@
     }
 
     // ------------------------------------------------------------------ Prüfplatz
+    const mixP = (a, b, u) => P(lerp(a.x, b.x, u), lerp(a.y, b.y, u));
+    const seg = (u, a, b) => clamp((u - a) / (b - a), 0, 1);
+    /** Lage der Pipette (Spitze), Neigung und Füllung – aus Handgriff und Modellzustand. */
+    function pipettePose(st, ui) {
+      const s = geo.station;
+      const rest = P(s.pipette.x, s.pipette.y);
+      const rv = vis.recvDrawn || { x: geo.receiverAway.x, base: geo.receiverAway.base, rim: geo.receiverAway.base - geo.receiver.h };
+      const above = P(rv.x, rv.rim - 44);
+      const lev = G.receiverLevel({ receiver: Object.assign({}, geo.receiver, rv) }, Math.max(0.3, M.vol(st.receiver.c)));
+      const inside = P(rv.x, lev.y + 2);
+      const overDish = P(s.dish.x, s.dish.y - 46);
+      const op = st.op;
+      if (op && op.type === 'sample') {
+        const u = op.t / op.dur;
+        let p = mixP(rest, above, easeInOut(seg(u, 0, 0.3)));
+        if (u > 0.3) p = mixP(above, inside, easeInOut(seg(u, 0.3, 0.5)));
+        if (u > 0.6) p = mixP(inside, above, easeInOut(seg(u, 0.6, 0.85)));
+        return { tip: P(p.x, p.y - (u < 0.3 ? Math.sin(Math.PI * seg(u, 0, 0.3)) * 50 : 0)), ang: 0, fill: seg(u, 0.5, 0.6), squeeze: u > 0.45 && u < 0.6 ? 1 - Math.abs(u - 0.52) * 12 : 0 };
+      }
+      if (op && op.type === 'toDish') {
+        const u = op.t / op.dur;
+        let p = mixP(above, overDish, easeInOut(seg(u, 0, 0.45)));
+        if (u > 0.7) p = mixP(overDish, rest, easeInOut(seg(u, 0.7, 1)));
+        const lift = u < 0.45 ? Math.sin(Math.PI * seg(u, 0, 0.45)) * 40 : u > 0.7 ? Math.sin(Math.PI * seg(u, 0.7, 1)) * 40 : 0;
+        return { tip: P(p.x, p.y - lift), ang: 0, fill: 1 - seg(u, 0.45, 0.7), squeeze: u > 0.45 && u < 0.7 ? 0.8 : 0 };
+      }
+      if (st.pipette) return { tip: above, ang: 0, fill: 1, squeeze: 0 };
+      if (ui.selected === 'pipette') return { tip: P(rest.x + 6, rest.y - 22), ang: 0.35, fill: 0, squeeze: 0 };
+      return { tip: rest, ang: 0, fill: 0, squeeze: 0 };
+    }
+    /** Lage des Stabfeuerzeugs (Fußpunkt), Neigung zur Schale, Funke. */
+    function lighterPose(st, ui) {
+      const s = geo.station;
+      const rest = { base: P(s.lighter.x, s.lighter.y), ang: 0 };
+      const held = { base: P(s.lighter.x + 10, s.lighter.y - 16), ang: 0.5 };
+      const a = 1.35; // fast waagrecht gehalten, Spitze über der Schale
+      const tipT = P(s.dish.x - 10, s.dish.y - 28);
+      const at = { base: P(tipT.x - 100 * Math.sin(a), tipT.y + 100 * Math.cos(a)), ang: a };
+      const op = st.op;
+      if (op && op.type === 'light') {
+        const u = op.t / op.dur;
+        const from = held;
+        if (u < 0.5) { const k = easeInOut(seg(u, 0, 0.5)); return { base: mixP(from.base, at.base, k), ang: lerp(from.ang, at.ang, k), spark: 0 }; }
+        if (u < 0.78) return { base: at.base, ang: at.ang, spark: u > 0.55 ? 1 : 0 };
+        const k = easeInOut(seg(u, 0.78, 1));
+        return { base: mixP(at.base, rest.base, k), ang: lerp(at.ang, 0, k), spark: 0 };
+      }
+      if (ui.selected === 'lighter') return Object.assign({ spark: 0 }, held);
+      return Object.assign({ spark: 0 }, rest);
+    }
     function drawStation(st, ui) {
       const s = geo.station;
       if (!s) return;
       ctx.fillStyle = '#e9e5dc'; roundRect(ctx, s.mat.x0, -s.mat.h, s.mat.x1 - s.mat.x0, s.mat.h, 3); ctx.fill();
       ctx.strokeStyle = '#b9b2a4'; ctx.lineWidth = px(1); ctx.stroke();
       text('Prüfplatz (getrennt)', s.x0 + 4, 17, { size: 11, align: 'left', color: '#22303d', weight: 700 });
+      // Stellplatz für die abgenommene Vorlage
+      ctx.strokeStyle = 'rgba(80,90,100,0.35)'; ctx.setLineDash([px(4), px(3)]); ctx.lineWidth = px(1);
+      ctx.beginPath(); ctx.ellipse(s.recv.x, s.recv.y - 1, geo.receiver.baseHW + 4, 3.5, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
       // Porzellanschale
       const d = s.dish;
-      const sel = (id) => ui.selected === id;
-      ctx.fillStyle = '#fbfbf8'; ctx.strokeStyle = sel('dish') ? C.accent : '#8e959d'; ctx.lineWidth = px(sel('dish') ? 2.4 : 1.2);
+      ctx.fillStyle = '#fbfbf8'; ctx.strokeStyle = '#8e959d'; ctx.lineWidth = px(1.2);
       ctx.beginPath(); ctx.moveTo(d.x - 34, d.y - 22); ctx.quadraticCurveTo(d.x, d.y + 12, d.x + 34, d.y - 22); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.ellipse(d.x, d.y - 22, 34, 4.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       if (st.dish && M.vol(st.dish.c) > 0.005) {
-        ctx.fillStyle = rgba(C.liquid, 0.8); ctx.beginPath(); ctx.ellipse(d.x, d.y - 12, 14, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = rgba(C.liquid, 0.85); ctx.beginPath(); ctx.ellipse(d.x, d.y - 12, 14, 3, 0, 0, Math.PI * 2); ctx.fill();
       }
       // Flamme aus dem Modell (Brenndauer und Stärke)
       const fl = st.fx.flame;
@@ -929,31 +994,44 @@
           const w = (16 - i * 4) * (0.7 + 0.3 * fl);
           const flick = (noise(vis.time * 9, i) - 0.5) * 6;
           const fg = ctx.createLinearGradient(0, d.y - 14, 0, d.y - 14 - hgt);
-          fg.addColorStop(0, `rgba(40,90,255,${0.65 - i * 0.12})`); fg.addColorStop(0.55, `rgba(90,140,255,${0.45 - i * 0.1})`); fg.addColorStop(0.92, `rgba(255,220,140,${0.12})`); fg.addColorStop(1, 'rgba(255,255,255,0)');
+          fg.addColorStop(0, `rgba(40,90,255,${0.65 - i * 0.12})`); fg.addColorStop(0.55, `rgba(90,140,255,${0.45 - i * 0.1})`); fg.addColorStop(0.92, 'rgba(255,220,140,0.12)'); fg.addColorStop(1, 'rgba(255,255,255,0)');
           ctx.fillStyle = fg;
           ctx.beginPath(); ctx.moveTo(d.x - w, d.y - 12);
           ctx.quadraticCurveTo(d.x - w * 0.9, d.y - 14 - hgt * 0.5, d.x + flick, d.y - 14 - hgt * (1 - i * 0.12));
           ctx.quadraticCurveTo(d.x + w * 0.9, d.y - 14 - hgt * 0.5, d.x + w, d.y - 12); ctx.closePath(); ctx.fill();
         }
         text(st.dish && st.dish.result === 'flicker' ? 'kurzes Aufflackern' : 'bläuliche Flamme', d.x, d.y - 26 - hgt, { size: 11, color: '#1d3f9a', bg: 'rgba(255,255,255,0.85)' });
-      } else if (st.dish && st.dish.result) {
+      } else if (st.dish && st.dish.result && !(st.op && st.op.type === 'light')) {
         const txt = { burns: 'Flamme erloschen', flicker: 'kurz aufgeflackert', none: 'keine Flamme' }[st.dish.result];
         text(txt, d.x, d.y - 46, { size: 11, color: '#3d4b5a', bg: 'rgba(255,255,255,0.85)' });
       }
-      // Pipette (Pasteurpipette mit Saughütchen)
-      const p = s.pipette, full = !!st.pipette;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(sel('pipette') ? -0.35 : 0);
-      ctx.fillStyle = 'rgba(236,243,250,0.95)'; ctx.strokeStyle = sel('pipette') ? C.accent : C.glassEdge; ctx.lineWidth = px(sel('pipette') ? 2.4 : 1.1);
-      ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(-4, -40); ctx.lineTo(-4, -84); ctx.lineTo(4, -84); ctx.lineTo(4, -40); ctx.lineTo(2, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
-      if (full) { ctx.fillStyle = rgba(C.liquid, 0.9); ctx.fillRect(-3, -36, 6, 34); }
-      ctx.fillStyle = '#d23b3b'; roundRect(ctx, -6, -108, 12, 26, 5); ctx.fill();
+    }
+    /** Pipette und Feuerzeug zuletzt zeichnen (sie bewegen sich über die Gefäße). */
+    function drawStationTools(st, ui) {
+      if (!geo.station) return;
+      const pp = pipettePose(st, ui);
+      ctx.save(); ctx.translate(pp.tip.x, pp.tip.y); ctx.rotate(pp.ang);
+      const sel = ui.selected === 'pipette';
+      ctx.fillStyle = 'rgba(236,243,250,0.95)'; ctx.strokeStyle = sel ? C.accent : C.glassEdge; ctx.lineWidth = px(sel ? 2.4 : 1.1);
+      ctx.beginPath(); ctx.moveTo(-1.6, 0); ctx.lineTo(-4, -40); ctx.lineTo(-4, -84); ctx.lineTo(4, -84); ctx.lineTo(4, -40); ctx.lineTo(1.6, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      if (pp.fill > 0) { ctx.fillStyle = rgba([110, 165, 228], 0.9); const hgt = 34 * pp.fill; ctx.beginPath(); ctx.moveTo(-1.4, -1); ctx.lineTo(-3.4, -1 - hgt); ctx.lineTo(3.4, -1 - hgt); ctx.lineTo(1.4, -1); ctx.closePath(); ctx.fill(); }
+      if (pp.fill > 0 && pp.fill < 1 && st.op && st.op.type === 'toDish') drawDrop(0, 6 + (vis.time * 120) % 30, 1.6, 1.2);
+      const sq = 1 - 0.25 * clamp(pp.squeeze, 0, 1);
+      ctx.fillStyle = '#d23b3b'; roundRect(ctx, -6 * (2 - sq), -84 - 26 * sq, 12 * (2 - sq), 26 * sq, 5); ctx.fill();
       ctx.restore();
-      // Stabfeuerzeug
-      const l = s.lighter;
-      ctx.save(); ctx.translate(l.x, l.y); ctx.rotate(sel('lighter') ? -0.5 : 0);
-      ctx.fillStyle = sel('lighter') ? '#1f6fd1' : '#3a434f'; roundRect(ctx, -6, -54, 12, 48, 4); ctx.fill();
-      metalRod(0, -96, 0, -54, 4);
-      if (sel('lighter')) { ctx.fillStyle = 'rgba(255,170,60,0.9)'; ctx.beginPath(); ctx.ellipse(0, -102, 3, 6, 0, 0, Math.PI * 2); ctx.fill(); }
+      const lp = lighterPose(st, ui);
+      const lsel = ui.selected === 'lighter' || (st.op && st.op.type === 'light');
+      ctx.save(); ctx.translate(lp.base.x, lp.base.y); ctx.rotate(lp.ang);
+      ctx.fillStyle = lsel ? '#1f6fd1' : '#3a434f'; roundRect(ctx, -6, -54, 12, 48, 4); ctx.fill();
+      ctx.fillStyle = '#e6e9ee'; roundRect(ctx, -2, -46, 4, 10, 1.5); ctx.fill();
+      metalRod(0, -100, 0, -54, 4);
+      if (lp.spark) {
+        const f = 0.6 + 0.4 * noise(vis.time * 30, 3);
+        ctx.fillStyle = `rgba(255,190,80,${f})`; ctx.beginPath(); ctx.ellipse(0, -106, 3.2 * f, 7 * f, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,220,0.95)'; ctx.beginPath(); ctx.arc(0, -103, 1.4, 0, Math.PI * 2); ctx.fill();
+      } else if (ui.selected === 'lighter') {
+        ctx.fillStyle = 'rgba(255,170,60,0.9)'; ctx.beginPath(); ctx.ellipse(0, -106, 2.6, 5.5, 0, 0, Math.PI * 2); ctx.fill();
+      }
       ctx.restore();
     }
 
@@ -1113,7 +1191,7 @@
       const names = root.DS.tasks ? root.DS.tasks.PART_NAMES : {};
       PARTS.forEach((p, i) => {
         if (p.id === 'distillate' && M.vol(st.receiver.c) < 0.05 && mode === 'names') return;
-        if (p.id === 'stones' && !st.stones && mode === 'names') return;
+        if (p.extra && mode === 'numbers') return;
         const a = p.anchor(geo, st), l = p.label(geo, st);
         const hl = ui.selectedPart === p.id;
         ctx.strokeStyle = hl ? C.accent : 'rgba(23,33,44,0.7)'; ctx.lineWidth = px(hl ? 2 : 1.2);
@@ -1125,7 +1203,8 @@
           ctx.beginPath(); ctx.arc(l.x, l.y, px(11), 0, Math.PI * 2); ctx.fill();
           text(String(n), l.x, l.y + px(0.5), { size: 12, color: '#fff', weight: 700 });
         } else {
-          text(names[p.id] || p.id, l.x, l.y, { size: 12, weight: 700, color: hl ? '#fff' : C.label, bg: hl ? C.accent : 'rgba(255,255,255,0.94)', border: hl ? C.accent : '#9fb0c2' });
+          const nm = p.id === 'mixture' ? M.MIXES[st.mix].name : names[p.id] || p.id;
+          text(nm, l.x, l.y, { size: 12, weight: 700, color: hl ? '#fff' : C.label, bg: hl ? C.accent : 'rgba(255,255,255,0.94)', border: hl ? C.accent : '#9fb0c2' });
         }
       });
     }
@@ -1146,14 +1225,20 @@
       switch (id) {
         case 'flask': return { x0: -g.flask.R, y0: g.neck.y1, x1: g.flask.R, y1: c.y + g.flask.R };
         case 'mantle': return { x0: -g.mantle.outer, y0: g.mantle.rim, x1: g.mantle.outer, y1: g.mantle.base };
-        case 'stones': return { x0: -16, y0: c.y + g.flask.R - 14, x1: 18, y1: c.y + g.flask.R };
+        case 'stones': return st.stones ? { x0: -16, y0: c.y + g.flask.R - 14, x1: 18, y1: c.y + g.flask.R } : { x0: g.stonesDish.x - g.stonesDish.w / 2, y0: -28, x1: g.stonesDish.x + g.stonesDish.w / 2, y1: 0 };
+        case 'mixture': return { x0: g.bottle.x - g.bottle.w / 2, y0: -g.bottle.h - 6, x1: g.bottle.x + g.bottle.w / 2, y1: 0 };
+        case 'tap': return { x0: g.tap.olive.x - 8, y0: g.tap.top - 16, x1: g.tap.x + 30, y1: 0 };
+        case 'sink': return { x0: g.sink.x0, y0: -12, x1: g.sink.x1, y1: 14 };
+        case 'pipette': return g.station ? { x0: g.station.pipette.x - 10, y0: -116, x1: g.station.pipette.x + 10, y1: 0 } : null;
+        case 'lighter': return g.station ? { x0: g.station.lighter.x - 10, y0: -104, x1: g.station.lighter.x + 10, y1: 0 } : null;
+        case 'dish': return g.station ? { x0: g.station.dish.x - 36, y0: g.station.dish.y - 30, x1: g.station.dish.x + 36, y1: 0 } : null;
         case 'head': return { x0: -g.head.hw, y0: g.head.y1, x1: g.arm.end.x, y1: g.head.y0 };
         case 'thermo': { const pos = st.thermo; return { x0: -14, y0: g.thermo.top(pos), x1: 14, y1: g.thermo.bulb[pos] + 10 }; }
         case 'condenser': { const a = g.cond.at(g.cond.j0, 0), b = g.cond.at(g.cond.j1, 0); return { x0: a.x, y0: a.y - g.cond.jhw - 6, x1: b.x, y1: b.y + g.cond.jhw + 6 }; }
         case 'inlet': { const t = g.nozzles.low.tip; return { x0: t.x - 14, y0: t.y - 26, x1: t.x + 14, y1: t.y + 8 }; }
         case 'outlet': { const t = g.nozzles.high.tip; return { x0: t.x - 14, y0: t.y - 8, x1: t.x + 14, y1: t.y + 26 }; }
         case 'adapter': { const a = g.adapter; return { x0: a.a0.x, y0: a.a0.y - 10, x1: a.tip.x + a.hw + 4, y1: a.tip.y + 6 }; }
-        case 'receiver': { const r = g.receiver; return { x0: r.x - r.baseHW, y0: r.rim, x1: r.x + r.baseHW, y1: r.base }; }
+        case 'receiver': { const r = g.receiver; const x = st.receiver.present ? r.x : g.receiverAway.x, base = st.receiver.present ? r.base : g.receiverAway.base; return { x0: x - r.baseHW, y0: base - r.h, x1: x + r.baseHW, y1: base }; }
         case 'distillate': { const r = g.receiver; const lev = G.receiverLevel(g, M.vol(st.receiver.c)); return { x0: r.x - r.baseHW + 4, y0: Math.min(lev.y, r.base - 10), x1: r.x + r.baseHW - 4, y1: r.base }; }
         case 'stand': return { x0: g.stand1.base.x0, y0: g.stand1.top, x1: g.stand1.clamps[0].x1 + 4, y1: 0 };
         default: return null;
@@ -1176,6 +1261,7 @@
       drawStands(st);
       drawJack(geo.jack.x, geo.jack.w, geo.jack.top, geo.jack.h);
       drawTap(st);
+      drawInletHose(st, ui, dtVis);
       drawBench(st, ui);
       drawStation(st, ui);
       drawMantleBack(st);
@@ -1185,17 +1271,16 @@
       drawMantleFront(st, ui);
       drawHeadFront();
       drawExplainVapor(st);
-      clampArm(geo.stand1.rodX, 0, geo.stand1.clamps[0].y, geo.neck.hw, 0);
       drawCondenser(st, dtVis);
-      clampArm(geo.stand2.rodX, geo.stand2.clampAt.x, geo.stand2.clampAt.y, geo.cond.jhw, Math.atan2(geo.cond.d.y, geo.cond.d.x), geo.stand2.clampAt);
       drawAdapter(st);
       const surf = drawReceiver(st, dtVis);
       drawDrops(st, dtVis, surf);
-      drawHoses(st, ui, dtVis);
+      drawOutletHose(st, ui);
       drawFilling(st);
       drawDisplay(st);
+      drawStationTools(st, ui);
       if (ui.overlay === 'detail') drawDetail(st);
-      else if (ui.overlay === 'chart' && st.expert) drawChart(st);
+      else if (ui.overlay === 'chart') drawChart(st);
       drawSelection(st, ui);
       drawLabels(st, ui);
     }
@@ -1215,29 +1300,29 @@
       const g = geo;
       if (ui.explore) {
         PARTS.forEach((p) => { if (p.id !== 'distillate' || M.vol(st.receiver.c) > 0.05) rect('part:' + p.id, partBox(p.id, st)); });
+        for (const id of EXPLORE_EXTRA) rect('part:' + id, partBox(id, st));
         return out;
       }
+      if (ui.labels === 'names') return out;
       const end = (pts) => pts[pts.length - 1];
       rect('bottle', { x0: g.bottle.x - g.bottle.w / 2, y0: -g.bottle.h, x1: g.bottle.x + g.bottle.w / 2, y1: 0 });
       rect('stones', { x0: g.stonesDish.x - g.stonesDish.w / 2, y0: -30, x1: g.stonesDish.x + g.stonesDish.w / 2, y1: 0 });
       rect('mantle', { x0: -g.mantle.outer, y0: g.mantle.base - 24, x1: g.mantle.outer, y1: g.mantle.base });
       rect('flask', { x0: -g.flask.R, y0: g.neck.y1, x1: g.flask.R, y1: g.mantle.base - 26 });
       rect('thermo', partBox('thermo', st));
-      rect('condenser', (() => { const b = partBox('condenser', st); return { x0: b.x0 + 60, y0: b.y0 + 30, x1: b.x1 - 80, y1: b.y1 - 30 }; })());
+      rect('condenser', (() => { const b = partBox('condenser', st); return { x0: b.x0 + 50, y0: b.y0 + 30, x1: b.x1 - 70, y1: b.y1 - 30 }; })());
       for (const k of ['high', 'low']) { const t = g.nozzles[k].tip; rect('nozzle:' + k, { x0: t.x - 12, y0: t.y - 12, x1: t.x + 12, y1: t.y + 12 }); }
-      if (!st.hoses.inlet) { const e = end(g.hoseRoutes.looseInlet()); rect('hose:inlet', { x0: e.x - 22, y0: e.y - 30, x1: e.x + 6, y1: e.y + 4 }); }
-      if (!st.hoses.outlet) { const e = end(g.hoseRoutes.looseOutlet()); rect('hose:outlet', { x0: e.x - 14, y0: e.y - 30, x1: e.x + 14, y1: e.y + 8 }); }
-      rect('tap', { x0: g.tap.x - 14, y0: g.tap.top - 10, x1: g.tap.x + 30, y1: g.tap.top + 40 });
-      rect('receiver', partBox('receiver', st));
-      if (st.receiver.present) {
-        const p = st.receiver.stopper ? { x0: g.receiver.x - 18, y0: g.receiver.rim - 10, x1: g.receiver.x + 18, y1: g.receiver.rim + 12 } : { x0: g.stopper.x - 14, y0: -18, x1: g.stopper.x + 14, y1: 4 };
-        rect('stopper', p);
-      }
+      if (!st.hoses.inlet) { const e = end(g.hoseRoutes.looseInlet()); rect('hose:inlet', { x0: e.x - 10, y0: e.y - 30, x1: e.x + 10, y1: e.y + 6 }); }
+      if (!st.hoses.outlet) { const e = end(g.hoseRoutes.looseOutlet()); rect('hose:outlet', { x0: e.x - 14, y0: e.y - 30, x1: e.x + 10, y1: e.y + 8 }); }
+      rect('tap', { x0: g.tap.x - 12, y0: g.tap.handle.y - 16, x1: g.tap.x + 32, y1: g.tap.handle.y + 16 });
       rect('adapter', { x0: g.adapter.a1.x - 10, y0: g.adapter.a1.y - 14, x1: g.adapter.tip.x + 10, y1: g.adapter.a2.y + 10 });
+      if (!st.receiver.present) rect('receiverSpot', { x0: g.receiver.x - g.receiver.baseHW, y0: g.receiver.rim + 30, x1: g.receiver.x + g.receiver.baseHW, y1: g.receiver.base });
+      rect('receiver', partBox('receiver', st));
       if (g.station) {
         const s = g.station;
-        rect('pipette', { x0: s.pipette.x - 10, y0: -116, x1: s.pipette.x + 10, y1: 0 });
-        rect('lighter', { x0: s.lighter.x - 10, y0: -104, x1: s.lighter.x + 10, y1: 0 });
+        const pp = pipettePose(st, ui), lp = lighterPose(st, ui);
+        rect('pipette', { x0: pp.tip.x - 10, y0: pp.tip.y - 112, x1: pp.tip.x + 10, y1: pp.tip.y });
+        rect('lighter', { x0: lp.base.x - 10, y0: lp.base.y - 100, x1: lp.base.x + 10, y1: lp.base.y });
         rect('dish', { x0: s.dish.x - 36, y0: s.dish.y - 30, x1: s.dish.x + 36, y1: 0 });
       }
       return out;
@@ -1253,7 +1338,7 @@
       return { view: Object.assign({}, view), connections: pts, display: { a: toScreen(P(g.display.x0, g.display.y0)), b: toScreen(P(g.display.x1, g.display.y1)) }, bounds: { a: toScreen(P(g.bounds.x0, g.bounds.y0)), b: toScreen(P(g.bounds.x1, g.bounds.y1)) }, thermoBulb: toScreen(P(0, g.thermo.bulb[st.thermo])) };
     }
 
-    return { frame, resize, hitAreas, anchors, partBox, get geo() { return geo; }, view, PARTS };
+    return { frame, resize, hitAreas, anchors, partBox, get geo() { return geo; }, view, PARTS, EXPLORE_EXTRA };
   }
 
   (root.DS = root.DS || {}).render = { createRenderer, PARTS };

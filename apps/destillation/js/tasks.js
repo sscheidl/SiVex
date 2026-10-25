@@ -102,11 +102,11 @@
       noCooling: ['Wo bleibt der Dampf?', 'Der Dampf muss im Kühler wieder flüssig werden. Dafür braucht der Kühler Kühlwasser.', 'Schließe den Zulaufschlauch am unteren und den Ablaufschlauch am oberen Anschluss an und schalte das Kühlwasser EIN.'],
       noHeat: ['Woher kommt die Energie zum Verdampfen?', 'Der Heizpilz muss eingeschaltet sein; die Heizstufe bestimmt, wie schnell es geht.', 'Schalte unten „Heizung EIN“ und wähle die Stufe „mittel“. Warte, bis das Gemisch siedet.'],
       heating: ['Hab Geduld: Das Gemisch muss erst bis zur Siedetemperatur erwärmt werden.', 'Mit dem Zeitraffer (10× oder 30×) geht es schneller. Bei „niedrig“ reicht die Leistung kaum aus.', 'Wähle die Heizstufe „mittel“ und den Zeitraffer 30×. Beobachte Siedeblasen und Thermometer.'],
-      noReceiver: ['Wohin fallen die Tropfen aus dem Vorstoß?', 'Unter dem Vorstoß muss die Vorlage stehen.', 'Tippe auf den Platz unter dem Vorstoß, um die Vorlage wieder unterzustellen.'],
+      noReceiver: ['Wohin fallen die Tropfen aus dem Vorstoß?', 'Unter dem Vorstoß muss die Vorlage stehen.', 'Tippe auf „Vorlage unterstellen“ oder auf die Vorlage, um sie wieder unter den Vorstoß zu stellen.'],
       little: ['Reicht die Menge schon für eine Auswertung?', 'Für die Aufgabe brauchst du mindestens 5 mL Destillat.', 'Lass die Destillation weiterlaufen, bis die Vorlage mindestens 5 mL enthält. Achte dabei auf die Temperatur.'],
       thermo: ['Wo misst dein Thermometer?', 'Gemessen werden soll die Temperatur des Dampfes, der in den Kühler strömt.', 'Heizung AUS, abwarten, bis nichts mehr siedet, dann das Thermometer verschieben: Die Kugel gehört genau auf Höhe des seitlichen Abgangs. Danach erneut destillieren.'],
       impure: ['Was ist in deiner Vorlage gelandet?', 'Steigt die Temperatur deutlich an, geht ein anderer Stoff über. Auch zu starkes Heizen reißt Flüssigkeit mit.', 'Fange nur auf, solange die Temperatur nahezu gleich bleibt, und heize höchstens auf „mittel“. Beginne bei Bedarf neu.'],
-      noBurn: ['Wie weist man nach, dass das Destillat brennbar ist?', 'Die Brennprobe findet am getrennten Prüfplatz statt – nie an der Apparatur.', 'Tippe auf die Pipette, dann auf die Vorlage; tippe auf die Porzellanschale. Wähle das Stabfeuerzeug und tippe auf die Schale.'],
+      noBurn: ['Wie weist man nach, dass das Destillat brennbar ist?', 'Die Brennprobe findet am getrennten Prüfplatz statt – nie an der Apparatur. Die Probe nimmt man aus der abgenommenen Vorlage.', 'Heizung aus, dann „Vorlage abnehmen“ – sie kommt zum Prüfplatz. Pipette antippen, dann die Vorlage, dann die Porzellanschale. Stabfeuerzeug antippen und die Schale antippen.'],
       burnFail: ['Wann brennt ein Ethanol-Wasser-Gemisch?', 'Nur wenn genug Ethanol enthalten ist. Was ist in deine Vorlage gelangt, nachdem die Temperatur gestiegen ist?', 'Nimm eine Probe aus einer Vorlage, die nur während des ersten Temperaturabschnitts gefüllt wurde. Beginne sonst neu und höre rechtzeitig auf.'],
       noChange: ['Wie trennt man die Stoffe in getrennte Gefäße?', 'Wenn die Temperatur auf den nächsten Abschnitt steigt, kommt ein anderer Stoff.', 'Tippe auf „Vorlage wechseln“, sobald die Temperatur nach dem ersten Abschnitt ansteigt.'],
       mixedFraction: ['Wann hast du die Vorlage gewechselt?', 'Im Temperatur-Zeit-Diagramm siehst du, wann die Temperatur ansteigt.', 'Wechsle die Vorlage genau dann, wenn die Temperatur den Abschnitt verlässt. Beginne bei Bedarf neu.'],
@@ -270,7 +270,9 @@
   const PART_NAMES = {
     flask: 'Rundkolben', mantle: 'Heizpilz', stones: 'Siedesteine', head: 'Destillationsaufsatz', thermo: 'Thermometer',
     condenser: 'Liebigkühler', inlet: 'Kühlwasserzulauf', outlet: 'Kühlwasserablauf', adapter: 'Vorstoß',
-    receiver: 'Vorlage', distillate: 'Destillat', stand: 'Stativ mit Klemme'
+    receiver: 'Vorlage', distillate: 'Destillat', stand: 'Stativ mit Klemme',
+    // nur im Modus „Erkunden“ (nicht Teil der Zuordnungsaufgabe)
+    mixture: 'Gemisch (Vorratsflasche)', tap: 'Laborarmatur (Wasserhahn)', sink: 'Ausguss', pipette: 'Pipette', dish: 'Porzellanschale', lighter: 'Stabfeuerzeug'
   };
   const PART_INFO = {
     flask: 'Enthält das zu trennende Flüssigkeitsgemisch. Die runde Form verträgt das Erhitzen gut.',
@@ -284,7 +286,13 @@
     adapter: 'Leitet das Destillat vom Kühler in die Vorlage. Die kleine Olive hält die Apparatur offen (Druckausgleich).',
     receiver: 'Das Auffanggefäß unter dem Vorstoß (hier ein Erlenmeyerkolben mit Skala).',
     distillate: 'Die in der Vorlage aufgefangene Flüssigkeit.',
-    stand: 'Hält Kolben und Kühler sicher fest. Jede Glasapparatur wird eingespannt.'
+    stand: 'Hält die Glasapparatur sicher. Die Stange mit Doppelmuffe fasst den Kolbenhals von hinten.',
+    mixture: 'Vorratsflasche mit dem zu trennenden Flüssigkeitsgemisch (z. B. Ethanol und Wasser). Beide Flüssigkeiten sind farblos und vollständig mischbar – man sieht nur eine Flüssigkeit.',
+    tap: 'Laborarmatur am Ausguss. Von hier fließt das Kühlwasser durch den Zulaufschlauch zum unteren Anschluss des Kühlers.',
+    sink: 'Ausguss: Hierhin läuft das erwärmte Kühlwasser aus dem oberen Anschluss zurück.',
+    pipette: 'Pasteurpipette mit Saughütchen: entnimmt eine kleine Probe aus der abgenommenen Vorlage.',
+    dish: 'Porzellanschale am getrennten Prüfplatz: Hier wird die kleine Probe entzündet – nie an der Apparatur.',
+    lighter: 'Stabfeuerzeug: zündet die Probe in der Porzellanschale mit Abstand an.'
   };
   const TRAINER_DISTRACTORS = ['Becherglas', 'Bunsenbrenner', 'Scheidetrichter'];
   const TRAINER_TERMS = () => PART_ORDER.map((id) => PART_NAMES[id]).concat(TRAINER_DISTRACTORS).sort((a, b) => a.localeCompare(b, 'de'));

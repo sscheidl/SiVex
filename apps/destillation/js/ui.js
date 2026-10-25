@@ -59,7 +59,7 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => { el.className = 'toast'; }, kind === 'warn' ? 6500 : 4200);
     }
-    engine.on('message', (m) => { if (m.code !== 'safety') toast(m.text, m.kind); });
+    engine.on('message', (m) => { if (m.code !== 'safety' && !locked()) toast(m.text, m.kind); });
     engine.on('safety', () => { ui.selected = null; refresh(true); });
     engine.on('change', (e) => { if (e && e.action === 'opDone') refresh(true); });
 
@@ -84,7 +84,8 @@
       // Gewähltes Gerät erneut antippen: zurücklegen
       if (sel && sel === id) { ui.selected = null; toast(id === 'thermo' ? 'Thermometer abgewählt.' : 'Zurückgelegt.'); refresh(true); return; }
       if (sel === 'lighter') {
-        if (id === 'dish') { ui.selected = null; act('ignite', 'dish'); return; }
+        if (id === 'dish') { const r = act('ignite', 'dish'); if (r.ok) ui.selected = null; refresh(true); return; }
+        if (id === 'receiver' && !s.receiver.present) { toast('Nie die ganze Vorlage anzünden – nur die kleine Probe in der Porzellanschale.', 'warn'); return; }
         if (isApparatus(id)) { ui.selected = null; act('ignite', 'apparatus'); return; }
       }
       if (sel === 'pipette') {
@@ -112,11 +113,10 @@
           else toast('Wähle zuerst einen Schlauch: das freie Ende am Wasserhahn (Zulauf) oder am Ausguss (Ablauf).', 'warn');
           break;
         }
-        case 'receiver': act('toggleReceiver'); break;
-        case 'stopper': act('toggleStopper'); break;
+        case 'receiver': case 'receiverSpot': act('toggleReceiver'); break;
         case 'pipette':
           if (s.pipette) { toast('In der Pipette ist eine Probe. Tippe auf die Porzellanschale.'); ui.selected = 'pipette'; }
-          else { ui.selected = 'pipette'; toast('Pipette gewählt. Tippe auf die Vorlage, um eine Probe zu entnehmen.'); }
+          else { ui.selected = 'pipette'; toast(s.receiver.present ? 'Pipette gewählt. Proben nimmt man aus der abgenommenen Vorlage – nimm sie zuerst ab („Vorlage abnehmen“).' : 'Pipette gewählt. Tippe auf die Vorlage am Prüfplatz, um eine Probe zu entnehmen.'); }
           refresh(true); break;
         case 'lighter': ui.selected = 'lighter'; toast('Stabfeuerzeug gewählt. Zünde nur die Probe in der Porzellanschale an.', 'warn'); refresh(true); break;
         case 'dish':
@@ -142,14 +142,14 @@
       'nozzle:low': () => 'Unterer Anschluss des Kühlmantels',
       'hose:inlet': () => 'Freies Ende des Zulaufschlauchs (vom Wasserhahn)',
       'hose:outlet': () => 'Freies Ende des Ablaufschlauchs (zum Ausguss)',
-      receiver: () => (st().receiver.present ? 'Vorlage unter dem Vorstoß wegnehmen' : 'Vorlage unter den Vorstoß stellen'),
-      stopper: () => (st().receiver.stopper ? 'Stopfen von der Vorlage nehmen' : 'Stopfen auf die Vorlage setzen'),
+      receiver: () => (st().receiver.present ? 'Vorlage abnehmen und abstellen' : 'Vorlage (abgestellt): antippen stellt sie zurück unter den Vorstoß'),
+      receiverSpot: () => 'Platz unter dem Vorstoß: Vorlage zurückstellen',
       pipette: () => 'Pipette',
       lighter: () => 'Stabfeuerzeug',
       dish: () => 'Porzellanschale am Prüfplatz'
     };
     function hitLabel(id) {
-      if (id.startsWith('part:')) return 'Gerät erkunden: ' + T.PART_NAMES[id.slice(5)];
+      if (id.startsWith('part:')) return 'Gerät erkunden: ' + (id === 'part:mixture' ? M.MIXES[st().mix].name : T.PART_NAMES[id.slice(5)]);
       return HIT_LABELS[id] ? HIT_LABELS[id]() : id;
     }
 
@@ -168,46 +168,56 @@
     $('#hits').addEventListener('click', (e) => { const b = e.target.closest('[data-hit]'); if (b) hit(b.dataset.hit); });
 
     // ------------------------------------------------------------ Handlungsleiste und Ansicht
+    /** Versuch begonnen? Dann sind Beschriftung und Erkunden gesperrt. */
+    const started = () => { const s = st(); return !!(s.filled || s.op || s.stones || s.heater.on || s.water.on || s.hoses.inlet || s.hoses.outlet || s.thermo !== 'high' || s.drops.seq > 0); };
+    /** Beschriftung bzw. Erkunden aktiv: keine Handgriffe, keine Fehlermeldungen. */
+    const locked = () => !!(ui.labelsOn || ui.explore);
     function actionsHtml() {
       const s = st();
       const b = (a, text, extra) => `<button type="button" class="lk-btn" data-act="${a}"${extra || ''}>${text}</button>`;
       const out = [];
-      if (!s.filled) out.push(b('fill', 'Einfüllen', ' aria-label="Gemisch in den Rundkolben einfüllen"'));
-      if (!s.stones) out.push(b('addStones', 'Siedesteine'));
+      out.push(b('fill', s.filled ? 'Eingefüllt<span class="ok" aria-hidden="true">✓</span>' : 'Einfüllen', s.filled ? ' disabled aria-label="Gemisch ist eingefüllt"' : ''));
+      out.push(b('addStones', s.stones ? 'Siedesteine<span class="ok" aria-hidden="true">✓</span>' : 'Siedesteine', s.stones ? ' disabled aria-label="Siedesteine sind im Kolben"' : ''));
       out.push(`<span class="grp${ui.selected === 'thermo' ? ' hint' : ''}" role="group" aria-label="Thermometer verschieben"><span class="grp-l">Thermometer</span>${b('thermoUp', '▲', ' aria-label="Thermometer höher schieben"')}${b('thermoDown', '▼', ' aria-label="Thermometer tiefer schieben"')}</span>`);
+      out.push(b('toggleReceiver', s.receiver.present ? 'Vorlage abnehmen' : 'Vorlage unterstellen'));
       if (s.expert) out.push(b('changeReceiver', 'Vorlage wechseln'));
-      else out.push(b('toggleReceiver', s.receiver.present ? 'Vorlage weg' : 'Vorlage hin', ` aria-label="${s.receiver.present ? 'Vorlage unter dem Vorstoß wegnehmen' : 'Vorlage unter den Vorstoß stellen'}"`));
+      if (s.receiver.present) {
+        const lab = s.receiver.stopper ? 'Stopfen von der Vorlage nehmen' : 'Stopfen auf die Vorlage setzen';
+        out.push(b('toggleStopper', s.receiver.stopper ? 'Stopfen ab' : 'Stopfen', ` aria-label="${lab}"`));
+      }
       return out.join('');
     }
     function viewsHtml() {
-      const s = st();
-      const t = (id, text, on, title) => `<button type="button" class="lk-btn" data-view="${id}" aria-pressed="${!!on}" title="${esc(title)}" aria-label="${esc(title.split(':')[0])}">${text}</button>`;
+      const pre = !started();
+      const t = (id, text, on, title, dis) => `<button type="button" class="lk-btn" data-view="${id}" aria-pressed="${!!on}" title="${esc(title)}" aria-label="${esc(title.split(':')[0])}"${dis ? ' disabled' : ''}>${text}</button>`;
       return [
-        t('labels', 'Namen', ui.labelsOn, 'Beschriftung: Fachbegriffe an den Geräten anzeigen'),
-        t('explore', 'Erkunden', ui.explore, 'Geräte erkunden: Gerät antippen zeigt Name und Funktion'),
+        t('labels', 'Namen', ui.labelsOn, pre ? 'Beschriftung: Fachbegriffe an den Geräten anzeigen (nur vor dem Versuch)' : 'Beschriftung: nur vor dem Versuch – für einen neuen Durchgang „Neu beginnen“', !pre),
+        t('explore', 'Erkunden', ui.explore, pre ? 'Geräte erkunden: Gerät antippen zeigt Name und Funktion (nur vor dem Versuch)' : 'Geräte erkunden: nur vor dem Versuch – für einen neuen Durchgang „Neu beginnen“', !pre),
         t('detail', 'Kühler', ui.overlay === 'detail', 'Kühler-Detail: vergrößerter Schnitt durch den Liebigkühler'),
         t('explain', 'Teilchen', ui.explain, 'Erklärmodus: Dampfweg als Teilchen (in Wirklichkeit unsichtbar)'),
-        s.expert ? t('chart', 'Diagramm', ui.overlay === 'chart', 'Temperatur-Zeit-Diagramm') : ''
+        t('chart', 'Diagramm', ui.overlay === 'chart', 'Temperatur-Zeit-Diagramm')
       ].join('');
     }
     let actSig = '';
     function renderActions() {
       const s = st();
-      const sig = [s.filled, s.stones, s.expert, s.receiver.present, ui.selected, ui.labelsOn, ui.explore, ui.overlay, ui.explain].join('|');
+      if (started() && locked()) { ui.labelsOn = false; ui.explore = false; ui.selectedPart = null; }
+      const sig = [s.filled, s.stones, s.expert, s.receiver.present, s.receiver.stopper, ui.selected, ui.labelsOn, ui.explore, ui.overlay, ui.explain, started(), locked()].join('|');
       if (sig === actSig) return;
       actSig = sig;
       const f = document.activeElement && document.activeElement.dataset ? (document.activeElement.dataset.act || document.activeElement.dataset.view) : null;
       $('#actions').innerHTML = actionsHtml();
       $('#views').innerHTML = '<span class="grp-l">Ansicht</span>' + viewsHtml();
-      if (f) { const x = document.querySelector(`[data-act="${f}"], [data-view="${f}"]`); if (x) x.focus(); }
+      $('#deck').querySelectorAll('button').forEach((x) => { if (locked()) x.disabled = true; else if (!x.closest('#actions')) x.disabled = false; });
+      if (f) { const x = document.querySelector(`[data-act="${f}"], [data-view="${f}"]`); if (x && !x.disabled) x.focus(); }
     }
     $('#actions').addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (b) act(b.dataset.act); });
     $('#views').addEventListener('click', (e) => {
       const b = e.target.closest('[data-view]');
       if (!b) return;
       const v = b.dataset.view;
-      if (v === 'labels') ui.labelsOn = !ui.labelsOn;
-      else if (v === 'explore') { ui.explore = !ui.explore; ui.selected = null; if (!ui.explore) ui.selectedPart = null; toast(ui.explore ? 'Geräte erkunden: Tippe auf ein Gerät. Handlungen sind solange gesperrt.' : 'Geräte erkunden beendet.'); }
+      if (v === 'labels') { ui.labelsOn = !ui.labelsOn; if (ui.labelsOn) { ui.explore = false; ui.selected = null; ui.selectedPart = null; } }
+      else if (v === 'explore') { ui.explore = !ui.explore; ui.selected = null; if (ui.explore) ui.labelsOn = false; else ui.selectedPart = null; }
       else if (v === 'detail') ui.overlay = ui.overlay === 'detail' ? null : 'detail';
       else if (v === 'chart') ui.overlay = ui.overlay === 'chart' ? null : 'chart';
       else if (v === 'explain') ui.explain = !ui.explain;
@@ -269,10 +279,10 @@
     $('#speed').addEventListener('click', (e) => { const b = e.target.closest('[data-speed]'); if (!b) return; ui.speed = Number(b.dataset.speed); syncHead(); save(); });
     $('#btnExpert').addEventListener('click', () => {
       engine.act('setExpert', !st().expert);
-      if (!st().expert && ui.overlay === 'chart') ui.overlay = null;
       toast(st().expert ? 'Expertenmodus: Dreistoffgemisch, Vorlagenwechsel, Temperatur-Zeit-Diagramm.' : 'Expertenmodus aus.');
       refresh(true); save();
     });
+    $('#btnRestartHead').addEventListener('click', () => { ui.confirmRestart = st().mix; ui.panel = true; ui.tab = 'task'; refresh(true); $('#panel').scrollTop = 0; });
     $('#btnNotebook').addEventListener('click', () => { ui.panel = true; ui.tab = 'notebook'; refresh(true); $('#panel').scrollTop = 0; });
     $('#btnPanel').addEventListener('click', () => { ui.panel = !ui.panel; refresh(true); });
     document.querySelector('.lk-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; ui.tab = b.dataset.tab; refresh(true); $('#panel').scrollTop = 0; save(); });
@@ -342,7 +352,7 @@
         <div class="lk-row" style="margin-top:8px"><button type="button" class="lk-btn primary" id="btnCheck">Ergebnis prüfen</button>
         <button type="button" class="lk-btn" id="btnTip">${ts.tip ? (ts.tip < 3 ? `Nächster Tipp (${ts.tip + 1}/3)` : 'Tipp 3/3') : 'Tipp'}</button>
         <button type="button" class="lk-btn" id="btnSolution">Lösung anzeigen</button></div>
-        <div class="lk-row" style="margin-top:8px"><button type="button" class="lk-btn small" id="btnRestart">Versuch neu beginnen</button><span class="lk-muted" style="font-size:13px">Versuch ${s.run} · ${esc(M.MIXES[id].label)}</span></div></div>`;
+        <p class="lk-muted" style="font-size:13px;margin:8px 0 0">Versuch ${s.run} · ${esc(M.MIXES[id].label)} · neu beginnen über die Kopfzeile</p></div>`;
       if (ts.confirmSolution) html += `<div class="lk-note warn" role="alert">Du hast die Aufgabe noch nicht vollständig bearbeitet. Lösung trotzdem anzeigen?<div class="lk-row" style="margin-top:8px"><button type="button" class="lk-btn primary" id="btnSolutionYes">Ja, Lösung anzeigen</button><button type="button" class="lk-btn" id="btnSolutionNo">Abbrechen</button></div></div>`;
       if (ts.result) html += `<div class="lk-note ${ts.result.ok ? 'ok' : 'bad'}" role="status"><b>${ts.result.ok ? '✓ Ergebnis belegt.' : '✗ Noch nicht belegt.'}</b> ${esc(ts.result.text)}</div>`;
       if (ts.offer && !ts.tip && !(ts.result && ts.result.ok)) html += '<div class="lk-note info">Das hat noch nicht geklappt. Möchtest du einen Tipp? <button type="button" class="lk-btn small" id="btnTipOffer">Tipp 1/3 anzeigen</button></div>';

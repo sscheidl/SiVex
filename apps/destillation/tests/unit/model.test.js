@@ -311,12 +311,17 @@ test('E-06 Brennprobe: Probe aus der Vorlage, Schale, Zünden, bläuliche Flamme
   const e = setup({});
   runUntil(e, (s) => vol(s.receiver.c) >= 6, 3000, 1);
   assert.equal(act(e, 'ignite', 'dish').ok, false, 'leere Schale');
+  assert.equal(act(e, 'takeSample', 'receiver').ok, false, 'nicht aus der montierten Vorlage');
+  act(e, 'setHeater', false);
+  act(e, 'toggleReceiver');
+  assert.equal(e.state.receiver.present, false, 'Vorlage abgenommen');
   assert.equal(act(e, 'takeSample', 'receiver').ok, true);
   assert.ok(e.state.pipette);
   assert.equal(act(e, 'sampleToDish').ok, true);
   const E0 = e.state.dish.c.E;
-  const r = act(e, 'ignite', 'dish');
-  assert.equal(r.result, 'burns');
+  act(e, 'ignite', 'dish');
+  assert.equal(e.state.dish.result, 'burns', 'Ergebnis nach dem Zünd-Handgriff');
+  assert.ok(e.state.burnTests.length === 1);
   e.advance(1);
   assert.ok(e.state.fx.flame > 0.2, 'Flamme sichtbar');
   e.advance(30);
@@ -333,7 +338,18 @@ test('E-06 Brennprobe: Schwellen und nur bei Ethanol/Wasser', () => {
   assert.equal(M.burnResult({ P: 0, E: 0.2, W: 0.8 }), 'none');
   const e = setup({ mix: 'pw' });
   runUntil(e, (s) => vol(s.receiver.c) >= 3, 3000, 1);
+  act(e, 'toggleReceiver');
   assert.equal(act(e, 'takeSample', 'receiver').ok, false);
+});
+
+test('M-03 Warnung, bevor nach dem Ethanol das Wasser übergeht', () => {
+  const e = setup({});
+  const msgs = [];
+  e.on('message', (m) => msgs.push(m.code));
+  runUntil(e, (s) => s.flask.c.E < 0.04 * s.charged.E, 4000, 1);
+  e.advance(2);
+  assert.ok(msgs.includes('breakthrough1'), 'Warnung ausgegeben: ' + msgs.join(','));
+  assert.ok(M.share(e.state.receiver.c).E > 0.95, 'zum Zeitpunkt der Warnung ist das Destillat noch rein');
 });
 
 test('M-06 Feste Zeitschritte: gleiche Modellzeit → gleiches Ergebnis, unabhängig von der Taktung', () => {

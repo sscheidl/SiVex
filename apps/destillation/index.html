@@ -23,6 +23,7 @@
         <button type="button" data-speed="30" aria-label="Zeitraffer dreißigfach">30×</button>
       </div>
       <span class="clock" id="clock" title="Versuchszeit (Modellzeit)">0:00</span>
+      <button type="button" class="lk-btn small" id="btnRestartHead">Neu beginnen</button>
       <button type="button" class="lk-btn small" id="btnExpert" aria-pressed="false">Expertenmodus</button>
       <button type="button" class="lk-btn small" id="btnNotebook">Hefteintrag</button>
       <button type="button" class="lk-btn small" id="btnPanel" aria-expanded="true" aria-controls="panel">Bedienfeld</button>
@@ -30,7 +31,6 @@
     <main class="lk-main" id="main">
       <section class="lk-stage" id="stage" aria-label="Labor">
         <div class="actionbar" id="actionbar">
-          <div class="acts" id="actions" role="toolbar" aria-label="Handlungen"></div>
           <div class="views" id="views" role="group" aria-label="Ansicht"></div>
         </div>
         <div class="canvas-wrap" id="canvasWrap">
@@ -42,7 +42,9 @@
           <div class="toast" id="toast" role="status" aria-live="polite"></div>
           <p class="sr-only" id="readout" aria-live="off"></p>
         </div>
-        <div class="deck" id="deck" role="group" aria-label="Schalter für Heizung und Kühlwasser">
+        <div class="deck" id="deck" role="group" aria-label="Bedienung des Versuchs">
+          <div class="deck-row" id="actions" role="toolbar" aria-label="Handgriffe"></div>
+          <div class="deck-row">
           <div class="ctl" data-ctl="heat">
             <button type="button" class="switch" id="btnHeat" aria-pressed="false"><span class="lamp" aria-hidden="true"></span><span class="lbl">Heizung</span><b>AUS</b></button>
             <div class="seg2" id="heatLevel" role="group" aria-label="Heizstufe">
@@ -54,6 +56,7 @@
             <div class="seg2" id="flowLevel" role="group" aria-label="Durchfluss des Kühlwassers">
               <button type="button" data-level="low">gering</button><button type="button" data-level="mid">mittel</button><button type="button" data-level="high">stark</button>
             </div>
+          </div>
           </div>
         </div>
       </section>

@@ -95,26 +95,43 @@ await scenario('E01', 'Standard 1 komplett: befüllen → Siedesteine → Kühlw
   await waitFor(page, (st, M) => M.vol(st.receiver.c) > 12);
   await speed(page, 1);
   await shot(page, '08-vorlage-gefuellt');
-  // Brennprobe am getrennten Prüfplatz
-  await tapHit(page, 'pipette'); await tapHit(page, 'receiver');
-  assert(await S(page, (st) => !!st.pipette), 'Probe in der Pipette');
-  await tapHit(page, 'dish');
-  assert(await S(page, (st) => !!st.dish), 'Probe in der Schale');
-  assert(await S(page, (st) => st.fx.flame === 0), 'keine Flamme ohne Zünden');
-  await tapHit(page, 'lighter'); await tapHit(page, 'dish');
-  await sleep(900);
-  const fl = await S(page, (st) => [st.dish.result, st.fx.flame]);
-  assert(fl[0] === 'burns' && fl[1] > 0.2, 'bläuliche Flamme: ' + fl);
-  await shot(page, '09-brennprobe-blaue-flamme');
-  await waitFor(page, (st) => !st.dish.burning, null, 60000);
   // Ausschalten: Sieden läuft aus, kein Sprung
-  await heater(page, false); await water(page, false);
+  await heater(page, false);
   const afterOff = await S(page, (st) => [st.flask.T, st.reading]);
   await speed(page, 30); await sleep(1500);
   const later = await S(page, (st) => [st.flask.T, st.reading, st.fx.vapor]);
   assert(later[0] < afterOff[0] + 1 && afterOff[0] - later[0] < 25, 'kein Temperatursprung nach dem Ausschalten ' + afterOff + ' → ' + later);
-  await waitFor(page, (st) => st.fx.vapor === 0);
+  await waitFor(page, (st) => st.fx.vapor === 0 && M.vol(st.film) < 0.01);
   await shot(page, '10-nach-dem-ausschalten');
+  await speed(page, 1);
+  // Probe nur aus der abgenommenen Vorlage
+  await tapHit(page, 'pipette'); await tapHit(page, 'receiver');
+  assert(await S(page, (st) => !st.pipette && st.receiver.present), 'keine Probe an der montierten Vorlage');
+  await tapHit(page, 'pipette');
+  await clickAct(page, 'toggleReceiver');
+  await sleep(1100);
+  assert(await S(page, (st) => !st.receiver.present), 'Vorlage abgenommen, steht am Prüfplatz');
+  await tapHit(page, 'pipette'); await tapHit(page, 'receiver');
+  await sleep(700); await shot(page, '09a-probe-wird-entnommen');
+  await idle(page);
+  assert(await S(page, (st) => !!st.pipette), 'Probe in der Pipette');
+  await tapHit(page, 'dish');
+  await sleep(1000); await shot(page, '09b-probe-wird-ueberfuehrt');
+  await idle(page);
+  assert(await S(page, (st) => !!st.dish && !st.pipette), 'Probe in der Schale');
+  assert(await S(page, (st) => st.fx.flame === 0), 'keine Flamme ohne Zünden');
+  await tapHit(page, 'lighter'); await tapHit(page, 'dish');
+  await sleep(950); await shot(page, '09c-zuenden-funke');
+  await waitFor(page, (st) => st.fx.flame > 0.2, null, 20000);
+  const fl = await S(page, (st) => [st.dish.result, st.fx.flame]);
+  assert(fl[0] === 'burns' && fl[1] > 0.2, 'bläuliche Flamme: ' + fl);
+  await shot(page, '09-brennprobe-blaue-flamme');
+  await waitFor(page, (st) => !st.dish.burning, null, 60000);
+  // Vorlage per Antippen zurückstellen, Kühlwasser aus
+  await tapHit(page, 'receiver');
+  await sleep(1100);
+  assert(await S(page, (st) => st.receiver.present), 'Vorlage zurückgestellt');
+  await water(page, false);
   await speed(page, 0);
   // Auswertung
   const r = await check(page);
@@ -160,6 +177,8 @@ await scenario('E02', 'Standard 2 komplett: Propanon/Wasser, klar andere Tempera
   assert(share > 0.97, 'Fraktion Propanon ' + share);
   // Danach steigt die Temperatur deutlich (Fraktion abgrenzbar)
   await waitFor(page, (st) => st.reading > 85, null, 240000);
+  const warned = await S(page, (st) => !!st.warned.breakthrough1);
+  assert(warned, 'Warnung vor dem Wasserübertritt ausgegeben');
   await done();
   assert(!errors.length, errors.join('; '));
   return `T ${de(T)} °C, Propanon-Anteil ${(share * 100).toFixed(0)} %`;
@@ -409,6 +428,13 @@ await scenario('E09', 'Vorlage fehlt / Verschließen / Zünden am Aufbau / Trock
   const s = await S(page, (st, M) => [M.vol(st.receiver.c), M.vol(st.lost.table)]);
   assert(s[0] === 0 && s[1] > 0.5, 'Kondensat verloren, nicht als Destillat ' + s);
   await clickAct(page, 'toggleReceiver');
+  await sleep(1000);
+  await tapHit(page, 'receiver');
+  await sleep(1000);
+  assert(await S(page, (st) => !st.receiver.present), 'Antippen nimmt die Vorlage ab');
+  await tapHit(page, 'receiver');
+  await sleep(1000);
+  assert(await S(page, (st) => st.receiver.present), 'erneutes Antippen stellt sie zurück');
   // Zünden an der Apparatur
   await tapHit(page, 'lighter'); await tapHit(page, 'condenser');
   assert(await S(page, (st) => st.safety && st.safety.code === 'ignite'), 'Stopp Zünden');
@@ -417,10 +443,10 @@ await scenario('E09', 'Vorlage fehlt / Verschließen / Zünden am Aufbau / Trock
   // Verschließen im Betrieb
   await heater(page, true);
   await speed(page, 30); await sleep(500);
-  await tapHit(page, 'stopper');
+  await clickAct(page, 'toggleStopper');
   assert(await S(page, (st) => st.safety && st.safety.code === 'closed'), 'Stopp geschlossene Apparatur');
   await page.locator('#btnAck').click();
-  await tapHit(page, 'stopper');
+  await clickAct(page, 'toggleStopper');
   await heater(page, true);
   assert(await S(page, (st) => st.heater.on), 'Wiederanlauf nach dem Öffnen');
   // Trockenlauf
@@ -487,12 +513,26 @@ await scenario('E10', 'Lernsystem: richtig / teilweise / falsch, drei Tipps, Lö
   assert((await panel(page).innerText()).includes('Tipp 3/3'), 'drei Tipps im Funktionsteil');
   await page.locator('[data-tr="fnSol"]').click(); await sleep(80);
   await shot(page, '30-trainer-geloest');
-  // Geräte erkunden: Hervorhebung und Funktion
+  // Geräte erkunden: Hervorhebung und Funktion, keine Handgriffe und keine Fehlermeldungen
   await view(page, 'explore');
+  assert(await page.locator('#btnWater').isDisabled() && await page.locator('#actions [data-act="fill"]').isDisabled(), 'Handgriffe beim Erkunden gesperrt');
+  assert(!(await page.locator('[data-hit="tap"]').count()), 'keine Handgriffe auf der Bühne');
   await tapHit(page, 'part:condenser');
   const info = await page.locator('#partInfo').innerText();
   assert(/Liebigkühler/.test(info) && /Kühlwasser/.test(info), 'Geräteinfo');
+  await tapHit(page, 'part:mixture');
+  assert(/Gemisch/.test(await page.locator('#partInfo').innerText()), 'Gemisch erkundbar');
+  await tapHit(page, 'part:stones');
+  assert(/Siedesteine/.test(await page.locator('#partInfo').innerText()), 'Siedesteine erkundbar');
+  assert(!(await page.locator('#toast.show').count()), 'keine Meldung beim Erkunden');
   await shot(page, '31-geraete-erkunden');
+  await view(page, 'labels');
+  assert(await page.locator('#btnHeat').isDisabled(), 'Handgriffe bei Beschriftung gesperrt');
+  await shot(page, '31b-beschriftung-vor-dem-versuch');
+  await view(page, 'labels');
+  await tapHit(page, 'bottle');
+  await idle(page);
+  assert(await page.locator('#views [data-view="labels"]').isDisabled() && await page.locator('#views [data-view="explore"]').isDisabled(), 'Namen/Erkunden während des Versuchs gesperrt');
   await done();
   assert(!errors.length, errors.join('; '));
   return 'Tipps 1–3, Lösung mit Rückfrage, Protokoll falsch → teilweise → richtig, Trainer 12/12';
@@ -544,6 +584,10 @@ await scenario('E12', 'Responsive 1440×900, 1180×820, 1024×768 (Touch), Trenn
     const { page, errors, done, context } = await open({ viewport: { width: w, height: h }, hasTouch: touch });
     const coveredAtStart = await page.$$eval('.hit', (els) => els.filter((e) => { const r = e.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) !== e; }).map((e) => e.dataset.hit));
     assert(!coveredAtStart.length, `${w}×${h} Start: verdeckte Trefferflächen ${coveredAtStart.join(', ')}`);
+    await view(page, 'labels', touch);
+    await sleep(300);
+    await shot(page, `42-beschriftung-${w}x${h}`);
+    await view(page, 'labels', touch);
     await speed(page, 10);
     await prepare(page, { touch });
     await speed(page, 30);
@@ -605,10 +649,6 @@ await scenario('E12', 'Responsive 1440×900, 1180×820, 1024×768 (Touch), Trenn
     await sleep(150);
     await checkAll(`${w}×${h} Reset`);
     assert(!(await page.evaluate(() => window.DS.app.ui.confirmRestart)), 'keine ungewollte Handlung durch das Ziehen');
-    // Beschriftung bleibt innerhalb der Bühne
-    await view(page, 'labels', touch);
-    await sleep(300);
-    await shot(page, `42-beschriftung-${w}x${h}`);
     await done();
     assert(!errors.length, errors.join('; '));
     out.push(`${w}×${h} ok`);

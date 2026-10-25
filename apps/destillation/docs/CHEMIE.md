@@ -1,6 +1,6 @@
 # Destillation – Fachmodell, Modellgrenzen, Quellen
 
-Version 0.1.0 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
+Version 0.2.0 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
 
 ## 1. Stoffgemische
 
@@ -75,7 +75,7 @@ Die Lage lässt sich nur verstellen, wenn die Heizung aus ist und nichts mehr si
 
 ## 6. Brennprobe (Modellvereinfachung)
 
-Eine Probe von 1 mL wird mit der Pipette aus der Vorlage entnommen und in der Porzellanschale am getrennten Prüfplatz entzündet. Ethanol-Wasser-Gemische lassen sich nur entzünden, wenn ihr Flammpunkt nahe an oder unter der Probentemperatur liegt. Der Flammpunkt steigt mit dem Wasseranteil (Richtwerte: reines Ethanol ≈ 13 °C, 50 % ≈ 24 °C, 40 % ≈ 26 °C, 30 % ≈ 29 °C, 20 % ≈ 36 °C Volumenanteil Ethanol). Eine kleine Probe in der Schale, die mit dem Stabfeuerzeug direkt beflammt wird, entzündet sich deshalb erst ab etwa der Hälfte Ethanol zuverlässig. Das Modell verwendet daher vereinfachte Schwellen:
+Eine Probe von 1 mL wird mit der Pipette aus der **abgenommenen** Vorlage am Prüfplatz entnommen (aus der montierten Vorlage nicht möglich) und in der Porzellanschale entzündet. Entnahme, Überführen und Anzünden sind Handgriffe mit festem Wirkzeitpunkt (0,55 / 0,7 / 0,72 ihrer Dauer); sie laufen höchstens in Echtzeit. Ethanol-Wasser-Gemische lassen sich nur entzünden, wenn ihr Flammpunkt nahe an oder unter der Probentemperatur liegt. Der Flammpunkt steigt mit dem Wasseranteil (Richtwerte: reines Ethanol ≈ 13 °C, 50 % ≈ 24 °C, 40 % ≈ 26 °C, 30 % ≈ 29 °C, 20 % ≈ 36 °C Volumenanteil Ethanol). Eine kleine Probe in der Schale, die mit dem Stabfeuerzeug direkt beflammt wird, entzündet sich deshalb erst ab etwa der Hälfte Ethanol zuverlässig. Das Modell verwendet daher vereinfachte Schwellen:
 
 | Ethanolanteil der Probe (Volumen) | Beobachtung |
 | --- | --- |
@@ -97,6 +97,10 @@ Eine Flamme zeigt Brennbarkeit, sie beweist weder die Identität noch die Reinhe
 | Probe aus heißem Kolben | Heizung aus | Bestätigen; Probe aus der Vorlage |
 
 Bereits aufgefangene Fraktionen bleiben erhalten; „Versuch neu beginnen“ archiviert sie für die Ergebnisübersicht.
+
+### Warnung vor dem Übergang des nächsten Stoffs
+
+Sammelt die Vorlage überwiegend Propanon oder Ethanol und sind im Kolben weniger als 5 % davon übrig, warnt die App einmal je Vorlage: Steigt die Temperatur weiter, geht der nächste Stoff (meist Wasser) über und verunreinigt das Destillat. Abhilfe: Heizung aus bzw. (Experte) Vorlage wechseln.
 
 ## 8. Stoffbilanz
 
