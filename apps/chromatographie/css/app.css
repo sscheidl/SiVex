@@ -1,0 +1,59 @@
+/* Papierchromatographie – app-eigene Gestaltung (Grundstil: labkit/css/labkit.css) */
+
+.clock { font-variant-numeric: tabular-nums; color: #c9d3de; font-weight: 600; min-width: 52px; text-align: right; }
+.clock.paused { color: #ffcf7a; }
+
+/* Handlungsleiste über der Bühne */
+.actionbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 12px; background: #f7f9fb; border-bottom: 1px solid var(--line); }
+.actionbar .lk-btn { min-height: 44px; padding: 0 12px; font-size: 14.5px; }
+
+.canvas-wrap { position: relative; flex: 1 1 auto; min-height: 0; }
+#lab { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+
+/* Unsichtbare, fokussierbare Trefferflächen über der Zeichnung */
+.hits { position: absolute; inset: 0; pointer-events: none; }
+.hit { position: absolute; pointer-events: auto; background: transparent; border: 0; border-radius: 10px; cursor: pointer; padding: 0; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .hit:hover { background: rgba(31, 111, 209, 0.05); } }
+.hit:focus-visible { outline: 3px solid var(--accent); outline-offset: 0; background: rgba(31, 111, 209, 0.08); }
+
+.toast { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); max-width: min(92%, 760px); padding: 9px 16px; border-radius: 10px; background: rgba(23, 33, 44, 0.92); color: #fff; font-size: 14.5px; line-height: 1.35; opacity: 0; transition: opacity .25s; pointer-events: none; text-align: center; }
+.toast.show { opacity: 1; }
+.toast.warn { background: rgba(122, 64, 4, 0.94); }
+
+/* Bedienfeld */
+.taskchips { display: flex; gap: 6px; margin-bottom: 10px; }
+.taskchips button { flex: 1 1 0; min-height: 44px; border: 1px solid var(--line-2); background: var(--surface); border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; }
+.taskchips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.taskchips button .done { color: var(--ok); margin-left: 4px; }
+.taskchips button[aria-pressed="true"] .done { color: #c8f5d8; }
+.material { font-size: 13.5px; color: var(--muted); }
+.tipbox { border-left: 4px solid var(--warn); }
+.tipbox p { margin: 4px 0; }
+.tipbox .lvl { font-weight: 700; color: var(--warn); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: #e9eef3; color: var(--text-2); margin: 2px 4px 2px 0; }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+
+.results { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.result { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; }
+.result h3 { margin: 0 0 2px; font-size: 14.5px; }
+.result .meta { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+.result canvas { display: block; margin: 4px auto; border-radius: 4px; }
+.result ol { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; }
+.result.big { grid-column: 1 / -1; }
+
+.rf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.rf-grid label { font-size: 13.5px; font-weight: 600; display: flex; flex-direction: column; gap: 4px; }
+.rf-grid select, .rf-grid input { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 6px 8px; background: #fff; }
+.rf-grid input.right { border-color: var(--ok); background: var(--ok-soft); }
+.rf-grid input.wrong { border-color: var(--bad); background: var(--bad-soft); }
+
+@media (max-width: 1100px) {
+  .lk-head { gap: 8px; padding: 0 10px; }
+  .lk-brand small { display: none; }
+}
+@media (max-width: 899px) {
+  .lk-head { flex: 0 0 auto; flex-wrap: wrap; height: auto; padding: 6px 10px; row-gap: 6px; }
+  .lk-brand { flex: 1 0 100%; }
+  .lk-stage { height: 64vh; min-height: 520px; }
+}

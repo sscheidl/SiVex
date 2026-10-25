@@ -1,0 +1,142 @@
+/* ============================================================
+   SiVex-Labkit 0.1.1 – gemeinsamer Grundstil der Trenn-Apps
+   Farben, Schrift, Seitenhülle, Trennlinie, Schaltflächen,
+   Reiter und Rückmeldungen. Keine externen Schriften.
+   ============================================================ */
+
+:root {
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --surface-2: #f5f7fa;
+  --line: #d9e0e8;
+  --line-2: #c3cdd8;
+  --text: #17212c;
+  --text-2: #3d4b5a;
+  --muted: #66768a;
+  --head: #1b2430;
+  --head-2: #263241;
+  --head-text: #eef3f8;
+  --accent: #1f6fd1;
+  --accent-2: #155bb0;
+  --accent-soft: #e5effc;
+  --ok: #1c8a4a;
+  --ok-soft: #e3f4ea;
+  --bad: #c62f3a;
+  --bad-soft: #fbe7e8;
+  --warn: #a8640a;
+  --warn-soft: #fdf1dc;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --panel-w: clamp(300px, 30vw, 380px);
+  --touch: 44px;
+  --head-h: 52px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 15px/1.45 var(--font); }
+body { overflow: hidden; -webkit-text-size-adjust: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Seitenhülle ---------- */
+.lk-app { display: flex; flex-direction: column; height: 100dvh; height: 100vh; }
+@supports (height: 100dvh) { .lk-app { height: 100dvh; } }
+.lk-head {
+  flex: 0 0 var(--head-h); display: flex; align-items: center; gap: 12px; padding: 0 14px;
+  background: var(--head); color: var(--head-text); min-width: 0;
+}
+.lk-brand { display: flex; align-items: center; gap: 10px; min-width: 0; margin-right: auto; }
+.lk-brand b { font-size: 17px; white-space: nowrap; }
+.lk-brand small { color: #aab6c4; font-size: 12px; white-space: nowrap; }
+.lk-head .lk-btn { background: var(--head-2); border-color: #3a4757; color: var(--head-text); }
+.lk-head .lk-btn:hover { background: #304054; }
+.lk-head .lk-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+.lk-seg { display: inline-flex; background: var(--head-2); border: 1px solid #3a4757; border-radius: 10px; padding: 2px; }
+.lk-seg button { border: 0; background: transparent; color: #c9d3de; min-height: 36px; min-width: 40px; padding: 0 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.lk-seg button[aria-pressed="true"] { background: #eef3f8; color: var(--head); }
+
+.lk-main { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 14px var(--panel-w); }
+.lk-main.panel-hidden { grid-template-columns: minmax(0, 1fr) 0 0; }
+.lk-main.panel-hidden .lk-panel, .lk-main.panel-hidden .lk-splitter { display: none; }
+.lk-stage { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.lk-panel { min-width: 0; min-height: 0; overflow-y: auto; background: var(--surface-2); border-left: 1px solid var(--line); }
+
+/* ---------- Trennlinie (nach TitraLab 3) ---------- */
+.lk-splitter { position: relative; cursor: col-resize; touch-action: none; background: var(--surface-2); border-left: 1px solid var(--line); display: grid; place-items: center; z-index: 3; }
+.lk-splitter::before { content: ""; position: absolute; inset: 0 -15px; } /* Touch-Fläche 44 px breit */
+.lk-splitter-grip { width: 4px; height: 44px; border-radius: 2px; background: var(--line-2); transition: background .15s, height .15s; }
+.lk-splitter:hover .lk-splitter-grip, .lk-splitter.is-dragging .lk-splitter-grip, .lk-splitter:focus-visible .lk-splitter-grip { background: var(--accent); height: 64px; }
+body.is-resizing { cursor: col-resize; -webkit-user-select: none; user-select: none; }
+
+/* ---------- Schaltflächen ---------- */
+.lk-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: var(--touch); padding: 0 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--text);
+  font-weight: 600; cursor: pointer; text-align: center; line-height: 1.2;
+}
+.lk-btn:hover { background: var(--accent-soft); }
+.lk-btn:disabled { opacity: .5; cursor: default; background: var(--surface); }
+.lk-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.lk-btn.primary:hover { background: var(--accent-2); }
+.lk-btn.small { min-height: 36px; padding: 0 10px; font-size: 14px; }
+.lk-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.lk-row.end { justify-content: flex-end; }
+
+/* ---------- Reiter ---------- */
+.lk-tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 4px; padding: 8px 10px 0; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.lk-tabs button { border: 0; background: transparent; min-height: var(--touch); padding: 0 12px; font-weight: 600; color: var(--text-2); cursor: pointer; border-bottom: 3px solid transparent; }
+.lk-tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.lk-section { padding: 12px 14px; }
+.lk-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; }
+.lk-card h2 { margin: 0 0 6px; font-size: 17px; }
+.lk-card h3 { margin: 0 0 6px; font-size: 15px; }
+.lk-card p { margin: 0 0 8px; }
+.lk-muted { color: var(--muted); }
+
+/* ---------- Rückmeldungen ---------- */
+.lk-note { border-radius: var(--radius-sm); padding: 10px 12px; margin: 8px 0; border: 1px solid var(--line); background: var(--surface); }
+.lk-note.ok { background: var(--ok-soft); border-color: #a9d8bb; }
+.lk-note.bad { background: var(--bad-soft); border-color: #eeb4b8; }
+.lk-note.warn { background: var(--warn-soft); border-color: #ecc98d; }
+.lk-note.info { background: var(--accent-soft); border-color: #b7d0f2; }
+.lk-note ul { margin: 6px 0 0; padding-left: 20px; }
+
+/* ---------- Protokollformular (nach Redoxlabor) ---------- */
+.lk-form fieldset { border: 1px solid var(--line); border-radius: var(--radius-sm); margin: 0 0 10px; padding: 8px 10px 10px; background: var(--surface); }
+.lk-form legend { font-weight: 700; padding: 0 4px; }
+.lk-opt { display: flex; align-items: flex-start; gap: 10px; min-height: var(--touch); padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); margin-top: 6px; cursor: pointer; background: var(--surface); }
+.lk-opt input { margin-top: 3px; width: 18px; height: 18px; flex: 0 0 auto; }
+.lk-opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.lk-opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.lk-mark { margin-left: auto; font-weight: 700; }
+.lk-mark.y { color: var(--ok); }
+.lk-mark.n { color: var(--bad); }
+.lk-fb { margin: 6px 2px 0; font-size: 14px; }
+.lk-fb.y { color: var(--ok); }
+.lk-fb.n { color: var(--bad); }
+.lk-gap { width: 100%; min-height: var(--touch); padding: 8px 10px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: #fff; }
+.lk-gap.right { border-color: var(--ok); background: var(--ok-soft); }
+.lk-gap.wrong { border-color: var(--bad); background: var(--bad-soft); }
+
+/* ---------- Hefteintrag ---------- */
+.lk-notebook { background: #fffef8; border: 1px solid #e4dfc8; border-radius: var(--radius); padding: 14px 18px; }
+.lk-notebook h2 { margin: 0 0 8px; font-size: 19px; }
+.lk-notebook ul { padding-left: 20px; margin: 6px 0; }
+.lk-notebook li { margin: 4px 0; }
+.lk-notebook .eq { display: block; margin: 8px 0; padding: 6px 10px; background: #f5f2e4; border-radius: 6px; text-align: center; }
+
+/* ---------- Schmale Bildschirme ---------- */
+@media (max-width: 899px) {
+  body { overflow: auto; }
+  .lk-app { height: auto; min-height: 100vh; }
+  .lk-main, .lk-main.panel-hidden { display: block; }
+  .lk-splitter { display: none; }
+  .lk-panel { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .lk-main.panel-hidden .lk-panel { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
