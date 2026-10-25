@@ -72,13 +72,13 @@ test('L-02 Hilfe: zustandsabhängig, genau drei Stufen, Stufe 3 nennt die Korrek
   assert.match(h[2], /leere die Kammer/i);
   const etoh = runExperiment({ samples: ['gruen', 'violett', 'blau'], solvent: 'etoh' });
   assert.equal(T.diagnose('B', etoh.state), 'incomplete');
-  assert.match(T.hints('B', 'incomplete')[2], /anderen Laufmittel/);
+  assert.match(T.hints('B', 'incomplete')[2], /Wasser als Laufmittel/);
   // laufender Versuch: Überfüllung wird schon vor dem Einhängen erkannt
   const e = M.createEngine();
   act(e, 'drawLine'); act(e, 'spot', 0, 'schwarz');
   for (let i = 0; i < 3; i++) act(e, 'pour', 'water');
   assert.equal(T.diagnose('A', e.state), 'overfill');
-  for (const c of ['noPaper', 'needSamples', 'needRef', 'noLine', 'submerged', 'overfill', 'noSolvent', 'short', 'overloaded', 'incomplete', 'needOtherSolvent', 'developing', 'done', 'free']) {
+  for (const c of ['noPaper', 'needSamples', 'needRef', 'noLine', 'offLine', 'submerged', 'overfill', 'noSolvent', 'short', 'overloaded', 'incomplete', 'needOtherSolvent', 'developing', 'done', 'free']) {
     assert.equal(T.hints('A', c).length, 3, c);
   }
 });
@@ -149,4 +149,77 @@ test('L-05 Hefteintrag: etwa 100 Wörter, Fachbegriffe, Ein-Zonen-Grenze, unabh�
 test('F-07 Rf erscheint nur im Expertenmodus-Teil des Hefteintrags', () => {
   assert.ok(!/Rf/.test(T.NOTEBOOK.lines.join(' ') + T.NOTEBOOK.rule));
   assert.match(T.NOTEBOOK.expert, /Rf/);
+});
+
+// ------------------------------------------------------------------ Regressionstests 0.2.0
+
+test('Befund 2: Bewertung und Musterlösung ohne eigenes Chromatogramm werfen keinen Fehler', () => {
+  assert.doesNotThrow(() => T.grade('A', { gap: 'stationär' }, null));
+  assert.doesNotThrow(() => T.grade('A', { count: '3', obs: ['sep'] }, null));
+  const sol = T.solutionAnswers('A', null);
+  assert.equal(sol.count, '3');
+  assert.ok(T.grade('A', sol, null).allCorrect);
+  for (const id of ['A', 'B', 'C']) for (const q of T.QUESTIONS[id]) assert.doesNotThrow(() => T.correctFor(q, null), id + '/' + q.id);
+});
+
+test('Befund 3: Startlinie nach dem Auftragen – Punkte bleiben, Warnung beim Einhängen, kein gültiger Nachweis', () => {
+  const e = M.createEngine();
+  const msgs = [];
+  e.on('message', (m) => msgs.push(m));
+  act(e, 'spot', 0, 'schwarz'); act(e, 'spot', 2, 'gelb');
+  T.diagnose('A', e.state);
+  act(e, 'drawLine');
+  assert.deepEqual(e.state.paper.lanes.map((l) => l && l.y), [2.35, null, 2.6], 'Punkte nicht verschoben');
+  assert.equal(T.diagnose('A', e.state), 'offLine', 'Hilfe erkennt den Fehler schon vor dem Einhängen');
+  act(e, 'pour', 'water'); act(e, 'insert');
+  const w = msgs.find((m) => m.code === 'offLine');
+  assert.ok(w && w.kind === 'warn');
+  assert.equal(w.text, 'Die Probenpunkte liegen nicht auf einer gemeinsamen Startlinie. Verwende neues Papier und zeichne zuerst die Startlinie.');
+  while (e.state.paper.front < 10) e.advance(1);
+  act(e, 'remove');
+  assert.equal(e.quality().valid, false);
+  assert.ok(e.quality().issues.includes('offLine'));
+  const r = T.evaluate('A', e.state);
+  assert.equal(r.ok, false);
+  assert.equal(r.code, 'offLine');
+  // richtig: erst Linie, dann Punkte – keine Warnung
+  const ok = runExperiment({ samples: ['schwarz', null, 'gelb'] });
+  assert.ok(T.evaluate('A', ok.state).ok);
+});
+
+test('Befund 4: Ausgewertet wird das neueste passende Papier; ein älterer Erfolg rettet keinen neuen Fehlversuch', () => {
+  const e = runExperiment({ samples: ['schwarz', 'blau', null] });
+  const r1 = T.evaluate('A', e.state);
+  assert.ok(r1.ok);
+  assert.deepEqual(r1.papers, ['P1']);
+  runExperiment({ engine: e, samples: ['schwarz', 'blau', null], portions: 3 });
+  const r2 = T.evaluate('A', e.state);
+  assert.equal(r2.ok, false);
+  assert.equal(r2.paper, 'P2');
+  assert.deepEqual(r2.papers, ['P2']);
+  // Papier ohne passende Proben zählt nicht als Bezug
+  runExperiment({ engine: e, samples: ['orange', null, null] });
+  assert.equal(T.evaluate('A', e.state).paper, 'P2');
+});
+
+test('Befund 4: Aufgabe C nennt beide Vergleichspapiere; neuester Versuch je Laufmittel zählt', () => {
+  const e = runExperiment({ samples: ['wasserfest', null, null], solvent: 'water' });
+  runExperiment({ engine: e, samples: ['wasserfest', null, null], solvent: 'etoh' });
+  const ok = T.evaluate('C', e.state);
+  assert.ok(ok.ok);
+  assert.deepEqual(ok.papers.sort(), ['P1', 'P2']);
+  runExperiment({ engine: e, samples: ['wasserfest', null, null], solvent: 'water', portions: 3 });
+  const bad = T.evaluate('C', e.state);
+  assert.equal(bad.ok, false);
+  assert.equal(bad.code, 'submerged');
+  assert.deepEqual(bad.papers.sort(), ['P2', 'P3']);
+});
+
+test('Befund 4: Verweise auf entfernte Archivpapiere werden erkannt', () => {
+  const e = runExperiment({ samples: ['schwarz', 'blau', null], run: 5.2 });
+  assert.ok(T.refsValid(['P1'], e.state.archive));
+  for (let i = 0; i < 12; i++) runExperiment({ engine: e, samples: ['gelb', null, null], run: 5.2 });
+  assert.equal(e.state.archive.length, 12);
+  assert.equal(T.refsValid(['P1'], e.state.archive), false, 'ältestes Papier fiel heraus');
+  assert.ok(T.refsValid([], e.state.archive));
 });

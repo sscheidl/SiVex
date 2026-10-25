@@ -1,6 +1,6 @@
 # Papierchromatographie – Fachmodell und Grenzen
 
-**Stand:** 24.10.2026 · Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Modell: `js/model.js`, Aufgaben: `js/tasks.js`
+**Stand:** 25.10.2026 (Version 0.2.0: Schwarz aus Gelb, Rot und Blau) · Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Modell: `js/model.js`, Aufgaben: `js/tasks.js`
 
 ## 1. Was simuliert wird
 
@@ -50,7 +50,6 @@ Alle Proben sind **definierte Modellproben**. Sie sagen nichts über reale Stift
 | G | gelb | 1 / 0,82 | 1 / 0,70 |
 | B | blau | 1 / 0,62 | 1 / 0,74 |
 | R | rot | 1 / 0,40 | 1 / 0,55 |
-| V | violett | 1 / 0,20 | 1 / 0,38 |
 | WS | blauschwarz, alkohollöslich | 0 / – | 0,80 / 0,60 |
 | P | grauschwarz, Pigment (unlöslich) | 0 / – | 0 / – |
 
@@ -58,21 +57,33 @@ Alle Proben sind **definierte Modellproben**. Sie sagen nichts über reale Stift
 
 | Probe | Anteile | Wasser | Ethanol-Wasser 1 : 1 |
 | --- | --- | --- | --- |
-| Schwarzer Filzstift (wasserlöslich) | G 0,30 · B 0,35 · V 0,35 | **3 Zonen** (violett, blau, gelb) | 2 Zonen: G und B verschmelzen zu einer grünen Zone |
+| Schwarzer Filzstift (wasserlöslich) | G 0,30 · R 0,30 · B 0,40 | **3 Zonen** (rot, blau, gelb) | 2 Zonen (rot; G und B verschmelzen zu einer grünen Zone)¹ |
 | Grüner Filzstift (wasserlöslich) | G 0,55 · B 0,45 | **2 Zonen** (blau, gelb) | **1 grüne Zone** (nicht getrennt) |
-| Violetter Filzstift (wasserlöslich) | R 0,50 · B 0,50 | **2 Zonen** (rot, blau) | 2 Zonen |
-| Oranger Filzstift (wasserlöslich) | G 0,60 · R 0,40 | **2 Zonen** (rot, gelb) | 2 Zonen (dichter beieinander) |
+| Violetter Filzstift (wasserlöslich) | R 0,50 · B 0,50 | **2 Zonen** (rot, blau) | 2 Zonen (rot, blau)¹ |
+| Oranger Filzstift (wasserlöslich) | G 0,60 · R 0,40 | **2 Zonen** (rot, gelb) | 2 Zonen (rot, gelb, dicht beieinander)¹ |
 | Blauer Referenzfarbstoff | B 1 | 1 Zone | 1 Zone |
 | Gelber Referenzfarbstoff | G 1 | 1 Zone | 1 Zone |
 | Wasserfester schwarzer Stift | WS 0,70 · P 0,30 | bleibt vollständig auf der Startlinie | WS wandert, ein grauschwarzer Rest (P) bleibt zurück |
 
-Die geprüften Zonenzahlen gelten für sachgerechte Bedingungen: Startlinie, ein- bis dreimal getupft, Spiegel unter der Startlinie, Front mindestens 5 cm über der Startlinie. Die Unit-Tests (`tests/unit/model.test.js`) prüfen sie für alle 14 Kombinationen aus Probe und Laufmittel.
+Die Zonenzahlen in **Wasser** gelten für sachgerechte Bedingungen: Startlinie, ein- bis dreimal getupft, Spiegel unter der Startlinie, Front mindestens 5 cm über der Startlinie.
+
+¹ In **Ethanol-Wasser** liegen die getrennten Zonen von Schwarz, Violett und Orange dicht beieinander. Ob sie getrennt erscheinen, hängt von Laufstrecke und Farbmenge ab:
+
+| Probe in Ethanol-Wasser 1 : 1 | 5 cm Frontstrecke, 1× / 2× / 3× getupft | 8 cm, 1× / 2× / 3× | 11 cm, 1× / 2× / 3× |
+| --- | --- | --- | --- |
+| Schwarz | 2 / **1** / **1** | 2 / 2 / 2 | 2 / 2 / 2 |
+| Violett | 2 / 2 / **1** | 2 / 2 / 2 | 2 / 2 / 2 |
+| Orange | 2 / **1** / **1** | 2 / 2 / 2 | 2 / 2 / 2 |
+| Grün | 1 / 1 / 1 | 1 / 1 / 1 | 1 / 1 / 1 |
+
+Bei 5 cm Frontstrecke zeigen also Orange mit zwei oder drei Auftupfern und Violett mit drei Auftupfern noch **eine** Zone; erst bei längerer Laufstrecke werden die beiden Farbstoffe sichtbar getrennt. Grün bleibt in Ethanol-Wasser immer eine Zone. Die Hilfe nennt deshalb bei unvollständiger Trennung Laufmittel, Laufstrecke und Farbmenge. Die Unit-Tests (`tests/unit/model.test.js`) prüfen sie für alle 14 Kombinationen aus Probe und Laufmittel sowie die Tabelle für Ethanol-Wasser.
 
 ### Didaktische Absicht des Datensatzes
 
 - **Wasser ist das geeignete Laufmittel für die wasserlöslichen Filzstifte** (Aufgaben A und B). So arbeitet man auch im Schulversuch.
 - **Ethanol-Wasser 1 : 1 trennt Gelb und Blau nicht.** Grün erscheint dort als *eine* Zone. Das zeigt zweierlei: Nicht jedes Laufmittel eignet sich für jede Probe, und **eine Zone ist kein Beweis für einen Reinstoff**.
 - **Wasserfester Stift** (Aufgabe C): Seine Farbstoffe lösen sich nicht in Wasser, wohl aber teilweise im ethanolhaltigen Gemisch; ein Pigmentanteil bleibt zurück.
+- **Einheitliche Farblogik:** Es gibt genau drei wasserlösliche Farbstoffe – Gelb (G), Rot (R) und Blau (B). Jede gemischte Farbe ist aus ihnen zusammengesetzt: Schwarz = Gelb + Rot + Blau, Grün = Gelb + Blau, Violett = Rot + Blau, Orange = Gelb + Rot. Ein Farbstoff wandert unter gleichen Bedingungen in jeder Probe gleich weit (Unit-Test „Gemeinsame Komponenten …“). Die Chromatographie **trennt die vorhandenen Farbstoffe**, sie erzeugt keine neuen Farben.
 - **Gemeinsame Komponente:** Grün und Violett enthalten denselben blauen Farbstoff B. Er läuft in derselben Entwicklung genau so weit wie der blaue Referenzfarbstoff (Aufgabe B). Geprüft wird die **relative Laufstrecke**, nicht die Bildschirmfarbe.
 
 ## 4. Vergleich mit den Altfassungen (Begründung der Werte)
@@ -80,7 +91,7 @@ Die geprüften Zonenzahlen gelten für sachgerechte Bedingungen: Startlinie, ein
 | Punkt | Fassung A | Fassung B | Codex | gewählt |
 | --- | --- | --- | --- | --- |
 | Ethanol-Wasser | 7 : 3 | 1 : 1 | – | **1 : 1** wie im Auftrag festgelegt. Mit 7 : 3 würde Wasser stärker verdrängt, für wasserlösliche Lebensmittelfarbstoffe ist das Gemisch dann noch schlechter geeignet. Einen wissenschaftlich besseren Grund für 7 : 3 enthält Fassung A nicht. 1 : 1 ist im Schulversuch üblich und leicht herzustellen. |
-| Schwarz | G + B + V | V + R + G | – | **G + B + V (A):** Zwei der drei Komponenten haben eine Referenz. So können die Zonen in Aufgabe A einer Referenz zugeordnet werden. |
+| Schwarz | G + B + V | V + R + G | – | **G + R + B (neu, 0.2.0):** dieselben drei Farbstoffe wie in Grün, Violett und Orange; zwei davon haben eine Referenz (Zuordnung in Aufgabe A). In 0.1.0 enthielt Schwarz nach Fassung A einen eigenen violetten Farbstoff – gleichfarbig mit dem violetten Stift, aber chemisch verschieden. Das war ohne Erklärung verwirrend. |
 | Wasserfest | nur ein alkohollöslicher Farbstoff | WS + Pigment | – | **WS + Pigment (B):** Der Auftrag verlangt, dass im zweiten Laufmittel ein Anteil wandert und ein anderer zurückbleiben kann. |
 | Kapillarmodell | Washburn | Washburn | linear | **Washburn (A/B),** k-Werte von B leicht angepasst |
 | Rf in Ethanol-Wasser | G 0,45 / B 0,85 | G 0,76 / B 0,82 | – | **G 0,70 / B 0,74:** Gelb und Blau fallen zusammen (Lerngelegenheit „ungeeignetes Laufmittel“, „eine Zone ≠ Reinstoff“) |

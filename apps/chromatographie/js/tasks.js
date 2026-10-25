@@ -51,76 +51,77 @@
   function paperProblem(snap) {
     const q = snap.quality.issues;
     if (q.includes('submerged')) return { code: 'submerged', paper: snap.id, text: `Papier ${snap.n}: Der Flüssigkeitsspiegel lag über den Farbpunkten. Die Farbstoffe haben sich im Laufmittel gelöst – das Chromatogramm ist nicht auswertbar.` };
+    if (q.includes('offLine')) return { code: 'offLine', paper: snap.id, text: `Papier ${snap.n}: Die Probenpunkte liegen nicht auf einer gemeinsamen Startlinie. Die Laufstrecken lassen sich so nicht vergleichen.` };
     if (q.includes('noLine')) return { code: 'noLine', paper: snap.id, text: `Papier ${snap.n}: Ohne Startlinie liegen die Proben nicht auf gleicher Höhe. Die Laufstrecken lassen sich so nicht vergleichen.` };
     if (q.includes('short')) return { code: 'short', paper: snap.id, text: `Papier ${snap.n}: Das Laufmittel ist nur ${core.fmt(snap.quality.run, 1)} cm über die Startlinie gestiegen. Die Zonen sind noch nicht vollständig getrennt.` };
     return null;
   }
 
-  /** Ergebnis prüfen: Erfolg oder die wichtigste Abweichung (mit Code für die Hilfe). */
+  /**
+   * Ergebnis prüfen: Erfolg oder die wichtigste Abweichung (mit Code für die Hilfe).
+   * Ausgewertet wird immer das NEUESTE passende Papier (Aufgabe C: das neueste mit
+   * Wasser und das neueste mit Ethanol-Wasser) – ein älteres gelungenes Papier
+   * „rettet“ keinen späteren Fehlversuch. `papers` nennt die ausgewerteten Papiere.
+   */
   function evaluate(taskId, st) {
     const papers = st.archive.slice().reverse(); // neueste zuerst
-    const cur = st.paper;
-    const developing = cur.state === 'chamber';
-    const none = (code, text) => ({ ok: false, code, text, paper: null });
-    if (taskId === 'free') return { ok: false, code: 'free', text: 'Im freien Labor gibt es keine vorgegebene Lösung. Vergleiche deine Chromatogramme unter „Ergebnisse“.' };
+    const developing = st.paper.state === 'chamber';
+    const none = (code, text) => ({ ok: false, code, text, paper: null, papers: [] });
+    const res = (ok, code, p, text, extra) => Object.assign({ ok, code, paper: p.id, papers: [p.id], text }, extra || {});
+    const pending = developing ? ' Das Papier in der Kammer ist noch nicht ausgewertet.' : '';
+    if (taskId === 'free') return { ok: false, code: 'free', paper: null, papers: [], text: 'Im freien Labor gibt es keine vorgegebene Lösung. Vergleiche deine Chromatogramme unter „Ergebnisse“.' };
 
     if (taskId === 'A' || taskId === 'B') {
       const need = taskId === 'A' ? ['schwarz'] : ['gruen', 'violett', 'blau'];
-      const hasRef = (p) => taskId === 'B' || laneOf(p, 'blau') >= 0 || laneOf(p, 'gelb') >= 0;
-      const cand = papers.filter((p) => need.every((id) => laneOf(p, id) >= 0) && hasRef(p));
-      if (!cand.length) {
+      const hasRef = (q) => taskId === 'B' || laneOf(q, 'blau') >= 0 || laneOf(q, 'gelb') >= 0;
+      const p = papers.find((q) => need.every((id) => laneOf(q, id) >= 0) && hasRef(q));
+      if (!p) {
         if (developing) return none('developing', 'Das Papier hängt noch in der Kammer. Beobachte die Entwicklung und nimm es heraus, wenn das Laufmittel weit genug gestiegen ist.');
-        const partial = papers.find((p) => need.some((id) => laneOf(p, id) >= 0));
+        const partial = papers.find((q) => need.some((id) => laneOf(q, id) >= 0));
         if (taskId === 'A' && partial && laneOf(partial, 'schwarz') >= 0) return none('needRef', `Auf Papier ${partial.n} fehlt ein Referenzfarbstoff zum Vergleich.`);
         if (partial) return none('needSamples', `Für diese Aufgabe müssen ${taskId === 'A' ? 'der schwarze Filzstift und ein Referenzfarbstoff' : 'Grün, Violett und Blau (Referenz)'} auf demselben Papier entwickelt werden.`);
         return none('noPaper', 'Es gibt noch kein entwickeltes Chromatogramm mit den passenden Proben.');
       }
-      // gültige Kandidaten bevorzugen
-      let firstProblem = null;
-      for (const p of cand) {
-        const pr = paperProblem(p);
-        if (pr) { firstProblem = firstProblem || pr; continue; }
-        const ids = taskId === 'A' ? ['schwarz', laneOf(p, 'blau') >= 0 ? 'blau' : 'gelb'] : need;
-        if (overloaded(p, ids)) { firstProblem = firstProblem || { code: 'overloaded', paper: p.id, text: `Papier ${p.n}: Mindestens ein Fleck wurde so oft betupft, dass die Zonen ineinanderlaufen. So ist nicht sicher zu erkennen, wie viele Farbstoffe es sind.` }; continue; }
-        if (taskId === 'A') {
-          const zb = zonesOf(p, 'schwarz');
-          if (zb.length < 3) { firstProblem = firstProblem || { code: 'incomplete', paper: p.id, text: `Papier ${p.n} (${solventName(p.solvent)}): Der schwarze Filzstift zeigt nur ${zb.length} deutlich getrennte Zone${zb.length === 1 ? '' : 'n'}. Mit diesen Bedingungen werden nicht alle Farbstoffe getrennt.` }; continue; }
-          const refId = laneOf(p, 'blau') >= 0 ? 'blau' : 'gelb';
-          const ref = zonesOf(p, refId)[0];
-          if (!zb.some((z) => Math.abs(z.s - ref.s) < 0.3)) { firstProblem = firstProblem || { code: 'incomplete', paper: p.id, text: `Papier ${p.n}: Keine Zone des schwarzen Stifts lässt sich der Referenz zuordnen.` }; continue; }
-          return { ok: true, code: 'done', paper: p.id, text: `Papier ${p.n} (${solventName(p.solvent)}) belegt die Aufgabe: Der schwarze Filzstift ist deutlich in mehrere Zonen getrennt, die Referenz zeigt eine Zone.` };
-        }
-        const [zg, zv, zr] = need.map((id) => zonesOf(p, id));
-        if (zg.length < 2 || zv.length < 2) { firstProblem = firstProblem || { code: 'incomplete', paper: p.id, text: `Papier ${p.n} (${solventName(p.solvent)}): ${zg.length < 2 ? 'Grün' : 'Violett'} zeigt nur eine Zone. Mit diesem Laufmittel werden die Farbstoffe nicht ausreichend getrennt.` }; continue; }
-        const refS = zr[0].s;
-        const match = (zs) => zs.some((z) => Math.abs(z.s - refS) < 0.3);
-        if (!match(zg) || !match(zv)) { firstProblem = firstProblem || { code: 'incomplete', paper: p.id, text: `Papier ${p.n}: Die Zonen lassen sich der Referenz noch nicht eindeutig zuordnen.` }; continue; }
-        return { ok: true, code: 'done', paper: p.id, text: `Papier ${p.n} (${solventName(p.solvent)}) belegt die Aufgabe: Grün und Violett sind getrennt und lassen sich mit der Referenz vergleichen.` };
+      const pr = paperProblem(p);
+      if (pr) return res(false, pr.code, p, pr.text + pending);
+      const ids = taskId === 'A' ? ['schwarz', laneOf(p, 'blau') >= 0 ? 'blau' : 'gelb'] : need;
+      if (overloaded(p, ids)) return res(false, 'overloaded', p, `Papier ${p.n}: Mindestens ein Fleck wurde so oft betupft, dass die Zonen ineinanderlaufen. So ist nicht sicher zu erkennen, wie viele Farbstoffe es sind.` + pending);
+      if (taskId === 'A') {
+        const zb = zonesOf(p, 'schwarz');
+        if (zb.length < 3) return res(false, 'incomplete', p, `Papier ${p.n} (${solventName(p.solvent)}): Beim schwarzen Filzstift sind nur ${zb.length} Zone${zb.length === 1 ? '' : 'n'} deutlich getrennt. Unter diesen Bedingungen werden die enthaltenen Farbstoffe nicht vollständig getrennt.` + pending);
+        const ref = zonesOf(p, ids[1])[0];
+        if (!zb.some((z) => Math.abs(z.s - ref.s) < 0.3)) return res(false, 'incomplete', p, `Papier ${p.n}: Keine Zone des schwarzen Stifts lässt sich der Referenz zuordnen.` + pending);
+        return res(true, 'done', p, `Papier ${p.n} (${solventName(p.solvent)}) belegt die Aufgabe: Die Farbstoffe des schwarzen Filzstifts sind deutlich getrennt, die Referenz zeigt eine Zone.`);
       }
-      if (developing) return Object.assign({}, firstProblem, { text: firstProblem.text + ' Das Papier in der Kammer ist noch nicht ausgewertet.' });
-      return Object.assign({ ok: false }, firstProblem);
+      const [zg, zv, zr] = need.map((id) => zonesOf(p, id));
+      if (zg.length < 2 || zv.length < 2) return res(false, 'incomplete', p, `Papier ${p.n} (${solventName(p.solvent)}): ${zg.length < 2 ? 'Grün' : 'Violett'} zeigt nur eine Zone. Unter diesen Bedingungen werden die enthaltenen Farbstoffe nicht ausreichend getrennt.` + pending);
+      const refS = zr[0].s;
+      const match = (zs) => zs.some((z) => Math.abs(z.s - refS) < 0.3);
+      if (!match(zg) || !match(zv)) return res(false, 'incomplete', p, `Papier ${p.n}: Die Zonen lassen sich der Referenz noch nicht eindeutig zuordnen.` + pending);
+      return res(true, 'done', p, `Papier ${p.n} (${solventName(p.solvent)}) belegt die Aufgabe: Die Farbstoffe von Grün und Violett sind getrennt und lassen sich mit der Referenz vergleichen.`);
     }
 
-    // Aufgabe C
-    const wf = papers.filter((p) => laneOf(p, 'wasserfest') >= 0);
-    const bySolvent = { water: null, etoh: null };
-    let firstProblem = null;
-    for (const p of wf) {
-      if (bySolvent[p.solvent]) continue;
-      const pr = paperProblem(p) || (overloaded(p, ['wasserfest']) ? { code: 'overloaded', paper: p.id, text: `Papier ${p.n}: Der wasserfeste Stift wurde so oft betupft, dass der Fleck verschmiert.` } : null);
-      if (pr) { firstProblem = firstProblem || pr; continue; }
-      bySolvent[p.solvent] = p;
+    // Aufgabe C: je das neueste Papier mit dem wasserfesten Stift für jedes Laufmittel
+    const latest = { water: papers.find((q) => q.solvent === 'water' && laneOf(q, 'wasserfest') >= 0) || null, etoh: papers.find((q) => q.solvent === 'etoh' && laneOf(q, 'wasserfest') >= 0) || null };
+    const used = [latest.water, latest.etoh].filter(Boolean);
+    if (!used.length) {
+      if (developing) return none('developing', 'Das Papier hängt noch in der Kammer. Nimm es heraus, wenn das Laufmittel weit genug gestiegen ist.');
+      return none('noPaper', 'Es gibt noch kein entwickeltes Chromatogramm mit dem wasserfesten Stift.');
     }
-    if (bySolvent.water && bySolvent.etoh) {
-      return { ok: true, code: 'done', paper: bySolvent.etoh.id, papers: [bySolvent.water.id, bySolvent.etoh.id], text: `Papier ${bySolvent.water.n} (Wasser) und Papier ${bySolvent.etoh.n} (Ethanol-Wasser) belegen die Aufgabe.` };
+    const ids = used.map((q) => q.id);
+    for (const q of used) {
+      const pr = paperProblem(q) || (overloaded(q, ['wasserfest']) ? { code: 'overloaded', text: `Papier ${q.n}: Der wasserfeste Stift wurde so oft betupft, dass der Fleck verschmiert.` } : null);
+      if (pr) return { ok: false, code: pr.code, paper: q.id, papers: ids, text: pr.text + pending };
     }
-    if (firstProblem && !(bySolvent.water || bySolvent.etoh)) return Object.assign({ ok: false }, firstProblem);
-    if (developing && !wf.length) return none('developing', 'Das Papier hängt noch in der Kammer. Nimm es heraus, wenn das Laufmittel weit genug gestiegen ist.');
-    if (!wf.length) return none('noPaper', 'Es gibt noch kein entwickeltes Chromatogramm mit dem wasserfesten Stift.');
-    const missing = bySolvent.water ? 'etoh' : 'water';
-    const have = bySolvent.water || bySolvent.etoh;
-    if (firstProblem && firstProblem.paper !== (have && have.id)) return Object.assign({ ok: false }, firstProblem, { text: firstProblem.text + (have ? ` Mit ${solventName(have.solvent)} liegt schon ein brauchbares Chromatogramm vor (Papier ${have.n}).` : '') });
-    return { ok: false, code: 'needOtherSolvent', missing, paper: have ? have.id : null, text: `Mit ${solventName(missing === 'water' ? 'etoh' : 'water')} liegt ein brauchbares Chromatogramm vor (Papier ${have.n}). Für den Vergleich fehlt noch eines mit ${solventName(missing)}.` };
+    if (latest.water && latest.etoh) return { ok: true, code: 'done', paper: latest.etoh.id, papers: ids, text: `Papier ${latest.water.n} (Wasser) und Papier ${latest.etoh.n} (Ethanol-Wasser) belegen die Aufgabe.` };
+    const have = used[0];
+    const missing = latest.water ? 'etoh' : 'water';
+    return { ok: false, code: 'needOtherSolvent', missing, paper: have.id, papers: ids, text: `Mit ${solventName(have.solvent)} liegt ein brauchbares Chromatogramm vor (Papier ${have.n}). Für den Vergleich fehlt noch eines mit ${solventName(missing)}.` + pending };
+  }
+
+  /** Sind alle Papiere, auf die sich eine Auswertung bezieht, noch vorhanden? */
+  function refsValid(ids, archive) {
+    return (ids || []).every((id) => archive.some((a) => a.id === id));
   }
 
   // ------------------------------------------------------------------ Hilfen
@@ -132,7 +133,7 @@
     if (taskId === 'free') return 'free';
     // Laufender Versuch: Fehler zuerst dort zeigen, wo sie gerade passieren
     if (p.state === 'chamber' && p.submerged.some((x, i) => x && p.lanes[i])) return 'submerged';
-    if (p.state === 'bench' && p.lanes.some(Boolean) && !p.line && r.code !== 'noLine') return 'noLine';
+    if (p.state === 'bench' && p.lanes.some(Boolean) && M.offLine(p) && r.code !== 'noLine' && r.code !== 'offLine') return p.line ? 'offLine' : 'noLine';
     if (p.state === 'bench' && st.chamber.level >= M.PAPER.lineY - 0.05 && p.lanes.some(Boolean)) return 'overfill';
     if (p.state === 'chamber' && !st.chamber.solvent) return 'noSolvent';
     return r.code;
@@ -163,6 +164,11 @@
         'Ohne Startlinie liegen die Farbpunkte auf unterschiedlicher Höhe.',
         'Nimm ein neues Papier und tippe zuerst auf den Bleistift, um die Startlinie zu ziehen. Setze die Punkte dann auf die Linie. (Immer mit Bleistift: Kugelschreiberfarbe würde im Laufmittel mitwandern.)'
       ],
+      offLine: [
+        'Liegen alle Probenpunkte genau auf derselben Linie?',
+        'Die Startlinie wurde erst nach dem Auftragen gezogen. Die Punkte bleiben, wo sie getupft wurden – neben der Linie.',
+        'Nimm ein neues Papier, ziehe zuerst die Startlinie und setze die Punkte dann auf die Linie.'
+      ],
       submerged: [
         'Sieh dir die Kammer genau an: Wo liegt der Flüssigkeitsspiegel im Vergleich zu den Farbpunkten?',
         'Die Farbpunkte lagen im Laufmittel und haben sich dort gelöst, statt mit dem Laufmittel im Papier nach oben zu wandern. (Das Laufmittel ist ja gefärbt.)',
@@ -190,8 +196,8 @@
       ],
       incomplete: [
         'Sind wirklich alle Farbstoffe getrennt, oder könnten in einer Zone noch mehrere stecken?',
-        'Nicht jedes Laufmittel trennt jede Probe. Mit dem verwendeten Laufmittel laufen zwei Farbstoffe gleich weit.',
-        'Wiederhole den Versuch mit dem anderen Laufmittel: Leere die Kammer, gieße das andere Laufmittel ein und nimm ein neues Papier.'
+        'Nicht jedes Laufmittel trennt jede Probe: In Ethanol-Wasser laufen der gelbe und der blaue Farbstoff fast gleich weit. Auch bei kurzer Laufstrecke oder viel Farbe liegen Zonen so dicht, dass sie zu einer verschmelzen.',
+        'Wiederhole den Versuch mit Wasser als Laufmittel: Leere die Kammer, gieße Wasser ein, nimm ein neues Papier, tupfe jede Probe nur einmal auf und lass das Laufmittel weit steigen.'
       ],
       needOtherSolvent: [
         'Bei „wasserfest“ geht es um den Vergleich mit einem anderen Lösungsmittel.',
@@ -225,11 +231,11 @@
   const QUESTIONS = {
     A: [
       { id: 'count', type: 'one', legend: '1. Wie viele Farbzonen zeigt der schwarze Filzstift auf deinem Chromatogramm?',
-        options: { 1: 'eine', 2: 'zwei', 3: 'drei', 4: 'vier oder mehr' }, answerFor: (snap) => String(Math.min(4, zonesOf(snap, 'schwarz').length)),
+        options: { 1: 'eine', 2: 'zwei', 3: 'drei', 4: 'vier oder mehr' }, expected: '3', answerFor: (snap) => String(Math.min(4, zonesOf(snap, 'schwarz').length)),
         wrong: 'Zähle auf deinem Papier noch einmal die getrennten Farbzonen über dem schwarzen Punkt.' },
       { id: 'obs', type: 'many', legend: '2. Beobachtung (alles Zutreffende ankreuzen)',
         options: {
-          sep: 'Der schwarze Fleck trennt sich in mehrere farbige Zonen.',
+          sep: 'Die im schwarzen Filzstift enthaltenen Farbstoffe werden in mehrere farbige Zonen getrennt.',
           match: 'Eine Zone des schwarzen Stifts liegt auf gleicher Höhe wie der Referenzfarbstoff.',
           ref1: 'Der Referenzfarbstoff bildet eine einzige Zone.',
           same: 'Alle Farbzonen des schwarzen Stifts wandern gleich weit.',
@@ -309,7 +315,8 @@
     ]
   };
 
-  function correctFor(q, snap) { return q.answerFor ? q.answerFor(snap) : q.correct; }
+  /** Richtige Antwort; hängt sie vom eigenen Chromatogramm ab und gibt es keines, gilt die Modellerwartung. */
+  function correctFor(q, snap) { return q.answerFor ? (snap ? q.answerFor(snap) : q.expected) : q.correct; }
 
   /** Antworten prüfen: je Feld richtig/falsch, Eingaben bleiben erhalten. */
   function grade(taskId, answers, snap) {
@@ -347,10 +354,10 @@
   }
 
   const SOLUTIONS = {
-    A: 'Unter geeigneten Bedingungen (Wasser als Laufmittel, Spiegel unter der Startlinie, Front weit genug gestiegen) trennt sich der schwarze Filzstift in drei Zonen: unten violett, in der Mitte blau, oben gelb. Die blaue Zone liegt auf der Höhe des blauen, die gelbe auf der Höhe des gelben Referenzfarbstoffs. Schwarz ist also ein Gemisch. Die Farbstoffe lösen sich unterschiedlich gut in der mobilen Phase (Laufmittel) und haften unterschiedlich stark an der stationären Phase (Papier, Adsorption). Der Referenzfarbstoff bildet eine Zone – ein Beweis für einen Reinstoff ist das nicht, denn verschiedene Stoffe können gleich weit wandern.',
-    B: 'Mit Wasser zeigt Grün eine blaue und eine gelbe Zone, Violett eine rote und eine blaue. Die blauen Zonen von Grün und Violett liegen auf derselben Höhe wie der blaue Referenzfarbstoff. Gemeinsamer Bestandteil ist also der blaue Farbstoff. Entscheidend ist die gleiche Laufstrecke unter gleichen Bedingungen, nicht allein die Farbe. Mit Ethanol-Wasser 1 : 1 laufen Gelb und Blau fast gleich weit – Grün erscheint dann als eine Zone, die Trennung ist unzureichend.',
+    A: 'Unter geeigneten Bedingungen (Wasser als Laufmittel, Spiegel unter der Startlinie, Front weit genug gestiegen) werden die im schwarzen Filzstift enthaltenen Farbstoffe in drei Zonen getrennt: unten rot, in der Mitte blau, oben gelb. Die blaue Zone liegt auf der Höhe des blauen, die gelbe auf der Höhe des gelben Referenzfarbstoffs. Schwarz ist also ein Gemisch aus einem roten, einem blauen und einem gelben Farbstoff. Die Farbstoffe lösen sich unterschiedlich gut in der mobilen Phase (Laufmittel) und haften unterschiedlich stark an der stationären Phase (Papier, Adsorption). Der Referenzfarbstoff bildet eine Zone – ein Beweis für einen Reinstoff ist das nicht, denn verschiedene Stoffe können gleich weit wandern.',
+    B: 'Mit Wasser werden die enthaltenen Farbstoffe getrennt: Grün zeigt eine blaue und eine gelbe Zone, Violett eine rote und eine blaue. Die blauen Zonen von Grün und Violett liegen auf derselben Höhe wie der blaue Referenzfarbstoff. Gemeinsamer Bestandteil ist also der blaue Farbstoff. Entscheidend ist die gleiche Laufstrecke unter gleichen Bedingungen, nicht allein die Farbe. Mit Ethanol-Wasser 1 : 1 laufen Gelb und Blau fast gleich weit – Grün erscheint dann als eine Zone, die Trennung ist unzureichend.',
     C: 'Mit Wasser bleibt der wasserfeste Stift vollständig auf der Startlinie, obwohl das Laufmittel aufsteigt: Seine Farbstoffe sind in Wasser unlöslich. Mit Ethanol-Wasser 1 : 1 wandert ein blauschwarzer Farbstoff nach oben, ein grauschwarzer Rest (Pigment) bleibt auf der Startlinie. „Wasserfest“ heißt also: in Wasser unlöslich – in anderen Lösungsmitteln kann sich die Farbe lösen. Das Anhaften am Papier heißt Adsorption.',
-    free: 'Im freien Labor gibt es keine Musterlösung. Vergleiche: Orange trennt sich in Gelb und Rot; die gelbe Zone liegt bei Orange, Grün und Schwarz auf derselben Höhe wie die gelbe Referenz.'
+    free: 'Im freien Labor gibt es keine Musterlösung. Vergleiche: Bei Orange werden ein gelber und ein roter Farbstoff getrennt; die gelbe Zone liegt bei Orange, Grün und Schwarz auf derselben Höhe wie die gelbe Referenz, die rote bei Orange, Violett und Schwarz auf derselben Höhe.'
   };
 
   /** Richtige Antworten für „Lösung anzeigen“ (ohne eigenes Chromatogramm: Modellerwartung). */
@@ -358,7 +365,7 @@
     const out = {};
     for (const q of QUESTIONS[taskId] || []) {
       if (q.type === 'gap') out[q.id] = q.gap.accept[0];
-      else if (q.answerFor) out[q.id] = snap ? q.answerFor(snap) : '3';
+      else if (q.answerFor) out[q.id] = correctFor(q, snap);
       else out[q.id] = q.correct;
     }
     return out;
@@ -403,5 +410,5 @@
   };
   const notebookWords = () => [NOTEBOOK.title, ...NOTEBOOK.lines, NOTEBOOK.rule].join(' ').replace(/\*\*/g, '').split(/\s+/).filter((w) => /[A-Za-zÄÖÜäöüß]/.test(w)).length;
 
-  return { TASKS, TASK_ORDER, QUESTIONS, SOLUTIONS, NOTEBOOK, evaluate, diagnose, hints, grade, solutionAnswers, checkRf, notebookWords, laneOf, zonesOf };
+  return { TASKS, TASK_ORDER, QUESTIONS, SOLUTIONS, NOTEBOOK, evaluate, refsValid, diagnose, hints, grade, correctFor, solutionAnswers, checkRf, notebookWords, laneOf, zonesOf };
 });

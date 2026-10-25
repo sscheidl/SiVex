@@ -301,7 +301,7 @@ await scenario('E08', 'Zu früh herausgenommen und ungeeignetes Laufmittel: unvo
   await develop(page, 8);
   await takeOut(page);
   await page.locator('#btnCheck').click();
-  assert(/nur 2 deutlich getrennte Zonen/.test(await panelText(page)), 'Ethanol-Wasser unvollständig');
+  assert(/nur 2 Zonen deutlich getrennt/.test(await panelText(page)), 'Ethanol-Wasser unvollständig');
   await prepare(page, { samples: ['schwarz', 'gelb', null], solvent: 'water' });
   await develop(page, 7);
   await takeOut(page);
@@ -539,6 +539,258 @@ await scenario('E14', 'Pause und Zeitraffer: gleiche Modellzeit → gleiche Band
   assert(!errors.length, errors.join('; '));
   await done();
   return `5 Stände (10×, Pause, 30×, 1×, 30×) bei ${samples.map((s) => s.dev.toFixed(1)).join(' / ')} s identisch mit Referenzrechnung`;
+});
+
+// =========================================================== Regressionstests 0.2.0
+const ansB = { common: 'blau', how: ['height', 'ref'], green: 'gb', violet: 'rb', same: 'cond' };
+async function answer(page, answers) {
+  for (const [q, v] of Object.entries(answers)) {
+    if (Array.isArray(v)) { for (const x of v) await page.locator(`#protoForm [name="q-${q}"][value="${x}"]`).check(); }
+    else if (q === 'gap') await fill(page, q, v);
+    else await choose(page, q, v);
+  }
+}
+const panelHasSuccess = async (page) => /Alles richtig ausgewertet/.test(await panelText(page));
+
+await scenario('E16', 'Befund 1: Geänderte Protokollantwort nimmt „Alles richtig“ sofort zurück, auch nach Tabwechsel', async () => {
+  const { page, errors, done } = await open();
+  await task(page, 'B');
+  await speed(page, 30);
+  await prepare(page, { samples: ['gruen', 'violett', 'blau'] });
+  await develop(page, 6);
+  await takeOut(page);
+  await page.locator('#btnCheck').click();
+  await answer(page, ansB);
+  await page.locator('#btnGrade').click();
+  assert(await panelHasSuccess(page), 'zunächst alles richtig');
+  await choose(page, 'common', 'rot');
+  assert(!(await panelHasSuccess(page)), 'Erfolg nach Änderung zurückgenommen');
+  assert(/noch nicht geprüft/.test(await page.locator('#protoSummary').innerText()), 'als ungeprüft gekennzeichnet');
+  assert((await page.locator('fieldset[data-q="how"] .lk-fb.y').count()) === 1, 'unveränderte Antwort bleibt bewertet');
+  assert((await page.locator('fieldset[data-q="common"] .lk-fb').count()) === 0, 'geänderte Antwort ohne alte Markierung');
+  await page.locator('.lk-tabs [data-tab="results"]').click();
+  await page.locator('.lk-tabs [data-tab="task"]').click();
+  assert(!(await panelHasSuccess(page)), 'auch nach Tabwechsel kein Erfolg');
+  await shot(page, '60-protokoll-geaendert-ungeprueft');
+  await page.reload(); await page.waitForFunction(() => window.PC && window.PC.app);
+  assert(!(await panelHasSuccess(page)), 'auch nach Neuladen kein Erfolg');
+  await page.locator('#btnGrade').click();
+  const t = await panelText(page);
+  assert(/4 von 5 Antworten richtig/.test(t) && !/Alles richtig/.test(t), 'erneute Prüfung: rot ist falsch');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return 'Blau → Rot: „Alles richtig“ verschwindet sofort, nach Tabwechsel und Neuladen; erneute Prüfung 4/5';
+});
+
+await scenario('E17', 'Befund 1: Geänderter Rf-Wert nach erfolgreicher Prüfung gilt als ungeprüft', async () => {
+  const { page, errors, done } = await open();
+  await page.locator('#btnExpert').click();
+  await speed(page, 30);
+  await prepare(page, { samples: ['blau', null, null] });
+  await develop(page, 8);
+  await takeOut(page);
+  await clickAct(page, 'markFront'); await idle(page);
+  const m = await S(page, (st, M) => { const p = st.paper; const z = M.zones(p, 0)[0]; return { front: p.frontMark - p.lanes[0].y, dist: z.s }; });
+  await page.locator('#rfFront').fill(m.front.toFixed(1).replace('.', ','));
+  await page.locator('#rfDist').fill(m.dist.toFixed(1).replace('.', ','));
+  await page.locator('#rfVal').fill((m.dist / m.front).toFixed(2).replace('.', ','));
+  await page.locator('#btnRf').click();
+  assert(/Richtig gemessen und berechnet/.test(await panelText(page)), 'zunächst richtig');
+  await page.locator('#rfVal').fill('0,99');
+  assert(!/Richtig gemessen und berechnet/.test(await panelText(page)), 'Erfolgsmeldung zurückgenommen');
+  assert(!(await page.locator('#rfVal').evaluate((e) => e.classList.contains('right'))), 'grüne Markierung entfernt');
+  assert(await page.locator('#rfFront').evaluate((e) => e.classList.contains('right')), 'unveränderte Messung bleibt markiert');
+  assert(/Rf: ungeprüft/.test(await panelText(page)), 'Rf als ungeprüft angezeigt');
+  await page.locator('.lk-tabs [data-tab="notebook"]').click();
+  await page.locator('.lk-tabs [data-tab="task"]').click();
+  assert(!/Richtig gemessen und berechnet/.test(await panelText(page)), 'auch nach Tabwechsel kein Erfolg');
+  await shot(page, '61-rf-geaendert-ungeprueft');
+  await page.locator('#btnRf').click();
+  assert(/Rf: ✗/.test(await panelText(page)), 'erneute Prüfung: falsch');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return 'Rf 0,99 nach richtiger Prüfung: grüne Markierung und Erfolgsmeldung weg, nach erneuter Prüfung ✗';
+});
+
+await scenario('E18', 'Befund 2: Musterlösung ohne Papier, Begriffsfeld bearbeiten, Expertenmodus, Tabwechsel, Neuladen – keine Fehler', async () => {
+  const { page, errors, done } = await open();
+  await page.locator('#btnSolution').click();
+  await page.locator('#btnSolutionYes').click();
+  await page.locator('#protoForm [name="q-gap"]').fill('mobil');
+  await page.locator('#protoForm [name="q-gap"]').fill('stationär');
+  await page.locator('#btnExpert').click();
+  await page.locator('.lk-tabs [data-tab="results"]').click();
+  await page.locator('.lk-tabs [data-tab="task"]').click();
+  await page.reload(); await page.waitForFunction(() => window.PC && window.PC.app);
+  await sleep(200);
+  await page.locator('#protoForm [name="q-gap"]').fill('Stationäre');
+  await page.locator('#btnExpert').click();
+  const t = await panelText(page);
+  assert(/Musterlösung/.test(t) && (await page.locator('#protoForm').count()) === 1, 'Musterlösung und Protokoll sichtbar');
+  assert(!errors.length, 'Fehler: ' + errors.join('; '));
+  await done();
+  return 'kein Laufzeitfehler (vorher: Cannot read properties of null (reading \'lanes\'))';
+});
+
+await scenario('E19', 'Befund 3 und 6: Startlinie nach dem Auftragen – Meldung im Band über der Kammer, kein Aufgabennachweis', async () => {
+  const { page, errors, done } = await open();
+  await speed(page, 30);
+  await tapHit(page, 'pen:schwarz'); await tapHit(page, 'lane:0'); await tapHit(page, 'pen:schwarz');
+  await tapHit(page, 'pen:gelb'); await tapHit(page, 'lane:2'); await tapHit(page, 'pen:gelb');
+  await tapHit(page, 'pencil');
+  await idle(page);
+  const ys = await S(page, (st) => st.paper.lanes.map((l) => l && l.y));
+  assert(JSON.stringify(ys) === '[2.35,null,2.6]', 'Punkte unverändert: ' + JSON.stringify(ys));
+  await tapHit(page, 'bottle:water');
+  await tapHit(page, 'chamber');
+  await idle(page);
+  await page.waitForFunction(() => /gemeinsamen Startlinie/.test(document.querySelector('#toast').textContent), null, { timeout: 5000 });
+  const text = await page.locator('#toast').innerText();
+  assert(text === 'Die Probenpunkte liegen nicht auf einer gemeinsamen Startlinie. Verwende neues Papier und zeichne zuerst die Startlinie.', 'Meldung: ' + text);
+  const geo = await page.evaluate(() => {
+    const t = document.querySelector('#toast').getBoundingClientRect(), b = document.querySelector('#msgband').getBoundingClientRect();
+    const r = window.PC.app.renderer, L = r.layout, wrap = document.querySelector('#canvasWrap').getBoundingClientRect();
+    const chamberTop = wrap.top + r.toScreen(0, L.chamber.top - 0.6).y; // Oberkante inkl. Deckel
+    return { inside: t.top >= b.top - 1 && t.bottom <= b.bottom + 1 && t.left >= b.left - 1 && t.right <= b.right + 1, gap: chamberTop - t.bottom, overlap: window.__overlap(t) };
+  });
+  assert(geo.inside && geo.gap >= 0 && !geo.overlap, 'Meldung im Band oberhalb der Kammer, ohne Überschneidung: ' + JSON.stringify(geo));
+  await shot(page, '62-startlinie-nachtraeglich-meldung');
+  await waitFor(page, (st, M) => st.paper.front >= M.PAPER.lineY + 7);
+  await takeOut(page);
+  await page.locator('#btnCheck').click();
+  const t = await panelText(page);
+  assert(/Noch nicht belegt/.test(t) && /gemeinsamen Startlinie/.test(t), 'kein Nachweis');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return `Punkte bleiben bei 2,35/2,60 cm; Meldung ${geo.gap.toFixed(0)} px oberhalb von Kammer und Arbeitsfläche; Aufgabe A nicht belegt`;
+});
+
+await scenario('E20', 'Befund 4: Ausgewertetes Papier wird genannt und gezeigt; neues Bezugspapier setzt die Bewertung zurück; Aufgabe C nennt beide Papiere', async () => {
+  const { page, errors, done } = await open();
+  await speed(page, 30);
+  await prepare(page, { samples: ['schwarz', 'blau', null] });
+  await develop(page, 6); await takeOut(page);
+  await page.locator('#btnCheck').click();
+  assert(/Ausgewertet: Papier 1 \(Wasser\)/.test(await panelText(page)), 'Papier 1 genannt');
+  await answer(page, { count: '3' });
+  await page.locator('#btnGrade').click();
+  assert(await page.locator('#protoSummary .lk-note').count(), 'Bewertung zu Papier 1');
+  await prepare(page, { samples: ['schwarz', 'blau', null], portions: 3 });
+  await develop(page, 5); await takeOut(page);
+  assert(/neues Papier dazugekommen/.test(await panelText(page)), 'Hinweis auf neues Papier');
+  await page.locator('#btnCheck').click();
+  const t2 = await panelText(page);
+  assert(/Noch nicht belegt/.test(t2) && /Ausgewertet: Papier 2/.test(t2) && !/Ausgewertet: Papier 1/.test(t2), 'neuester Fehlversuch zählt, nicht der ältere Erfolg');
+  await shot(page, '63-auswertung-papier-genannt');
+  await page.locator('[data-show="P2"]').click();
+  assert((await page.locator('.lk-tabs [data-tab="results"]').getAttribute('aria-selected')) === 'true' && await page.locator('.result.big [data-thumb="P2"]').count(), 'Chromatogramm direkt erreichbar');
+  await page.locator('.lk-tabs [data-tab="task"]').click();
+  await prepare(page, { samples: ['schwarz', null, 'gelb'] });
+  await develop(page, 6); await takeOut(page);
+  await page.locator('#btnCheck').click();
+  const t3 = await panelText(page);
+  assert(/Ergebnis belegt/.test(t3) && /Protokoll zu Papier 3/.test(t3), 'neues Bezugspapier 3');
+  assert(!(await page.locator('#protoSummary .lk-note').count()), 'alte Bewertung nicht übernommen');
+  assert(await page.locator('#protoForm [name="q-count"][value="3"]').isChecked(), 'Eingabe bleibt erhalten');
+  // Aufgabe C
+  await task(page, 'C');
+  await prepare(page, { samples: ['wasserfest', null, null], solvent: 'water' });
+  await develop(page, 6); await takeOut(page);
+  await prepare(page, { samples: ['wasserfest', null, null], solvent: 'etoh' });
+  await develop(page, 6); await takeOut(page);
+  await page.locator('#btnCheck').click();
+  const t4 = await panelText(page);
+  assert(/Ausgewertet: Papier 4 \(Wasser\) und Papier 5 \(Ethanol-Wasser 1 : 1\)/.test(t4) && /Protokoll zu Papier 4 \(Wasser\) und Papier 5/.test(t4), 'beide Vergleichspapiere benannt');
+  assert((await page.locator('.evalthumb').count()) === 2, 'beide Papiere als Miniatur erreichbar');
+  await shot(page, '64-aufgabe-c-beide-papiere');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return 'Papier 1 ✓ → Papier 2 ✗ (nicht durch Papier 1 gerettet) → Papier 3 ✓ ohne alte Bewertung; Aufgabe C: Papier 4 und 5';
+});
+
+await scenario('E21', 'Befund 4: Ältestes Papier fällt aus dem Archiv (12 Papiere) – keine ungültigen Verweise', async () => {
+  const { page, errors, done } = await open();
+  await speed(page, 30);
+  await prepare(page, { samples: ['schwarz', 'blau', null] });
+  await develop(page, 5.2); await takeOut(page);
+  await page.locator('#btnCheck').click();
+  await answer(page, { count: '3' });
+  await page.locator('#btnGrade').click();
+  for (let i = 0; i < 12; i++) { await prepare(page, { samples: ['gelb', null, null] }); await develop(page, 5.2); await takeOut(page); }
+  const ids = await S(page, (st) => st.archive.map((a) => a.id));
+  assert(ids.length === 12 && !ids.includes('P1'), 'Papier 1 entfernt');
+  await page.locator('.lk-tabs [data-tab="results"]').click();
+  await page.locator('.lk-tabs [data-tab="task"]').click();
+  const t = await panelText(page);
+  assert(/nicht mehr vorhanden/.test(t) && !/Ergebnis belegt/.test(t) && !(await page.locator('#protoForm').count()), 'Bewertung verworfen, Hinweis');
+  await page.reload(); await page.waitForFunction(() => window.PC && window.PC.app);
+  await page.locator('#btnCheck').click();
+  assert(/Ausgewertet: Papier 1\b/.test(await panelText(page)) === false, 'kein Verweis auf Papier 1');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return '13 Papiere: Bewertung zu Papier 1 verworfen, Hinweis „nicht mehr vorhanden“, keine Fehler';
+});
+
+await scenario('E22', 'Befund 7: Stift nach „Neues Papier“ und „Papier einhängen“ zurückgestellt und verschlossen (Bühne und Leiste)', async () => {
+  const { page, errors, done } = await open();
+  const sel = () => S(page, () => window.PC.app.ui.selectedPen);
+  const pressed = (id) => page.locator(`[data-hit="pen:${id}"]`).getAttribute('aria-pressed');
+  await tapHit(page, 'pencil');
+  await tapHit(page, 'pen:gruen'); await tapHit(page, 'lane:0');
+  await idle(page);
+  await clickAct(page, 'insert'); await idle(page);
+  assert((await sel()) === null && (await pressed('gruen')) === 'false', 'Leiste „Papier einhängen“');
+  await tapHit(page, 'chamber'); await idle(page);
+  await tapHit(page, 'pen:violett');
+  await clickAct(page, 'newSheet'); await idle(page);
+  assert((await sel()) === null && (await pressed('violett')) === 'false', 'Leiste „Neues Papier“');
+  await tapHit(page, 'pencil');
+  await tapHit(page, 'pen:orange'); await tapHit(page, 'lane:1');
+  await tapHit(page, 'chamber'); await idle(page);
+  assert((await sel()) === null, 'Bühne: Kammer antippen');
+  await shot(page, '65-stift-zurueckgestellt');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return 'nach Einhängen (Leiste und Bühne) und neuem Papier ist kein Stift mehr gewählt';
+});
+
+await scenario('E23', 'Befund 6: Meldungsband auf Desktop und Tablet (quer/hoch) oberhalb von Kammer und Geräten', async () => {
+  const rows = [];
+  for (const [w, h] of [[1440, 900], [1180, 820], [1024, 768], [768, 1024]]) {
+    const { page, errors, done } = await open({ viewport: { width: w, height: h }, hasTouch: w < 1440 });
+    await tapHit(page, 'pen:schwarz', w < 1440); await tapHit(page, 'lane:0', w < 1440); await tapHit(page, 'pencil', w < 1440);
+    await tapHit(page, 'chamber', w < 1440);
+    await idle(page);
+    await page.waitForFunction(() => /gemeinsamen Startlinie/.test(document.querySelector('#toast').textContent), null, { timeout: 5000 });
+    await sleep(300);
+    const g = await page.evaluate(() => {
+      const t = document.querySelector('#toast').getBoundingClientRect();
+      const r = window.PC.app.renderer, wrap = document.querySelector('#canvasWrap').getBoundingClientRect();
+      return { lines: Math.round((t.height - 14) / 19), gap: wrap.top + r.toScreen(0, r.layout.chamber.top - 0.6).y - t.bottom, overlap: window.__overlap(t), h: t.height };
+    });
+    await shot(page, `66-meldung-${w}x${h}`);
+    assert(g.gap >= 0 && !g.overlap, `${w}×${h}: ${JSON.stringify(g)}`);
+    rows.push(`${w}×${h}: ${g.lines} Zeile(n), ${g.gap.toFixed(0)} px Abstand`);
+    assert(!errors.length, errors.join('; '));
+    await done();
+  }
+  return rows.join('; ');
+});
+
+await scenario('E24', 'Befund 8: Wellen beim Eingießen klingen ab; Füllstand stimmt mit dem Modell überein', async () => {
+  const { page, errors, done } = await open();
+  await tapHit(page, 'bottle:water');
+  await page.waitForFunction(() => { const o = window.PC.app.engine.state.op; return o && o.t / o.dur > 0.7 && window.PC.app.renderer.waveAmp() > 0.03; }, null, { timeout: 5000 });
+  const during = await page.evaluate(() => window.PC.app.renderer.waveAmp());
+  await shot(page, '67-eingiessen-wellen');
+  await idle(page);
+  const level = await S(page, (st, M) => [st.chamber.level, M.PORTION]);
+  await page.waitForFunction(() => window.PC.app.renderer.waveAmp() === 0, null, { timeout: 8000 });
+  await shot(page, '68-nach-dem-eingiessen-ruhig');
+  assert(Math.abs(level[0] - level[1]) < 1e-9, 'Füllstand = eine Portion');
+  assert(!errors.length, errors.join('; '));
+  await done();
+  return `Amplitude beim Gießen ${during.toFixed(3)} cm, danach 0; Spiegel ${level[0].toFixed(2)} cm`;
 });
 
 // =========================================================== E15 Netz und Konsole

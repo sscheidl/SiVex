@@ -17,6 +17,9 @@
    * Anordnung (Entwurf 1 von 3, Auswahl siehe docs/TESTBERICHT.md, Abschnitt „Layoutentwürfe“):
    * Arbeitsfläche mit Stifteständer links, Kammer in der Mitte, Laufmittel rechts.
    * compact: schmalere Arbeitsfläche für hochformatige Bühnen (Tablet), damit die Kammer größer wird.
+   * Über Kammer und Flaschen bleibt ein Band frei (oberhalb des Deckels): Dort stehen die
+   * Meldungen, ohne Papier, Geräte oder Beschriftungen zu verdecken (Befund 6). Animationen
+   * (Deckel, Flasche, Papier) bleiben unterhalb dieses Bandes.
    */
   function makeLayout(compact) {
     const L = { compact, W: compact ? 26.7 : 29.6, H: 21.6, bench: 19.6, rack: { y: 18.4 } };
@@ -37,6 +40,7 @@
       Object.assign(L.rack, { x: 0.6, slot: 1.28 });
       L.bottles = [{ x: 27.6, bottom: 9.6, shelf: true }, { x: 27.6, bottom: 19.6 }];
     }
+    L.band = { x0: L.chamber.x - 0.2, x1: L.W - 0.15, y0: 0.08, y1: 1.98 };
     const c = L.chamber;
     c.bottom = L.bench;
     c.h = c.bottom - c.top;
@@ -391,6 +395,8 @@
     const ctx = canvas.getContext('2d');
     let L = makeLayout(false);
     const view = { s: 30, ox: 0, oy: 0, w: 0, h: 0, dpr: 1 };
+    // Oberflächenwellen beim Eingießen (nur Darstellung; der Füllstand kommt aus dem Modell)
+    const wave = { amp: 0, last: null, t: 0, ring: 0 };
     let reduce = false;
     try { reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* ohne */ }
 
@@ -406,6 +412,25 @@
       view.oy = Math.max(0, (view.h - L.H * view.s) / 2);
     }
     const toScreen = (x, y) => ({ x: view.ox + x * view.s, y: view.oy + y * view.s });
+
+    /** Meldungsband in CSS-Pixeln relativ zur Bühne (oberhalb von Kammer und Geräten). */
+    function bandRect() {
+      const a = toScreen(L.band.x0, L.band.y0), b = toScreen(L.band.x1, L.band.y1);
+      return { x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y };
+    }
+
+    function updateWave(st) {
+      const now = (root.performance ? root.performance.now() : Date.now()) / 1000;
+      const dt = wave.last == null ? 0 : Math.min(0.1, now - wave.last);
+      wave.last = now;
+      wave.t += dt;
+      const op = st.op;
+      const k = op && op.type === 'pour' ? op.t / op.dur : null;
+      const pouring = k != null && k > 0.3 && k < 0.86;
+      if (reduce) { wave.amp = 0; return; }
+      if (pouring) { wave.amp = Math.min(0.1, wave.amp + dt * 0.35); wave.ring = (wave.ring + dt * 1.6) % 1; }
+      else { wave.amp *= Math.exp(-dt / 0.55); if (wave.amp < 0.003) wave.amp = 0; }
+    }
 
     /** Trefferflächen in CSS-Pixeln relativ zur Bühne. */
     function hitAreas(ui) {
@@ -514,6 +539,20 @@
       if (lv <= 0.01) return;
       const y = liquidY(st);
       const x0 = c.x + c.glass, x1 = c.x + c.w - c.glass;
+      // Welle mit ganzzahliger Periodenzahl über die Breite: Mittelwert = Füllstand des Modells
+      const A = Math.min(wave.amp, lv * 0.4);
+      const wy = (x) => {
+        if (!A) return y;
+        const u = (x - x0) / (x1 - x0);
+        return y + A * (0.7 * Math.sin(2 * Math.PI * 3 * u - 5.2 * wave.t) + 0.3 * Math.sin(2 * Math.PI * 5 * u + 3.1 * wave.t));
+      };
+      const surface = (move) => {
+        if (move) ctx.moveTo(x0, wy(x0 + 0.4) - men);
+        ctx.quadraticCurveTo(x0 + 0.08, wy(x0 + 0.4), x0 + 0.4, wy(x0 + 0.4));
+        for (let x = x0 + 0.6; x < x1 - 0.4; x += 0.2) ctx.lineTo(x, wy(x));
+        ctx.lineTo(x1 - 0.4, wy(x1 - 0.4));
+        ctx.quadraticCurveTo(x1 - 0.08, wy(x1 - 0.4), x1, wy(x1 - 0.4) - men);
+      };
       const sol = M.SOLVENTS[st.chamber.solvent || 'water'];
       const tint = st.chamber.tint;
       const base = tint[3] > 0 ? mix(sol.rgb, tint, clamp(tint[3] * 1.2, 0, 0.9)) : sol.rgb;
@@ -523,10 +562,7 @@
       // Flüssigkeit mit Meniskus an den Wänden
       const men = 0.16;
       ctx.beginPath();
-      ctx.moveTo(x0, y - men);
-      ctx.quadraticCurveTo(x0 + 0.08, y, x0 + 0.4, y);
-      ctx.lineTo(x1 - 0.4, y);
-      ctx.quadraticCurveTo(x1 - 0.08, y, x1, y - men);
+      surface(true);
       ctx.lineTo(x1, c.bottom); ctx.lineTo(x0, c.bottom); ctx.closePath();
       const g = ctx.createLinearGradient(0, y, 0, c.floor);
       g.addColorStop(0, rgba(base, alpha * 0.85)); g.addColorStop(1, rgba(base, Math.min(0.95, alpha * 1.2)));
@@ -541,10 +577,17 @@
       ctx.beginPath(); ctx.ellipse((x0 + x1) / 2, y, (x1 - x0) / 2 - 0.1, 0.13, 0, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.8)';
       ctx.lineWidth = 0.035;
-      ctx.beginPath(); ctx.moveTo(x0, y - men); ctx.quadraticCurveTo(x0 + 0.08, y, x0 + 0.4, y); ctx.lineTo(x1 - 0.4, y); ctx.quadraticCurveTo(x1 - 0.08, y, x1, y - men); ctx.stroke();
+      ctx.beginPath(); surface(true); ctx.stroke();
+      // Ringwelle an der Einfallstelle des Strahls
+      if (A > 0.01 && st.op && st.op.type === 'pour') {
+        const rx = 0.2 + wave.ring * 2.2;
+        ctx.strokeStyle = `rgba(255,255,255,${(0.6 * (1 - wave.ring)).toFixed(3)})`;
+        ctx.lineWidth = 0.03;
+        ctx.beginPath(); ctx.ellipse(c.x + c.w - 2.4 - 4.76 - 0.25, y, rx, rx * 0.12 + 0.02, 0, 0, Math.PI * 2); ctx.stroke();
+      }
       ctx.strokeStyle = rgba(mix(base, [30, 50, 80], 0.6), 0.75);
       ctx.lineWidth = 0.035;
-      ctx.beginPath(); ctx.moveTo(x0 + 0.4, y + 0.04); ctx.lineTo(x1 - 0.4, y + 0.04); ctx.stroke();
+      ctx.beginPath(); for (let x = x0 + 0.4; x <= x1 - 0.4; x += 0.2) { if (x === x0 + 0.4) ctx.moveTo(x, wy(x) + 0.04); else ctx.lineTo(x, wy(x) + 0.04); } ctx.stroke();
       ctx.restore();
     }
 
@@ -613,6 +656,7 @@
     function draw(ui) {
       const st = getState();
       const p = st.paper;
+      updateWave(st);
       ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
       ctx.clearRect(0, 0, view.w, view.h);
       ctx.setTransform(view.dpr * view.s, 0, 0, view.dpr * view.s, view.dpr * view.ox, view.dpr * view.oy);
@@ -633,7 +677,7 @@
       const lidOps = ['pour', 'insert', 'remove'];
       const lidT = st.op && lidOps.includes(st.op.type) ? Math.sin(clamp(st.op.t / st.op.dur, 0, 1) * Math.PI) : 0;
       // beim Gießen nach links geschoben (Flasche kommt von rechts), sonst angehoben
-      const lidLift = st.op && st.op.type === 'pour' ? { x: -lidT * 5, y: lidT * 0.3, r: 0 } : { x: 0, y: lidT * 1.6, r: 0 };
+      const lidLift = st.op && st.op.type === 'pour' ? { x: -lidT * 3.4, y: lidT * 0.2, r: 0 } : { x: 0, y: lidT * 0.3, r: 0 };
 
       // Arbeitsfläche
       const t = L.tile;
@@ -695,7 +739,7 @@
         let lift = { x: 0, y: 0 }, tilt = 0;
         if (pourP != null && st.op.solvent === id) {
           const k = pourP < 0.25 ? easeInOut(pourP / 0.25) : pourP > 0.85 ? 1 - easeInOut((pourP - 0.85) / 0.15) : 1;
-          const tx = c.x + c.w - 2.4 - b.x, ty = c.top - 1.2 - b.bottom;
+          const tx = c.x + c.w - 2.4 - b.x, ty = c.top + 0.7 - b.bottom; // Flasche bleibt unter dem Meldungsband
           lift = { x: tx * k, y: ty * k };
           const tk = clamp((pourP - 0.22) / 0.12, 0, 1) * (1 - clamp((pourP - 0.8) / 0.08, 0, 1));
           tilt = -1.85 * tk;
@@ -785,7 +829,7 @@
       ctx.restore();
     }
 
-    return { resize, draw, hitAreas, view, get layout() { return L; }, toScreen, drawPaper };
+    return { resize, draw, hitAreas, bandRect, view, get layout() { return L; }, toScreen, drawPaper, waveAmp: () => wave.amp };
   }
 
   /** Kleines Chromatogramm (Ergebnisse) in ein eigenes Canvas zeichnen. */
