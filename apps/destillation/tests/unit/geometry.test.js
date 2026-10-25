@@ -69,6 +69,33 @@ test('G-01 Richtige Schlauchführung kreuzt nichts: Zulauf unter dem Kühler, Ab
   }
 });
 
+test('Befund 10/11: Flasche und Siedesteine links bei den Materialien; Szene schmaler, Apparatur größer', () => {
+  for (const station of [true, false]) {
+    const g = G.build({ station });
+    assert.ok(g.bottle.x + g.bottle.w / 2 < g.stand1.base.x0 && g.stonesDish.x + g.stonesDish.w / 2 < g.stand1.rodX, 'links vom Stativ bzw. von der Stativstange');
+    assert.ok(g.bottle.x - g.bottle.w / 2 > g.bounds.x0 && g.stonesDish.x + g.stonesDish.w / 2 < g.stand1.rodX, 'innerhalb der Szene, nicht unter dem Kühler');
+    if (station) assert.ok(g.station.x1 < g.bottle.x - g.bottle.w / 2, 'Prüfplatz links daneben');
+  }
+  // Fassung 0.2.0: Szene 1210 mm breit (mit Prüfplatz) → Maßstab bei 1046 × 690 px 0,851 px/mm
+  const g = G.build({ station: true });
+  const w = g.bounds.x1 - g.bounds.x0;
+  assert.ok(w <= 1135, 'Szene höchstens 1135 mm breit (0.2.0: 1210 mm): ' + w.toFixed(0));
+  const s = G.fit(g.bounds, 1046, 734, 8, 58).scale;
+  assert.ok(s >= 0.851 * 1.06, 'Apparatur bei 1440 × 900 mindestens 6 % größer: ' + s.toFixed(3));
+});
+
+test('Befund 5: Einblendfläche lang genug für die Beschriftung des Kühlwassers', () => {
+  const g = G.build({ station: true });
+  const o = g.overlay;
+  // längste Zeile: „Kühlwasser im Mantel · 15 °C · Durchfluss mittel  ← strömt zum Ablauf“ ≈ 354 px bei 11 px Schrift
+  for (const [w, h] of [[1046, 734], [1180 - 380, 680], [1024 - 300, 600]]) {
+    const v = G.fit(g.bounds, w, h, 8, 58);
+    const room = (o.x1 - o.x0 - 40) * v.scale;
+    if (w >= 1000) assert.ok(room >= 360, `${w}×${h}: Platz ${room.toFixed(0)} px`);
+    else assert.ok(room >= 300, `${w}×${h}: Platz ${room.toFixed(0)} px (Rest bricht in eine zweite Zeile um)`);
+  }
+});
+
 test('G-03 Füllstände aus dem Volumen: monoton, Kolben 100 mL unter dem Hals, Vorlage bis 100 mL', () => {
   const g = G.build({ station: false });
   let prev = Infinity;

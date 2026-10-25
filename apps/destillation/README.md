@@ -1,6 +1,6 @@
 # Destillation
 
-**Status: prototype** · Version 0.2.0 · Jahrgangsstufe 8/9 (NTG 8 / SG 9), optionaler Expertenmodus · Baukasten [`shared/labkit`](../../shared/labkit/) 0.1.1
+**Status: prototype** · Version 0.3.0 · Jahrgangsstufe 8/9 (NTG 8 / SG 9), optionaler Expertenmodus · Baukasten [`shared/labkit`](../../shared/labkit/) 0.1.1
 
 Eigenständige Browser-App: Flüssigkeitsgemische mit einer **fertig montierten Destillationsapparatur** trennen. Eine der drei Einzelanwendungen aus dem Trennlabor 1.0.0 ([Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)), neu gebaut: Ideen und Sicherheitslogik aus den Altfassungen A/B, Glasdarstellung nach TitraLab 3, Fachmodell, Geometrie und Darstellung neu ([Bausteinmatrix](docs/UEBERNAHME.md)).
 
@@ -10,11 +10,11 @@ Eigenständige Browser-App: Flüssigkeitsgemische mit einer **fertig montierten 
 
 - **Apparatur ab Start montiert:** Stativ, Heizpilz (aufgeschnitten gezeichnet) auf Laborboy, Rundkolben, Destillationsaufsatz mit Thermometer, Liebigkühler, Vorstoß, Vorlage. Alle Teile hängen an gemeinsamen geometrischen Ankern und bleiben bei jeder Bildschirmgröße verbunden.
 - **Selbst bedient:** Gemisch einfüllen (sichtbarer Füllvorgang), Siedesteine zugeben, Thermometer prüfen und auf Höhe des seitlichen Abgangs schieben (Start absichtlich zu hoch), Kühlwasserschläuche an Laborarmatur und Ausguss durch Antippen anschließen, **Heizung EIN/AUS** mit Heizstufe, **Kühlwasser EIN/AUS** mit Durchfluss – unabhängig voneinander –, Destillat auffangen, im Expertenmodus Vorlage wechseln.
-- **Sichtbare Vorgänge aus dem Modell:** Füllstand mit Meniskus sinkt, Siedeblasen je nach Heizleistung, Dampf unsichtbar (zuschaltbarer, gekennzeichneter Teilchen-Erklärmodus), Kondensatfilm und Tropfen im Innenrohr, einzelne Tropfen in die Vorlage, Kühlwasser strömt im Mantel von unten nach oben, Kühler-Detailansicht mit beiden Strömungsräumen.
-- **Große Digitalanzeige** der Dampftemperatur direkt neben dem klassischen Thermometer; Temperatur-Zeit-Diagramm im Expertenmodus.
+- **Sichtbare Vorgänge aus dem Modell:** Füllstand mit Meniskus sinkt, Siedeblasen je nach Heizleistung, Dampf unsichtbar (zuschaltbarer, gekennzeichneter Teilchen-Erklärmodus; Teilchen nach Dampfzusammensetzung gefärbt: Ethanol rot, Wasser blau, Propanon grün), Kondensatfilm und Tropfen im Innenrohr, einzelne Tropfen in die Vorlage, Kühlwasser strömt im Mantel von unten nach oben, Kühler-Detailansicht mit beiden Strömungsräumen.
+- **Große Digitalanzeige** der Dampftemperatur direkt neben dem klassischen Thermometer; Temperatur-Zeit-Diagramm in allen Modi (antippen: bildschirmfüllend); Füllmenge der Vorlage in der Leiste über der Bühne.
 - **Brennprobe** am getrennten Prüfplatz: Vorlage abnehmen → Pipette zieht die Probe → Porzellanschale → Stabfeuerzeug fährt hin → bläuliche Flamme (nur Ethanol/Wasser), alles als Bewegung.
-- **Alle Bedienelemente unten**, Meldungen oben in einem freien Band, „Neu beginnen“ in der Kopfzeile; „Namen“/„Erkunden“ nur vor dem Versuch.
-- **Fehler mit Folgen:** Kühlung aus, Schläuche vertauscht, Thermometer falsch, Heizung zu schwach/zu stark, Siedesteine fehlen, Vorlage fehlt, Apparatur verschlossen, Trockenlauf, Zünden an der Apparatur.
+- **Alle Bedienelemente unten in einer Zeile**, Meldungen oben in einem festen Band, „Neu beginnen“ in der Kopfzeile; Start in Echtzeit; „Erkunden“/„Namen“ nur vor dem Versuch; Versuchszeit hält nach dem Versuch an.
+- **Fehler mit Folgen:** Kühlung aus, Schläuche vertauscht, Thermometer falsch, Heizung zu schwach/zu stark, Siedesteine fehlen (bzw. in heiße Flüssigkeit), Vorlage fehlt, Trockenlauf (danach neu befüllen), Zünden an der Apparatur. Einen Stopfen gibt es nicht: Der Vorstoß ist belüftet ([Entscheidung](docs/CHEMIE.md)).
 
 ## Aufgaben
 
@@ -48,6 +48,6 @@ npm run test:scorm     # SCORM-Paket im Mock-LMS (eingebettet + neues Fenster), 
 ## Dokumentation und Pakete
 
 - [Fachmodell und Grenzen](docs/CHEMIE.md) · [Bedienung](docs/BEDIENUNG.md) · [Testbericht mit PASS/HOLD-Matrix](docs/TESTBERICHT.md) · [Bausteinmatrix A/B/C](docs/UEBERNAHME.md)
-- `release/destillation-0.2.0-web.zip` (Webserver oder lokal entpackt), `release/destillation-0.2.0-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
+- `release/destillation-0.3.0-web.zip` (Webserver oder lokal entpackt), `release/destillation-0.3.0-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
 
 Der Unterrichtseinsatz (`ready`) setzt den Test der Lehrkraft auf den Schul-iPads und in mebis voraus.

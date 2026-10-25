@@ -1,6 +1,6 @@
 # Destillation – Fachmodell, Modellgrenzen, Quellen
 
-Version 0.2.0 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
+Version 0.3.0 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
 
 ## 1. Stoffgemische
 
@@ -50,7 +50,13 @@ Für einen Reinstoff ergibt sich genau seine Siedetemperatur. Für das Ausgangsg
 | Siedeverzug | ohne Siedesteine bis 6 K Überhitzung | danach schlagartiges Aufsieden, Spritzer, Sicherheitsstopp (Lehrszenario, keine reale Zeitvorhersage) |
 | Heftiges Sieden | Verdampfungsleistung > 110 W | Flüssigkeit wird mitgerissen (0,0004 mL/(s·W)), das Destillat wird unreiner |
 
-Das Modell rechnet in festen Zeitschritten von 0,05 s Modellzeit (`LK.core.createClock`). Pause und Zeitraffer (1×, 10×, 30×) ändern nur das Tempo, nie das Ergebnis (Test M-06). Handgriffe (Einfüllen, Siedesteine, Flamme) laufen höchstens in Echtzeit.
+Das Modell rechnet in festen Zeitschritten von 0,05 s Modellzeit (`LK.core.createClock`). Die App startet in Echtzeit (1×); Pause und Zeitraffer (1×, 10×, 30×) ändern nur das Tempo, nie das Ergebnis (Test M-06). Handgriffe (Einfüllen, Siedesteine, Flamme) laufen höchstens in Echtzeit.
+
+**Versuchszeit (Uhr und Diagramm):** Sie läuft mit der Modellzeit, bis der Versuch beendet ist: Destillat wurde aufgefangen, die Heizung ist aus, es geht kein Dampf mehr über und der Kühler ist leer gelaufen. Dann steht die Uhr (■), das Temperatur-Zeit-Diagramm zeichnet nicht weiter; das Abkühlen läuft im Modell weiter. Wird erneut geheizt, laufen Uhr und Diagramm weiter.
+
+**Siede- und Keimblasen** kommen nur aus dem Modell (Verdampfungsleistung bzw. Flüssigkeit nahe der Siedetemperatur mit Siedesteinen). Die geglätteten Anzeigewerte werden nach dem Abklingen unter einer Schwelle exakt 0 – ein abgekühlter Kolben bleibt ruhig.
+
+**Siedesteine** dürfen nur zugegeben werden, wenn die **Flüssigkeit im Kolben** höchstens 50 °C warm ist – nicht die Anzeige oben im Aufsatz und nicht der Heizpilz ist maßgeblich. Vor dem Sieden erreicht kein Dampf das Thermometer; die Anzeige kann deshalb noch etwa 20 °C zeigen, während die Flüssigkeit schon 60 °C hat. Die Meldung nennt darum die Temperatur der Flüssigkeit.
 
 Typische Zeiten bei „mittel“ und korrekter Kühlung (Standard 1): erste Tropfen nach ≈ 10 min, Ethanol-Abschnitt ≈ 10 min, ≈ 0,08 mL/s Destillat; bei 30× in gut 40 s Echtzeit.
 
@@ -73,6 +79,10 @@ Die Lage lässt sich nur verstellen, wenn die Heizung aus ist und nichts mehr si
 - **Kühlwasser AUS** bei gefülltem Mantel: Das stehende Wasser erwärmt sich durch die Kondensationswärme; die Kühlleistung sinkt deshalb verzögert.
 - Kondensat bildet einen Film im Innenrohr (Verweilzeit 5 s) und fällt in Tropfen zu 0,05 mL aus dem Vorstoß. Steht keine Vorlage darunter, fallen die Tropfen auf den Tisch (Verlust).
 
+### Erklärmodus „Teilchen“
+
+Die Dampfteilchen sind nach Stoffen gefärbt: Ethanol rot, Wasser blau, Propanon grün (Legende in der Leiste über der Bühne). Ihre Anteile entsprechen den **Stoffmengenanteilen des Dampfs im Modell** – im Kolben und Aufsatz dem aufsteigenden Dampf, im Abgang und im Kühler dem Dampf, der den Aufsatz passiert. Jedes Teilchen hat eine feste Zufallszahl, die Anteile teilen diese Zahlen auf; ein Teilchen wechselt seine Farbe also nur, wenn sich die Zusammensetzung ändert. Während des Ethanol-Abschnitts sind praktisch alle Teilchen rot; ist das Ethanol übergegangen (≈ 99,9 °C), verdampfen und kondensieren nur noch blaue Wasserteilchen. Die Kühler-Detailansicht färbt den Dampf im Innenrohr ebenso.
+
 ## 6. Brennprobe (Modellvereinfachung)
 
 Eine Probe von 1 mL wird mit der Pipette aus der **abgenommenen** Vorlage am Prüfplatz entnommen (aus der montierten Vorlage nicht möglich) und in der Porzellanschale entzündet. Entnahme, Überführen und Anzünden sind Handgriffe mit festem Wirkzeitpunkt (0,55 / 0,7 / 0,72 ihrer Dauer); sie laufen höchstens in Echtzeit. Ethanol-Wasser-Gemische lassen sich nur entzünden, wenn ihr Flammpunkt nahe an oder unter der Probentemperatur liegt. Der Flammpunkt steigt mit dem Wasseranteil (Richtwerte: reines Ethanol ≈ 13 °C, 50 % ≈ 24 °C, 40 % ≈ 26 °C, 30 % ≈ 29 °C, 20 % ≈ 36 °C Volumenanteil Ethanol). Eine kleine Probe in der Schale, die mit dem Stabfeuerzeug direkt beflammt wird, entzündet sich deshalb erst ab etwa der Hälfte Ethanol zuverlässig. Das Modell verwendet daher vereinfachte Schwellen:
@@ -90,13 +100,22 @@ Eine Flamme zeigt Brennbarkeit, sie beweist weder die Identität noch die Reinhe
 | Ursache | Wirkung | Wiederanlauf |
 | --- | --- | --- |
 | Siedeverzug (ohne Siedesteine) | Heizung aus, bis 4 mL verspritzt | Kolben < 50 °C, Siedesteine zugeben |
-| Vorlage verschlossen beim Heizen | Heizung aus | Stopfen entfernen |
 | > 4 mL brennbarer bzw. > 8 mL Dampf ausgetreten | Heizung aus | Kühlwasser in Betrieb |
-| Kolben unter 4 mL bei laufender Heizung | Heizung aus | Versuch neu beginnen |
+| Kolben unter 4 mL bei laufender Heizung | Heizung aus | abkühlen lassen (Kolben < 40 °C, Heizpilz < 45 °C) und neu einfüllen – oder Versuch neu beginnen |
 | Zünden an der Apparatur | Heizung aus | Bestätigen; Brennprobe am Prüfplatz |
 | Probe aus heißem Kolben | Heizung aus | Bestätigen; Probe aus der Vorlage |
 
 Bereits aufgefangene Fraktionen bleiben erhalten; „Versuch neu beginnen“ archiviert sie für die Ergebnisübersicht.
+
+**Leer destillierter Kolben:** Enthält der Kolben weniger als 15 mL (die Schwelle der Warnung „nur noch wenig Flüssigkeit“), darf nach dem Abkühlen erneut gefüllt werden (+100 mL zum Rest, höchstens 115 mL im 250-mL-Kolben). Die Stoffbilanz zählt beide Füllungen; der Versuch läuft ohne Neubeginn weiter.
+
+### Entscheidung: kein Stopfen an der Vorlage (0.3.0)
+
+Bis 0.2.0 konnte ein Stopfen auf die Vorlage gesetzt werden; beim Heizen folgte der Sicherheitsstopp „geschlossene Apparatur“ (Überdruck, Bersten). Die Lehrkraft hat darauf hingewiesen, dass die dargestellte Apparatur am Vorstoß eine **Belüftungsolive** hat.
+
+- **Fachlich:** Über die Olive ist das Innere der Apparatur mit der Außenluft verbunden (Druckausgleich). Ein Stopfen auf der Vorlage verschließt deshalb nur das Auffanggefäß, nicht die Apparatur; der Dampf wird im Kühler kondensiert, nicht kondensierter Rest und verdrängte Luft entweichen durch die Olive. Ein gefährlicher Überdruck entsteht nicht. Gefährlich ist eine Apparatur **ohne jede Öffnung** (z. B. Vorstoß ohne Belüftung, dicht in eine verschlossene Vorlage gesteckt) – diesen Aufbau zeigt die Simulation nicht. Ein Stopfen auf der Vorlage wäre im Unterricht höchstens bei sehr flüchtigen Destillaten sinnvoll; dann gehört an die Olive ein Schlauch ins Freie bzw. in den Abzug.
+- **Entscheidung:** Der Stopfen entfällt (Vorschlag der Lehrkraft). Ein Fehlfall, der in dieser Apparatur fachlich keiner ist, würde eine falsche Vorstellung vermitteln. Das Sicherheitsprinzip „Eine Destillationsapparatur ist nie vollständig geschlossen“ bleibt in der Geräteinfo zum Vorstoß („Erkunden“: „Die kleine Olive (Belüftung) verbindet das Innere mit der Außenluft …“) und in der Meldung beim Antippen des Vorstoßes erhalten.
+- **Folgen:** Handlung „Stopfen“, Sicherheitsstopp „geschlossene Apparatur“ und das zugehörige Fehlerprotokoll sind entfernt; gespeicherte Zustände älterer Fassungen werden beim Laden bereinigt. Tests: Unit „Befund 9 …“, Browser E09.
 
 ### Warnung vor dem Übergang des nächsten Stoffs
 

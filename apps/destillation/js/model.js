@@ -71,6 +71,8 @@
   const VIOLENT_W = 110;     // W Verdampfungsleistung, ab der es heftig siedet
   const CARRY = 0.0004;      // mL/(s·W) mitgerissene Flüssigkeit bei heftigem Sieden
   const FILL_VOLUME = 100;   // mL je Befüllung
+  const REFILL_BELOW = 15;   // mL: darunter gilt der Kolben als leer und darf neu befüllt werden
+  const STONES_MAX_T = 50;   // °C Flüssigkeitstemperatur, bis zu der Siedesteine zugegeben werden dürfen
   const SAMPLE_ML = 1;       // mL Probe für die Brennprobe
   const BURN_RATE = 0.08;    // mL/s Ethanol, die in der Porzellanschale verbrennen
   const HEAT = { low: { name: 'niedrig', P: 100 }, mid: { name: 'mittel', P: 150 }, high: { name: 'hoch', P: 250 } };
@@ -83,6 +85,8 @@
   const THERMO_ORDER = ['high', 'correct', 'low'];
   const ESC_WARN = 0.05, ESC_STOP_FLAM = 4, ESC_STOP_ALL = 8; // mL ausgetretener Dampf (als Flüssigkeit gerechnet)
   const MAX_FRACTIONS = 6;
+  /** Geglättete Effektgrößen und die Schwelle, unter der sie nach dem Abklingen 0 werden. */
+  const FX_SMOOTH = [['boil', 1e-3], ['nucleate', 1e-3], ['vapor', 1e-7], ['pass', 1e-7], ['cond', 1e-7], ['escape', 1e-7], ['violent', 1e-3], ['carry', 1e-7]];
   const OPS = { fill: { dur: 5 }, stones: { dur: 1.4 }, sample: { dur: 1.6, at: 0.55 }, toDish: { dur: 1.8, at: 0.7 }, light: { dur: 1.5, at: 0.72 }, burn: { dur: 0 } };
 
   // ------------------------------------------------------------------ Hilfen Stoffmengen
@@ -160,13 +164,14 @@
 
   // ------------------------------------------------------------------ Zustand
   function newReceiver(n) {
-    return { n, present: true, stopper: false, c: zero(), drops: 0, t0: null, t1: null, Tmin: null, Tmax: null, readings: [], badThermo: 0 };
+    return { n, present: true, c: zero(), drops: 0, t0: null, t1: null, Tmin: null, Tmax: null, readings: [], badThermo: 0 };
   }
 
   function initialState(opts) {
     const o = opts || {};
     return {
       v: 1, t: 0, run: o.run || 1, seq: 0,
+      tx: 0,                         // Versuchszeit (Uhr, Diagramm): steht, sobald der Versuch beendet ist
       mix: o.mix || 'ew', expert: !!o.expert,
       charged: zero(),               // insgesamt eingefülltes Gemisch (für die Bilanz)
       flask: { c: zero(), T: ROOM },
@@ -187,9 +192,10 @@
       dish: null,                    // { c, from, result, burning, phi0, t0 }
       burnTests: [],
       drops: { seq: 0, list: [] },
-      fx: { boil: 0, nucleate: 0, vapor: 0, pass: 0, cond: 0, escape: 0, condZone: 0, flow: 0, flame: 0, violent: 0, bump: 0, carry: 0, Tb: SUBSTANCES.W.bp },
+      // vy/py: Stoffmengenanteile [P, E, W] des aufsteigenden bzw. in den Kühler strömenden Dampfs (Erklärmodus)
+      fx: { boil: 0, nucleate: 0, vapor: 0, pass: 0, cond: 0, escape: 0, condZone: 0, flow: 0, flame: 0, violent: 0, bump: 0, carry: 0, Tb: SUBSTANCES.W.bp, vy: null, py: null },
       series: [], nextSample: 0,
-      safety: null, warned: {}, mistakes: {}, log: [], op: null,
+      safety: null, warned: {}, mistakes: {}, log: [], op: null, ended: false,
       history: o.history || []       // Momentaufnahmen früherer Versuche (Ergebnisübersicht)
     };
   }
@@ -201,11 +207,6 @@
       text: 'Ohne Siedesteine hat sich die Flüssigkeit über ihre Siedetemperatur erhitzt, ohne zu sieden. Dann ist sie schlagartig aufgewallt und ein Teil ist herausgespritzt.',
       fix: 'Heizung bleibt aus. Lass den Kolben unter 50 °C abkühlen, gib dann Siedesteine zu und heize erneut. Siedesteine nie in heiße Flüssigkeit geben.'
     },
-    closed: {
-      title: 'Sicherheitsstopp: geschlossene Apparatur',
-      text: 'Die Vorlage ist mit einem Stopfen verschlossen. Der entstehende Dampf kann nicht entweichen, der Druck steigt – die Glasapparatur könnte bersten.',
-      fix: 'Nimm den Stopfen von der Vorlage. Eine Destillationsapparatur bleibt am Ende offen.'
-    },
     vapor: {
       title: 'Sicherheitsstopp: zu viel Dampf tritt aus',
       text: 'Der Kühler kondensiert den Dampf nicht vollständig. Am Vorstoß tritt Dampf aus – bei Ethanol und Propanon brennbar, bei Wasser heiß.',
@@ -214,7 +215,7 @@
     dry: {
       title: 'Sicherheitsstopp: Kolben läuft trocken',
       text: 'Im Kolben ist kaum noch Flüssigkeit, die Heizung läuft aber weiter. Ein trocken erhitzter Kolben kann springen; Rückstände können sich zersetzen.',
-      fix: 'Heizung bleibt aus. Man destilliert nie bis zur Trockne. Beginne den Versuch neu – deine Vorlagen bleiben unter „Ergebnisse“ erhalten.'
+      fix: 'Heizung bleibt aus. Man destilliert nie bis zur Trockne. Lass den Kolben abkühlen und fülle neues Gemisch ein – oder beginne den Versuch neu. Deine Vorlagen bleiben unter „Ergebnisse“ erhalten.'
     },
     ignite: {
       title: 'Sicherheitsstopp: Zünden an der Apparatur',
@@ -232,6 +233,10 @@
   function createEngine(saved) {
     const bus = core.emitter();
     const st = saved && saved.v === 1 ? clone(saved) : initialState();
+    // Zustände aus älteren Fassungen: Stopfen gibt es nicht mehr (Befund 9), Versuchszeit neu
+    for (const r of [st.receiver].concat(st.fractions || [])) if (r) delete r.stopper;
+    if (st.safety && !SAFETY[st.safety.code]) st.safety = null;
+    if (st.tx == null) st.tx = st.t;
     const clock = core.createClock({ step });
 
     const msg = (text, kind, code) => {
@@ -271,19 +276,24 @@
       return ok(`Stoffgemisch gewählt: ${m.name}.`);
     }
 
+    /** Kolben (nach dem Befüllen) praktisch leer destilliert: Er darf neu befüllt werden (Befund 8). */
+    const canRefill = () => st.filled && flaskV() < REFILL_BELOW;
     function fill() {
-      if (st.filled) return fail('Der Kolben ist schon befüllt (100 mL). Mehr passt nicht sinnvoll in den 250-mL-Kolben.', 'filled');
+      if (st.filled && !canRefill()) return fail(`Der Kolben ist schon befüllt (${core.fmt(flaskV(), 0)} mL). Mehr passt nicht sinnvoll in den 250-mL-Kolben.`, 'filled');
       if (st.heater.on) return fail('Erst einfüllen, dann heizen: Schalte die Heizung aus.', 'heaterOn');
       if (st.flask.T > 40 || st.mantleT > 45) return fail('Der Heizpilz ist noch warm. Lass ihn abkühlen, bevor du einfüllst.', 'hot');
+      const refill = st.filled;
       st.op = { type: 'fill', t: 0, dur: OPS.fill.dur, done: 0 };
-      return ok(`${MIXES[st.mix].label} werden mit einem Trichter durch den Aufsatz in den Rundkolben gefüllt. Das Thermometer ist dafür kurz herausgenommen.`);
+      if (refill) { st.lastStop = null; delete st.warned.lowVolume; }
+      return ok(`${MIXES[st.mix].label} werden mit einem Trichter durch den Aufsatz in den Rundkolben gefüllt${refill ? ' (der Kolben war leer destilliert)' : ''}. Das Thermometer ist dafür kurz herausgenommen.`);
     }
 
     function addStones() {
       if (st.stones) return fail('Im Kolben sind schon Siedesteine.', 'stones');
-      if (st.flask.T > 50) {
+      // maßgeblich ist die Flüssigkeit im Kolben – nicht das Thermometer oben im Aufsatz und nicht der Heizpilz (Befund 6)
+      if (flaskV() > 0.05 && st.flask.T > STONES_MAX_T) {
         mistake('stonesHot');
-        return fail('Halt: Siedesteine nie in heiße Flüssigkeit geben – sie kann schlagartig aufschäumen und herausspritzen. Erst unter 50 °C abkühlen lassen.', 'stonesHot');
+        return fail(`Halt: Die Flüssigkeit im Kolben ist noch etwa ${core.fmt(st.flask.T, 0)} °C heiß – das Thermometer oben misst nur den Dampf im Aufsatz. Siedesteine nie in heiße Flüssigkeit geben: Sie kann schlagartig aufschäumen und herausspritzen. Erst unter ${STONES_MAX_T} °C abkühlen lassen.`, 'stonesHot');
       }
       st.op = { type: 'stones', t: 0, dur: OPS.stones.dur };
       return ok('Zwei, drei Siedesteine werden durch den Aufsatz in den Kolben gegeben.');
@@ -327,10 +337,9 @@
       if (st.safety) return fail('Erst den Sicherheitsstopp lesen und bestätigen.', 'safetyOpen');
       if (flaskV() < 1) return fail('Der Kolben ist leer – zuerst das Gemisch einfüllen.', 'empty');
       if (st.op && st.op.type === 'fill') return fail('Erst fertig einfüllen.', 'busy');
-      if (st.receiver.present && st.receiver.stopper) { st.heater.on = true; return stop('closed'); }
       if (st.bumped && !st.stones) return fail('Nach dem Siedeverzug wird erst wieder geheizt, wenn Siedesteine im Kolben sind.', 'needStones');
       if (st.lastStop === 'vapor' && !st.water.on) return fail('Nach dem Dampfaustritt erst die Kühlung in Betrieb nehmen.', 'needCooling');
-      if (st.lastStop === 'dry') return fail('Der Kolben ist fast leer. Beginne den Versuch neu.', 'needRestart');
+      if (st.lastStop === 'dry' && flaskV() < REFILL_BELOW) return fail('Der Kolben ist fast leer. Lass ihn abkühlen und fülle neu ein – oder beginne den Versuch neu.', 'needRefill');
       st.heater.on = true;
       if (!st.stones) mistake('noStones');
       return ok(`Heizung EIN (Stufe ${HEAT[st.heater.level].name}).`);
@@ -361,32 +370,23 @@
     function toggleReceiver() {
       const r = st.receiver;
       if (r.present) {
-        r.present = false; r.stopper = false;
+        r.present = false;
         if (boiling() || vol(st.film) > 0.01) mistake('noReceiver');
         return ok('Vorlage unter dem Vorstoß weggenommen.');
       }
       r.present = true;
       return ok('Vorlage wieder unter den Vorstoß gestellt.');
     }
-    function toggleStopper() {
-      const r = st.receiver;
-      if (!r.present) return fail('Unter dem Vorstoß steht keine Vorlage.', 'noReceiver');
-      if (r.stopper) { r.stopper = false; return ok('Stopfen von der Vorlage genommen – die Apparatur ist am Ende wieder offen.'); }
-      r.stopper = true;
-      mistake('stopper');
-      if (st.heater.on || boiling() || st.flask.T > 40) return stop('closed');
-      return ok('Stopfen auf die Vorlage gesetzt.');
-    }
     function changeReceiver() {
       if (!st.expert) return fail('Vorlagen wechselt man im Expertenmodus.', 'noExpert');
       const r = st.receiver;
       if (vol(r.c) < 0.01) return fail('Diese Vorlage ist noch leer – ein Wechsel ist nicht nötig.', 'emptyReceiver');
       if (st.fractions.length + 1 >= MAX_FRACTIONS) return fail('Mehr Vorlagen stehen nicht bereit.', 'maxFractions');
-      r.present = false; r.stopper = false; r.t1 = r.t1 == null ? st.t : r.t1;
+      r.present = false; r.t1 = r.t1 == null ? st.t : r.t1;
       r.changedAt = +st.t.toFixed(1);
       st.fractions.push(r);
       st.receiver = newReceiver(r.n + 1);
-      st.series.push({ t: +st.t.toFixed(1), T: +st.reading.toFixed(2), F: +st.flask.T.toFixed(2), change: r.n + 1 });
+      st.series.push({ t: +st.tx.toFixed(1), T: +st.reading.toFixed(2), F: +st.flask.T.toFixed(2), change: r.n + 1 });
       return ok(`Vorlage ${r.n} (${core.fmt(vol(r.c), 1)} mL) abgestellt, leere Vorlage ${r.n + 1} untergestellt.`);
     }
 
@@ -404,7 +404,7 @@
       if (st.pipette) return fail('In der Pipette ist schon eine Probe. Gib sie in die Porzellanschale.', 'pipetteFull');
       const r = source && String(source).startsWith('fraction:') ? st.fractions.find((f) => f.n === Number(String(source).slice(9))) : st.receiver;
       if (!r) return fail('Unbekannte Vorlage.', 'source');
-      if (r === st.receiver && r.present) return fail('An der laufenden Apparatur wird keine Probe entnommen. Nimm zuerst die Vorlage ab („Vorlage abnehmen“) – sie kommt zum Prüfplatz.', 'receiverMounted');
+      if (r === st.receiver && r.present) return fail('An der laufenden Apparatur wird keine Probe entnommen. Nimm zuerst die Vorlage ab (Knopf „Vorlage“) – sie kommt zum Prüfplatz.', 'receiverMounted');
       if (vol(r.c) < 0.3) return fail('In der Vorlage ist noch zu wenig Destillat für eine Probe.', 'emptySample');
       startOp('sample', { from: r.n });
       return ok('');
@@ -474,8 +474,8 @@
 
     function setExpert(on) { st.expert = !!on; if (!st.expert && MIXES[st.mix].expert && !st.filled && vol(st.charged) === 0) st.mix = 'ew'; return ok(); }
 
-    const ACTIONS = { restart, selectMix, fill, addStones, setThermo, thermoUp, thermoDown, connectHose, disconnectHose, setHeater, setHeatLevel, setWater, setFlow, toggleReceiver, toggleStopper, changeReceiver, takeSample, sampleToDish, ignite, ackSafety, setExpert };
-    const DURING_SAFETY = new Set(['restart', 'ackSafety', 'setHeater', 'setHeatLevel', 'setWater', 'setFlow', 'setExpert', 'toggleStopper', 'toggleReceiver']);
+    const ACTIONS = { restart, selectMix, fill, addStones, setThermo, thermoUp, thermoDown, connectHose, disconnectHose, setHeater, setHeatLevel, setWater, setFlow, toggleReceiver, changeReceiver, takeSample, sampleToDish, ignite, ackSafety, setExpert };
+    const DURING_SAFETY = new Set(['restart', 'ackSafety', 'setHeater', 'setHeatLevel', 'setWater', 'setFlow', 'setExpert', 'toggleReceiver']);
     function act(name, ...args) {
       const fn = ACTIONS[name];
       if (!fn) return fail('Unbekannte Handlung ' + name, 'unknown');
@@ -512,6 +512,7 @@
 
     function step(h) {
       st.t += h;
+      if (!st.ended) st.tx += h;
       const f = st.flask;
       const fx = st.fx;
       const prevFx = Object.assign({}, fx);
@@ -652,7 +653,9 @@
       }
       fx.vapor = vol(vap) / h;
       fx.pass = vol(pass) / h;
-      if (Qpass > 0 && st.heater.on && st.receiver.present && st.receiver.stopper && !st.safety) stop('closed');
+      // Zusammensetzung des Dampfs (Teilchen-Erklärmodus, Befund 7); ohne Dampf bleibt die letzte stehen
+      if (vol(vap) > 1e-12) fx.vy = moleFractions(vap).map((x) => +x.toFixed(4));
+      if (vol(pass) > 1e-12) fx.py = moleFractions(pass).map((x) => +x.toFixed(4));
 
       // --- Kühlmantel
       const connected = !!(st.hoses.inlet && st.hoses.outlet);
@@ -747,15 +750,24 @@
       }
 
       // --- Anzeigewerte glätten (Sieden und Tropfen wechseln von Schritt zu Schritt)
+      // Klingt ein Vorgang ab, wird der geglättete Wert unterhalb der Schwelle zu genau 0 –
+      // sonst bliebe er als winziger Rest (bis 4·10⁻³²³) stehen und es stiegen ewig Blasen auf (Befund 13).
       const a = 1 - Math.exp(-h / 0.8);
-      for (const k of ['boil', 'nucleate', 'vapor', 'pass', 'cond', 'escape', 'violent', 'carry']) fx[k] = prevFx[k] + (fx[k] - prevFx[k]) * a;
+      for (const [k, eps] of FX_SMOOTH) {
+        const raw = fx[k];
+        fx[k] = prevFx[k] + (raw - prevFx[k]) * a;
+        if (raw === 0 && fx[k] < eps) fx[k] = 0;
+      }
       if (fx.vapor < 1e-7) fx.vapor = 0;
       if (fx.escape < 1e-7) fx.escape = 0;
 
-      // --- Messreihe (Temperatur-Zeit-Diagramm)
-      if (st.t >= st.nextSample - 1e-9) {
-        st.series.push({ t: +st.t.toFixed(1), T: +st.reading.toFixed(2), F: +f.T.toFixed(2) });
-        st.nextSample = st.t + 2;
+      // --- Versuch beendet? Heizung aus, nichts siedet mehr über, Kühler leer gelaufen (Befund 16)
+      st.ended = st.drops.seq > 0 && !st.heater.on && fx.pass === 0 && vol(st.film) < 1e-4;
+
+      // --- Messreihe (Temperatur-Zeit-Diagramm, über der Versuchszeit)
+      if (!st.ended && st.tx >= st.nextSample - 1e-9) {
+        st.series.push({ t: +st.tx.toFixed(1), T: +st.reading.toFixed(2), F: +f.T.toFixed(2) });
+        st.nextSample = st.tx + 2;
         if (st.series.length > 4000) st.series = st.series.filter((p, i) => i % 2 === 0 || p.change);
       }
     }
@@ -824,7 +836,7 @@
 
   return {
     SUBSTANCES, KEYS, MIXES, MIX_ORDER, HEAT, FLOW, THERMO, THERMO_ORDER, SAFETY, OPS,
-    ROOM, T_TAP, K_SHARP, FLASK_ML, FILL_VOLUME, DROP_VOL, SUPERHEAT, VIOLENT_W, SWAP_FILL, SAMPLE_ML, BURN_LIMITS, MAX_FRACTIONS,
+    ROOM, T_TAP, K_SHARP, FLASK_ML, FILL_VOLUME, REFILL_BELOW, STONES_MAX_T, DROP_VOL, SUPERHEAT, VIOLENT_W, SWAP_FILL, SAMPLE_ML, BURN_LIMITS, MAX_FRACTIONS,
     ESC_WARN, ESC_STOP_FLAM, ESC_STOP_ALL,
     zero, vol, share, take, moleFractions, boilingPoint, vaporFractions, mainComponent, burnResult, heatCap,
     initialState, newReceiver, createEngine, snapshot, median

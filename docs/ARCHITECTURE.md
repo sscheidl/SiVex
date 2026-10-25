@@ -9,7 +9,7 @@ apps/
   redoxlabor/
   trennverfahren/     # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3A)
   chromatographie/    # Papierchromatographie 0.2.0 (prototype) auf Basis des Labkits
-  destillation/       # Destillation 0.2.0 (prototype) auf Basis des Labkits
+  destillation/       # Destillation 0.3.0 (prototype) auf Basis des Labkits
   ester-gleichgewicht/
   _template/
 shared/

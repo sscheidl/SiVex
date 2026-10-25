@@ -263,26 +263,115 @@ test('E-04 Vorlage fehlt: Tropfen gehen verloren und zählen nicht als Destillat
   balanceOk(e);
 });
 
-test('E-05 Geschlossene Apparatur: Stopp beim Heizen mit Stopfen, Wiederanlauf nach dem Entfernen', () => {
+test('Befund 9: Vorstoß mit Belüftung – kein Stopfen, kein Stopp „geschlossene Apparatur“; alte Zustände werden bereinigt', () => {
   const e = setup({ heater: false });
-  act(e, 'toggleStopper');
-  const r = act(e, 'setHeater', true);
-  assert.equal(r.safety, true);
-  assert.equal(e.state.safety.code, 'closed');
-  assert.equal(e.state.heater.on, false);
-  act(e, 'ackSafety');
-  act(e, 'toggleStopper');
+  assert.equal(e.act('toggleStopper').code, 'unknown', 'Handlung „Stopfen“ gibt es nicht mehr');
+  assert.ok(!('closed' in M.SAFETY), 'kein Sicherheitsstopp „geschlossene Apparatur“');
+  assert.ok(!('stopper' in e.state.receiver), 'Vorlage ohne Stopfen');
   assert.equal(act(e, 'setHeater', true).ok, true);
-  // Stopfen während des Betriebs
-  e.advance(100);
-  act(e, 'toggleStopper');
-  assert.equal(e.state.safety.code, 'closed');
-  // erst bestätigen, dann Stopfen abnehmen: kein erneuter Stopp durch nachsiedenden Dampf
+  runUntil(e, (s) => vol(s.receiver.c) > 5, 3000, 1);
+  assert.equal(e.state.safety, null, 'Destillation läuft ohne Stopp');
+  // gespeicherter Zustand einer älteren Fassung mit aufgesetztem Stopfen und offenem Stopp
+  const old = JSON.parse(JSON.stringify(e.state));
+  old.receiver.stopper = true;
+  old.safety = { code: 'closed', title: 'Sicherheitsstopp: geschlossene Apparatur', text: '', fix: '', t: 1 };
+  delete old.tx;
+  const e2 = M.createEngine(old);
+  assert.equal(e2.state.safety, null);
+  assert.ok(!('stopper' in e2.state.receiver));
+  assert.equal(e2.state.tx, e2.state.t, 'Versuchszeit aus der Modellzeit übernommen');
+});
+
+test('Befund 6: Siedesteine – maßgeblich ist die Flüssigkeit im Kolben, die Meldung nennt ihre Temperatur', () => {
+  const e = setup({ stones: false, heater: true });
+  // ohne Siedesteine aufheizen, bis die Flüssigkeit 60 °C hat – das Thermometer oben zeigt noch Raumtemperatur
+  assert.ok(runUntil(e, (s) => s.flask.T >= 60, 2000, 0.5));
+  act(e, 'setHeater', false);
+  const st = e.state;
+  assert.ok(st.reading < 21, 'Dampftemperatur noch ≈ 20 °C: ' + st.reading);
+  const r = act(e, 'addStones');
+  assert.equal(r.ok, false);
+  assert.equal(r.code, 'stonesHot');
+  assert.match(r.message, /Flüssigkeit im Kolben ist noch etwa 6\d °C heiß/);
+  assert.match(r.message, /Thermometer oben misst nur den Dampf/);
+  // abkühlen lassen: unter 50 °C Flüssigkeit sind Siedesteine erlaubt, auch wenn der Heizpilz noch wärmer ist
+  assert.ok(runUntil(e, (s) => s.flask.T < 49.9, 4000, 1));
+  assert.ok(st.mantleT > st.flask.T - 1, 'Heizpilz nicht kälter als die Flüssigkeit');
+  assert.equal(act(e, 'addStones').ok, true);
+  assert.equal(st.stones, true);
+});
+
+test('Befund 8: Leer destillierter Kolben darf neu befüllt werden; danach läuft der Versuch weiter', () => {
+  const e = setup({ heat: 'high', flow: 'high' });
+  runUntil(e, (s) => !!s.safety, 20000, 5);
+  const st = e.state;
+  assert.equal(st.safety.code, 'dry');
   act(e, 'ackSafety');
-  e.advance(5);
-  assert.equal(e.state.safety, null);
-  act(e, 'toggleStopper');
+  // noch heiß: abgelehnt mit Hinweis auf die Wärme, nicht „schon befüllt“
+  let r = act(e, 'fill');
+  assert.equal(r.code, 'hot');
+  assert.ok(runUntil(e, (s) => s.flask.T < 40 && s.mantleT < 45, 20000, 10));
+  const before = vol(st.flask.c);
+  assert.ok(before < M.REFILL_BELOW);
+  r = act(e, 'fill');
+  assert.equal(r.ok, true, r.message);
+  near(vol(st.flask.c), before + M.FILL_VOLUME, 1e-6, 'Kolben enthält Rest + 100 mL');
+  near(vol(st.charged), 2 * M.FILL_VOLUME, 1e-6, 'Bilanz zählt beide Füllungen');
+  balanceOk(e, 'Bilanz nach dem Nachfüllen');
+  // ein voller Kolben bleibt gesperrt
+  assert.equal(act(e, 'fill').code, 'filled');
+  // Heizen ist wieder möglich, ohne den Versuch neu zu beginnen
   assert.equal(act(e, 'setHeater', true).ok, true);
+  const v0 = vol(st.receiver.c);
+  runUntil(e, (s) => vol(s.receiver.c) > v0 + 3, 4000, 1);
+  assert.ok(vol(st.receiver.c) > v0 + 3, 'neues Destillat');
+  assert.equal(st.run, 1, 'kein neuer Versuch nötig');
+});
+
+test('Befund 7: Dampfzusammensetzung aus dem Modell – beim Ethanol-Abschnitt Ethanol, bei 99,9 °C nur Wasser', () => {
+  const e = setup({ heat: 'high', flow: 'high' });
+  const st = e.state;
+  assert.ok(runUntil(e, (s) => s.fx.pass > 1e-4 && s.flask.c.E > 10, 3000, 1));
+  assert.ok(st.fx.vy[1] > 0.95 && st.fx.py[1] > 0.95, 'Ethanol-Abschnitt: Dampf ≈ Ethanol ' + st.fx.vy);
+  assert.ok(runUntil(e, (s) => s.flask.c.E === 0 && s.reading > 99.5 && s.fx.pass > 1e-4, 8000, 1), 'Wasser-Abschnitt erreicht');
+  assert.deepEqual(st.fx.vy.map((x) => Math.round(x * 1000) / 1000), [0, 0, 1], 'nur Wasser verdampft');
+  assert.deepEqual(st.fx.py.map((x) => Math.round(x * 1000) / 1000), [0, 0, 1], 'nur Wasser kondensiert');
+});
+
+test('Befund 13: Nach dem Abkühlen klingen Sieden und Siedekeime auf genau 0 ab', () => {
+  const e = setup();
+  const st = e.state;
+  runUntil(e, (s) => vol(s.receiver.c) > 3, 3000, 1);
+  assert.ok(st.fx.boil > 0.05);
+  act(e, 'setHeater', false);
+  assert.ok(runUntil(e, (s) => s.flask.T < 21, 20000, 10), 'abgekühlt');
+  for (const k of ['boil', 'nucleate', 'vapor', 'pass', 'cond', 'violent', 'carry']) assert.equal(st.fx[k], 0, k);
+  // bereits wenige Sekunden nach dem Ende des Siedens
+  const e2 = setup();
+  runUntil(e2, (s) => vol(s.receiver.c) > 3, 3000, 1);
+  act(e2, 'setHeater', false);
+  runUntil(e2, (s) => s.fx.vapor === 0, 3000, 1);
+  e2.advance(10);
+  assert.equal(e2.state.fx.boil, 0, 'kein Sieden 10 s nach dem letzten Dampf');
+});
+
+test('Befund 16: Versuchszeit steht nach dem Ende des Versuchs und läuft beim erneuten Heizen weiter', () => {
+  const e = setup();
+  const st = e.state;
+  e.advance(30);
+  near(st.tx, st.t, 1e-9, 'vor dem Ende: Versuchszeit = Modellzeit');
+  runUntil(e, (s) => vol(s.receiver.c) > 4, 3000, 1);
+  act(e, 'setHeater', false);
+  assert.ok(runUntil(e, (s) => s.ended, 3000, 1), 'Versuch beendet');
+  const tx = st.tx, n = st.series.length;
+  e.advance(600);
+  assert.equal(st.tx, tx, 'Uhr steht');
+  assert.equal(st.series.length, n, 'Diagramm zeichnet nicht weiter');
+  assert.ok(st.t > tx + 590, 'Modell (Abkühlen) läuft weiter');
+  act(e, 'setHeater', true);
+  e.advance(20);
+  assert.ok(!st.ended && st.tx > tx + 19, 'läuft beim erneuten Heizen weiter');
+  assert.ok(st.series[st.series.length - 1].t <= st.tx + 1e-9, 'Diagramm über der Versuchszeit');
 });
 
 test('E-05 Trockenlauf: Stopp bevor der Kolben leer ist', () => {

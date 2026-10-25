@@ -122,7 +122,7 @@
 
     // Stativ mit Doppelmuffe; der Arm hält den Kolbenhals von hinten
     const rodX = -112;
-    g.stand1 = { rodX, base: { x0: -175, x1: -28, h: 12 }, top: g.neck.y1 - 30, clamps: [{ y: g.neck.y1 + 16, x1: -D.neckHW - 1, hw: D.neckHW }] };
+    g.stand1 = { rodX, base: { x0: -150, x1: -28, h: 12 }, top: g.neck.y1 - 30, clamps: [{ y: g.neck.y1 + 16, x1: -D.neckHW - 1, hw: D.neckHW }] };
 
     // Thermometer: Kugelmitte je nach Position
     const armLow = g.arm.o.y + D.armHW;               // Unterkante der Abgangsöffnung (auf der Achse)
@@ -139,12 +139,12 @@
       return g.thermo.bulb[pos] + s.off0 + (s.off1 - s.off0) * (T - s.t0) / (s.t1 - s.t0);
     };
 
-    // Ausguss mit Laborarmatur: Zulauf aus der Armatur, Ablauf ins Becken
-    g.sink = { x0: g.receiver.x + 92, x1: g.receiver.x + 196, y: 0, depth: 26 };
-    const tapX = g.sink.x0 + 56;
-    g.tap = { x: tapX, base: 0, top: -150, olive: P(g.sink.x0 + 14, -108), handle: P(tapX, -86) };
+    // Ausguss mit Laborarmatur dicht neben der Vorlage: Zulauf aus der Armatur, Ablauf ins Becken
+    g.sink = { x0: g.receiver.x + 66, x1: g.receiver.x + 166, y: 0, depth: 26 };
+    const tapX = g.sink.x0 + 54;
+    g.tap = { x: tapX, base: 0, top: -150, olive: P(g.sink.x0 + 13, -108), handle: P(tapX, -86) };
     g.tap.outlet = g.tap.olive;
-    g.sink.drop = P(g.sink.x1 - 18, -14);
+    g.sink.drop = P(g.sink.x1 - 16, -14);
 
     // Schlauchwege als kubische Bézierketten [p0, c1, c2, p1, c3, c4, p2, …], aus den tatsächlichen Anschlusspunkten
     const nh = g.nozzles.high.tip;
@@ -175,18 +175,18 @@
       },
       // lose Schlauchenden, solange nicht angeschlossen
       looseInlet: () => [ol, P(ol.x, -70), P(ol.x + 4, -40), P(ol.x + 8, -16)],
-      looseOutlet: () => [sd, P(sd.x + 4, -52), P(g.sink.x1 + 12, -52), P(g.sink.x1 + 14, -8)]
+      looseOutlet: () => [sd, P(sd.x + 4, -52), P(g.sink.x1 + 6, -52), P(g.sink.x1 + 6, -8)]
     };
     g.hoseTopY = hoseTopY;
 
-    // Flasche mit dem Gemisch und Schälchen mit Siedesteinen auf dem Tisch
-    g.bottle = { x: g.jack.w / 2 + 30, base: 0, w: 44, h: 92 };
-    g.stonesDish = { x: g.bottle.x + 54, base: 0, w: 42, h: 12 };
+    // Materialien links: Schälchen mit Siedesteinen vor dem Stativfuß (links der Stange), Flasche mit dem Gemisch daneben (Befund 10)
+    g.stonesDish = { x: g.stand1.base.x0 + 8, base: 0, w: 42, h: 12 };
+    g.bottle = { x: g.stonesDish.x - 21 - 10 - 22, base: 0, w: 44, h: 92 };
 
-    // Getrennter Prüfplatz (nur Ethanol/Wasser)
+    // Getrennter Prüfplatz (nur Ethanol/Wasser), links von den Materialien
     if (o.station) {
-      const x1 = g.stand1.base.x0 - 22, x0 = x1 - 300;
-      g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 150, -8), pipette: P(x0 + 22, -8), lighter: P(x0 + 70, -12), recv: P(x0 + 250, -8) };
+      const x1 = g.bottle.x - g.bottle.w / 2 - 12, x0 = x1 - 240;
+      g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 118, -8), pipette: P(x0 + 12, -8), lighter: P(x0 + 60, -12), recv: P(x0 + 198, -8) };
     }
     // Abgenommene Vorlage: zum Prüfplatz (Ethanol/Wasser) bzw. auf den Tisch neben dem Aufbau – gleiche Größe
     g.receiverAway = g.station ? { x: g.station.recv.x, base: g.station.recv.y } : { x: g.receiver.x - 130, base: 0 };
@@ -195,12 +195,12 @@
     const tTop = g.thermo.top('high');
     g.display = { x0: -168, x1: -20, y1: g.thermo.cap.y0 - 34 };
     g.display.y0 = g.display.y1 - 76;
-    const ovX0 = g.cond.at(D.jacket0 + 150, 0).x;
-    g.overlay = { x0: ovX0, x1: g.sink.x1, y0: tTop - 4, y1: Math.min(hoseTopY - 26, g.cond.at(D.jacket0 + 150, 0).y - 140) };
+    // Einblendfläche (Kühler-Detail, Diagramm) rechts vom Thermometer bis über den Ausguss (Befund 5: länger)
+    g.overlay = { x0: g.thermo.hw + 36, x1: g.sink.x1 + 16, y0: tTop - 4, y1: Math.min(hoseTopY - 26, g.cond.at(D.jacket0 + 150, 0).y - 140) };
 
     // Szenengrenzen (alles, was immer sichtbar sein muss)
-    const x0 = o.station ? g.station.x0 - 12 : g.stand1.base.x0 - 16;
-    g.bounds = { x0, x1: g.sink.x1 + 44, y0: tTop - 12, y1: 34 }; // rechts Abstand zum Griffbereich der Trennlinie
+    const x0 = (o.station ? g.station.x0 : g.bottle.x - g.bottle.w / 2) - 8;
+    g.bounds = { x0, x1: g.sink.x1 + 30, y0: tTop - 12, y1: 30 }; // rechts Abstand zum Griffbereich der Trennlinie
     return g;
   }
 
@@ -243,6 +243,8 @@
     ok('Abgenommene Vorlage steht frei', g.station ? g.receiverAway.x + DIM.recvBaseHW < g.station.x1 && g.receiverAway.x - DIM.recvBaseHW > g.station.dish.x + 36 : g.receiverAway.x + DIM.recvBaseHW < g.receiver.jack.x - g.receiver.jack.w / 2);
     ok('Ausguss rechts der Vorlage', g.sink.x0 > g.receiver.x + g.receiver.jack.w / 2);
     if (g.station) ok('Prüfplatz getrennt links vom Stativ', g.station.x1 < g.stand1.base.x0 - 20);
+    ok('Flasche links vom Stativ, Siedesteine links der Stativstange, beide rechts vom Prüfplatz', g.bottle.x + g.bottle.w / 2 < g.stonesDish.x - g.stonesDish.w / 2 && g.stonesDish.x + g.stonesDish.w / 2 < g.stand1.rodX - 6 && g.bottle.x + g.bottle.w / 2 < g.stand1.base.x0 && (!g.station || g.station.x1 < g.bottle.x - g.bottle.w / 2));
+    ok('Einblendfläche rechts vom Thermometer (mit Skala) und über dem Aufsatz', g.overlay.x0 > g.thermo.hw + 30 && g.overlay.y1 < g.thermo.cap.y0 && g.overlay.x1 <= g.bounds.x1);
     return r;
   }
 

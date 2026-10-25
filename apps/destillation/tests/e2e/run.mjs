@@ -133,6 +133,14 @@ await scenario('E01', 'Standard 1 komplett: befüllen → Siedesteine → Kühlw
   assert(await S(page, (st) => st.receiver.present), 'Vorlage zurückgestellt');
   await water(page, false);
   await speed(page, 0);
+  // Befund 14: Brennprobe in den Ergebnissen als farbige Schrift ohne Hintergrund
+  await tab(page, 'results');
+  const pill = page.locator('#panelBody .pill.ok').first();
+  assert(/bläuliche Flamme/.test(await pill.innerText()), 'Brennprobe in den Ergebnissen');
+  const css = await pill.evaluate((e) => { const c = getComputedStyle(e); return [c.backgroundColor, c.color]; });
+  assert(css[0] === 'rgba(0, 0, 0, 0)' && css[1] === 'rgb(28, 138, 74)', 'grüne Schrift ohne Hintergrund: ' + css.join(' / '));
+  await shot(page, '16b-ergebnisse-brennprobe');
+  await tab(page, 'task');
   // Auswertung
   const r = await check(page);
   assert(/Ergebnis belegt/.test(r), 'Ergebnis prüfen: ' + r);
@@ -404,6 +412,13 @@ await scenario('E08', 'Siedesteine fehlen: Stopp, Ursache, Korrektur, Wiederaufn
   assert(await S(page, (st) => !st.heater.on), 'ohne Siedesteine kein Wiederanlauf');
   await clickAct(page, 'addStones');
   assert(await S(page, (st) => !st.stones), 'nicht in heiße Flüssigkeit');
+  // Befund 6: Die Meldung nennt die Temperatur der Flüssigkeit; die Anzeige oben zeigt nur den Dampf
+  const msg = await page.locator('#toast').innerText();
+  const shown = await readTemp(page);
+  const liquid = await S(page, (st) => st.flask.T);
+  const m = msg.match(/Flüssigkeit im Kolben ist noch etwa (\d+) °C heiß/);
+  assert(m && Math.abs(Number(m[1]) - liquid) <= 1 && Number(m[1]) > 50 && /misst nur den Dampf/.test(msg), 'Meldung mit Flüssigkeitstemperatur: ' + msg);
+  await shot(page, '23b-siedesteine-heisse-fluessigkeit');
   await speed(page, 30);
   await waitFor(page, (st) => st.flask.T < 50);
   await clickAct(page, 'addStones'); await idle(page);
@@ -412,11 +427,11 @@ await scenario('E08', 'Siedesteine fehlen: Stopp, Ursache, Korrektur, Wiederaufn
   await waitFor(page, (st, M) => M.vol(st.receiver.c) > 5);
   await done();
   assert(!errors.length, errors.join('; '));
-  return 'Siedeverzug → Abkühlen → Siedesteine → Destillat';
+  return `Siedeverzug → Siedesteine abgelehnt (Anzeige ${de(shown)} °C, Flüssigkeit ${de(liquid)} °C) → Abkühlen → Siedesteine → Destillat`;
 });
 
-// =========================================================== E09 Vorlage fehlt, Trockenlauf, Verschließen, Zünden
-await scenario('E09', 'Vorlage fehlt / Verschließen / Zünden am Aufbau / Trockenlauf', async () => {
+// =========================================================== E09 Vorlage fehlt, Zünden, kein Stopfen, Trockenlauf, Neubefüllen
+await scenario('E09', 'Vorlage fehlt / Zünden am Aufbau / kein Stopfen (Befund 9) / Trockenlauf und Neubefüllen (Befund 8)', async () => {
   const { page, errors, done } = await open();
   await speed(page, 10);
   await prepare(page);
@@ -440,24 +455,37 @@ await scenario('E09', 'Vorlage fehlt / Verschließen / Zünden am Aufbau / Trock
   assert(await S(page, (st) => st.safety && st.safety.code === 'ignite'), 'Stopp Zünden');
   await shot(page, '25-stopp-zuenden-am-aufbau');
   await page.locator('#btnAck').click();
-  // Verschließen im Betrieb
+  // Befund 9: Vorstoß mit Belüftung – es gibt keinen Stopfen und keinen Stopp „geschlossene Apparatur“
+  assert(!(await page.locator('[data-act="toggleStopper"]').count()), 'kein Stopfen-Knopf');
+  assert(!/Stopfen/.test(await page.locator('#deck').innerText()), 'Bedienleiste ohne „Stopfen“');
   await heater(page, true);
-  await speed(page, 30); await sleep(500);
-  await clickAct(page, 'toggleStopper');
-  assert(await S(page, (st) => st.safety && st.safety.code === 'closed'), 'Stopp geschlossene Apparatur');
-  await page.locator('#btnAck').click();
-  await clickAct(page, 'toggleStopper');
-  await heater(page, true);
-  assert(await S(page, (st) => st.heater.on), 'Wiederanlauf nach dem Öffnen');
+  assert(await S(page, (st) => st.heater.on && !st.safety), 'Heizen ohne Stopp');
   // Trockenlauf
+  await speed(page, 30);
   await heatLevel(page, 'high'); await flow(page, 'high');
   await waitFor(page, (st) => !!st.safety, null, 400000);
   const code = await S(page, (st) => st.safety.code);
   assert(code === 'dry', 'Trockenlauf-Stopp: ' + code);
   await shot(page, '26-stopp-trockenlauf');
+  await page.locator('#btnAck').click();
+  // Befund 8: leer destillierter Kolben – nach dem Abkühlen neu befüllen, ohne neuen Versuch
+  const fillBtn = page.locator('#actions [data-act="fill"]');
+  assert(!(await fillBtn.isDisabled()) && (await fillBtn.innerText()).trim() === 'Einfüllen', 'Einfüllen wieder möglich: ' + (await fillBtn.innerText()));
+  await clickAct(page, 'fill');
+  assert(/noch warm/.test(await page.locator('#toast').innerText()), 'heiß: Hinweis auf die Wärme statt „schon befüllt“');
+  await waitFor(page, (st) => st.flask.T < 40 && st.mantleT < 45, null, 400000);
+  await speed(page, 10);
+  const v0 = await S(page, (st, M) => M.vol(st.flask.c));
+  await tapHit(page, 'bottle'); await idle(page);
+  const v1 = await S(page, (st, M) => [M.vol(st.flask.c), st.run]);
+  assert(Math.abs(v1[0] - v0 - 100) < 1e-6 && v1[1] === 1, `neu befüllt: ${v0.toFixed(1)} → ${v1[0].toFixed(1)} mL, Versuch ${v1[1]}`);
+  assert(await fillBtn.isDisabled(), 'voll: wieder „Eingefüllt“');
+  await shot(page, '26b-neu-befuellt');
+  await heater(page, true);
+  assert(await S(page, (st) => st.heater.on), 'Heizen nach dem Nachfüllen');
   await done();
   assert(!errors.length, errors.join('; '));
-  return 'Tisch statt Vorlage, Zünden, Verschließen, Trockenlauf gestoppt';
+  return `Tisch statt Vorlage, Zünden, kein Stopfen, Trockenlauf gestoppt, neu befüllt (${v0.toFixed(1)} → ${v1[0].toFixed(1)} mL)`;
 });
 
 // =========================================================== E10 Lernsystem
@@ -577,8 +605,8 @@ await scenario('E11', 'Grafik-Zwischenstände und fortlaufende Bildfolgen (Pause
 });
 
 // =========================================================== E12 Responsive & Trennlinie
-await scenario('E12', 'Responsive 1440×900, 1180×820, 1024×768 (Touch), Trennlinie Maus/Touch/Tastatur/Doppelklick, Verbindungen intakt', async () => {
-  const sizes = [[1440, 900, false], [1180, 820, true], [1024, 768, true]];
+await scenario('E12', 'Responsive 1440×900, 1180×820, 1024×768, 768×1024 (Touch), Trennlinie Maus/Touch/Tastatur/Doppelklick, Verbindungen intakt; Apparatur größer (Befund 11)', async () => {
+  const sizes = [[1440, 900, false], [1180, 820, true], [1024, 768, true], [768, 1024, true]];
   const out = [];
   for (const [w, h, touch] of sizes) {
     const { page, errors, done, context } = await open({ viewport: { width: w, height: h }, hasTouch: touch });
@@ -611,7 +639,11 @@ await scenario('E12', 'Responsive 1440×900, 1180×820, 1024×768 (Touch), Trenn
     };
     await checkAll(`${w}×${h}`);
     await shot(page, `40-layout-${w}x${h}`);
+    // Befund 11: Maßstab gegenüber 0.2.0 (Szene 1210 × 710 mm, Meldungsband 54 px) bei gleicher Bühne um mindestens 6 % größer
+    const sc = await page.evaluate(() => { const v = window.DS.app.renderer.view; return [v.scale, Math.min((v.w - 16) / 1210, (v.h - 62) / 710)]; });
+    assert(sc[0] >= sc[1] * 1.06, `${w}×${h}: Maßstab ${sc[0].toFixed(3)} statt bisher ${sc[1].toFixed(3)}`);
     const sp = page.locator('#splitter');
+    if (!(await sp.isVisible())) { await done(); assert(!errors.length, errors.join('; ')); out.push(`${w}×${h} gestapelt ok (Maßstab ${sc[0].toFixed(3)})`); continue; }
     // Maus: mehrfach ziehen (Trennlinie vor jedem Zug neu suchen)
     for (const dx of [-160, 220, -90]) {
       const box = await sp.boundingBox();
@@ -659,6 +691,183 @@ await scenario('E12', 'Responsive 1440×900, 1180×820, 1024×768 (Touch), Trenn
   await shot(page, '43-schmal-gestapelt');
   await done();
   return out.join(', ') + ', schmal gestapelt';
+});
+
+// =========================================================== Befunde der Durchsicht (0.3.0)
+/** Alle Texte, die die Bühne im nächsten Bild zeichnet, mit Lage in CSS-Pixeln (nur lesen: fillText wird mitprotokolliert). */
+async function drawnTexts(page) {
+  return page.evaluate(() => new Promise((res) => {
+    const cv = document.querySelector('#lab'), ctx = cv.getContext('2d'), orig = ctx.fillText, seen = [];
+    const dpr = cv.width / cv.getBoundingClientRect().width;
+    ctx.fillText = function (t, x, y) {
+      const m = this.getTransform(), w = this.measureText(t).width * m.a / dpr, sx = (m.a * x + m.e) / dpr, sy = (m.d * y + m.f) / dpr;
+      const x0 = this.textAlign === 'left' || this.textAlign === 'start' ? sx : this.textAlign === 'right' || this.textAlign === 'end' ? sx - w : sx - w / 2;
+      seen.push({ t: String(t), x0, x1: x0 + w, y: sy });
+      return orig.apply(this, arguments);
+    };
+    requestAnimationFrame(() => requestAnimationFrame(() => { ctx.fillText = orig; res(seen); }));
+  }));
+}
+/** Weltrechteck → CSS-Pixel relativ zur Bühne. */
+const worldToStage = (page, box) => page.evaluate((b) => { const v = window.DS.app.renderer.view; return { x0: b.x0 * v.scale + v.ox, y0: b.y0 * v.scale + v.oy, x1: b.x1 * v.scale + v.ox, y1: b.y1 * v.scale + v.oy }; }, box);
+/** Rote (Ethanol) und blaue (Wasser) Teilchenpixel im seitlichen Abgang, über mehrere Bilder gezählt. */
+async function particlePixels(page, frames = 14) {
+  return page.evaluate((n) => new Promise((res) => {
+    const r = window.DS.app.renderer, g = r.geo, v = r.view, cv = document.querySelector('#lab'), ctx = cv.getContext('2d');
+    const dpr = cv.width / cv.getBoundingClientRect().width;
+    const a = g.arm.start, b = g.arm.end;
+    const x0 = Math.round((Math.min(a.x, b.x) * v.scale + v.ox + 3) * dpr), x1 = Math.round((Math.max(a.x, b.x) * v.scale + v.ox - 6) * dpr);
+    const y0 = Math.round(((Math.min(a.y, b.y) - g.arm.hw) * v.scale + v.oy) * dpr), y1 = Math.round(((Math.max(a.y, b.y) + g.arm.hw) * v.scale + v.oy) * dpr);
+    let red = 0, blue = 0, k = 0;
+    const tick = () => {
+      const d = ctx.getImageData(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0)).data;
+      for (let i = 0; i < d.length; i += 4) {
+        const R = d[i], G = d[i + 1], B = d[i + 2];
+        if (R > 170 && G < 115 && B < 120) red++;
+        else if (B > 190 && R < 110 && G < 160) blue++;
+      }
+      if (++k < n) setTimeout(() => requestAnimationFrame(tick), 70); else res({ red, blue });
+    };
+    requestAnimationFrame(tick);
+  }), frames);
+}
+
+await scenario('E13', 'Befunde 1, 15, 17: Start mit 1×, „Namen“ aus und nach „Erkunden“ (auch nach Neuladen); Bedienknöpfe in einer Zeile, Knopf „Vorlage“', async () => {
+  const { page, errors, done } = await open();
+  const order = await page.$$eval('#views [data-view]', (els) => els.map((e) => e.dataset.view));
+  assert(order.indexOf('labels') === order.indexOf('explore') + 1, 'Namen steht nach Erkunden: ' + order.join(', '));
+  const pressed = async (sel) => page.locator(sel).getAttribute('aria-pressed');
+  assert(await pressed('#views [data-view="labels"]') === 'false', 'Namen beim Start aus');
+  assert(await pressed('#speed [data-speed="1"]') === 'true', 'Start mit 1×');
+  const t0 = await S(page, (st) => st.t); await sleep(1000); const t1 = await S(page, (st) => st.t);
+  assert(t1 - t0 > 0.8 && t1 - t0 < 1.4, 'Modellzeit läuft in Echtzeit: ' + (t1 - t0).toFixed(2) + ' s');
+  const tops = () => page.$$eval('#actions > *, #deck .ctl > *', (els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+  let ys = await tops();
+  assert(Math.max(...ys) - Math.min(...ys) <= 2, 'eine Zeile beim Start: ' + ys.join(','));
+  assert((await page.locator('#actions [data-act="toggleReceiver"]').innerText()).trim() === 'Vorlage', 'Knopf heißt „Vorlage“');
+  assert((await page.locator('#actions [data-act="toggleReceiver"]').getAttribute('aria-label')) === 'Vorlage abnehmen', 'Bedeutung für Bildschirmleser');
+  // Namen einschalten, Tempo ändern, neu laden: Start wieder mit Namen aus und 1×
+  await view(page, 'labels'); await speed(page, 10); await sleep(700);
+  await page.reload(); await page.waitForFunction(() => window.DS && window.DS.app); await sleep(300);
+  assert(await pressed('#views [data-view="labels"]') === 'false', 'Namen nach dem Neuladen aus');
+  assert(await pressed('#speed [data-speed="1"]') === 'true', '1× nach dem Neuladen');
+  await prepare(page); await idle(page); await sleep(700);
+  ys = await tops();
+  assert(Math.max(...ys) - Math.min(...ys) <= 2, 'eine Zeile mit „Eingefüllt ✓“ und Heizung EIN: ' + ys.join(','));
+  await shot(page, '44-bedienzeile-1440x900', { clip: await page.locator('#deck').boundingBox() });
+  await done();
+  assert(!errors.length, errors.join('; '));
+  return `Ansicht: ${order.join(' · ')}; Bedienleiste mit ${ys.length} Elementen in einer Zeile`;
+});
+
+await scenario('E14', 'Befunde 2, 3, 4, 7: Erklärhinweis oben ohne Überdeckung, Vorlagen-Anzeige nach „Diagramm“, Skala ohne „mL“, Teilchen nach Dampfzusammensetzung (Ethanol rot, bei 99,9 °C nur Wasser blau)', async () => {
+  const { page, errors, done } = await open();
+  await speed(page, 10);
+  await prepare(page);
+  await speed(page, 30);
+  await waitFor(page, (st, M) => M.vol(st.receiver.c) > 1.5);
+  await speed(page, 1);
+  await view(page, 'explain'); await sleep(400);
+  // Befund 2: Hinweis in der Leiste über der Bühne, nicht auf der Laborbühne
+  const note = await page.locator('#explainNote').boundingBox(), cv = await page.locator('#lab').boundingBox();
+  assert(note && note.y + note.height <= cv.y + 0.5, 'Hinweis oberhalb der Bühne');
+  const noteTxt = await page.locator('#explainNote').innerText();
+  assert(/in Wirklichkeit unsichtbar/.test(noteTxt) && /Ethanol/.test(noteTxt) && /Wasser/.test(noteTxt), 'Hinweis mit Legende: ' + noteTxt);
+  // Befund 7: Ethanol-Abschnitt → rote Teilchen
+  const pe = await particlePixels(page);
+  const vyE = await S(page, (st) => st.fx.py.map((x) => +x.toFixed(3)));
+  assert(pe.red > 20 && pe.blue * 10 < pe.red, `Ethanol-Abschnitt: rot ${pe.red}, blau ${pe.blue} px (Dampf ${vyE})`);
+  await shot(page, '34b-teilchen-ethanol');
+  // Befunde 3 und 4: Füllmenge nur in der Leiste, Skala ohne Einheit
+  await speed(page, 0); await sleep(600);
+  const texts = await drawnTexts(page);
+  assert(!texts.some((x) => /^Vorlage \d+:/.test(x.t)), 'kein Vorlagen-Schild auf der Bühne');
+  assert(texts.some((x) => x.t === '40') && texts.some((x) => x.t === '80') && !texts.some((x) => /\d+ mL$/.test(x.t)), 'Skala „40“/„80“ ohne „mL“');
+  const chip = page.locator('#recvChip');
+  const vol0 = await S(page, (st, M) => M.vol(st.receiver.c));
+  assert((await chip.innerText()).trim() === `Vorlage 1: ${de(vol0)} mL`, 'Anzeige stimmt: ' + (await chip.innerText()) + ' / ' + vol0);
+  const isAfter = await page.evaluate(() => { const c = document.querySelector('#recvChip'), d = document.querySelector('#views [data-view="chart"]'); return !!(d.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING); });
+  const cb = await chip.boundingBox(), db = await page.locator('#views [data-view="chart"]').boundingBox();
+  assert(isAfter && (cb.x >= db.x + db.width || cb.y >= db.y + db.height - 1) && cb.y + cb.height <= cv.y + 0.5, 'Anzeige nach „Diagramm“ in der Leiste');
+  await shot(page, '47-leiste-vorlage', { clip: await page.locator('#actionbar').boundingBox() });
+  await shot(page, '48-skala-ohne-ml', { clip: await worldClip(page, 'receiver') });
+  // Befund 7: nach dem Ethanol, bei 99,9 °C → nur noch Wasser (blau)
+  await speed(page, 30);
+  await waitFor(page, (st) => st.flask.c.E === 0 && st.reading > 99.5 && st.fx.pass > 1e-4, null, 300000);
+  await speed(page, 1); await sleep(300);
+  const pw = await particlePixels(page);
+  const T = await readTemp(page);
+  assert(pw.blue > 20 && pw.red === 0, `Wasser-Abschnitt (${de(T)} °C): blau ${pw.blue}, rot ${pw.red} px`);
+  await shot(page, '34c-teilchen-wasser');
+  await done();
+  assert(!errors.length, errors.join('; '));
+  return `Ethanol: rot ${pe.red}/blau ${pe.blue} px; ${de(T)} °C: blau ${pw.blue}/rot ${pw.red} px`;
+});
+
+await scenario('E15', 'Befunde 5, 12: Kühler-Detail ohne überstehende Beschriftung; Diagramm antippen → bildschirmfüllend → antippen/Escape → klein (vier Ansichten)', async () => {
+  const out = [];
+  for (const [w, h, touch] of [[1440, 900, false], [1180, 820, true], [1024, 768, true], [768, 1024, true]]) {
+    const { page, errors, done } = await open({ viewport: { width: w, height: h }, hasTouch: touch });
+    await speed(page, 10);
+    await prepare(page, { touch });
+    await speed(page, 30);
+    await waitFor(page, (st) => st.fx.cond > 0.02 && st.fx.flow > 0);
+    await speed(page, 1);
+    await view(page, 'detail', touch); await sleep(300);
+    const o = await worldToStage(page, await page.evaluate(() => window.DS.app.renderer.geo.overlay));
+    const texts = (await drawnTexts(page)).filter((x) => x.x0 >= o.x0 - 1 && x.x0 <= o.x1 && x.y >= o.y0 && x.y <= o.y1);
+    const over = texts.filter((x) => x.x1 > o.x1 - 2);
+    assert(texts.some((x) => /Kühlwasser im Mantel/.test(x.t)) && texts.some((x) => /strömt zum Ablauf/.test(x.t)), `${w}×${h}: Beschriftung vorhanden`);
+    assert(!over.length, `${w}×${h}: über den Rand: ${over.map((x) => x.t + ' (' + Math.round(x.x1 - o.x1) + ' px)').join('; ')}`);
+    await shot(page, `35-kuehler-detail-${w}x${h}`);
+    await view(page, 'detail', touch);
+    // Diagramm: Antippen vergrößert auf die ganze Bühne, erneutes Antippen verkleinert
+    await view(page, 'chart', touch); await sleep(200);
+    const small = await page.locator('[data-hit="chart"]').boundingBox();
+    await tapHit(page, 'chart', touch); await sleep(250);
+    const big = await page.locator('[data-hit="chart"]').boundingBox(), cvb = await page.locator('#lab').boundingBox();
+    assert(await page.evaluate(() => window.DS.app.ui.chartBig) && big.width >= cvb.width - 40 && big.height >= cvb.height - 80 && big.width > small.width * 1.4, `${w}×${h}: groß ${Math.round(big.width)}×${Math.round(big.height)} (Bühne ${Math.round(cvb.width)}×${Math.round(cvb.height)})`);
+    assert((await page.locator('.hit').count()) === 1, 'groß: nur die Diagrammfläche ist antippbar');
+    await shot(page, `45-diagramm-gross-${w}x${h}`);
+    await tapHit(page, 'chart', touch); await sleep(250);
+    assert(!(await page.evaluate(() => window.DS.app.ui.chartBig)), `${w}×${h}: wieder klein`);
+    await tapHit(page, 'chart', touch); await page.keyboard.press('Escape'); await sleep(150);
+    assert(!(await page.evaluate(() => window.DS.app.ui.chartBig)), 'Escape verkleinert');
+    await done();
+    assert(!errors.length, errors.join('; '));
+    out.push(`${w}×${h} ok`);
+  }
+  return out.join(', ');
+});
+
+await scenario('E16', 'Befunde 13, 16: Uhr steht nach dem Versuch und läuft beim erneuten Heizen weiter; nach dem Abkühlen auf 20 °C keine Blasen', async () => {
+  const { page, errors, done } = await open();
+  await speed(page, 10);
+  await prepare(page);
+  await speed(page, 30);
+  await waitFor(page, (st, M) => M.vol(st.receiver.c) > 3);
+  await heater(page, false);
+  await waitFor(page, (st) => st.ended);
+  await sleep(300);
+  const c1 = await page.locator('#clock').innerText(); await sleep(2500); const c2 = await page.locator('#clock').innerText();
+  assert(c1 === c2 && /stopped/.test(await page.locator('#clock').getAttribute('class')), `Uhr steht: ${c1} → ${c2}`);
+  await shot(page, '49-uhr-angehalten', { clip: await page.locator('.lk-head').boundingBox() });
+  // weiter abkühlen bis Raumtemperatur: keine Siede- und Keimblasen mehr
+  await waitFor(page, (st) => st.flask.T < 21 && st.reading < 21, null, 300000);
+  assert(await page.locator('#clock').innerText() === c1, 'Uhr steht weiterhin');
+  await speed(page, 1); await sleep(500);
+  const fc = await worldClip(page, 'flask');
+  const a = await grab(page, fc); await sleep(500); const b = await grab(page, fc);
+  const fx = await S(page, (st) => [st.fx.boil, st.fx.nucleate, st.flask.T]);
+  assert(fx[0] === 0 && fx[1] === 0 && !differs(a, b), `ruhig bei ${de(fx[2])} °C: boil ${fx[0]}, Keime ${fx[1]}, Bild ${differs(a, b) ? 'bewegt' : 'unverändert'}`);
+  await shot(page, '46-abgekuehlt-ohne-blasen', { clip: fc });
+  // erneutes Heizen: Uhr läuft weiter
+  await heater(page, true); await sleep(1600);
+  const c3 = await page.locator('#clock').innerText();
+  assert(c3 !== c1 && !/stopped/.test(await page.locator('#clock').getAttribute('class')), `Uhr läuft weiter: ${c1} → ${c3}`);
+  await done();
+  assert(!errors.length, errors.join('; '));
+  return `Uhr ${c1} angehalten, nach erneutem Heizen ${c3}; Kolben ${de(fx[2])} °C ohne Blasen`;
 });
 
 // =========================================================== Netz- und Konsolenprüfung

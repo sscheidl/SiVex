@@ -1,5 +1,23 @@
 # Changelog – Destillation
 
+## 0.3.0 – 25.10.2026
+
+Überarbeitung nach der zweiten Durchsicht der Lehrkraft (17 Befunde; Ursachen und Regressionstests in `docs/TESTBERICHT.md`). Die Gestaltung bleibt erhalten.
+
+- Start mit 1×; „Namen“ beim Start (auch nach Neuladen) aus und nach „Erkunden“
+- Erklärmodus-Hinweis oben in der Leiste statt auf der Bühne, mit Farblegende; Dampfteilchen nach der Dampfzusammensetzung des Modells gefärbt (Ethanol rot, Wasser blau, Propanon grün) – nach dem Ethanol nur noch Wasser
+- Füllmenge „Vorlage n: x,x mL“ in der Leiste nach „Diagramm“; Skala am Erlenmeyer ohne „mL“
+- Kühler-Detail und Diagramm-Einblendung länger; keine Beschriftung ragt mehr über den Rand
+- Diagramm antippen: bildschirmfüllend, erneut antippen oder Escape: klein
+- Siedesteine: maßgeblich ist die Flüssigkeit im Kolben; die Meldung nennt ihre Temperatur (die Anzeige oben misst nur den Dampf)
+- Leer destillierter Kolben kann nach dem Abkühlen neu befüllt werden
+- Stopfen und Sicherheitsstopp „geschlossene Apparatur“ entfallen: Der Vorstoß hat eine Belüftung (Entscheidung in `docs/CHEMIE.md`)
+- Flasche mit dem Gemisch und Siedesteine links bei den Materialien; Szene schmaler, Apparatur knapp 7 % größer
+- Nach dem Abkühlen keine Blasen mehr (geglättete Siedewerte klingen auf genau 0 ab)
+- Versuchszeit hält nach dem Ende des Versuchs an (Uhr und Diagramm), läuft beim erneuten Heizen weiter
+- Ergebnisse: farbige Hinweise ohne Hintergrund
+- Bedienknöpfe in einer Zeile (bei 1440 × 900; schmale Bühnen brechen um), Knopf „Vorlage“; Meldungen in einem festen Band oberhalb der Apparatur, lange Meldungen kleiner gesetzt
+
 ## 0.2.0 – 25.10.2026
 
 Überarbeitung nach der ersten Durchsicht der Lehrkraft (siehe `docs/reviews/trennlabor-eindruecke-lehrkraft.md`).
