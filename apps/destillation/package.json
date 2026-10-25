@@ -1,6 +1,6 @@
 {
   "name": "sivex-destillation",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Destillation: Flüssigkeitsgemische trennen (statische Webanwendung, SiVex)",
   "scripts": {

@@ -20,8 +20,8 @@
   function freshTaskState() { return { fails: 0, offer: false, tip: 0, result: null, answers: {}, graded: null, gradedSig: null, solution: false, confirmSolution: false }; }
   function initialUi() {
     return {
-      tab: 'task', speed: 10, panel: true, selected: null, selectedPart: null,
-      explore: false, labelsOn: false, overlay: null, explain: false,
+      tab: 'task', speed: 1, panel: true, selected: null, selectedPart: null,
+      explore: false, labelsOn: false, overlay: null, chartBig: false, explain: false,
       tasks: { ew: freshTaskState(), pw: freshTaskState(), pew: freshTaskState() },
       names: { answers: {}, graded: null, tip: 0, fails: 0, solution: false },
       fns: { answers: {}, graded: null, tip: 0, fails: 0, solution: false },
@@ -34,6 +34,8 @@
     try { saved = JSON.parse(root.sessionStorage.getItem(STORE) || 'null'); } catch (e) { saved = null; }
     const engine = M.createEngine(saved && saved.model);
     const ui = Object.assign(initialUi(), saved && saved.ui ? saved.ui : {});
+    // Beim Start (auch nach Neuladen) Echtzeit, ohne Namen/Erkunden und ohne großes Diagramm (Befunde 1, 12, 15)
+    Object.assign(ui, { speed: 1, labelsOn: false, explore: false, selectedPart: null, chartBig: false });
     const st = () => engine.state;
     const labelMode = () => (ui.labelsOn ? 'names' : ui.tab === 'trainer' ? 'numbers' : null);
     const view = () => Object.assign({}, ui, { labels: labelMode() });
@@ -56,6 +58,8 @@
       const el = $('#toast');
       el.textContent = text;
       el.className = 'toast show' + (kind === 'warn' ? ' warn' : '');
+      // lange Meldungen kleiner setzen, damit sie im Band oberhalb der Apparatur bleiben
+      if (el.scrollHeight > el.parentNode.clientHeight + 1) el.classList.add('dense');
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => { el.className = 'toast'; }, kind === 'warn' ? 6500 : 4200);
     }
@@ -116,15 +120,16 @@
         case 'receiver': case 'receiverSpot': act('toggleReceiver'); break;
         case 'pipette':
           if (s.pipette) { toast('In der Pipette ist eine Probe. Tippe auf die Porzellanschale.'); ui.selected = 'pipette'; }
-          else { ui.selected = 'pipette'; toast(s.receiver.present ? 'Pipette gewählt. Proben nimmt man aus der abgenommenen Vorlage – nimm sie zuerst ab („Vorlage abnehmen“).' : 'Pipette gewählt. Tippe auf die Vorlage am Prüfplatz, um eine Probe zu entnehmen.'); }
+          else { ui.selected = 'pipette'; toast(s.receiver.present ? 'Pipette gewählt. Proben nimmt man aus der abgenommenen Vorlage – nimm sie zuerst ab (Knopf „Vorlage“).' : 'Pipette gewählt. Tippe auf die Vorlage am Prüfplatz, um eine Probe zu entnehmen.'); }
           refresh(true); break;
         case 'lighter': ui.selected = 'lighter'; toast('Stabfeuerzeug gewählt. Zünde nur die Probe in der Porzellanschale an.', 'warn'); refresh(true); break;
         case 'dish':
           if (s.pipette) act('sampleToDish');
           else toast(s.dish && !s.dish.result ? 'Wähle das Stabfeuerzeug und tippe dann auf die Schale.' : 'Nimm mit der Pipette eine Probe aus der Vorlage und gib sie in die Schale.');
           break;
-        case 'flask': toast(s.filled ? `Rundkolben: ${fmt(M.vol(s.flask.c), 1)} mL Flüssigkeit.` : 'Der Rundkolben ist leer. Tippe auf die Flasche, um das Gemisch einzufüllen.'); break;
-        case 'condenser': case 'adapter': toast(id === 'condenser' ? 'Liebigkühler: innen Dampf, außen im Mantel Kühlwasser.' : 'Vorstoß: leitet das Destillat in die Vorlage.'); break;
+        case 'flask': toast(M.vol(s.flask.c) >= M.REFILL_BELOW ? `Rundkolben: ${fmt(M.vol(s.flask.c), 1)} mL Flüssigkeit.` : s.filled ? `Der Rundkolben ist fast leer (${fmt(M.vol(s.flask.c), 1)} mL). Nach dem Abkühlen kannst du neu einfüllen.` : 'Der Rundkolben ist leer. Tippe auf die Flasche, um das Gemisch einzufüllen.'); break;
+        case 'condenser': case 'adapter': toast(id === 'condenser' ? 'Liebigkühler: innen Dampf, außen im Mantel Kühlwasser.' : 'Vorstoß: leitet das Destillat in die Vorlage. Die kleine Olive (Belüftung) hält die Apparatur offen.'); break;
+        case 'chart': ui.chartBig = !ui.chartBig; refresh(true); save(); break;
         default: break;
       }
     }
@@ -146,7 +151,8 @@
       receiverSpot: () => 'Platz unter dem Vorstoß: Vorlage zurückstellen',
       pipette: () => 'Pipette',
       lighter: () => 'Stabfeuerzeug',
-      dish: () => 'Porzellanschale am Prüfplatz'
+      dish: () => 'Porzellanschale am Prüfplatz',
+      chart: () => (ui.chartBig ? 'Diagramm verkleinern' : 'Diagramm bildschirmfüllend zeigen')
     };
     function hitLabel(id) {
       if (id.startsWith('part:')) return 'Gerät erkunden: ' + (id === 'part:mixture' ? M.MIXES[st().mix].name : T.PART_NAMES[id.slice(5)]);
@@ -157,7 +163,7 @@
     function layoutHits() {
       const areas = renderer.hitAreas(view());
       const s = st();
-      const sig = JSON.stringify(areas.map((a) => [a.id, a.x, a.y, a.w, a.h])) + ui.selected + ui.selectedPart + s.heater.on + s.water.on + s.receiver.present + s.receiver.stopper + s.thermo + JSON.stringify(s.hoses);
+      const sig = JSON.stringify(areas.map((a) => [a.id, a.x, a.y, a.w, a.h])) + ui.selected + ui.selectedPart + s.heater.on + s.water.on + s.receiver.present + s.thermo + JSON.stringify(s.hoses) + ui.overlay + ui.chartBig;
       if (sig === hitSig) return;
       hitSig = sig;
       const box = $('#hits');
@@ -176,23 +182,22 @@
       const s = st();
       const b = (a, text, extra) => `<button type="button" class="lk-btn" data-act="${a}"${extra || ''}>${text}</button>`;
       const out = [];
-      out.push(b('fill', s.filled ? 'Eingefüllt<span class="ok" aria-hidden="true">✓</span>' : 'Einfüllen', s.filled ? ' disabled aria-label="Gemisch ist eingefüllt"' : ''));
+      // leer destilliert: Einfüllen ist wieder möglich (Befund 8)
+      const full = s.filled && M.vol(s.flask.c) >= M.REFILL_BELOW;
+      out.push(b('fill', full ? 'Eingefüllt<span class="ok" aria-hidden="true">✓</span>' : 'Einfüllen', full ? ' disabled aria-label="Gemisch ist eingefüllt"' : ''));
       out.push(b('addStones', s.stones ? 'Siedesteine<span class="ok" aria-hidden="true">✓</span>' : 'Siedesteine', s.stones ? ' disabled aria-label="Siedesteine sind im Kolben"' : ''));
       out.push(`<span class="grp${ui.selected === 'thermo' ? ' hint' : ''}" role="group" aria-label="Thermometer verschieben"><span class="grp-l">Thermometer</span>${b('thermoUp', '▲', ' aria-label="Thermometer höher schieben"')}${b('thermoDown', '▼', ' aria-label="Thermometer tiefer schieben"')}</span>`);
-      out.push(b('toggleReceiver', s.receiver.present ? 'Vorlage abnehmen' : 'Vorlage unterstellen'));
+      const rl = s.receiver.present ? 'Vorlage abnehmen' : 'Vorlage unterstellen';
+      out.push(b('toggleReceiver', 'Vorlage', ` aria-label="${rl}" title="${rl}"`));
       if (s.expert) out.push(b('changeReceiver', 'Vorlage wechseln'));
-      if (s.receiver.present) {
-        const lab = s.receiver.stopper ? 'Stopfen von der Vorlage nehmen' : 'Stopfen auf die Vorlage setzen';
-        out.push(b('toggleStopper', s.receiver.stopper ? 'Stopfen ab' : 'Stopfen', ` aria-label="${lab}"`));
-      }
       return out.join('');
     }
     function viewsHtml() {
       const pre = !started();
       const t = (id, text, on, title, dis) => `<button type="button" class="lk-btn" data-view="${id}" aria-pressed="${!!on}" title="${esc(title)}" aria-label="${esc(title.split(':')[0])}"${dis ? ' disabled' : ''}>${text}</button>`;
       return [
-        t('labels', 'Namen', ui.labelsOn, pre ? 'Beschriftung: Fachbegriffe an den Geräten anzeigen (nur vor dem Versuch)' : 'Beschriftung: nur vor dem Versuch – für einen neuen Durchgang „Neu beginnen“', !pre),
         t('explore', 'Erkunden', ui.explore, pre ? 'Geräte erkunden: Gerät antippen zeigt Name und Funktion (nur vor dem Versuch)' : 'Geräte erkunden: nur vor dem Versuch – für einen neuen Durchgang „Neu beginnen“', !pre),
+        t('labels', 'Namen', ui.labelsOn, pre ? 'Beschriftung: Fachbegriffe an den Geräten anzeigen (nur vor dem Versuch)' : 'Beschriftung: nur vor dem Versuch – für einen neuen Durchgang „Neu beginnen“', !pre),
         t('detail', 'Kühler', ui.overlay === 'detail', 'Kühler-Detail: vergrößerter Schnitt durch den Liebigkühler'),
         t('explain', 'Teilchen', ui.explain, 'Erklärmodus: Dampfweg als Teilchen (in Wirklichkeit unsichtbar)'),
         t('chart', 'Diagramm', ui.overlay === 'chart', 'Temperatur-Zeit-Diagramm')
@@ -202,7 +207,7 @@
     function renderActions() {
       const s = st();
       if (started() && locked()) { ui.labelsOn = false; ui.explore = false; ui.selectedPart = null; }
-      const sig = [s.filled, s.stones, s.expert, s.receiver.present, s.receiver.stopper, ui.selected, ui.labelsOn, ui.explore, ui.overlay, ui.explain, started(), locked()].join('|');
+      const sig = [s.filled && M.vol(s.flask.c) >= M.REFILL_BELOW, s.stones, s.expert, s.receiver.present, ui.selected, ui.labelsOn, ui.explore, ui.overlay, ui.explain, started(), locked()].join('|');
       if (sig === actSig) return;
       actSig = sig;
       const f = document.activeElement && document.activeElement.dataset ? (document.activeElement.dataset.act || document.activeElement.dataset.view) : null;
@@ -218,8 +223,8 @@
       const v = b.dataset.view;
       if (v === 'labels') { ui.labelsOn = !ui.labelsOn; if (ui.labelsOn) { ui.explore = false; ui.selected = null; ui.selectedPart = null; } }
       else if (v === 'explore') { ui.explore = !ui.explore; ui.selected = null; if (ui.explore) ui.labelsOn = false; else ui.selectedPart = null; }
-      else if (v === 'detail') ui.overlay = ui.overlay === 'detail' ? null : 'detail';
-      else if (v === 'chart') ui.overlay = ui.overlay === 'chart' ? null : 'chart';
+      else if (v === 'detail') { ui.overlay = ui.overlay === 'detail' ? null : 'detail'; ui.chartBig = false; }
+      else if (v === 'chart') { ui.overlay = ui.overlay === 'chart' ? null : 'chart'; ui.chartBig = false; }
       else if (v === 'explain') ui.explain = !ui.explain;
       refresh(true); save();
     });
@@ -256,8 +261,26 @@
       $('#btnAck').addEventListener('click', () => act('ackSafety'));
       $('#btnAck').focus();
     }
-    let infoSig = '';
-    function renderExplainNote() { $('#explainNote').hidden = !ui.explain; }
+    let infoSig = '', noteSig = '';
+    /** Hinweis zum Erklärmodus oben in der Leiste, mit Farblegende der Stoffe im Gemisch (Befunde 2, 7). */
+    function renderExplainNote() {
+      const el = $('#explainNote');
+      el.hidden = !ui.explain;
+      const mix = M.MIXES[st().mix];
+      const sig = ui.explain + mix.id;
+      if (sig === noteSig) return;
+      noteSig = sig;
+      const dots = M.KEYS.filter((k) => mix.comp[k] > 0).map((k) => `<span class="pt"><i style="background:rgb(${R.PARTICLE[k].join(',')})" aria-hidden="true"></i>${esc(M.SUBSTANCES[k].name)}</span>`).join('');
+      el.innerHTML = `<span>Dampfteilchen (in Wirklichkeit unsichtbar):</span>${dots}`;
+      el.title = 'Erklärmodus: Die Farben zeigen die Zusammensetzung des Dampfs im Modell.';
+    }
+    /** Füllmenge der aktuellen Vorlage in der Leiste nach „Diagramm“ (Befund 3). */
+    function renderRecvChip() {
+      const r = st().receiver;
+      const txt = `Vorlage ${r.n}: ${fmt(M.vol(r.c), 1)} mL${r.present ? '' : ' (abgenommen)'}`;
+      const el = $('#recvChip');
+      if (el.textContent !== txt) el.textContent = txt;
+    }
     function renderPartInfo() {
       const p = ui.explore ? ui.selectedPart : null;
       if (p === infoSig) return;
@@ -547,13 +570,27 @@
       renderSafety();
       renderPartInfo();
       renderExplainNote();
+      renderRecvChip();
+      syncClock();
       layoutHits();
       renderPanel(force);
     }
+    /** Uhr: Versuchszeit; steht nach dem Ende des Versuchs (Befund 16). */
+    function syncClock() {
+      const s = st(), c = $('#clock');
+      const txt = core.fmtTime(s.tx);
+      if (c.textContent !== txt) c.textContent = txt;
+      c.classList.toggle('paused', ui.speed === 0);
+      c.classList.toggle('stopped', !!s.ended);
+      c.title = s.ended ? 'Versuchszeit – angehalten: Versuch beendet (läuft weiter, sobald wieder geheizt wird)' : 'Versuchszeit (Modellzeit)';
+    }
 
-    const sp = splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex-destillation-panel', minStage: 600, onChange: () => { renderer.resize(); hitSig = ''; layoutHits(); } });
-    function onResize() { renderer.resize(); hitSig = ''; layoutHits(); }
+    function placeBand() { const r = renderer.bandRect(); Object.assign($('#msgband').style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' }); }
+    function onResize() { renderer.resize(); placeBand(); hitSig = ''; layoutHits(); }
+    const sp = splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex-destillation-panel', minStage: 600, onChange: onResize });
     root.addEventListener('resize', onResize);
+    // Escape verkleinert das bildschirmfüllende Diagramm
+    root.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ui.chartBig) { ui.chartBig = false; refresh(true); save(); } });
     if (root.ResizeObserver) new root.ResizeObserver(onResize).observe($('#canvasWrap'));
 
     // ------------------------------------------------------------ Zeitschleife
@@ -566,8 +603,7 @@
       const speed = Math.min(ui.speed, cap);
       if (speed > 0 && dt > 0) engine.advance(dt * speed);
       renderer.frame(dt);
-      $('#clock').textContent = core.fmtTime(s.t);
-      $('#clock').classList.toggle('paused', ui.speed === 0);
+      syncClock();
       if (now - readoutAt > 500) {
         readoutAt = now;
         const r = $('#readout');
@@ -577,12 +613,14 @@
         renderActions();
         syncDeck();
         renderSafety();
+        renderRecvChip();
       }
       if (now - panelAt > 700) { panelAt = now; renderPanel(false); save(); }
       root.requestAnimationFrame(loop);
     }
 
     refresh(true);
+    placeBand();
     root.requestAnimationFrame(loop);
 
     return { engine, ui, renderer, refresh, act, hit, splitter: sp, save: saveNow };

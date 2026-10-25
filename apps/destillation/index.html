@@ -31,20 +31,21 @@
     <main class="lk-main" id="main">
       <section class="lk-stage" id="stage" aria-label="Labor">
         <div class="actionbar" id="actionbar">
+          <p class="explain-note" id="explainNote" hidden></p>
           <div class="views" id="views" role="group" aria-label="Ansicht"></div>
+          <span class="recv-chip" id="recvChip" title="Füllmenge der aktuellen Vorlage">Vorlage 1: 0,0 mL</span>
         </div>
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="lab" role="img" aria-label="Fertig aufgebaute Destillationsapparatur: Heizpilz mit Rundkolben, Destillationsaufsatz mit Thermometer, Liebigkühler mit Kühlwasseranschlüssen, Vorstoß und Vorlage"></canvas>
           <div class="hits" id="hits"></div>
           <div class="safety" id="safety" role="alertdialog" aria-labelledby="safetyTitle" hidden></div>
           <div class="partinfo" id="partInfo" role="status" hidden></div>
-          <p class="explain-note" id="explainNote" hidden>Erklärmodus: Dampfteilchen (in Wirklichkeit unsichtbar)</p>
-          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+          <div class="msgband" id="msgband"><div class="toast" id="toast" role="status" aria-live="polite"></div></div>
           <p class="sr-only" id="readout" aria-live="off"></p>
         </div>
         <div class="deck" id="deck" role="group" aria-label="Bedienung des Versuchs">
-          <div class="deck-row" id="actions" role="toolbar" aria-label="Handgriffe"></div>
           <div class="deck-row">
+          <div class="acts" id="actions" role="toolbar" aria-label="Handgriffe"></div>
           <div class="ctl" data-ctl="heat">
             <button type="button" class="switch" id="btnHeat" aria-pressed="false"><span class="lamp" aria-hidden="true"></span><span class="lbl">Heizung</span><b>AUS</b></button>
             <div class="seg2" id="heatLevel" role="group" aria-label="Heizstufe">

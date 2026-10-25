@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-25T11:45:33.859Z",
+  "date": "2026-10-25T20:52:37.023Z",
   "browser": "msedge 156.0.4314.42",
   "root": "dist\\destillation",
   "results": [
@@ -7,105 +7,137 @@
       "id": "E01",
       "title": "Standard 1 komplett: befüllen → Siedesteine → Kühlwasser EIN → Heizung EIN → Sieden → Ablesen → Destillat → Brennprobe → AUS → Auswertung → Hefteintrag",
       "status": "PASS",
-      "detail": "T 79,1 °C, Destillat 13,4 mL, Flamme bläulich",
-      "ms": 64540,
-      "date": "2026-10-25T11:45:33.859Z"
+      "detail": "T 79,1 °C, Destillat 13,2 mL, Flamme bläulich",
+      "ms": 64805,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E02",
       "title": "Standard 2 komplett: Propanon/Wasser, klar andere Temperatur, abgrenzbare Fraktion",
       "status": "PASS",
       "detail": "T 57,2 °C, Propanon-Anteil 100 %",
-      "ms": 49495,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 49425,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E03",
       "title": "Expertenmodus: drei Komponenten, Vorlagenwechsel, Fraktionen und Temperaturkurve",
       "status": "PASS",
       "detail": "[[1,\"P\",30,57.6],[2,\"E\",30,79.3],[3,\"W\",3,99.9]]",
-      "ms": 66419,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 66544,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E04",
       "title": "Ohne Kühlung vs. mit korrekter Kühlung bei gleicher Modellzeit",
       "status": "PASS",
-      "detail": "t = 846 s: mit Kühlung 12,3 mL, ohne 3,5 mL, Verlust 4,1 mL (Dampftemperatur 79,2 °C; Vorlage 12,3 mL | Dampftemperatur 79,1 °C; Vorlage 3,5 mL)",
-      "ms": 69882,
-      "date": "2026-10-25T11:45:33.859Z"
+      "detail": "t = 843 s: mit Kühlung 12,7 mL, ohne 3,5 mL, Verlust 4,1 mL (Dampftemperatur 79,2 °C; Vorlage 12,7 mL | Dampftemperatur 79,1 °C; Vorlage 3,5 mL)",
+      "ms": 70142,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E05",
       "title": "Falsch angeschlossene Schläuche, Wirkung, Korrektur",
       "status": "PASS",
       "detail": "Mantelfüllung vertauscht 0.12, Verlust 0,5 mL → nach Korrektur +0.00 mL",
-      "ms": 41656,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 41259,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E06",
       "title": "Falsche Thermometerlage vs. richtige: Messwert und Auswertungsfeedback",
       "status": "PASS",
       "detail": "zu hoch 62,0 °C → richtig 79,2 °C",
-      "ms": 44581,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 44629,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E07",
       "title": "Heizpilz EIN/AUS + Stufe, Kühlwasser unabhängig EIN/AUS + Durchfluss, plausibler Verlauf",
       "status": "PASS",
       "detail": "Heizpilz niedrig 57 °C → hoch 83 °C; Kondensation 4.8 → 2.5 mL/min",
-      "ms": 56634,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 56252,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E08",
       "title": "Siedesteine fehlen: Stopp, Ursache, Korrektur, Wiederaufnahme",
       "status": "PASS",
-      "detail": "Siedeverzug → Abkühlen → Siedesteine → Destillat",
-      "ms": 68645,
-      "date": "2026-10-25T11:45:33.859Z"
+      "detail": "Siedeverzug → Siedesteine abgelehnt (Anzeige 20,9 °C, Flüssigkeit 79,7 °C) → Abkühlen → Siedesteine → Destillat",
+      "ms": 69735,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E09",
-      "title": "Vorlage fehlt / Verschließen / Zünden am Aufbau / Trockenlauf",
+      "title": "Vorlage fehlt / Zünden am Aufbau / kein Stopfen (Befund 9) / Trockenlauf und Neubefüllen (Befund 8)",
       "status": "PASS",
-      "detail": "Tisch statt Vorlage, Zünden, Verschließen, Trockenlauf gestoppt",
-      "ms": 77883,
-      "date": "2026-10-25T11:45:33.859Z"
+      "detail": "Tisch statt Vorlage, Zünden, kein Stopfen, Trockenlauf gestoppt, neu befüllt (2.4 → 102.4 mL)",
+      "ms": 109689,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E10",
       "title": "Lernsystem: richtig / teilweise / falsch, drei Tipps, Lösung, Geräte-Trainer, Hefteintrag ohne Versuch",
       "status": "PASS",
       "detail": "Tipps 1–3, Lösung mit Rückfrage, Protokoll falsch → teilweise → richtig, Trainer 12/12",
-      "ms": 42253,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 42025,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E11",
       "title": "Grafik-Zwischenstände und fortlaufende Bildfolgen (Pause hält an)",
       "status": "PASS",
       "detail": "Blasen/Strömung bewegen sich, Pause friert ein",
-      "ms": 34068,
-      "date": "2026-10-25T11:45:33.859Z"
+      "ms": 33850,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "E12",
-      "title": "Responsive 1440×900, 1180×820, 1024×768 (Touch), Trennlinie Maus/Touch/Tastatur/Doppelklick, Verbindungen intakt",
+      "title": "Responsive 1440×900, 1180×820, 1024×768, 768×1024 (Touch), Trennlinie Maus/Touch/Tastatur/Doppelklick, Verbindungen intakt; Apparatur größer (Befund 11)",
       "status": "PASS",
-      "detail": "1440×900 ok, 1180×820 ok, 1024×768 ok, schmal gestapelt",
-      "ms": 101609,
-      "date": "2026-10-25T11:45:33.859Z"
+      "detail": "1440×900 ok, 1180×820 ok, 1024×768 ok, 768×1024 gestapelt ok (Maßstab 0.663), schmal gestapelt",
+      "ms": 133216,
+      "date": "2026-10-25T20:52:37.023Z"
+    },
+    {
+      "id": "E13",
+      "title": "Befunde 1, 15, 17: Start mit 1×, „Namen“ aus und nach „Erkunden“ (auch nach Neuladen); Bedienknöpfe in einer Zeile, Knopf „Vorlage“",
+      "status": "PASS",
+      "detail": "Ansicht: explore · labels · detail · explain · chart; Bedienleiste mit 8 Elementen in einer Zeile",
+      "ms": 10814,
+      "date": "2026-10-25T20:52:37.023Z"
+    },
+    {
+      "id": "E14",
+      "title": "Befunde 2, 3, 4, 7: Erklärhinweis oben ohne Überdeckung, Vorlagen-Anzeige nach „Diagramm“, Skala ohne „mL“, Teilchen nach Dampfzusammensetzung (Ethanol rot, bei 99,9 °C nur Wasser blau)",
+      "status": "PASS",
+      "detail": "Ethanol: rot 103/blau 0 px; 99,6 °C: blau 41/rot 0 px",
+      "ms": 63748,
+      "date": "2026-10-25T20:52:37.023Z"
+    },
+    {
+      "id": "E15",
+      "title": "Befunde 5, 12: Kühler-Detail ohne überstehende Beschriftung; Diagramm antippen → bildschirmfüllend → antippen/Escape → klein (vier Ansichten)",
+      "status": "PASS",
+      "detail": "1440×900 ok, 1180×820 ok, 1024×768 ok, 768×1024 ok",
+      "ms": 127493,
+      "date": "2026-10-25T20:52:37.023Z"
+    },
+    {
+      "id": "E16",
+      "title": "Befunde 13, 16: Uhr steht nach dem Versuch und läuft beim erneuten Heizen weiter; nach dem Abkühlen auf 20 °C keine Blasen",
+      "status": "PASS",
+      "detail": "Uhr 13:14 angehalten, nach erneutem Heizen 13:15; Kolben 21,0 °C ohne Blasen",
+      "ms": 145561,
+      "date": "2026-10-25T20:52:37.023Z"
     },
     {
       "id": "T04",
       "title": "Keine externen Ressourcen, keine Konsolenfehler",
       "status": "PASS",
-      "detail": "204 Anfragen, alle lokal",
-      "ms": 0,
-      "date": "2026-10-25T11:45:33.859Z"
+      "detail": "312 Anfragen, alle lokal",
+      "ms": 1,
+      "date": "2026-10-25T20:52:37.023Z"
     }
   ]
 }

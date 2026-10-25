@@ -18,7 +18,7 @@
   const { clamp, lerp, fmt, easeInOut } = root.LK.core;
   const D = G.DIM;
 
-  const TOP_BAND = 54; // px oben frei für Meldungen
+  const TOP_BAND = 58; // px oben frei für das Meldungsband (zwei Zeilen)
   const GRAVITY = 2600; // Welteinheiten/s² für fallende Tropfen (wie TitraLab 3)
   const FONT = '"Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
   const C = {
@@ -34,9 +34,23 @@
   };
   const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
   const P = (x, y) => ({ x, y });
+  /** Teilchenfarben im Erklärmodus (Befund 7): Propanon grün, Ethanol rot, Wasser blau. */
+  const PARTICLE = { P: [28, 138, 74], E: [214, 48, 58], W: [31, 111, 209] };
 
   // deterministisches Rauschen für Blasen und Flammen
   function hash(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+  /**
+   * Stoff des i-ten Dampfteilchens: Jedes Teilchen hat eine feste Zufallszahl; die Stoffmengenanteile
+   * y = [P, E, W] aus dem Modell teilen die Zahlen auf. So entsprechen die Anteile der Farben der
+   * Dampfzusammensetzung, und ein Teilchen wechselt seine Farbe nur, wenn sich die Zusammensetzung ändert.
+   */
+  function particleKey(i, y) {
+    const sum = y[0] + y[1] + y[2];
+    const u = hash(i * 13.37 + 0.71) * (sum > 0 ? sum : 1);
+    let acc = 0;
+    for (let k = 0; k < 3; k++) { acc += y[k]; if (y[k] > 0 && u < acc) return M.KEYS[k]; }
+    return sum > 0 ? M.KEYS[y.indexOf(Math.max(...y))] : 'W';
+  }
   function noise(t, k) { const i = Math.floor(t), f = t - i; const a = hash(i + k * 57), b = hash(i + 1 + k * 57); return a + (b - a) * (f * f * (3 - 2 * f)); }
 
   function roundRect(ctx, x, y, w, h, r) {
@@ -58,15 +72,15 @@
   /** Ankerpunkt (am Gerät) und Lage des Schildes (Weltkoordinaten) je Gerät. */
   const PARTS = [
     { id: 'flask', anchor: (g) => P(-g.flask.R * 0.8, g.flask.c.y - g.flask.R * 0.35), label: (g) => P(g.stand1.rodX - 72, g.flask.c.y - 34) },
-    { id: 'mantle', anchor: (g) => P(-g.mantle.outer + 6, g.mantle.base - 34), label: (g) => P(g.stand1.rodX - 72, g.mantle.base - 30) },
-    { id: 'stones', anchor: (g, st) => (st.stones ? P(10, g.flask.c.y + g.flask.R - 7) : P(g.stonesDish.x + 6, -12)), label: (g, st) => (st.stones ? P(g.mantle.outer + 52, g.mantle.base - 4) : P(g.stonesDish.x + 76, -66)) },
+    { id: 'mantle', anchor: (g) => P(g.mantle.outer - 6, g.mantle.base - 34), label: (g) => P(g.mantle.outer + 62, g.mantle.base - 40) },
+    { id: 'stones', anchor: (g, st) => (st.stones ? P(10, g.flask.c.y + g.flask.R - 7) : P(g.stonesDish.x + 6, -12)), label: (g, st) => (st.stones ? P(g.mantle.outer + 56, g.mantle.base + 10) : P(g.stonesDish.x + 8, -116)) },
     { id: 'head', anchor: (g) => P(-g.head.hw, g.arm.o.y + 18), label: (g) => P(g.stand1.rodX - 50, g.arm.o.y + 6) },
     { id: 'thermo', anchor: (g, st) => P(g.thermo.hw, g.thermo.bulb[st.thermo] - 210), label: (g, st) => P(g.thermo.hw + 76, g.thermo.bulb[st.thermo] - 236) },
     { id: 'condenser', anchor: (g) => g.cond.at(D.jacket0 + 150, D.jacketHW), label: (g) => g.cond.at(D.jacket0 + 150, D.jacketHW + 52) },
     { id: 'inlet', anchor: (g) => g.nozzles.low.tip, label: (g) => P(g.nozzles.low.tip.x - 132, g.nozzles.low.tip.y + 4) },
     { id: 'outlet', anchor: (g) => g.nozzles.high.tip, label: (g) => P(g.nozzles.high.tip.x + 96, g.nozzles.high.tip.y - 26) },
     { id: 'adapter', anchor: (g) => P(g.adapter.a2.x + D.adapterHW, g.adapter.a2.y + 10), label: (g) => P(g.adapter.a2.x + 78, g.adapter.a2.y - 30) },
-    { id: 'receiver', anchor: (g) => P(g.receiver.x + g.receiver.baseHW - 10, g.receiver.base - 26), label: (g) => P(g.receiver.x + 100, g.receiver.base - 66) },
+    { id: 'receiver', anchor: (g) => P(g.receiver.x + g.receiver.baseHW - 10, g.receiver.base - 26), label: (g) => P(g.receiver.x + 80, g.receiver.rim - 22) },
     { id: 'distillate', anchor: (g) => P(g.receiver.x - 10, g.receiver.base - 6), label: (g) => P(g.receiver.x - 92, g.receiver.base - 26) },
     { id: 'mixture', extra: true, anchor: (g) => P(g.bottle.x, -24), label: (g) => P(g.bottle.x, 18) },
     { id: 'stand', anchor: (g) => P(g.stand1.rodX, g.stand1.clamps[0].y - 26), label: (g) => P(g.stand1.rodX - 72, g.stand1.clamps[0].y - 36) }
@@ -367,7 +381,8 @@
       const g = geo;
       const run = dt > 0;
       if (run && !reduce) {
-        const rate = (fx.boil > 0 ? 6 + 46 * Math.min(1.4, fx.boil) : 0) + (fx.nucleate > 0 ? 10 * fx.nucleate : 0);
+        // Blasen nur bei tatsächlichem Sieden bzw. Siedekeimen (Befund 13: keine Restwerte nach dem Abkühlen)
+        const rate = (fx.boil > 1e-3 ? 6 + 46 * Math.min(1.4, fx.boil) : 0) + (fx.nucleate > 1e-3 ? 10 * fx.nucleate : 0);
         let n = rate * dt;
         while (n > 0) {
           if (n < 1 && hash(vis.bubbleSeq * 3.3 + vis.time) > n) break;
@@ -556,16 +571,17 @@
           if (s < zone && hash(i + 11) < 0.5) drawDrop(s + 12, -thw + D.glass + 1.1, 0.9, 1);
         }
       }
-      // Erklärmodus: Dampfteilchen im Innenrohr
+      // Erklärmodus: Dampfteilchen im Innenrohr, gefärbt nach der Zusammensetzung des Dampfs
       if (getUi().explain && fx.pass > 1e-5) {
         const zone = j0 + clamp(fx.condZone, 0.05, 1) * (j1 - j0);
         const n = Math.round(clamp(fx.pass * 90, 4, 22));
+        const y = shares(st, 'py');
         for (let i = 0; i < n; i++) {
           const end = fx.escape > 1e-5 ? L + 10 : zone;
           const s = ((hash(i * 7.7) * end) + vis.time * 60 * (0.7 + hash(i) * 0.6)) % end;
           const fade = fx.escape > 1e-5 ? 1 : clamp((zone - s) / 40, 0, 1);
-          ctx.fillStyle = `rgba(232,120,40,${0.55 * fade})`;
-          ctx.beginPath(); ctx.arc(s, (hash(i + 5) - 0.5) * (thw * 1.2), 1.4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = rgba(PARTICLE[particleKey(i + 100, y)], 0.8 * fade);
+          ctx.beginPath(); ctx.arc(s, (hash(i + 5) - 0.5) * (thw * 1.2), 1.7, 0, Math.PI * 2); ctx.fill();
         }
       }
       ctx.strokeStyle = C.glassEdge; ctx.lineWidth = px(1.2);
@@ -702,8 +718,8 @@
           const lev = G.receiverLevel({ receiver: r }, ml);
           const len = ml % 40 === 0 ? 8 : 5;
           ctx.beginPath(); ctx.moveTo(r.x + 1, lev.y); ctx.lineTo(r.x + 1 + len, lev.y); ctx.stroke();
-          if (ml === 40) text('40 mL', r.x - 2, lev.y, { size: 9, align: 'right', color: '#2a3542' });
-          if (ml === 80) text('80', r.x - 2, lev.y, { size: 9, align: 'right', color: '#2a3542' });
+          // nur Zahlen, damit die Skala auf den Kolben passt (Befund 4); die Einheit steht in der Anzeige „Vorlage …: … mL“
+          if (ml % 40 === 0) text(String(ml), r.x - 2, lev.y, { size: 9, align: 'right', color: '#2a3542' });
         }
       }
     }
@@ -751,15 +767,8 @@
       vis.recvDrawn = r;
       let surf = null;
       drawErlenmeyer(r, M.vol(rc.c), { scale: true, rings: pose.home ? vis.rings : [], wave: pose.home ? vis.wave : 0, surface: (y, half) => { surf = { y, half }; } });
-      if (rc.stopper && rc.present) {
-        ctx.fillStyle = '#4a4f57';
-        ctx.beginPath(); ctx.moveTo(r.x - r.neckHW - 3, r.rim - 8); ctx.lineTo(r.x + r.neckHW + 3, r.rim - 8); ctx.lineTo(r.x + r.neckHW - 1, r.rim + 12); ctx.lineTo(r.x - r.neckHW + 1, r.rim + 12); ctx.closePath(); ctx.fill();
-      }
-      if (rc.present || pose.moving) text(`Vorlage ${rc.n}: ${fmt(M.vol(rc.c), 1)} mL`, rj.x, rj.top + rj.h / 2 + 1, { size: 11, color: '#fff', weight: 700, bg: 'rgba(31,37,45,0.85)' });
-      else {
-        text(`Vorlage ${rc.n}: ${fmt(M.vol(rc.c), 1)} mL`, r.x, 18, { size: 11, color: '#22303d', weight: 700 });
-        text('Keine Vorlage unter dem Vorstoß', rj.x, rj.top - 30, { size: 11, color: '#7a4004', bg: 'rgba(253,241,220,0.95)', border: '#ecc98d' });
-      }
+      // Füllmenge steht in der Bedienleiste (Befund 3), nicht mehr auf dem Laborboy
+      if (!rc.present && !pose.moving) text('Keine Vorlage unter dem Vorstoß', rj.x, rj.top - 30, { size: 11, color: '#7a4004', bg: 'rgba(253,241,220,0.95)', border: '#ecc98d' });
       return pose.home ? surf : null;
     }
     function scaledErlen(r, f, x, base) {
@@ -1042,10 +1051,11 @@
       if (fx.vapor <= 1e-5) return;
       const surfY = G.flaskLevel(g, M.vol(st.flask.c)).y;
       const n = Math.round(clamp(fx.vapor * 120, 4, 26));
+      const yUp = shares(st, 'vy'), yOut = shares(st, 'py');
       for (let i = 0; i < n; i++) {
         const u = (hash(i * 5.3) + vis.time * (0.35 + hash(i) * 0.3)) % 1;
         // Weg: Flüssigkeit → Hals → Aufsatz → Abgang
-        let x, y;
+        let x, y, inArm = false;
         const yTop = g.arm.o.y;
         const reachArm = fx.pass > 1e-5;
         if (u < 0.75 || !reachArm) {
@@ -1057,25 +1067,55 @@
           const v = (u - 0.75) / 0.25;
           const p = P(lerp(0, g.arm.end.x, v), lerp(yTop, g.arm.end.y, v));
           x = p.x; y = p.y + (hash(i + 3) - 0.5) * 6;
+          inArm = true;
         }
-        ctx.fillStyle = 'rgba(232,120,40,0.55)';
-        ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = rgba(PARTICLE[particleKey(i, inArm ? yOut : yUp)], 0.8);
+        ctx.beginPath(); ctx.arc(x, y, 1.9, 0, Math.PI * 2); ctx.fill();
       }
     }
 
     // ------------------------------------------------------------------ Einblendungen (Detail, Diagramm)
-    function overlayBox(title) {
-      const o = geo.overlay;
+    function overlayBox(title, box, hint) {
+      const o = box || geo.overlay;
       ctx.save();
-      ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.strokeStyle = '#c3cdd8'; ctx.lineWidth = px(1.2);
+      ctx.fillStyle = box ? '#fff' : 'rgba(255,255,255,0.96)'; ctx.strokeStyle = '#c3cdd8'; ctx.lineWidth = px(1.2);
       roundRect(ctx, o.x0, o.y0, o.x1 - o.x0, o.y1 - o.y0, 10); ctx.fill(); ctx.stroke();
-      text(title, o.x0 + 12, o.y0 + 16, { size: 13, align: 'left', weight: 700 });
+      text(title, o.x0 + px(12), o.y0 + px(16), { size: 13, align: 'left', weight: 700 });
+      if (hint) text(hint, o.x1 - px(10), o.y0 + px(16), { size: 11, align: 'right', weight: 600, color: C.accent });
       ctx.restore();
       return o;
+    }
+    /** Breite eines Textes in Weltkoordinaten (gleiche Schrift wie text()). */
+    function textW(str, size, weight) {
+      ctx.save(); ctx.font = `${weight || 600} ${px(size || 12)}px ${FONT}`;
+      const w = ctx.measureText(str).width; ctx.restore();
+      return w;
+    }
+    /** Stoffmengenanteile [P, E, W] des Dampfs aus dem Modell ('vy' aufsteigend, 'py' in den Kühler). */
+    function shares(st, which) {
+      const y = st.fx[which] || st.fx.vy;
+      return y && y.length === 3 ? y : M.vaporFractions(st.flask.c);
+    }
+    /** Legende der Teilchenfarben für die im Gemisch vorhandenen Stoffe, linksbündig ab x. */
+    function particleLegend(st, x, y) {
+      let cx = x;
+      for (const k of M.KEYS) {
+        if (!(M.MIXES[st.mix].comp[k] > 0)) continue;
+        ctx.fillStyle = rgba(PARTICLE[k], 0.9); ctx.beginPath(); ctx.arc(cx + px(4), y, px(4), 0, Math.PI * 2); ctx.fill();
+        const name = M.SUBSTANCES[k].name;
+        text(name, cx + px(11), y, { size: 11, align: 'left', color: '#22303d' });
+        cx += px(22) + textW(name, 11);
+      }
+    }
+    /** Bühne unterhalb des Meldungsbands als Weltrechteck (Diagramm groß, Befund 12). */
+    function stageBox() {
+      const a = G.toWorld(view, P(8, TOP_BAND)), b = G.toWorld(view, P(view.w - 8, view.h - 8));
+      return { x0: a.x, y0: a.y, x1: b.x, y1: b.y };
     }
     function drawDetail(st) {
       const o = overlayBox('Liebigkühler im Schnitt (vergrößert)');
       const fx = st.fx, j = st.jacket;
+      const py = shares(st, 'py');
       const correct = st.hoses.inlet === 'low' && st.hoses.outlet === 'high';
       const x0 = o.x0 + 20, x1 = o.x1 - 20, yc = (o.y0 + o.y1) / 2 + 12;
       const H = (o.y1 - o.y0) - 80, wTube = H * 0.36;
@@ -1110,8 +1150,8 @@
           const end = fx.escape > 1e-5 ? x1 : zone;
           const x = x0 + ((hash(i * 3.7) * (end - x0)) + vis.time * 50 * (0.6 + hash(i))) % (end - x0);
           const fade = fx.escape > 1e-5 ? 1 : clamp((zone - x) / 50, 0, 1);
-          ctx.fillStyle = `rgba(232,120,40,${0.6 * fade})`;
-          ctx.beginPath(); ctx.arc(x, yi0 + 6 + hash(i + 1) * (wTube - 12), 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = rgba(PARTICLE[particleKey(i + 200, py)], 0.8 * fade);
+          ctx.beginPath(); ctx.arc(x, yi0 + 6 + hash(i + 1) * (wTube - 12), 2.4, 0, Math.PI * 2); ctx.fill();
         }
         // Wärmeübergang: kleine Pfeile vom Innenrohr in das Kühlwasser
         if (j.fill > 0.01 && fx.cond > 1e-5) {
@@ -1137,16 +1177,24 @@
       // Glaswände
       ctx.strokeStyle = C.glassEdge; ctx.lineWidth = px(1.6);
       for (const y of [yo0, yo1, yi0, yi1]) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
-      // Beschriftung der zwei getrennten Strömungsräume
+      // Beschriftung der zwei getrennten Strömungsräume; passt die Strömungsrichtung nicht mehr
+      // in die Zeile, steht sie im unteren Wasserraum (Befund 5: nichts ragt über die Abbildung hinaus)
       const wTxt = j.fill > 0.01 ? `Kühlwasser im Mantel · ${fmt(j.T, 0)} °C · ${st.water.on ? 'Durchfluss ' + M.FLOW[st.water.level].name : 'steht'}` : 'Kühlmantel leer (Luft)';
-      text(wTxt + (fx.flow > 0 ? (correct ? '  ← strömt zum Ablauf' : '  → läuft unten durch') : ''), x0 + 6, yo0 + 11, { size: 11, align: 'left', color: '#0d3d75' });
+      const dirTxt = fx.flow > 0 ? (correct ? '← strömt zum Ablauf' : '→ läuft unten durch') : '';
+      const room = x1 - x0 - 12;
+      const one = dirTxt && textW(wTxt + '  ' + dirTxt, 11) <= room;
+      text(one ? wTxt + '  ' + dirTxt : wTxt, x0 + 6, yo0 + 11, { size: 11, align: 'left', color: '#0d3d75' });
+      if (dirTxt && !one) text(dirTxt, x0 + 6, yo1 - 9, { size: 11, align: 'left', color: '#0d3d75' });
       text(fx.pass > 1e-5 ? `Innenrohr: Dampf ${fmt(fx.Tb, 0)} °C → kondensiert` : 'Innenrohr: kein Dampf', x0 + 6, yc, { size: 11, align: 'left', color: '#7a3a0a', bg: 'rgba(255,255,255,0.75)' });
-      text(`Kondensat: ${fmt(fx.cond * 60, 1)} mL/min` + (fx.escape > 1e-5 ? ` · nicht kondensiert: ${fmt(fx.escape * 60, 1)} mL/min` : ''), x0 + 6, yo1 + 14, { size: 11, align: 'left', color: fx.escape > 1e-5 ? '#a8640a' : '#22303d' });
+      const cTxt = `Kondensat: ${fmt(fx.cond * 60, 1)} mL/min` + (fx.escape > 1e-5 ? ` · nicht kondensiert: ${fmt(fx.escape * 60, 1)} mL/min` : '');
+      text(cTxt, x0 + 6, yo1 + 14, { size: 11, align: 'left', color: fx.escape > 1e-5 ? '#a8640a' : '#22303d' });
+      // Legende der Dampfteilchen, rechts unten (sofern Platz neben dem Kondensattext)
+      if (fx.pass > 1e-5 && textW(cTxt, 11) + px(170) < x1 - x0) particleLegend(st, x1 - px(170), yo1 + 14);
       ctx.restore();
     }
-    function drawChart(st) {
-      const o = overlayBox('Temperatur-Zeit-Diagramm (Thermometer)');
-      const x0 = o.x0 + 46, x1 = o.x1 - 14, y0 = o.y0 + 34, y1 = o.y1 - 30;
+    function drawChart(st, big) {
+      const o = overlayBox('Temperatur-Zeit-Diagramm (Thermometer)', big ? stageBox() : null, big ? 'Antippen: verkleinern' : 'Antippen: groß');
+      const x0 = o.x0 + px(46), x1 = o.x1 - px(14), y0 = o.y0 + px(34), y1 = o.y1 - px(30);
       const s = st.series;
       const tMax = Math.max(300, Math.ceil(((s.length ? s[s.length - 1].t : 0) + 60) / 300) * 300);
       const X = (t) => x0 + (t / tMax) * (x1 - x0);
@@ -1279,10 +1327,12 @@
       drawFilling(st);
       drawDisplay(st);
       drawStationTools(st, ui);
+      const big = ui.overlay === 'chart' && ui.chartBig;
       if (ui.overlay === 'detail') drawDetail(st);
-      else if (ui.overlay === 'chart') drawChart(st);
+      else if (ui.overlay === 'chart' && !big) drawChart(st, false);
       drawSelection(st, ui);
       drawLabels(st, ui);
+      if (big) drawChart(st, true); // bildschirmfüllend über allem (Befund 12)
     }
 
     // ------------------------------------------------------------------ Trefferflächen
@@ -1295,11 +1345,18 @@
         if (!b) return;
         const a = toScreen(P(b.x0, b.y0)), c = toScreen(P(b.x1, b.y1));
         const w = Math.max(44, c.x - a.x), h = Math.max(44, c.y - a.y);
-        out.push({ id, x: Math.round((a.x + c.x) / 2 - w / 2), y: Math.round((a.y + c.y) / 2 - h / 2), w: Math.round(w), h: Math.round(h) });
+        // rechts frei von der Touch-Fläche der Trennlinie (ragt 15 px in die Bühne)
+        const x = Math.min((a.x + c.x) / 2 - w / 2, view.w - 16 - w);
+        out.push({ id, x: Math.round(x), y: Math.round((a.y + c.y) / 2 - h / 2), w: Math.round(w), h: Math.round(h) });
       };
       const g = geo;
+      // Diagramm: Antippen vergrößert auf die ganze Bühne bzw. verkleinert wieder (Befund 12)
+      if (ui.overlay === 'chart' && ui.chartBig) { rect('chart', stageBox()); return out; }
+      if (ui.overlay === 'chart') rect('chart', g.overlay);
       if (ui.explore) {
-        PARTS.forEach((p) => { if (p.id !== 'distillate' || M.vol(st.receiver.c) > 0.05) rect('part:' + p.id, partBox(p.id, st)); });
+        // das große Stativ zuunterst: das Siedestein-Schälchen steht vor dem Stativfuß und bleibt antippbar
+        const order = PARTS.filter((p) => p.id === 'stand').concat(PARTS.filter((p) => p.id !== 'stand'));
+        order.forEach((p) => { if (p.id !== 'distillate' || M.vol(st.receiver.c) > 0.05) rect('part:' + p.id, partBox(p.id, st)); });
         for (const id of EXPLORE_EXTRA) rect('part:' + id, partBox(id, st));
         return out;
       }
@@ -1338,8 +1395,11 @@
       return { view: Object.assign({}, view), connections: pts, display: { a: toScreen(P(g.display.x0, g.display.y0)), b: toScreen(P(g.display.x1, g.display.y1)) }, bounds: { a: toScreen(P(g.bounds.x0, g.bounds.y0)), b: toScreen(P(g.bounds.x1, g.bounds.y1)) }, thermoBulb: toScreen(P(0, g.thermo.bulb[st.thermo])) };
     }
 
-    return { frame, resize, hitAreas, anchors, partBox, get geo() { return geo; }, view, PARTS, EXPLORE_EXTRA };
+    /** Meldungsband oben (CSS-Pixel relativ zur Bühne): über der ganzen Szene, unter der Bedienleiste. */
+    function bandRect() { resize(); return { x: 8, y: 2, w: Math.max(0, view.w - 16), h: TOP_BAND - 4 }; }
+
+    return { frame, resize, hitAreas, anchors, partBox, bandRect, get geo() { return geo; }, view, PARTS, EXPLORE_EXTRA };
   }
 
-  (root.DS = root.DS || {}).render = { createRenderer, PARTS };
+  (root.DS = root.DS || {}).render = { createRenderer, PARTS, PARTICLE, TOP_BAND };
 })(typeof self !== 'undefined' ? self : this);
