@@ -8,7 +8,7 @@ Stand 24.10.2026 · Vorgehen nach der [Entscheidung zur Aufteilung](../../../doc
 | --- | --- | --- |
 | Kapillarmodell der Front (Lucas-Washburn, *w² = k·t*) | **A/B** | in beiden Fassungen gleich, fachlich plausibel und getestet; k-Werte angepasst (`docs/CHEMIE.md`) |
 | Komponentenmodell (löslicher Anteil `sol`, relative Laufstrecke `rf`) | **B** | klar getrennt, DOM-frei, gut testbar; Rf-Werte in Ethanol-Wasser neu gewählt |
-| Zusammensetzung Schwarz (Gelb + Blau + Violett) | **A** | zwei Komponenten haben eine Referenz → Zuordnung in Aufgabe A möglich |
+| Zusammensetzung Schwarz (Gelb + Rot + Blau) | **neu** (0.2.0; 0.1.0: Gelb + Blau + Violett aus A) | einheitliche Farblogik: nur drei Farbstoffe, gemeinsame Komponenten wandern gleich weit; zwei Komponenten haben eine Referenz |
 | Wasserfester Stift (alkohollöslicher Farbstoff + Pigment) | **B** | erfüllt „ein Anteil wandert, ein anderer bleibt zurück“ |
 | Laufmittel Ethanol-Wasser 1 : 1 | **B** | wie im Auftrag festgelegt; 7 : 3 aus A ohne fachlichen Mehrwert (Begründung in `CHEMIE.md`) |
 | Zonenverschmelzung (überlappende Komponenten = eine Zone) | **B**, verändert | Kriterium über Zonenkanten inkl. Schweif; so zeigen Bild und Bewertung dasselbe |

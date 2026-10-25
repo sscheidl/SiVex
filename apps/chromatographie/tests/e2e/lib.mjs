@@ -29,6 +29,18 @@ export async function newPage(browser, url, opts = {}) {
   page.on('request', (r) => requests.push(r.url()));
   await page.goto(url);
   await page.waitForFunction(() => window.PC && window.PC.app);
+  await page.evaluate(() => {
+    window.__overlap = (t) => {
+      const r = window.PC.app.renderer, L = r.layout, w = document.querySelector('#canvasWrap').getBoundingClientRect();
+      const box = (x0, y0, x1, y1) => { const a = r.toScreen(x0, y0), b = r.toScreen(x1, y1); return { left: w.left + a.x, top: w.top + a.y, right: w.left + b.x, bottom: w.top + b.y }; };
+      const c = L.chamber;
+      const objs = [box(c.x - 0.3, c.top - 0.6, c.x + c.w + 0.3, c.bottom), box(L.tile.x, L.tile.y, L.tile.x + L.tile.w, L.tile.y + L.tile.h),
+        ...L.bottles.map((b) => box(b.x - 1.5, b.bottom - 5.1, b.x + 1.5, b.bottom)), box(L.rack.x, L.rack.y - 5.2, L.rack.x + L.rack.slot * 7, L.bench),
+        box(L.pencil.x - 0.3, L.pencil.y0, L.pencil.x + 0.3, L.pencil.y1)];
+      const ui = [...document.querySelectorAll('#actions button, .hit')].map((e) => e.getBoundingClientRect());
+      return objs.concat(ui).some((b) => b.left < t.right && b.right > t.left && b.top < t.bottom && b.bottom > t.top);
+    };
+  });
   await sleep(200);
   return { context, page, errors, requests };
 }

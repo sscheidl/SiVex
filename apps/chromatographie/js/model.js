@@ -25,14 +25,13 @@
     G: { name: 'gelber Farbstoff', colorName: 'gelb', rgb: [240, 196, 20], water: { sol: 1, rf: 0.82 }, etoh: { sol: 1, rf: 0.70 } },
     B: { name: 'blauer Farbstoff', colorName: 'blau', rgb: [30, 100, 220], water: { sol: 1, rf: 0.62 }, etoh: { sol: 1, rf: 0.74 } },
     R: { name: 'roter Farbstoff', colorName: 'rot', rgb: [222, 38, 70], water: { sol: 1, rf: 0.40 }, etoh: { sol: 1, rf: 0.55 } },
-    V: { name: 'violetter Farbstoff', colorName: 'violett', rgb: [112, 44, 168], water: { sol: 1, rf: 0.20 }, etoh: { sol: 1, rf: 0.38 } },
     WS: { name: 'alkohollöslicher Schwarzfarbstoff', colorName: 'blauschwarz', rgb: [48, 46, 96], water: { sol: 0, rf: 0 }, etoh: { sol: 0.8, rf: 0.60 } },
     P: { name: 'schwarzes Pigment (unlöslich)', colorName: 'grauschwarz', rgb: [40, 40, 44], water: { sol: 0, rf: 0 }, etoh: { sol: 0, rf: 0 } }
   };
 
   /** Sieben definierte Modellproben (keine Aussage über reale Stiftmarken). */
   const SAMPLES = [
-    { id: 'schwarz', name: 'Schwarzer Filzstift (wasserlöslich)', label: 'Schwarz', rgb: [38, 36, 44], parts: [['G', 0.30], ['B', 0.35], ['V', 0.35]] },
+    { id: 'schwarz', name: 'Schwarzer Filzstift (wasserlöslich)', label: 'Schwarz', rgb: [38, 36, 44], parts: [['G', 0.30], ['R', 0.30], ['B', 0.40]] },
     { id: 'gruen', name: 'Grüner Filzstift (wasserlöslich)', label: 'Grün', rgb: [30, 140, 70], parts: [['G', 0.55], ['B', 0.45]] },
     { id: 'violett', name: 'Violetter Filzstift (wasserlöslich)', label: 'Violett', rgb: [124, 52, 168], parts: [['R', 0.5], ['B', 0.5]] },
     { id: 'orange', name: 'Oranger Filzstift (wasserlöslich)', label: 'Orange', rgb: [240, 124, 28], parts: [['G', 0.6], ['R', 0.4]] },
@@ -121,7 +120,7 @@
 
   function zoneColor(comps) {
     const u = [...new Set(comps)].sort().join('+');
-    const names = { G: 'gelb', B: 'blau', R: 'rot', V: 'violett', WS: 'blauschwarz', P: 'grauschwarz', 'B+G': 'grün', 'B+R': 'violett', 'G+R': 'orange', 'P+WS': 'schwarz' };
+    const names = { G: 'gelb', B: 'blau', R: 'rot', WS: 'blauschwarz', P: 'grauschwarz', 'B+G': 'grün', 'B+R': 'violett', 'G+R': 'orange', 'B+G+R': 'schwarz', 'P+WS': 'schwarz' };
     return names[u] || 'dunkel gemischt';
   }
 
@@ -150,12 +149,17 @@
     });
   }
 
+  /** Liegen aufgetragene Punkte nicht auf der Startlinie (fehlt sie, oder wurde sie erst danach gezogen)? */
+  const offLine = (p) => p.lanes.some((l) => l && (!p.line || Math.abs(l.y - PAPER.lineY) > 0.01));
+  const OFFLINE_TEXT = 'Die Probenpunkte liegen nicht auf einer gemeinsamen Startlinie. Verwende neues Papier und zeichne zuerst die Startlinie.';
+
   /** Güte eines Chromatogramms. */
   function quality(p) {
     const issues = [];
     const used = p.lanes.some(Boolean);
     if (!used) issues.push('noSample');
     if (!p.line) issues.push('noLine');
+    else if (offLine(p)) issues.push('offLine');
     if (p.state !== 'removed') issues.push('notRemoved');
     else if (!p.contact) issues.push('noSolvent');
     if (p.submerged.some((x, i) => x && p.lanes[i])) issues.push('submerged');
@@ -163,7 +167,7 @@
     if (p.contact && run < MIN_RUN) issues.push('short');
     if (p.lanes.some((l) => l && l.n >= OVERLOAD)) issues.push('overloaded');
     if (p.frontAtTop) issues.push('frontAtTop');
-    const fatal = ['noSample', 'noLine', 'notRemoved', 'noSolvent', 'submerged', 'short'];
+    const fatal = ['noSample', 'noLine', 'offLine', 'notRemoved', 'noSolvent', 'submerged', 'short'];
     return { valid: !issues.some((i) => fatal.includes(i)), issues, run };
   }
 
@@ -337,6 +341,7 @@
           p.insertedAt = st.time;
           if (!ch.solvent) msg('In der Kammer ist kein Laufmittel – das Papier hängt trocken.', 'warn', 'dryChamber');
           if (!p.lanes.some(Boolean)) msg('Auf dem Papier ist noch keine Probe.', 'warn', 'noSampleInsert');
+          else if (offLine(p)) msg(OFFLINE_TEXT, 'warn', 'offLine');
           break;
         case 'remove': {
           p.state = 'removed';
@@ -409,7 +414,7 @@
   }
 
   return {
-    createEngine, initialState, newPaper, COMPONENTS, SAMPLES, SAMPLE_BY_ID, SOLVENTS, PAPER, NOLINE_Y, PORTION, MAX_PORTIONS,
+    createEngine, initialState, newPaper, offLine, OFFLINE_TEXT, COMPONENTS, SAMPLES, SAMPLE_BY_ID, SOLVENTS, PAPER, NOLINE_Y, PORTION, MAX_PORTIONS,
     MIN_RUN, OVERLOAD, MAX_DABS, FRONT_VISIBLE, OPS, spotRadius, virtualFront, bands, zones, zoneColor, quality, rf, laneStart, snapshot
   };
 });

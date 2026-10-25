@@ -16,7 +16,7 @@
   const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   const STORE = 'sivex-chromatographie-v1';
 
-  function freshTaskState() { return { fails: 0, offer: false, tip: 0, result: null, paper: null, answers: {}, graded: null, solution: false, confirmSolution: false }; }
+  function freshTaskState() { return { fails: 0, offer: false, tip: 0, result: null, papers: [], checkedAt: 0, lost: false, answers: {}, graded: null, solution: false, confirmSolution: false }; }
   function initialUi() {
     return {
       tab: 'task', task: 'A', selectedPen: null, speed: 10, panel: true,
@@ -31,6 +31,8 @@
     const engine = M.createEngine(saved && saved.model);
     const ui = Object.assign(initialUi(), saved && saved.ui ? saved.ui : {});
     ui.hoverLane = null;
+    // ältere Sitzungsstände (ein Bezugspapier je Aufgabe) übernehmen
+    Object.values(ui.tasks).forEach((t) => { if (!t.papers) t.papers = t.paper ? [t.paper] : []; delete t.paper; });
     const st = engine.state;
     const renderer = R.createRenderer($('#lab'), () => engine.state, { layout: opts.layout });
 
@@ -63,6 +65,8 @@
     // ------------------------------------------------------------ Handlungen
     function act(name, ...args) {
       const r = engine.act(name, ...args);
+      // Befund 7: nach neuem Papier und nach dem Einhängen kommt der Stift verschlossen in den Ständer
+      if (r.ok && (name === 'newSheet' || name === 'insert')) ui.selectedPen = null;
       refresh();
       return r;
     }
@@ -194,15 +198,28 @@
         const fb = !sol && fg ? `<p class="lk-fb ${fg.ok ? 'y' : 'n'}">${fg.ok ? '✓ ' : fg.status === 'empty' ? '' : '✗ '}${esc(fg.feedback)}</p>` : '';
         return `<fieldset data-q="${q.id}"><legend>${esc(q.legend)}</legend>${inner}${fb}</fieldset>`;
       }).join('');
-      const head = snap ? `Protokoll zu Papier ${snap.n} (${esc(snap.solvent ? M.SOLVENTS[snap.solvent].short : '')})` : 'Protokoll';
-      const summary = g && !sol ? `<div class="lk-note ${g.allCorrect ? 'ok' : 'warn'}" role="status">${g.allCorrect ? '<b>Alles richtig ausgewertet!</b>' : `<b>${Object.values(g.fields).filter((f) => f.ok).length} von ${qs.length} Antworten richtig.</b> Richtige Antworten bleiben stehen – verbessere die markierten Felder und prüfe erneut.`}</div>` : '';
+      const refs = ts.papers.map(snapById).filter(Boolean);
+      const head = refs.length ? `Protokoll zu ${refs.map(paperName).join(' und ')}` : 'Protokoll';
+      const summary = !sol ? `<div id="protoSummary">${summaryHtml(g, qs)}</div>` : '';
       return `<div class="lk-card"><h3>${head}</h3><p class="lk-muted">Wähle die zutreffenden Antworten. Grundlage ist dein eigenes Chromatogramm.</p>
         <form class="lk-form" id="protoForm" novalidate>${fields}
         ${summary}
         ${sol ? '' : '<div class="lk-row end"><button type="submit" class="lk-btn primary" id="btnGrade">Antworten prüfen</button></div>'}
         </form></div>`;
     }
-    function corrSet(q, snap) { return q.answerFor ? [q.answerFor(snap)] : q.correct; }
+    function corrSet(q, snap) { return [].concat(T.correctFor(q, snap)); }
+    const paperName = (a) => `Papier ${a.n} (${esc(a.solvent ? M.SOLVENTS[a.solvent].short : 'ohne Laufmittel')})`;
+
+    /** Gesamtrückmeldung; geänderte (ungeprüfte) Antworten nehmen den bisherigen Erfolg sofort zurück. */
+    function summaryHtml(g, qs) {
+      if (!g) return '';
+      const checked = qs.filter((q) => g.fields[q.id]);
+      const right = checked.filter((q) => g.fields[q.id].ok).length;
+      const unchecked = qs.length - checked.length;
+      if (!unchecked && g.allCorrect) return '<div class="lk-note ok" role="status"><b>Alles richtig ausgewertet!</b></div>';
+      if (unchecked) return `<div class="lk-note info" role="status"><b>${unchecked === 1 ? 'Eine Antwort wurde' : unchecked + ' Antworten wurden'} geändert und ${unchecked === 1 ? 'ist' : 'sind'} noch nicht geprüft.</b> ${right} von ${checked.length} geprüften Antworten richtig – wähle „Antworten prüfen“.</div>`;
+      return `<div class="lk-note warn" role="status"><b>${right} von ${qs.length} Antworten richtig.</b> Richtige Antworten bleiben stehen – verbessere die markierten Felder und prüfe erneut.</div>`;
+    }
 
     function rfHtml() {
       const p = st.paper;
@@ -214,8 +231,9 @@
         const lane = snap.lanes[ui.rf.lane] ? ui.rf.lane : snap.lanes.findIndex(Boolean);
         const zs = (snap.zones[lane] || []);
         const zopts = zs.map((z, k) => `<option value="${k}"${ui.rf.zone === k ? ' selected' : ''}>Zone ${k + 1} von unten${z.atStart ? ' (Startlinie)' : ''}</option>`).join('');
+        if (ui.rf.result && ui.rf.result.paper !== snap.id) ui.rf.result = null;
         const r = ui.rf.result;
-        const cls = (f) => (r && r.fields ? (r.fields[f].ok ? 'right' : 'wrong') : '');
+        const cls = (f) => (r && r.fields && r.fields[f] ? (r.fields[f].ok ? 'right' : 'wrong') : '');
         body = `<p class="lk-muted">Miss am Lineal neben dem Papier (0 = Startlinie) und berechne Rf = Laufstrecke der Zone ÷ Laufstrecke der Front.</p>
           <div class="rf-grid">
             <label>Bahn<select id="rfLane">${lanes}</select></label>
@@ -225,9 +243,18 @@
             <label>Rf-Wert<input id="rfVal" inputmode="decimal" class="${cls('rf')}" value="${esc(ui.rf.rf)}"></label>
           </div>
           <div class="lk-row end" style="margin-top:8px"><button type="button" class="lk-btn primary" id="btnRf">Messung prüfen</button></div>
-          ${r ? (r.fields ? `<div class="lk-note ${r.ok ? 'ok' : 'warn'}">${r.ok ? '<b>Richtig gemessen und berechnet.</b>' : '<b>Noch nicht ganz.</b>'}<ul>${['front', 'dist', 'rf'].map((f) => `<li>${{ front: 'Front', dist: 'Zone', rf: 'Rf' }[f]}: ${r.fields[f].ok ? '✓' : '✗'} ${esc(r.fields[f].feedback)}</li>`).join('')}</ul></div>` : `<div class="lk-note warn">${esc(r.text)}</div>`) : ''}`;
+          <div id="rfNote">${rfNoteHtml(r)}</div>`;
       }
       return `<div class="lk-card"><h3>Expertenmodus: Rf-Wert bestimmen</h3>${body}</div>`;
+    }
+    const RF_FIELDS = { front: 'Front', dist: 'Zone', rf: 'Rf' };
+    function rfNoteHtml(r) {
+      if (!r) return '';
+      if (!r.fields) return `<div class="lk-note warn">${esc(r.text)}</div>`;
+      const open = Object.keys(RF_FIELDS).filter((f) => !r.fields[f]);
+      const ok = !open.length && r.ok;
+      const head = ok ? '<b>Richtig gemessen und berechnet.</b>' : open.length ? '<b>Geänderte Werte sind noch nicht geprüft</b> – wähle „Messung prüfen“.' : '<b>Noch nicht ganz.</b>';
+      return `<div class="lk-note ${ok ? 'ok' : open.length ? 'info' : 'warn'}">${head}<ul>${Object.keys(RF_FIELDS).map((f) => `<li>${RF_FIELDS[f]}: ${r.fields[f] ? (r.fields[f].ok ? '✓ ' : '✗ ') + esc(r.fields[f].feedback) : 'ungeprüft'}</li>`).join('')}</ul></div>`;
     }
 
     function taskHtml() {
@@ -243,9 +270,13 @@
       }
       html += '</div>';
       if (ts.confirmSolution) html += `<div class="lk-note warn" role="alert">Du hast die Aufgabe noch nicht vollständig bearbeitet. Lösung trotzdem anzeigen?<div class="lk-row" style="margin-top:8px"><button type="button" class="lk-btn primary" id="btnSolutionYes">Ja, Lösung anzeigen</button><button type="button" class="lk-btn" id="btnSolutionNo">Abbrechen</button></div></div>`;
+      if (ts.lost) html += '<div class="lk-note warn" role="status">Das ausgewertete Papier ist nicht mehr vorhanden. Prüfe das Ergebnis erneut.</div>';
       if (ts.result) {
         const r = ts.result;
-        html += `<div class="lk-note ${r.ok ? 'ok' : 'bad'}" role="status"><b>${r.ok ? '✓ Ergebnis belegt.' : '✗ Noch nicht belegt.'}</b> ${esc(r.text)}</div>`;
+        const refs = (r.papers || []).map(snapById).filter(Boolean);
+        const thumbs = refs.length ? `<div class="evalrefs"><span class="lk-muted">Ausgewertet: ${refs.map(paperName).join(' und ')}</span><div class="evalthumbs">${refs.map((a) => `<button type="button" class="evalthumb" data-show="${a.id}" aria-label="${paperName(a)} in den Ergebnissen ansehen"><canvas data-thumb="${a.id}" data-size="58" aria-hidden="true"></canvas><span>Papier ${a.n}</span></button>`).join('')}</div></div>` : '';
+        const newer = st.archive.length > 0 && st.archive[st.archive.length - 1].n > ts.checkedAt;
+        html += `<div class="lk-note ${r.ok ? 'ok' : 'bad'}" role="status"><b>${r.ok ? '✓ Ergebnis belegt.' : '✗ Noch nicht belegt.'}</b> ${esc(r.text)}${thumbs}${newer ? '<p class="lk-muted" style="margin:6px 0 0">Seit dieser Prüfung ist ein neues Papier dazugekommen – prüfe erneut, um es auszuwerten.</p>' : ''}</div>`;
       }
       if (ts.offer && !ts.tip && !(ts.result && ts.result.ok)) html += `<div class="lk-note info">Das hat noch nicht geklappt. Möchtest du einen Tipp? <button type="button" class="lk-btn small" id="btnTipOffer">Tipp 1/3 anzeigen</button></div>`;
       if (ts.tip) {
@@ -254,7 +285,7 @@
         html += `<div class="lk-note tipbox">${h.slice(0, ts.tip).map((x, i) => `<p><span class="lvl">Tipp ${i + 1}/3:</span> ${esc(x)}</p>`).join('')}</div>`;
       }
       if (ts.solution) html += `<div class="lk-note info"><b>Musterlösung (auf Anfrage angezeigt)</b><br>${esc(T.SOLUTIONS[ui.task])}</div>`;
-      const snap = ts.paper ? snapById(ts.paper) : null;
+      const snap = ts.papers.length ? snapById(ts.papers[ts.papers.length - 1]) : null;
       if ((ts.result && ts.result.ok) || ts.solution) html += protocolHtml(ts, snap);
       if (st.expert) html += rfHtml();
       return html;
@@ -280,19 +311,31 @@
         <p class="lk-muted" style="margin-top:8px">Zum Abschreiben ins Heft – unabhängig davon, ob dein Versuch geklappt hat.</p>`;
     }
 
+    /** Befund 4: Bewertungen, deren Papier nicht mehr im Archiv liegt, werden verworfen. */
+    function checkRefs() {
+      Object.values(ui.tasks).forEach((t) => {
+        const ids = [...new Set([...(t.papers || []), ...((t.result && t.result.papers) || [])])];
+        if (!T.refsValid(ids, st.archive)) { t.result = null; t.papers = []; t.graded = null; t.lost = true; }
+      });
+      if (ui.rf.result && ui.rf.result.paper && !T.refsValid([ui.rf.result.paper], st.archive)) ui.rf.result = null;
+      if (ui.bigResult && !T.refsValid([ui.bigResult], st.archive)) ui.bigResult = null;
+    }
+
     let panelSig = '';
     function renderPanel(force) {
       const sig = JSON.stringify([ui.tab, ui.task, st.archive.length, st.archive.map((a) => a.frontMark), st.expert, st.paper.state, st.paper.n, ui.bigResult, ui.panel]);
       if (!force && sig === panelSig) return;
       panelSig = sig;
       document.querySelectorAll('.lk-tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
+      checkRefs();
       const body = $('#panelBody');
       body.setAttribute('aria-labelledby', 'tab-' + ui.tab);
       body.innerHTML = ui.tab === 'task' ? taskHtml() : ui.tab === 'results' ? resultsHtml() : notebookHtml();
       body.querySelectorAll('canvas[data-thumb]').forEach((c) => {
         const a = snapById(c.dataset.thumb);
+        if (!a) return;
         const big = ui.bigResult === a.id;
-        R.drawThumb(c, a, big ? Math.min(300, body.clientWidth - 60) : 130);
+        R.drawThumb(c, a, c.dataset.size ? Number(c.dataset.size) : big ? Math.min(300, body.clientWidth - 60) : 130);
       });
     }
 
@@ -307,8 +350,17 @@
       else if (b.id === 'btnCheck') {
         const r = T.evaluate(ui.task, st);
         ts.result = r;
-        if (r.ok) { ts.paper = r.paper; ts.fails = 0; ts.offer = false; }
-        else { ts.fails += 1; if (ts.fails >= 2) ts.offer = true; }
+        ts.lost = false;
+        ts.checkedAt = st.archive.length ? st.archive[st.archive.length - 1].n : 0;
+        if (r.ok) {
+          // Befund 4: neues Bezugspapier → bisherige Bewertung nicht ungeprüft übernehmen
+          if (JSON.stringify(r.papers) !== JSON.stringify(ts.papers)) ts.graded = null;
+          ts.papers = r.papers.slice(); ts.fails = 0; ts.offer = false;
+        } else { ts.fails += 1; if (ts.fails >= 2) ts.offer = true; }
+      } else if (b.dataset.show) {
+        ui.tab = 'results'; ui.bigResult = b.dataset.show; save(); renderPanel(true);
+        const el = panelBody.querySelector(`[data-big="${b.dataset.show}"]`); if (el) el.scrollIntoView({ block: 'nearest' });
+        return;
       } else if (b.id === 'btnTip' || b.id === 'btnTipOffer') ts.tip = Math.min(3, ts.tip + 1);
       else if (b.id === 'btnSolution') {
         const qs = T.QUESTIONS[ui.task] || [];
@@ -316,14 +368,14 @@
         if (ts.solution) return;
         if (!(ts.result && ts.result.ok) || !answered) ts.confirmSolution = true;
         else ts.solution = true;
-      } else if (b.id === 'btnSolutionYes') { ts.solution = true; ts.confirmSolution = false; if (!ts.paper) { const r = T.evaluate(ui.task, st); if (r.ok) ts.paper = r.paper; } }
+      } else if (b.id === 'btnSolutionYes') { ts.solution = true; ts.confirmSolution = false; if (!ts.papers.length) { const r = T.evaluate(ui.task, st); if (r.ok) ts.papers = r.papers.slice(); } }
       else if (b.id === 'btnSolutionNo') ts.confirmSolution = false;
       else if (b.id === 'btnRf') {
         const p = st.paper;
         const snap = st.archive.find((a) => a.n === p.n);
         readRf();
         const lane = snap.lanes[ui.rf.lane] ? ui.rf.lane : snap.lanes.findIndex(Boolean);
-        ui.rf.result = T.checkRf(snap, lane, ui.rf.zone, ui.rf);
+        ui.rf.result = Object.assign(T.checkRf(snap, lane, ui.rf.zone, ui.rf), { paper: snap.id });
       } else if (b.dataset.big) ui.bigResult = ui.bigResult === b.dataset.big ? null : b.dataset.big;
       else return;
       save();
@@ -338,7 +390,19 @@
       if (e.target.id === 'rfZone') { ui.rf.zone = Number(e.target.value); ui.rf.result = null; readRf(); save(); renderPanel(true); }
     });
     panelBody.addEventListener('input', (e) => {
-      if (e.target.closest('.rf-grid')) { readRf(); save(); return; }
+      if (e.target.closest('.rf-grid')) {
+        readRf();
+        const f = { rfFront: 'front', rfDist: 'dist', rfVal: 'rf' }[e.target.id];
+        const r = ui.rf.result;
+        if (f && r && r.fields && r.fields[f]) {
+          delete r.fields[f];
+          r.ok = false;
+          e.target.classList.remove('right', 'wrong');
+          const n = $('#rfNote'); if (n) n.innerHTML = rfNoteHtml(r);
+        }
+        save();
+        return;
+      }
       const form = e.target.closest('#protoForm');
       if (!form) return;
       const ts = TS();
@@ -353,6 +417,8 @@
         fs.querySelectorAll('.right, .wrong').forEach((x) => x.classList.remove('right', 'wrong'));
         fs.querySelectorAll('.lk-mark, .lk-fb').forEach((x) => x.remove());
         delete ts.graded.fields[fs.dataset.q];
+        ts.graded.allCorrect = false;
+        const sm = $('#protoSummary'); if (sm) sm.innerHTML = summaryHtml(ts.graded, T.QUESTIONS[ui.task]);
       }
       save();
     });
@@ -360,7 +426,7 @@
       if (e.target.id !== 'protoForm') return;
       e.preventDefault();
       const ts = TS();
-      ts.graded = T.grade(ui.task, ts.answers, ts.paper ? snapById(ts.paper) : null);
+      ts.graded = T.grade(ui.task, ts.answers, ts.papers.length ? snapById(ts.papers[ts.papers.length - 1]) : null);
       save();
       renderPanel(true);
       const first = panelBody.querySelector('.lk-fb.n, .lk-note');
@@ -378,7 +444,12 @@
     engine.on('change', () => { layoutHits(); renderActions(); renderPanel(false); save(); });
 
     // ------------------------------------------------------------ Größe, Trennlinie, Schleife
-    function onResize() { renderer.resize(); hitSig = ''; layoutHits(); }
+    function onResize() {
+      renderer.resize(); hitSig = ''; layoutHits();
+      // Meldungsband oberhalb von Kammer und Geräten (Befund 6)
+      const r = renderer.bandRect(), mb = $('#msgband');
+      Object.assign(mb.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+    }
     root.addEventListener('resize', onResize);
     if (root.ResizeObserver) new root.ResizeObserver(onResize).observe($('#canvasWrap'));
     root.LK.splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex-chromatographie-panel', onChange: () => setTimeout(onResize, 0) });

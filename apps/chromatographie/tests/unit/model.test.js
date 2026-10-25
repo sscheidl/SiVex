@@ -29,9 +29,35 @@ for (const solvent of ['water', 'etoh']) {
   }
 }
 
-test('F-02 Schwarz in Wasser: violett, blau, gelb von unten nach oben', () => {
+test('F-02 Schwarz in Wasser: rot, blau, gelb von unten nach oben (Befund 5: keine eigene violette Komponente)', () => {
   const e = runExperiment({ samples: ['schwarz', null, null] });
-  assert.deepEqual(M.zones(e.state.paper, 0).map((z) => z.color), ['violett', 'blau', 'gelb']);
+  assert.deepEqual(M.zones(e.state.paper, 0).map((z) => z.color), ['rot', 'blau', 'gelb']);
+  assert.deepEqual(M.SAMPLE_BY_ID.schwarz.parts.map((x) => x[0]).sort(), ['B', 'G', 'R']);
+  assert.ok(!M.COMPONENTS.V, 'kein eigenständiger violetter Farbstoff');
+});
+
+test('Befund 5: Gemeinsame Komponenten haben unter gleichen Bedingungen dieselbe Laufstrecke', () => {
+  for (const solvent of ['water', 'etoh']) {
+    const e = runExperiment({ samples: ['schwarz', 'violett', 'orange'], solvent, run: 9 });
+    const b = M.bands(e.state.paper).filter((x) => x.moving);
+    for (const comp of ['R', 'B', 'G']) {
+      const s = [...new Set(b.filter((x) => x.comp === comp).map((x) => x.s.toFixed(9)))];
+      assert.equal(s.length, 1, `${comp} in ${solvent}: ${s}`);
+    }
+  }
+  const g = runExperiment({ samples: ['gruen', 'schwarz', 'gelb'] });
+  const gs = [...new Set(M.bands(g.state.paper).filter((x) => x.comp === 'G').map((x) => x.s.toFixed(9)))];
+  assert.equal(gs.length, 1);
+});
+
+test('Befund 5: Ethanol-Wasser – dokumentierte Zonenzahlen nach Auftupfern und Laufstrecke (CHEMIE.md)', () => {
+  // Spalten: 5 cm mit 1/2/3 Auftupfern, 8 cm mit 1/2/3, 11 cm mit 1/2/3
+  const TABLE = { schwarz: '2 1 1 2 2 2 2 2 2', violett: '2 2 1 2 2 2 2 2 2', orange: '2 1 1 2 2 2 2 2 2', gruen: '1 1 1 1 1 1 1 1 1' };
+  for (const [id, row] of Object.entries(TABLE)) {
+    const got = [];
+    for (const run of [5, 8, 11]) for (const dabs of [1, 2, 3]) got.push(M.zones(runExperiment({ samples: [id, null, null], solvent: 'etoh', run, dabs }).state.paper, 0).length);
+    assert.equal(got.join(' '), row, id);
+  }
 });
 
 test('F-03 Gemeinsamer blauer Bestandteil von Grün und Violett liegt auf der Höhe der Blau-Referenz', () => {
