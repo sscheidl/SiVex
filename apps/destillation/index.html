@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Destillation – SiVex</title>
+  <meta name="description" content="Virtuelles Labor: Flüssigkeitsgemische durch Destillation trennen (Chemie, Jahrgangsstufe 8/9).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='10' cy='21' r='7' fill='%23dbe8f6' stroke='%2366768a'/%3E%3Cpath d='M10 14V6M10 9l18 7' stroke='%2366768a' stroke-width='2.4' fill='none'/%3E%3Ccircle cx='27' cy='26' r='2.4' fill='%235aa0e8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="labkit/css/labkit.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="lk-app">
+    <header class="lk-head">
+      <div class="lk-brand">
+        <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="10" cy="21" r="7" fill="#dbe8f6"/><path d="M10 14V6M10 9l18 7" stroke="#dbe8f6" stroke-width="2.4" fill="none"/><circle cx="27" cy="26" r="2.6" fill="#5aa0e8"/></svg>
+        <div><b>Destillation</b><br><small>Flüssigkeitsgemische trennen · Chemie 8/9</small></div>
+      </div>
+      <div class="lk-seg" id="speed" role="group" aria-label="Zeitraffer">
+        <button type="button" data-speed="0" aria-label="Pause" title="Pause">❚❚</button>
+        <button type="button" data-speed="1" aria-label="Echtzeit">1×</button>
+        <button type="button" data-speed="10" aria-label="Zeitraffer zehnfach">10×</button>
+        <button type="button" data-speed="30" aria-label="Zeitraffer dreißigfach">30×</button>
+      </div>
+      <span class="clock" id="clock" title="Versuchszeit (Modellzeit)">0:00</span>
+      <button type="button" class="lk-btn small" id="btnRestartHead">Neu beginnen</button>
+      <button type="button" class="lk-btn small" id="btnExpert" aria-pressed="false">Expertenmodus</button>
+      <button type="button" class="lk-btn small" id="btnNotebook">Hefteintrag</button>
+      <button type="button" class="lk-btn small" id="btnPanel" aria-expanded="true" aria-controls="panel">Bedienfeld</button>
+    </header>
+    <main class="lk-main" id="main">
+      <section class="lk-stage" id="stage" aria-label="Labor">
+        <div class="actionbar" id="actionbar">
+          <div class="views" id="views" role="group" aria-label="Ansicht"></div>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="lab" role="img" aria-label="Fertig aufgebaute Destillationsapparatur: Heizpilz mit Rundkolben, Destillationsaufsatz mit Thermometer, Liebigkühler mit Kühlwasseranschlüssen, Vorstoß und Vorlage"></canvas>
+          <div class="hits" id="hits"></div>
+          <div class="safety" id="safety" role="alertdialog" aria-labelledby="safetyTitle" hidden></div>
+          <div class="partinfo" id="partInfo" role="status" hidden></div>
+          <p class="explain-note" id="explainNote" hidden>Erklärmodus: Dampfteilchen (in Wirklichkeit unsichtbar)</p>
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+          <p class="sr-only" id="readout" aria-live="off"></p>
+        </div>
+        <div class="deck" id="deck" role="group" aria-label="Bedienung des Versuchs">
+          <div class="deck-row" id="actions" role="toolbar" aria-label="Handgriffe"></div>
+          <div class="deck-row">
+          <div class="ctl" data-ctl="heat">
+            <button type="button" class="switch" id="btnHeat" aria-pressed="false"><span class="lamp" aria-hidden="true"></span><span class="lbl">Heizung</span><b>AUS</b></button>
+            <div class="seg2" id="heatLevel" role="group" aria-label="Heizstufe">
+              <button type="button" data-level="low">niedrig</button><button type="button" data-level="mid">mittel</button><button type="button" data-level="high">hoch</button>
+            </div>
+          </div>
+          <div class="ctl" data-ctl="water">
+            <button type="button" class="switch water" id="btnWater" aria-pressed="false"><span class="lamp" aria-hidden="true"></span><span class="lbl">Kühlwasser</span><b>AUS</b></button>
+            <div class="seg2" id="flowLevel" role="group" aria-label="Durchfluss des Kühlwassers">
+              <button type="button" data-level="low">gering</button><button type="button" data-level="mid">mittel</button><button type="button" data-level="high">stark</button>
+            </div>
+          </div>
+          </div>
+        </div>
+      </section>
+      <div class="lk-splitter" id="splitter" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Breite des Bedienfelds ändern (Pfeiltasten, Doppelklick setzt zurück)" aria-valuemin="300" aria-valuemax="620"><span class="lk-splitter-grip"></span></div>
+      <aside class="lk-panel" id="panel" aria-label="Bedienfeld">
+        <div class="lk-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-task" data-tab="task" aria-selected="true">Aufgabe</button>
+          <button type="button" role="tab" id="tab-results" data-tab="results" aria-selected="false">Ergebnisse</button>
+          <button type="button" role="tab" id="tab-trainer" data-tab="trainer" aria-selected="false">Trainer</button>
+          <button type="button" role="tab" id="tab-notebook" data-tab="notebook" aria-selected="false">Hefteintrag</button>
+        </div>
+        <div id="panelBody" class="lk-section" role="tabpanel"></div>
+      </aside>
+    </main>
+  </div>
+  <script src="labkit/js/core.js"></script>
+  <script src="labkit/js/splitter.js"></script>
+  <script src="labkit/js/scorm.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/geometry.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

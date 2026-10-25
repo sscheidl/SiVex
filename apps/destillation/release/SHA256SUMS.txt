@@ -1,0 +1,2 @@
+fce8dee5c50d6f776bef34c1e54808cdd3b9228043fe49eac62a796ef39982c3  destillation-0.2.0-web.zip
+164f6d4d6d561252d68dfddc6a8ef64f97554fa816005cbc8641aefeb3dae8d5  destillation-0.2.0-scorm12.zip

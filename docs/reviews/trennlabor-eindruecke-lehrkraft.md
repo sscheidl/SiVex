@@ -46,4 +46,16 @@ Rückmeldung der Lehrkraft vom 23.10.2026: Redoxlabor und TitraLab 3 laufen auf 
 
 | App | Fassung | Beobachtung | Vorschlag |
 | --- | --- | --- | --- |
-| | | | |
+| Destillation | 0.1.0 | Klemmen am Kolbenhals (90° verdreht) und am Kühler wirken falsch | Klemmen weggelassen; Stativ fasst den Hals von hinten, Schliffklemme am Hals richtig gedreht (0.2.0) |
+| Destillation | 0.1.0 | Wasserzulauf-Konstruktion (Armatur mitten auf dem Tisch) seltsam | Laborarmatur am Ausguss, Zulaufschlauch liegt hinter der Vorlage (0.2.0) |
+| Destillation | 0.1.0 | Feuerzeug neigt sich zur Pipette; keine Bewegung beim Anzünden und bei der Probenahme | Feuerzeug neigt sich zur Schale, fährt hin, Funke, Flamme; Pipette taucht in die Vorlage und trägt die Probe zur Schale (0.2.0) |
+| Destillation | 0.1.0 | Tropfen/Flüssigkeit nicht wie im TitraLab | Fall mit Schwerkraft, Ringwellen und Spritzer an der Oberfläche, Strahl im Zeitraffer (0.2.0) |
+| Destillation | 0.1.0 | grauer Stopfen und grauer Balken hinter der Vorlage | entfernt; Stopfen nur noch als Schalter in der Fußleiste und sichtbar, wenn aufgesetzt (0.2.0) |
+| Destillation | 0.1.0 | Namen/Erkunden während des Versuchs, Fehlermeldungen beim Erkunden | nur vor dem Versuch; dann alle Handgriffe gesperrt, keine Meldungen; Gemisch und Siedesteine erkundbar (0.2.0) |
+| Destillation | 0.1.0 | Meldungen überlappen die Apparatur | Meldungen in einem freien Band oben auf der Bühne; Temperaturanzeige tiefer links neben dem Thermometer (0.2.0) |
+| Destillation | 0.1.0 | Skala am Erlenmeyer unsauber; Vorlage ändert beim Wegstellen die Größe; Antippen nur in eine Richtung | Skala auf einer Linie (20–80 mL), Vorlage in gleicher Größe, Antippen stellt hin und zurück (0.2.0) |
+| Destillation | 0.1.0 | orange „Phase“ beim Sieden wirkt wie ein Zweiphasengemisch | Glut hinter dem Kolben entfernt; Hitze nur noch an der Heizschicht im Schnitt (0.2.0) |
+| Destillation | 0.1.0 | Probe aus der fest verbauten Vorlage unlogisch | Probe nur aus der abgenommenen Vorlage am Prüfplatz (0.2.0) |
+| Destillation | 0.1.0 | Warnung fehlt, bevor nach dem Destillat das Wasser übergeht | Warnung, sobald der leichter siedende Stoff fast übergegangen ist (0.2.0) |
+| Destillation | 0.1.0 | Siedediagramm nur im Expertenmodus; „Versuch neu beginnen“ und Steuerung verstreut | Diagramm immer; „Neu beginnen“ in der Kopfzeile; alle Bedienelemente unten (0.2.0) |
+| Destillation | 0.1.0 | Kolben im Verhältnis zum Kühler zu klein | Kolben größer, Kühler kürzer (≈ +20 % im Verhältnis), Anschlüsse über die Anker angepasst (0.2.0) |
