@@ -1,3 +1,5 @@
+![SiVex – Virtuelle Chemieexperimente](docs/images/sivex-banner.png)
+
 # SiVex – Simulationen und virtuelle Experimente
 
 SiVex ist eine thematisch organisierte Sammlung interaktiver naturwissenschaftlicher Lernanwendungen für den schulischen Einsatz. Die Simulationen laufen eigenständig im Browser und sollen auch in mebis (ByCS) nutzbar sein.
