@@ -7,7 +7,7 @@ Geprüfte Quellen:
 | Kürzel | Stand | Dateien |
 | --- | --- | --- |
 | **A** | `486f370` (Tag `archiv/trennlabor-ccr`) | `apps/trennlabor/js/model/distill.js`, `js/render/distill-render.js`, `js/tasks/distill-tasks.js` |
-| **B** | `a5d6d0e` (`main`, `apps/trennlabor/`) | `js/distill.js`, `js/render-distill.js`, `js/tasks.js`, `js/gfx.js` |
+| **B** | `a5d6d0e` (Tag `archiv/trennlabor-1.0.0`, `apps/trennlabor/`) | `js/distill.js`, `js/render-distill.js`, `js/tasks.js`, `js/gfx.js` |
 | **C** | `dde56a0` (PR #10, Codex) | `js/chemistry.js`, `js/lab.js` (SVG) |
 | **T3** | TitraLab 3 Web-Release | `titration/js/view/lab-renderer.js`, `geometry.js`, `ui/app.js`, `css/styles.css` |
 | **R** | Redoxlabor | Protokoll-, Rückmelde- und Lösungsablauf |
