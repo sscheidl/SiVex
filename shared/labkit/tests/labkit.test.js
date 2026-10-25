@@ -37,6 +37,10 @@ test('Trennlinie: Bedienfeldbreite bleibt in sinnvollen Grenzen', () => {
   // Bühne behält mindestens MIN_STAGE
   assert.equal(clampPanelWidth(600, 900), 900 - MIN_STAGE);
   assert.ok(clampPanelWidth(600, 600) >= MIN_PANEL);
+  // optional größere Mindestbreite der Bühne je App (Labkit 0.1.1)
+  assert.equal(clampPanelWidth(600, 1024, 600), 1024 - 600);
+  assert.equal(clampPanelWidth(600, 1440, 600), 600);
+  assert.equal(clampPanelWidth(600, 900, undefined), 900 - MIN_STAGE);
 });
 
 test('Ereignisverteiler: an- und abmelden', () => {

@@ -277,6 +277,12 @@ test('E-05 Geschlossene Apparatur: Stopp beim Heizen mit Stopfen, Wiederanlauf n
   e.advance(100);
   act(e, 'toggleStopper');
   assert.equal(e.state.safety.code, 'closed');
+  // erst bestätigen, dann Stopfen abnehmen: kein erneuter Stopp durch nachsiedenden Dampf
+  act(e, 'ackSafety');
+  e.advance(5);
+  assert.equal(e.state.safety, null);
+  act(e, 'toggleStopper');
+  assert.equal(act(e, 'setHeater', true).ok, true);
 });
 
 test('E-05 Trockenlauf: Stopp bevor der Kolben leer ist', () => {

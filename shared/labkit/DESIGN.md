@@ -20,7 +20,7 @@ Grundlage: [Eindrücke der Lehrkraft](../../docs/reviews/trennlabor-eindruecke-l
 | Kopfzeile | dunkel, 52 px hoch: App-Name links; rechts nur globale Schalter (Zeitraffer, Expertenmodus falls vorhanden, Hefteintrag, Bedienfeld ein/aus) |
 | Laborbühne | links, heller Laborhintergrund (Fliesenwand, Tischplatte), Canvas 2D in HiDPI; darüber eine schmale **Handlungsleiste** mit höchstens fünf Schaltflächen für die gerade sinnvollen Handlungen |
 | Trennlinie | verschiebbar nach TitraLab 3 (siehe 4) |
-| Bedienfeld | rechts, kompakt, einklappbar; Reiter in fester Reihenfolge **Aufgabe · Ergebnisse · Hefteintrag** |
+| Bedienfeld | rechts, kompakt, einklappbar; Reiter in fester Reihenfolge **Aufgabe · Ergebnisse · (Trainer) · Hefteintrag** – „Trainer“ nur, wenn die App einen Trainer nach Redoxlabor hat (z. B. Geräte-Trainer der Destillation) |
 | Meldungen | eine Zeile unten auf der Bühne, verschwindet nach einigen Sekunden; keine großen Hinweiskästen über dem Labor |
 
 Ab 900 px Breite stehen Bühne und Bedienfeld nebeneinander, darunter untereinander (Trennlinie ausgeblendet). Kein horizontales Scrollen der Seite.
@@ -40,7 +40,7 @@ Ab 900 px Breite stehen Bühne und Bedienfeld nebeneinander, darunter untereinan
 Nach TitraLab 3 (`titration/js/ui/app.js`, `bindSplitter`):
 
 - Maus, Finger (Trefferfläche 44 px breit), Tastatur (Pfeiltasten ± 24 px), Doppelklick setzt die Standardbreite zurück.
-- Bedienfeld 300–620 px, die Bühne behält mindestens 420 px.
+- Bedienfeld 300–620 px, die Bühne behält mindestens 420 px; eine App kann über `minStage` eine größere Mindestbreite der Bühne verlangen (ab 0.1.1, Destillation: 600 px).
 - Breite nur lokal im Browser merken (`localStorage`, mit `try`/`catch`).
 - Umsetzung: `labkit/js/splitter.js`.
 

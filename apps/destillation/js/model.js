@@ -628,7 +628,7 @@
       }
       fx.vapor = vol(vap) / h;
       fx.pass = vol(pass) / h;
-      if (Qpass > 0 && st.receiver.present && st.receiver.stopper && !st.safety) stop('closed');
+      if (Qpass > 0 && st.heater.on && st.receiver.present && st.receiver.stopper && !st.safety) stop('closed');
 
       // --- Kühlmantel
       const connected = !!(st.hoses.inlet && st.hoses.outlet);

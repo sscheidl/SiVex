@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-25T09:25:20.482Z",
+  "browser": "msedge 156.0.4314.42",
+  "root": "dist\\destillation",
+  "results": [
+    {
+      "id": "E01",
+      "title": "Standard 1 komplett: befüllen → Siedesteine → Kühlwasser EIN → Heizung EIN → Sieden → Ablesen → Destillat → Brennprobe → AUS → Auswertung → Hefteintrag",
+      "status": "PASS",
+      "detail": "T 79,1 °C, Destillat 14,4 mL, Flamme bläulich",
+      "ms": 57295,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E02",
+      "title": "Standard 2 komplett: Propanon/Wasser, klar andere Temperatur, abgrenzbare Fraktion",
+      "status": "PASS",
+      "detail": "T 57,2 °C, Propanon-Anteil 100 %",
+      "ms": 49381,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E03",
+      "title": "Expertenmodus: drei Komponenten, Vorlagenwechsel, Fraktionen und Temperaturkurve",
+      "status": "PASS",
+      "detail": "[[1,\"P\",30,57.6],[2,\"E\",30,79.3],[3,\"W\",3,99.9]]",
+      "ms": 66323,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E04",
+      "title": "Ohne Kühlung vs. mit korrekter Kühlung bei gleicher Modellzeit",
+      "status": "PASS",
+      "detail": "t = 847 s: mit Kühlung 12,4 mL, ohne 3,5 mL, Verlust 4,1 mL (Dampftemperatur 79,2 °C; Vorlage 12,4 mL | Dampftemperatur 79,1 °C; Vorlage 3,5 mL)",
+      "ms": 69241,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E05",
+      "title": "Falsch angeschlossene Schläuche, Wirkung, Korrektur",
+      "status": "PASS",
+      "detail": "Mantelfüllung vertauscht 0.12, Verlust 0,5 mL → nach Korrektur +0.00 mL",
+      "ms": 41098,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E06",
+      "title": "Falsche Thermometerlage vs. richtige: Messwert und Auswertungsfeedback",
+      "status": "PASS",
+      "detail": "zu hoch 62,0 °C → richtig 79,2 °C",
+      "ms": 44564,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E07",
+      "title": "Heizpilz EIN/AUS + Stufe, Kühlwasser unabhängig EIN/AUS + Durchfluss, plausibler Verlauf",
+      "status": "PASS",
+      "detail": "Heizpilz niedrig 57 °C → hoch 83 °C; Kondensation 4.8 → 2.5 mL/min",
+      "ms": 55720,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E08",
+      "title": "Siedesteine fehlen: Stopp, Ursache, Korrektur, Wiederaufnahme",
+      "status": "PASS",
+      "detail": "Siedeverzug → Abkühlen → Siedesteine → Destillat",
+      "ms": 68566,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E09",
+      "title": "Vorlage fehlt / Verschließen / Zünden am Aufbau / Trockenlauf",
+      "status": "PASS",
+      "detail": "Tisch statt Vorlage, Zünden, Verschließen, Trockenlauf gestoppt",
+      "ms": 74697,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E10",
+      "title": "Lernsystem: richtig / teilweise / falsch, drei Tipps, Lösung, Geräte-Trainer, Hefteintrag ohne Versuch",
+      "status": "PASS",
+      "detail": "Tipps 1–3, Lösung mit Rückfrage, Protokoll falsch → teilweise → richtig, Trainer 12/12",
+      "ms": 36587,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E11",
+      "title": "Grafik-Zwischenstände und fortlaufende Bildfolgen (Pause hält an)",
+      "status": "PASS",
+      "detail": "Blasen/Strömung bewegen sich, Pause friert ein",
+      "ms": 34089,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "E12",
+      "title": "Responsive 1440×900, 1180×820, 1024×768 (Touch), Trennlinie Maus/Touch/Tastatur/Doppelklick, Verbindungen intakt",
+      "status": "PASS",
+      "detail": "1440×900 ok, 1180×820 ok, 1024×768 ok, schmal gestapelt",
+      "ms": 101148,
+      "date": "2026-10-25T09:25:20.482Z"
+    },
+    {
+      "id": "T04",
+      "title": "Keine externen Ressourcen, keine Konsolenfehler",
+      "status": "PASS",
+      "detail": "204 Anfragen, alle lokal",
+      "ms": 0,
+      "date": "2026-10-25T09:25:20.482Z"
+    }
+  ]
+}

@@ -55,18 +55,18 @@
   // ------------------------------------------------------------------ Geräte für Beschriftung und Trainer
   /** Ankerpunkt (am Gerät) und Lage des Schildes (Weltkoordinaten) je Gerät. */
   const PARTS = [
-    { id: 'flask', anchor: (g) => P(-g.flask.R * 0.62, g.flask.c.y - g.flask.R * 0.55), label: (g) => P(-g.flask.R - 120, g.flask.c.y - 96) },
-    { id: 'mantle', anchor: (g) => P(-g.mantle.outer + 8, g.mantle.base - 18), label: (g) => P(-g.mantle.outer - 70, g.mantle.base - 2) },
-    { id: 'stones', anchor: (g) => P(4, g.flask.c.y + g.flask.R - 8), label: (g) => P(g.mantle.outer + 34, g.flask.c.y + 24) },
-    { id: 'head', anchor: (g) => P(g.head.hw, g.head.y1 + 70), label: (g) => P(g.head.hw + 70, g.head.y1 + 84) },
+    { id: 'flask', anchor: (g) => P(-g.flask.R * 0.8, g.flask.c.y - g.flask.R * 0.35), label: (g) => P(g.stand1.rodX - 72, g.flask.c.y - 34) },
+    { id: 'mantle', anchor: (g) => P(-g.mantle.outer + 6, g.mantle.base - 34), label: (g) => P(g.stand1.rodX - 72, g.mantle.base - 30) },
+    { id: 'stones', anchor: (g) => P(10, g.flask.c.y + g.flask.R - 7), label: (g) => P(g.mantle.outer + 52, g.mantle.base - 4) },
+    { id: 'head', anchor: (g) => P(-g.head.hw, g.arm.o.y + 18), label: (g) => P(g.stand1.rodX - 50, g.arm.o.y + 6) },
     { id: 'thermo', anchor: (g, st) => P(g.thermo.hw, g.thermo.bulb[st.thermo] - 210), label: (g, st) => P(g.thermo.hw + 76, g.thermo.bulb[st.thermo] - 236) },
-    { id: 'condenser', anchor: (g) => g.cond.at(D.jacket0 + 120, -D.jacketHW), label: (g) => g.cond.at(D.jacket0 + 112, -D.jacketHW - 62) },
-    { id: 'inlet', anchor: (g) => g.nozzles.low.tip, label: (g) => P(g.nozzles.low.tip.x - 10, g.nozzles.low.tip.y + 66) },
-    { id: 'outlet', anchor: (g) => g.nozzles.high.tip, label: (g) => P(g.nozzles.high.tip.x + 96, g.nozzles.high.tip.y - 30) },
+    { id: 'condenser', anchor: (g) => g.cond.at(D.jacket0 + 150, D.jacketHW), label: (g) => g.cond.at(D.jacket0 + 150, D.jacketHW + 52) },
+    { id: 'inlet', anchor: (g) => g.nozzles.low.tip, label: (g) => P(g.nozzles.low.tip.x - 132, g.nozzles.low.tip.y + 4) },
+    { id: 'outlet', anchor: (g) => g.nozzles.high.tip, label: (g) => P(g.nozzles.high.tip.x + 96, g.nozzles.high.tip.y - 26) },
     { id: 'adapter', anchor: (g) => P(g.adapter.a2.x + D.adapterHW, g.adapter.a2.y + 10), label: (g) => P(g.adapter.a2.x + 78, g.adapter.a2.y - 30) },
-    { id: 'receiver', anchor: (g) => P(g.receiver.x + g.receiver.baseHW - 8, g.receiver.base - 30), label: (g) => P(g.receiver.x + 96, g.receiver.base - 70) },
-    { id: 'distillate', anchor: (g) => P(g.receiver.x - 6, g.receiver.base - 8), label: (g) => P(g.receiver.x - 30, g.receiver.base + 40) },
-    { id: 'stand', anchor: (g) => P(g.stand1.rodX, g.stand1.clamps[0].y + 40), label: (g) => P(g.stand1.rodX - 54, g.stand1.clamps[0].y - 60) }
+    { id: 'receiver', anchor: (g) => P(g.receiver.x + g.receiver.baseHW - 10, g.receiver.base - 26), label: (g) => P(g.receiver.x + 100, g.receiver.base - 66) },
+    { id: 'distillate', anchor: (g) => P(g.receiver.x - 10, g.receiver.base - 6), label: (g) => P(g.receiver.x - 92, g.receiver.base - 26) },
+    { id: 'stand', anchor: (g) => P(g.stand1.rodX, g.stand1.clamps[0].y - 26), label: (g) => P(g.stand1.rodX - 72, g.stand1.clamps[0].y - 36) }
   ];
 
   // ------------------------------------------------------------------ Renderer
@@ -482,18 +482,19 @@
     function drawDisplay(st) {
       const g = geo, d = g.display;
       if (st.op && st.op.type === 'fill') return;
-      const x0 = d.x0, y0 = d.y0, w = d.x1 - d.x0, h = d.y1 - d.y0;
-      // Verbindungslinie zum Thermometer
+      // mindestens 150 × 66 Bildschirmpixel, rechts bündig am Thermometer
+      const w = Math.max(d.x1 - d.x0, px(150)), h = Math.max(d.y1 - d.y0, px(66));
+      const x0 = d.x1 - w, y0 = d.y0;
       ctx.strokeStyle = 'rgba(40,52,66,0.5)'; ctx.lineWidth = px(1.2); ctx.setLineDash([px(4), px(3)]);
       ctx.beginPath(); ctx.moveTo(d.x1, y0 + h * 0.55); ctx.lineTo(-g.thermo.hw - 1, y0 + h * 0.55); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = '#1b2430'; roundRect(ctx, x0, y0, w, h, 8); ctx.fill();
+      ctx.fillStyle = '#1b2430'; roundRect(ctx, x0, y0, w, h, px(8)); ctx.fill();
       ctx.strokeStyle = '#3a4757'; ctx.lineWidth = px(1); ctx.stroke();
-      text('Dampftemperatur', x0 + 9, y0 + 11, { size: 11, align: 'left', color: '#aab6c4', weight: 600 });
+      text('Dampftemperatur', x0 + px(9), y0 + px(12), { size: 11, align: 'left', color: '#aab6c4', weight: 600 });
       ctx.save();
-      ctx.font = `700 ${Math.max(px(20), 30)}px ${FONT}`;
+      ctx.font = `700 ${Math.max(px(26), h * 0.42)}px ${FONT}`;
       ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#7ef0a6';
-      ctx.fillText(fmt(st.reading, 1) + ' °C', x0 + w - 8, y0 + h - 12);
+      ctx.fillText(fmt(st.reading, 1) + ' °C', x0 + w - px(9), y0 + h - px(10));
       ctx.restore();
     }
 
@@ -690,8 +691,10 @@
         const fakeG = { receiver: r };
         const lev = G.receiverLevel(fakeG, V);
         const lg = ctx.createLinearGradient(0, lev.y, 0, r.base);
-        lg.addColorStop(0, rgba(C.liquid, 0.45)); lg.addColorStop(1, rgba(C.liquid, 0.65));
+        lg.addColorStop(0, rgba([110, 165, 228], 0.70)); lg.addColorStop(1, rgba([90, 145, 215], 0.88));
         ctx.fillStyle = lg; ctx.fillRect(r.x - r.baseHW, lev.y, 2 * r.baseHW, r.base - lev.y);
+        ctx.strokeStyle = 'rgba(40,90,160,0.85)'; ctx.lineWidth = px(1.3);
+        ctx.beginPath(); ctx.moveTo(r.x - lev.half, lev.y); ctx.lineTo(r.x + lev.half, lev.y); ctx.stroke();
         const ry = Math.max(1, lev.half * 0.1);
         ctx.fillStyle = 'rgba(235,245,255,0.5)'; ctx.beginPath(); ctx.ellipse(r.x, lev.y, lev.half, ry, 0, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = 'rgba(80,120,170,0.6)'; ctx.lineWidth = px(1);
@@ -740,7 +743,8 @@
           rr.rim = rr.base - rr.h;
         }
         drawErlenmeyer(rr, M.vol(f.c), {});
-        text(`V${f.n}: ${fmt(M.vol(f.c), 1)} mL`, rr.x, 12, { size: 10, color: '#22303d', bg: 'rgba(255,255,255,0.8)' });
+        text(`V${f.n}`, rr.x, 11, { size: 10, color: '#22303d', weight: 700 });
+        text(`${fmt(M.vol(f.c), 1)} mL`, rr.x, 24, { size: 9, color: '#22303d' });
       });
       if (!rc.present) {
         text('Keine Vorlage unter dem Vorstoß', r.x, r.jack.top - 30, { size: 11, color: '#7a4004', bg: 'rgba(253,241,220,0.95)', border: '#ecc98d' });
@@ -826,7 +830,7 @@
       // offene Schlauchenden markieren
       const endOf = (pts) => pts[pts.length - 1];
       if (!h.inlet) { const e = endOf(g.hoseRoutes.looseInlet()); ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 3, 5, 0.3, 0, Math.PI * 2); ctx.fill(); }
-      if (!h.outlet) { const e = endOf(g.hoseRoutes.looseOutlet()); ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 3, 5, -0.3, 0, Math.PI * 2); ctx.fill(); }
+      if (!h.outlet) { const e = endOf(g.hoseRoutes.looseOutlet()); ctx.fillStyle = '#46566a'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 4.5, 2.6, 0, 0, Math.PI * 2); ctx.fill(); }
       // Wasser fließt in den Ausguss
       if (flowing && h.outlet) {
         const s = g.sink.drop;
@@ -867,7 +871,6 @@
         const mix = M.MIXES[st.mix];
         text(mix.short.split('/')[0], b.x, top + 55, { size: 9, color: '#222', weight: 700 });
         text(mix.id === 'pew' ? '+ Ethanol + Wasser' : '+ Wasser', b.x, top + 67, { size: 8, color: '#333', weight: 600 });
-        if (st.filled) text('eingefüllt ✓', b.x, top - 14, { size: 10, color: C.ok, bg: 'rgba(255,255,255,0.85)' });
       }
       // Schälchen mit Siedesteinen
       const s = g.stonesDish;
@@ -908,7 +911,7 @@
       if (!s) return;
       ctx.fillStyle = '#e9e5dc'; roundRect(ctx, s.mat.x0, -s.mat.h, s.mat.x1 - s.mat.x0, s.mat.h, 3); ctx.fill();
       ctx.strokeStyle = '#b9b2a4'; ctx.lineWidth = px(1); ctx.stroke();
-      text('Prüfplatz – getrennt von der Apparatur', (s.x0 + s.x1) / 2, -s.mat.h - 128, { size: 11, color: '#3d4b5a', bg: 'rgba(255,255,255,0.75)' });
+      text('Prüfplatz (getrennt)', s.x0 + 4, 17, { size: 11, align: 'left', color: '#22303d', weight: 700 });
       // Porzellanschale
       const d = s.dish;
       const sel = (id) => ui.selected === id;
@@ -958,7 +961,6 @@
     function drawExplainVapor(st) {
       const fx = st.fx, g = geo;
       if (!getUi().explain) return;
-      text('Erklärmodus: Dampfteilchen (in Wirklichkeit unsichtbar)', g.overlay.x0 + 4, g.cond.at(30, 0).y - 96, { size: 11, align: 'left', color: '#8a3d0c', bg: 'rgba(255,240,226,0.92)', border: '#f0c39c' });
       if (fx.vapor <= 1e-5) return;
       const surfY = G.flaskLevel(g, M.vol(st.flask.c)).y;
       const n = Math.round(clamp(fx.vapor * 120, 4, 26));
@@ -1078,7 +1080,7 @@
       for (let t = 0; t <= tMax; t += step) { ctx.beginPath(); ctx.moveTo(X(t), y0); ctx.lineTo(X(t), y1); ctx.stroke(); text(String(Math.round(t / 60)), X(t), y1 + 10, { size: 10, color: '#3d4b5a' }); }
       ctx.strokeStyle = '#3d4b5a'; ctx.lineWidth = px(1.4);
       ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
-      text('ϑ in °C', x0 - 30, y0 - 12, { size: 10, align: 'left', color: '#3d4b5a' });
+      text('ϑ in °C', x0 + 4, y0 + 8, { size: 10, align: 'left', color: '#3d4b5a', bg: 'rgba(255,255,255,0.85)' });
       text('t in min', x1, y1 + 22, { size: 10, align: 'right', color: '#3d4b5a' });
       // Siedetemperaturen der Reinstoffe
       ctx.setLineDash([px(5), px(4)]);
@@ -1224,7 +1226,7 @@
       rect('condenser', (() => { const b = partBox('condenser', st); return { x0: b.x0 + 60, y0: b.y0 + 30, x1: b.x1 - 80, y1: b.y1 - 30 }; })());
       for (const k of ['high', 'low']) { const t = g.nozzles[k].tip; rect('nozzle:' + k, { x0: t.x - 12, y0: t.y - 12, x1: t.x + 12, y1: t.y + 12 }); }
       if (!st.hoses.inlet) { const e = end(g.hoseRoutes.looseInlet()); rect('hose:inlet', { x0: e.x - 22, y0: e.y - 30, x1: e.x + 6, y1: e.y + 4 }); }
-      if (!st.hoses.outlet) { const e = end(g.hoseRoutes.looseOutlet()); rect('hose:outlet', { x0: e.x - 6, y0: e.y - 30, x1: e.x + 22, y1: e.y + 4 }); }
+      if (!st.hoses.outlet) { const e = end(g.hoseRoutes.looseOutlet()); rect('hose:outlet', { x0: e.x - 14, y0: e.y - 30, x1: e.x + 14, y1: e.y + 8 }); }
       rect('tap', { x0: g.tap.x - 14, y0: g.tap.top - 10, x1: g.tap.x + 30, y1: g.tap.top + 40 });
       rect('receiver', partBox('receiver', st));
       if (st.receiver.present) {

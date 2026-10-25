@@ -32,11 +32,12 @@
 .toast.warn { background: rgba(122, 64, 4, 0.94); }
 
 /* Sicherheitsstopp: Leiste oben auf der Bühne, Schalter bleiben bedienbar */
-.safety { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: min(94%, 620px); background: #fff; border: 2px solid var(--bad); border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(20, 30, 40, 0.25); z-index: 4; }
+.safety { position: absolute; right: 10px; top: 10px; width: min(62%, 560px); background: #fff; border: 2px solid var(--bad); border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(20, 30, 40, 0.25); z-index: 4; }
 .safety h2 { margin: 0 0 6px; font-size: 17px; color: var(--bad); }
 .safety p { margin: 0 0 8px; }
 .safety .fix { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; }
 
+.explain-note { position: absolute; left: 8px; top: 6px; margin: 0; white-space: nowrap; padding: 3px 9px; border-radius: 8px; background: rgba(255, 240, 226, 0.95); border: 1px solid #f0c39c; color: #8a3d0c; font-size: 12.5px; font-weight: 600; z-index: 2; }
 .partinfo { position: absolute; left: 10px; bottom: 54px; max-width: min(380px, 70%); background: #fff; border: 1px solid #b7d0f2; border-left: 5px solid var(--accent); border-radius: 10px; padding: 10px 12px; box-shadow: 0 6px 18px rgba(20, 30, 40, 0.15); z-index: 3; }
 .partinfo h3 { margin: 0 0 4px; font-size: 16px; }
 .partinfo p { margin: 0; font-size: 14px; }
@@ -92,8 +93,9 @@ table.res th { color: var(--muted); font-weight: 600; }
 @media (max-width: 1100px) {
   .lk-head { gap: 8px; padding: 0 10px; }
   .lk-brand small { display: none; }
-  .switch { min-width: 132px; }
-  .seg2 button { min-width: 56px; }
+  .deck { gap: 8px 12px; padding: 6px 8px; }
+  .switch { min-width: 0; padding: 0 10px; gap: 6px; }
+  .seg2 button { min-width: 52px; padding: 0 6px; }
 }
 @media (max-width: 899px) {
   .lk-head { flex: 0 0 auto; flex-wrap: wrap; height: auto; padding: 6px 10px; row-gap: 6px; }

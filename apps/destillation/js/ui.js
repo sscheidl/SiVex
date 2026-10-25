@@ -119,7 +119,10 @@
           else { ui.selected = 'pipette'; toast('Pipette gewählt. Tippe auf die Vorlage, um eine Probe zu entnehmen.'); }
           refresh(true); break;
         case 'lighter': ui.selected = 'lighter'; toast('Stabfeuerzeug gewählt. Zünde nur die Probe in der Porzellanschale an.', 'warn'); refresh(true); break;
-        case 'dish': toast(s.dish ? 'Wähle das Stabfeuerzeug und tippe dann auf die Schale.' : 'Die Schale ist leer. Nimm mit der Pipette eine Probe aus der Vorlage.'); break;
+        case 'dish':
+          if (s.pipette) act('sampleToDish');
+          else toast(s.dish && !s.dish.result ? 'Wähle das Stabfeuerzeug und tippe dann auf die Schale.' : 'Nimm mit der Pipette eine Probe aus der Vorlage und gib sie in die Schale.');
+          break;
         case 'flask': toast(s.filled ? `Rundkolben: ${fmt(M.vol(s.flask.c), 1)} mL Flüssigkeit.` : 'Der Rundkolben ist leer. Tippe auf die Flasche, um das Gemisch einzufüllen.'); break;
         case 'condenser': case 'adapter': toast(id === 'condenser' ? 'Liebigkühler: innen Dampf, außen im Mantel Kühlwasser.' : 'Vorstoß: leitet das Destillat in die Vorlage.'); break;
         default: break;
@@ -244,6 +247,7 @@
       $('#btnAck').focus();
     }
     let infoSig = '';
+    function renderExplainNote() { $('#explainNote').hidden = !ui.explain; }
     function renderPartInfo() {
       const p = ui.explore ? ui.selectedPart : null;
       if (p === infoSig) return;
@@ -532,11 +536,12 @@
       renderActions();
       renderSafety();
       renderPartInfo();
+      renderExplainNote();
       layoutHits();
       renderPanel(force);
     }
 
-    const sp = splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex-destillation-panel', onChange: () => { renderer.resize(); hitSig = ''; layoutHits(); } });
+    const sp = splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex-destillation-panel', minStage: 600, onChange: () => { renderer.resize(); hitSig = ''; layoutHits(); } });
     function onResize() { renderer.resize(); hitSig = ''; layoutHits(); }
     root.addEventListener('resize', onResize);
     if (root.ResizeObserver) new root.ResizeObserver(onResize).observe($('#canvasWrap'));

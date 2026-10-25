@@ -10,7 +10,7 @@ apps/
   trennlabor/         # klassische Trennverfahren, Chromatographie, Destillation (Jgst. 8/9)
   trennverfahren/     # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3A)
   chromatographie/    # Papierchromatographie 0.1.0 (prototype), Neustart auf Basis des Labkits
-  destillation/       # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3C)
+  destillation/       # Destillation 0.1.0 (prototype), Neustart auf Basis des Labkits
   ester-gleichgewicht/
   _template/
 shared/

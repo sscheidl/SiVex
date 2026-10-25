@@ -1,6 +1,6 @@
 {
   "name": "sivex-labkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Gemeinsamer Baukasten der SiVex-Trenn-Apps: Grundstil, Trennlinie, feste Zeitschritte, Begriffsprüfung, SCORM-1.2-Adapter (ohne Fachlogik)",
   "scripts": {

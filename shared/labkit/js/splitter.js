@@ -17,14 +17,14 @@
   const MIN_STAGE = 420;
   const KEY_STEP = 24;
 
-  /** Erlaubte Bedienfeldbreite bei gegebener Gesamtbreite. */
-  function clampPanelWidth(w, total) {
-    const max = Math.max(MIN_PANEL, Math.min(MAX_PANEL, total - MIN_STAGE));
+  /** Erlaubte Bedienfeldbreite bei gegebener Gesamtbreite (minStage: Mindestbreite der Bühne). */
+  function clampPanelWidth(w, total, minStage) {
+    const max = Math.max(MIN_PANEL, Math.min(MAX_PANEL, total - (minStage || MIN_STAGE)));
     return Math.round(Math.min(max, Math.max(MIN_PANEL, w)));
   }
 
   /**
-   * opts: { splitter, container, panel, storageKey, onChange }
+   * opts: { splitter, container, panel, storageKey, onChange, minStage (optional, Standard MIN_STAGE) }
    * Die Breite wird als CSS-Variable --panel-w am Wurzelelement gesetzt.
    */
   function bindSplitter(opts) {
@@ -36,7 +36,7 @@
 
     function set(w, save) {
       const total = opts.container.getBoundingClientRect().width;
-      const width = clampPanelWidth(w, total);
+      const width = clampPanelWidth(w, total, opts.minStage);
       rootEl.style.setProperty('--panel-w', width + 'px');
       sp.setAttribute('aria-valuenow', String(width));
       if (save) store(width);

@@ -122,7 +122,7 @@
 
     // Stativ 1 mit Klemme am Kolbenhals
     const rodX = -112;
-    g.stand1 = { rodX, base: { x0: -175, x1: -28, h: 12 }, top: g.head.y1 - 10, clamps: [{ y: g.neck.y1 + 16, x1: -D.neckHW - 1, hw: D.neckHW }] };
+    g.stand1 = { rodX, base: { x0: -175, x1: -28, h: 12 }, top: g.neck.y1 - 30, clamps: [{ y: g.neck.y1 + 16, x1: -D.neckHW - 1, hw: D.neckHW }] };
     // Stativ 2 mit Klemme am Kühlmantel
     const cm = g.cond.at((D.jacket0 + D.jacket1) / 2 - 20, 0);
     g.stand2 = { rodX: cm.x, base: { x0: cm.x - 44, x1: cm.x + 50, h: 12 }, clampAt: cm, top: cm.y - 30 };
@@ -178,7 +178,7 @@
       },
       // lose Schlauchenden, solange nicht angeschlossen
       looseInlet: () => { const a = g.tap.outlet; return [a, P(a.x + 18, a.y - 16), P(a.x + 46, -30), P(a.x + 62, -4)]; },
-      looseOutlet: () => [sd, P(sd.x - 2, -50), P(sd.x - 40, -26), P(sd.x - 66, -4)]
+      looseOutlet: () => [sd, P(sd.x - 4, -64), P(sd.x + 30, -66), P(sd.x + 30, -24)]
     };
     g.hoseTopY = hoseTopY;
 
@@ -189,8 +189,8 @@
 
     // Getrennter Prüfplatz (nur Ethanol/Wasser)
     if (o.station) {
-      const x1 = g.stand1.base.x0 - 28, x0 = x1 - 190;
-      g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 136, -8), pipette: P(x0 + 22, -8), lighter: P(x0 + 64, -12) };
+      const x1 = g.stand1.base.x0 - 26, x0 = x1 - 214;
+      g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 166, -8), pipette: P(x0 + 22, -8), lighter: P(x0 + 84, -12) };
     }
 
     // Große Digitalanzeige links neben dem Thermometer, Einblendflächen rechts oben
