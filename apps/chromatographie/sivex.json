@@ -1,7 +1,7 @@
 {
   "id": "chemie/chromatographie",
   "title": "Papierchromatographie",
-  "description": "Papierchromatographie mit sieben Modellproben und zwei Laufmitteln: Startlinie, Probenauftrag, Entwicklung, Laufmittelfront, Vergleich von Stiften; im Expertenmodus Rf-Werte.",
+  "description": "Papierchromatographie mit sieben Modellproben und zwei Laufmitteln (Wasser, Ethanol-Wasser 1 : 1): große Entwicklungskammer, Startlinie, Probenauftrag mit Filzstiften, Entwicklung mit wandernden Farbzonen, drei Aufgaben mit Selbstkontrolle, Hefteintrag; im Expertenmodus Rf-Werte.",
   "subject": "Chemie",
   "topics": [
     "Stoffgemische und Reinstoffe",
@@ -12,5 +12,7 @@
     8,
     9
   ],
-  "status": "planned"
+  "status": "prototype",
+  "version": "0.1.0",
+  "labkit": "0.1.1"
 }
