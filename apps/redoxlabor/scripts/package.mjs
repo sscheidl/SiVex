@@ -2,7 +2,8 @@
 //   release/redoxlabor-<version>-web.zip      – zum Hochladen auf einen Webserver
 //   release/redoxlabor-<version>-scorm12.zip  – SCORM-1.2-Lernpaket für mebis/Moodle
 //   release/SHA256SUMS.txt                    – Prüfsummen aller Pakete im Ordner
-// Pakete älterer Versionen bleiben erhalten; nur die aktuelle Version wird ersetzt.
+// Nur die aktuelle Version bleibt im Ordner; ältere Pakete werden entfernt
+// (auf main liegt nur der aktuelle Stand, frühere Pakete stehen in der Git-Historie).
 // Ohne externe Werkzeuge (eigener ZIP-Schreiber mit zlib); feste Zeitstempel
 // sorgen dafür, dass wiederholte Builds identische Archive ergeben.
 import fs from 'node:fs';
@@ -104,6 +105,7 @@ fs.mkdirSync(out, { recursive: true });
 const read = (f) => fs.readFileSync(path.join(dist, f));
 const webName = `redoxlabor-${version}-web.zip`;
 const scormName = `redoxlabor-${version}-scorm12.zip`;
+for (const f of fs.readdirSync(out)) if (/^redoxlabor-.*\.zip$/.test(f) && f !== webName && f !== scormName) fs.rmSync(path.join(out, f));
 fs.writeFileSync(path.join(out, webName), zip(files.map((f) => ({ name: 'redoxlabor/' + f, data: read(f) }))));
 fs.writeFileSync(path.join(out, scormName), zip([{ name: 'imsmanifest.xml', data: Buffer.from(manifest, 'utf8') }, ...files.map((f) => ({ name: f, data: read(f) }))]));
 // Prüfsummen für alle vorhandenen Pakete, neueste Version zuerst

@@ -1,35 +1,53 @@
-# Destillation Ethanol/Wasser
+# Destillation
 
-**Status: planned** · Jahrgangsstufe 8/9 (NTG 8 / SG 9)
+**Status: prototype** · Version 0.2.0 · Jahrgangsstufe 8/9 (NTG 8 / SG 9), optionaler Expertenmodus · Baukasten [`shared/labkit`](../../shared/labkit/) 0.1.1
 
-Eine der drei Einzelanwendungen, die aus dem Trennlabor 1.0.0 hervorgehen. Begründung und Vorgehen: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md). Look und Bedienlogik kommen aus dem gemeinsamen Baukasten [`shared/labkit/`](../../shared/labkit/README.md).
+Eigenständige Browser-App: Flüssigkeitsgemische mit einer **fertig montierten Destillationsapparatur** trennen. Eine der drei Einzelanwendungen aus dem Trennlabor 1.0.0 ([Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)), neu gebaut: Ideen und Sicherheitslogik aus den Altfassungen A/B, Glasdarstellung nach TitraLab 3, Fachmodell, Geometrie und Darstellung neu ([Bausteinmatrix](docs/UEBERNAHME.md)).
 
-## Umfang
+![Laborbühne während der Destillation](docs/screenshots/07-kondensat-tropfen.png)
 
-Grundlage ist Abschnitt 3C des [Masterauftrags](../../prompts/trennlabor-v1.0-claude-code.md):
+## Im Labor
 
-- Nur Ethanol/Wasser mit festgelegter Ausgangszusammensetzung
-- Eigener Aufbau: Kolben, Siedesteine, Heizquelle, Thermometer im Dampfweg, Liebigkühler (Wasser unten hinein, oben heraus), Vorlage
-- Große Temperaturanzeige und Temperaturverlauf; kein Sprung von 78 °C auf 100 °C
-- Getrennte Brennprobe; Sicherheitsstopps (geschlossene Apparatur, Zünden an der Apparatur)
+- **Apparatur ab Start montiert:** Stativ, Heizpilz (aufgeschnitten gezeichnet) auf Laborboy, Rundkolben, Destillationsaufsatz mit Thermometer, Liebigkühler, Vorstoß, Vorlage. Alle Teile hängen an gemeinsamen geometrischen Ankern und bleiben bei jeder Bildschirmgröße verbunden.
+- **Selbst bedient:** Gemisch einfüllen (sichtbarer Füllvorgang), Siedesteine zugeben, Thermometer prüfen und auf Höhe des seitlichen Abgangs schieben (Start absichtlich zu hoch), Kühlwasserschläuche an Laborarmatur und Ausguss durch Antippen anschließen, **Heizung EIN/AUS** mit Heizstufe, **Kühlwasser EIN/AUS** mit Durchfluss – unabhängig voneinander –, Destillat auffangen, im Expertenmodus Vorlage wechseln.
+- **Sichtbare Vorgänge aus dem Modell:** Füllstand mit Meniskus sinkt, Siedeblasen je nach Heizleistung, Dampf unsichtbar (zuschaltbarer, gekennzeichneter Teilchen-Erklärmodus), Kondensatfilm und Tropfen im Innenrohr, einzelne Tropfen in die Vorlage, Kühlwasser strömt im Mantel von unten nach oben, Kühler-Detailansicht mit beiden Strömungsräumen.
+- **Große Digitalanzeige** der Dampftemperatur direkt neben dem klassischen Thermometer; Temperatur-Zeit-Diagramm im Expertenmodus.
+- **Brennprobe** am getrennten Prüfplatz: Vorlage abnehmen → Pipette zieht die Probe → Porzellanschale → Stabfeuerzeug fährt hin → bläuliche Flamme (nur Ethanol/Wasser), alles als Bewegung.
+- **Alle Bedienelemente unten**, Meldungen oben in einem freien Band, „Neu beginnen“ in der Kopfzeile; „Namen“/„Erkunden“ nur vor dem Versuch.
+- **Fehler mit Folgen:** Kühlung aus, Schläuche vertauscht, Thermometer falsch, Heizung zu schwach/zu stark, Siedesteine fehlen, Vorlage fehlt, Apparatur verschlossen, Trockenlauf, Zünden an der Apparatur.
 
-## Ausgangsmaterial
+## Aufgaben
 
-Übernommen wird **bausteinweise**, was korrekt ist, gefällt und funktioniert; Fehlendes wird geändert oder ergänzt (siehe [Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md), Punkt 4). Grundlage sind das [Codex-Review](../../prompts/trennlabor-review-codex.md) und die [Eindrücke der Lehrkraft](../../docs/reviews/trennlabor-eindruecke-lehrkraft.md). Pfade jeweils unter `apps/trennlabor/`:
+| | Gemisch | Lernziel |
+| --- | --- | --- |
+| **1** | Ethanol + Wasser (40 + 60 mL) | Sieden, Verdampfen, Kondensieren, Dampftemperatur, Kühlung, Destillat, Brennprobe |
+| **2** | Propanon + Wasser (40 + 60 mL) | größerer Unterschied der Siedetemperaturen, Vergleich |
+| **3** (Experte) | Propanon + Ethanol + Wasser (30 + 30 + 40 mL) | drei Abschnitte, Vorlagenwechsel, Fraktionen, Temperaturkurve |
 
-| Fassung A (`486f370`, Tag `archiv/trennlabor-ccr`) | Fassung B (`a5d6d0e`, auf `main`) |
+Die Simulation nimmt eine **idealisierte, weitgehend vollständige Trennung** an (Azeotrop Ethanol/Wasser vernachlässigt); das steht in der App und in [CHEMIE.md](docs/CHEMIE.md). Ablauf nach Redoxlabor: Ergebnis prüfen → Protokoll mit eigenen Messwerten und Rückmeldung je Feld → Tipps 1/3–3/3 → Lösung mit Rückfrage → Geräte-Trainer → Hefteintrag (immer erreichbar).
+
+## Entwicklung
+
+```bash
+npm install            # Playwright für die Browsertests (nutzt das installierte Edge)
+npm start              # Entwicklungsserver http://localhost:8080 (bindet shared/labkit ein)
+npm test               # Unit-Tests: Fachmodell, Geometrie, Aufgaben, Baukasten
+npm run package        # Build dist/destillation + release/*.zip + SHA256SUMS.txt
+npm run test:e2e       # Browsertests gegen dist/ (PW_CHANNEL=msedge, ONLY=E01,E05 für einzelne)
+npm run test:scorm     # SCORM-Paket im Mock-LMS (eingebettet + neues Fenster), Web-ZIP per file://
+```
+
+| Datei | Inhalt |
 | --- | --- |
-| `js/model/distill.js` | `js/distill.js` |
-| `js/tasks/distill-tasks.js` | D-Aufgabe in `js/tasks.js` |
-| `js/render/distill-render.js` | `js/render-distill.js` |
-| `tests/unit/distill.test.js` | `tests/unit/distill.test.js` |
+| `js/model.js` | Fachmodell ohne DOM: Heizpilz, Kolben, idealisiertes Trennmodell, Aufsatz, Kühlmantel, Tropfen, Brennprobe, Sicherheit, Bilanz |
+| `js/geometry.js` | Apparatur in einem Koordinatensystem, Anker, Sollverbindungen, Skalierung (ohne DOM) |
+| `js/tasks.js` | Aufgaben, Ergebnisprüfung, Tipps, Protokoll, Geräte-Trainer, Hefteintrag (ohne DOM) |
+| `js/render.js` | Canvas-2D-Renderer (liest nur Modell und Geometrie) |
+| `js/ui.js`, `js/app.js` | Oberfläche, Trefferflächen, Schalter, Bedienfeld, Zeitsteuerung |
 
-Der Codex-Versuch (PR #10, `dde56a0`) ist nicht nach Bereichen getrennt: Fachlogik in `js/chemistry.js` und `js/lab.js`, Darstellung als SVG in `js/render.js`. Wie man A und den Codex-Versuch holt, steht in der Entscheidung unter „Ausgangslage“.
+## Dokumentation und Pakete
 
-Bereits bekannte Unterschiede, die im Review bewertet werden:
+- [Fachmodell und Grenzen](docs/CHEMIE.md) · [Bedienung](docs/BEDIENUNG.md) · [Testbericht mit PASS/HOLD-Matrix](docs/TESTBERICHT.md) · [Bausteinmatrix A/B/C](docs/UEBERNAHME.md)
+- `release/destillation-0.2.0-web.zip` (Webserver oder lokal entpackt), `release/destillation-0.2.0-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
 
-- Ausgangsgemisch: A 40 % Ethanol, B 30 % Ethanol
-- Heizquelle: A Heizpilz mit Stufen, B Heizplatte AUS/NIEDRIG/HOCH
-- Zu schwache Kühlung: in B Warnung, Versuch läuft weiter (Wirkung auf die Destillatmenge wird im Review geprüft)
-
-Noch kein lauffähiger Stand eingecheckt.
+Der Unterrichtseinsatz (`ready`) setzt den Test der Lehrkraft auf den Schul-iPads und in mebis voraus.

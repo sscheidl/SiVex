@@ -1,6 +1,6 @@
 # SiVex-Labkit – gemeinsamer Baukasten der Trenn-Apps
 
-**Status: planned** · noch kein Code eingecheckt · Begründung: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)
+**Version 0.1.1** (0.1.1: optionale Mindestbreite der Bühne `minStage` im Splitter, rückwärtskompatibel; genutzt von der [Destillation](../../apps/destillation/)) · erste Bausteine für die [Papierchromatographie](../../apps/chromatographie/): `js/core.js`, `js/splitter.js`, `js/scorm.js`, `css/labkit.css`, Regeln in [`DESIGN.md`](DESIGN.md) · Begründung: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)
 
 Der Baukasten sorgt dafür, dass sich [Trennverfahren](../../apps/trennverfahren/), [Papierchromatographie](../../apps/chromatographie/) und [Destillation](../../apps/destillation/) wie **ein** Labor anfühlen: gleicher Stil, gleiche Bedienlogik und gleiche Auswertungslogik – Aufgaben, Hilfestellung, Verbesserung und Hefteintrag nach der [Lern- und Auswertungsstruktur](../../docs/QUALITY.md#verbindliche-lern--und-auswertungsstruktur-für-weitere-apps). Die Inhalte entwickelt jede App unabhängig.
 
@@ -32,7 +32,7 @@ Der Baukasten sorgt dafür, dass sich [Trennverfahren](../../apps/trennverfahren
 
 ## Bestand in den vorhandenen Fassungen
 
-Ausgangsmaterial für den Baukasten. Je Baustein wird übernommen, was korrekt ist, gefällt und funktioniert; Fehlendes wird geändert oder ergänzt. Fassung A liegt im Tag `archiv/trennlabor-ccr`, Fassung B auf `main` (jeweils unter `apps/trennlabor/`).
+Ausgangsmaterial für den Baukasten. Je Baustein wird übernommen, was korrekt ist, gefällt und funktioniert; Fehlendes wird geändert oder ergänzt. Fassung A liegt im Tag `archiv/trennlabor-ccr`, Fassung B im Tag `archiv/trennlabor-1.0.0` (jeweils unter `apps/trennlabor/`).
 
 | Baustein | Fassung A (`486f370`) | Fassung B (`a5d6d0e`) |
 | --- | --- | --- |

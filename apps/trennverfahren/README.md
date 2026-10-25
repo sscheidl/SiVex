@@ -16,15 +16,13 @@ Grundlage ist Abschnitt 3A des [Masterauftrags](../../prompts/trennlabor-v1.0-cl
 
 ## Ausgangsmaterial
 
-Übernommen wird **bausteinweise**, was korrekt ist, gefällt und funktioniert; Fehlendes wird geändert oder ergänzt (siehe [Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md), Punkt 4). Grundlage sind das [Codex-Review](../../prompts/trennlabor-review-codex.md) und die [Eindrücke der Lehrkraft](../../docs/reviews/trennlabor-eindruecke-lehrkraft.md). Pfade jeweils unter `apps/trennlabor/`:
+Welche Fassung die Basis wird, wird nach dem [Codex-Review](../../prompts/trennlabor-review-codex.md) und dem Praxistest in mebis entschieden. Pfade jeweils unter `apps/trennlabor/` im jeweiligen Tag (das Trennlabor liegt nicht mehr auf `main`):
 
-| Fassung A (`486f370`, Tag `archiv/trennlabor-ccr`) | Fassung B (`a5d6d0e`, auf `main`) |
+| Fassung A (`486f370`, Tag `archiv/trennlabor-ccr`) | Fassung B (`a5d6d0e`, Tag `archiv/trennlabor-1.0.0`) |
 | --- | --- |
 | `js/model/classic.js` | `js/classic.js` |
 | `js/tasks/classic-tasks.js` | K-Aufgaben in `js/tasks.js` |
 | `js/render/classic-render.js` | `js/render-classic.js` |
 | `tests/unit/classic.test.js` | `tests/unit/classic.test.js` |
-
-Der Codex-Versuch (PR #10, `dde56a0`) ist nicht nach Bereichen getrennt: Fachlogik in `js/chemistry.js` und `js/lab.js`, Darstellung als SVG in `js/render.js`. Wie man A und den Codex-Versuch holt, steht in der Entscheidung unter „Ausgangslage“.
 
 Noch kein lauffähiger Stand eingecheckt.

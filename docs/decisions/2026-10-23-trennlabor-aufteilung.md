@@ -1,6 +1,6 @@
 # Entscheidung: Trennlabor in drei Einzelanwendungen aufteilen
 
-**Datum:** 23.10.2026 · **Aktualisiert:** 23.10.2026 (Fundorte nach dem Merge von PR #11 und #16, Vorgehen bausteinweise) · **Status:** beschlossen, Umsetzung offen · **Betrifft:** Trennlabor 1.0.0 (Fassungen A und B, Codex-Versuch), neue Apps `trennverfahren`, `chromatographie`, `destillation`, gemeinsamer Baukasten `shared/labkit/`
+**Datum:** 23.10.2026 · **Aktualisiert:** 25.10.2026 (Vorgehen bausteinweise; Papierchromatographie und Destillation veröffentlicht, Trennlabor von `main` entfernt) · **Status:** beschlossen, in Umsetzung · **Betrifft:** Trennlabor 1.0.0 (Fassungen A und B, Codex-Versuch), neue Apps `trennverfahren`, `chromatographie`, `destillation`, gemeinsamer Baukasten `shared/labkit/`
 
 ## Ausgangslage
 
@@ -11,16 +11,16 @@ Daraus sind zwei vollständige, unabhängig entstandene Fassungen hervorgegangen
 | Fassung | Commit | Fundort | Herkunft |
 | --- | --- | --- | --- |
 | A | `486f370` | Tag `archiv/trennlabor-ccr` (`3e395fd`, ergänzt nur zwei Prompts) und geschlossener PR #9 | Claude Code, Cloud-Sitzung |
-| B | `a5d6d0e` | **`main`**, `apps/trennlabor/` (PR #11 gemergt) | Claude Code, Desktop-Sitzung; nach einem Absturz der App wurde der Auftrag neu gestartet |
+| B | `a5d6d0e` | Tag `archiv/trennlabor-1.0.0`; bis 25.10.2026 auf `main` unter `apps/trennlabor/` (PR #11) | Claude Code, Desktop-Sitzung; nach einem Absturz der App wurde der Auftrag neu gestartet |
 | Codex | `dde56a0` | geschlossener PR #10 | Codex; SVG statt Canvas, Fachlogik aller drei Bereiche gemeinsam in `js/chemistry.js` und `js/lab.js` |
 
-Die Branches `ccr-ade6cdbf-5npcyu`, `trennlabor/v1.0` und `feat/trennlabor` gibt es nicht mehr. Fassung A und der Codex-Versuch lassen sich jederzeit holen:
+Die Branches `ccr-ade6cdbf-5npcyu`, `trennlabor/v1.0` und `feat/trennlabor` gibt es nicht mehr. Alle drei Fassungen lassen sich jederzeit holen:
 
 ```bash
-git fetch origin refs/tags/archiv/trennlabor-ccr:refs/tags/archiv/trennlabor-ccr refs/pull/10/head:refs/remotes/pr/10
+git fetch origin refs/tags/archiv/trennlabor-ccr:refs/tags/archiv/trennlabor-ccr refs/tags/archiv/trennlabor-1.0.0:refs/tags/archiv/trennlabor-1.0.0 refs/pull/10/head:refs/remotes/pr/10
 ```
 
-Danach zum Beispiel `git show archiv/trennlabor-ccr:apps/trennlabor/js/model/chroma.js` oder `git show pr/10:apps/trennlabor/js/chemistry.js`.
+Danach zum Beispiel `git show archiv/trennlabor-ccr:apps/trennlabor/js/model/chroma.js`, `git show archiv/trennlabor-1.0.0:apps/trennlabor/js/chroma.js` oder `git show pr/10:apps/trennlabor/js/chemistry.js`.
 
 Der Codex-Versuch wurde als Ganzes verworfen. Die Fassungen A und B erfüllen laut eigenem Testbericht alle Pflichtkriterien; sie wurden unabhängig geprüft ([Prüfauftrag](../../prompts/trennlabor-review-codex.md)) und von der Lehrkraft in mebis erprobt ([Eindrücke der Lehrkraft](../reviews/trennlabor-eindruecke-lehrkraft.md)).
 
@@ -99,25 +99,24 @@ Ohne gemeinsame Basis würden die drei Apps schnell auseinanderlaufen: andere Fa
 
 - **Drei mebis-Aktivitäten** statt einer. Querverweise zwischen den Apps sind innerhalb eines SCORM-Pakets nicht möglich; die Übersicht leistet das Repo-README bzw. der Kurs.
 - **Der Baukasten muss gepflegt werden.** Er bekommt eine eigene Versionsnummer; jede App vermerkt im Testbericht, mit welcher Baukasten-Version sie gebaut wurde. Änderungen am Baukasten werden in allen drei Apps getestet.
-- **Trennlabor 1.0.0** (Fassung B) liegt seit PR #11 auf `main` unter `apps/trennlabor/` und bleibt dort als Quelle und Referenz, bis die drei Apps es ersetzen. Fassung A und der Codex-Versuch sind über den Tag `archiv/trennlabor-ccr` und die PR-Stände #9 und #10 gesichert (siehe Ausgangslage). Andere SiVex-Anwendungen und deren Releases sind nicht betroffen.
-- Die neuen Apps beginnen mit Status `planned` und erhalten ihre erste Version erst nach Abnahme.
+- **Trennlabor 1.0.0** (Fassung B) wird nicht weiterentwickelt und wurde am 25.10.2026 von `main` entfernt (PR #26), samt Release-ZIPs. Alle Fassungen bleiben über die Tags `archiv/trennlabor-1.0.0` und `archiv/trennlabor-ccr` sowie die PR-Stände #9 und #10 erreichbar (siehe Ausgangslage). Andere SiVex-Anwendungen und deren Releases sind nicht betroffen.
+- Die neuen Apps beginnen mit Status `planned` und erhalten ihre erste Version erst nach Abnahme. Papierchromatographie 0.1.0 und Destillation 0.2.0 stehen auf `prototype`.
 
 ## Vorgehen
 
-| Phase | Inhalt | Ergebnis |
-| --- | --- | --- |
-| 0 – Vorbereitung | diese Entscheidung, App-Gerüste, Umfang des Baukastens | **erledigt** (PR #16) |
-| 1 – Bewertung | Codex-Review, eigene Eindrücke der Lehrkraft aus dem mebis-Test | je App eine Bausteinliste: Baustein → Quelle (A, B oder Codex) mit Begründung (korrekt, gefällt, funktioniert) bzw. „neu“; dazu die nötigen Änderungen und Ergänzungen |
-| 2 – Gestaltungs-, Bedien- und Auswertungsregeln | einheitliche Regeln für Stil, Bedienung und die Auswertung (Aufgaben, Hilfestellung, Verbesserung, Hefteintrag) festlegen, **bevor** Code verschoben wird | `shared/labkit/DESIGN.md` |
-| 3 – Baukasten | gemeinsame Bausteine aus den Fassungen zusammenführen, mit eigenen Tests | `shared/labkit/` |
-| 4 – Apps | je App eigener Auftrag, Branch und PR; Bausteinliste umsetzen, Inhalte unabhängig von den anderen Apps weiterentwickeln | drei Apps mit Tests, Testbericht, Web- und SCORM-ZIP |
-| 5 – Praxistest | iPad/Safari, mebis, Unterricht je App | Status `prototype` → `ready` |
+| Phase | Inhalt | Ergebnis | Stand 25.10.2026 |
+| --- | --- | --- | --- |
+| 0 – Vorbereitung | diese Entscheidung, App-Gerüste, Umfang des Baukastens | Entscheidung, Gerüste | **erledigt** (PR #16) |
+| 1 – Bewertung | Codex-Review, eigene Eindrücke der Lehrkraft aus dem mebis-Test | je App eine Bausteinliste: Baustein → Quelle (A, B oder Codex) mit Begründung (korrekt, gefällt, funktioniert) bzw. „neu“; dazu die nötigen Änderungen und Ergänzungen | Chromatographie und Destillation erledigt (je `docs/UEBERNAHME.md`); Trennverfahren offen |
+| 2 – Gestaltungs-, Bedien- und Auswertungsregeln | einheitliche Regeln für Stil, Bedienung und die Auswertung (Aufgaben, Hilfestellung, Verbesserung, Hefteintrag) festlegen, **bevor** Code verschoben wird | `shared/labkit/DESIGN.md` | angelegt |
+| 3 – Baukasten | gemeinsame Bausteine aus den Fassungen zusammenführen, mit eigenen Tests | `shared/labkit/` | Labkit 0.1.1 (Zeittakt, Splitter, SCORM, Stil) |
+| 4 – Apps | je App eigener Auftrag, Branch und PR; Bausteinliste umsetzen, Inhalte unabhängig von den anderen Apps weiterentwickeln | drei Apps mit Tests, Testbericht, Web- und SCORM-ZIP | Papierchromatographie 0.1.0 (PR #23), Destillation 0.2.0 (PR #24); Trennverfahren offen |
+| 5 – Praxistest | iPad/Safari, mebis, Unterricht je App | Status `prototype` → `ready` | offen |
 
-Die Reihenfolge der Apps in Phase 4 legt die Lehrkraft nach dem Review fest.
+Die Reihenfolge der Apps in Phase 4 legt die Lehrkraft fest.
 
 ## Offene Punkte
 
 - Endgültige Namen und Kennungen der Apps (Vorschlag: `chemie/trennverfahren`, `chemie/chromatographie`, `chemie/destillation`)
 - Ob die Masterauftrags-Kriterien A-01 bis T-08 je App aufgeteilt oder für die Neufassung überarbeitet werden
 - Ob Redoxlabor und Titration später ebenfalls auf den Baukasten umgestellt werden (nicht Teil dieser Entscheidung; dort keine Änderungen)
-- Was mit `apps/trennlabor/` und seinen Release-ZIPs geschieht, sobald die drei Apps veröffentlicht sind (entfernen oder als Archiv kennzeichnen)
