@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Trennverfahren – SiVex</title>
+  <meta name="description" content="Virtuelles Labor: Stoffgemische trennen – Dekantieren, Filtrieren, Eindampfen, Scheiden und eine eigene Trennkette (Chemie, Jahrgangsstufe 8/9).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 5h22L18 17v9h-4v-9z' fill='%23dbe8f6' stroke='%2366768a'/%3E%3Ccircle cx='16' cy='29' r='2' fill='%235aa0e8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="labkit/css/labkit.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="lk-app">
+    <header class="lk-head">
+      <div class="lk-brand">
+        <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 5h24L18 17v9h-4v-9z" fill="#dbe8f6"/><circle cx="16" cy="29.5" r="2.2" fill="#5aa0e8"/></svg>
+        <div><b>Trennverfahren</b><br><small>Stoffgemische trennen · Chemie 8/9</small></div>
+      </div>
+      <div class="lk-seg" id="speed" role="group" aria-label="Zeitraffer">
+        <button type="button" data-speed="0" aria-label="Pause" title="Pause">❚❚</button>
+        <button type="button" data-speed="1" aria-label="Echtzeit">1×</button>
+        <button type="button" data-speed="10" aria-label="Zeitraffer zehnfach">10×</button>
+        <button type="button" data-speed="30" aria-label="Zeitraffer dreißigfach">30×</button>
+      </div>
+      <span class="clock" id="clock" title="Versuchszeit (Modellzeit)">0:00</span>
+      <button type="button" class="lk-btn small toggle" id="btnParticles" aria-pressed="false" title="Schematisches Teilchenmodell des gewählten Gefäßes ein- oder ausblenden"><span class="tg" aria-hidden="true"></span>Teilchenmodell</button>
+      <button type="button" class="lk-btn small toggle" id="btnNames" aria-pressed="true" title="Gerätenamen auf der Laborfläche ein- oder ausblenden"><span class="tg" aria-hidden="true"></span>Gerätenamen</button>
+      <button type="button" class="lk-btn small" id="btnRestart" title="Nur den aktuellen Versuch neu beginnen">Neu beginnen</button>
+      <button type="button" class="lk-btn small" id="btnPanel" aria-expanded="true" aria-controls="panel">Bedienfeld</button>
+    </header>
+    <main class="lk-main" id="main">
+      <section class="lk-stage" id="stage" aria-label="Labor">
+        <div class="hintbar" id="hintbar">
+          <div class="hint-task" id="hintTask"></div>
+          <div class="hint-msg" id="hintMsg" role="status" aria-live="polite"></div>
+        </div>
+        <div class="scene" id="scene">
+          <div class="labcol">
+            <div class="canvas-wrap" id="canvasWrap">
+              <canvas id="lab" role="img" aria-label="Laborbühne"></canvas>
+              <div class="hits" id="hits"></div>
+            </div>
+            <div class="names" id="names" aria-hidden="true"></div>
+          </div>
+          <aside class="pview" id="pview" aria-label="Teilchenmodell" hidden>
+            <div class="pview-head"><b>Teilchenmodell</b> <span class="pfocus" id="pFocus"></span></div>
+            <label class="pchoose"><span>Gefäß:</span> <select id="pSelect" aria-label="Gefäß für das Teilchenmodell"></select></label>
+            <canvas id="pcanvas" role="img" aria-label="Schematisches Teilchenmodell"></canvas>
+            <ul class="legend" id="pLegend"></ul>
+            <p class="ptext"><b>Beobachtung:</b> <span id="pObs"></span></p>
+            <p class="ptext"><b>Modell:</b> <span id="pModel"></span></p>
+            <p class="pnote">Schematisch: Symbole stehen stellvertretend für sehr viele Teilchen; Größen und Anzahlen sind nicht maßstäblich.</p>
+          </aside>
+        </div>
+        <div class="deck" id="deck" role="group" aria-label="Bedienung des Versuchs">
+          <div class="deck-sel" id="deckSel"></div>
+          <div class="deck-ctl" id="deckCtl">
+            <div class="ctl" id="ctlPour" role="group" aria-label="Gießen">
+              <span class="grp-l">Gießen</span>
+              <div class="seg2" id="pourSpeed" role="group" aria-label="Gießtempo"><button type="button" data-v="slow">vorsichtig</button><button type="button" data-v="fast">zügig</button></div>
+              <button type="button" class="lk-btn stop" id="btnStopPour" disabled>Gießen stoppen</button>
+            </div>
+            <div class="ctl" id="ctlWash" role="group" aria-label="Spritzflasche" hidden>
+              <span class="grp-l">Spritzflasche</span>
+              <div class="seg2" id="washAmt" role="group" aria-label="Wassermenge je Spritzer"><button type="button" data-v="5">5 mL</button><button type="button" data-v="20">20 mL</button></div>
+            </div>
+            <div class="ctl" id="ctlHeat" role="group" aria-label="Heizplatte" hidden>
+              <span class="grp-l">Heizplatte</span>
+              <div class="seg2 heat" id="heatLevel" role="group" aria-label="Heizstufe"><button type="button" data-v="0">aus</button><button type="button" data-v="1">niedrig</button><button type="button" data-v="2">hoch</button></div>
+              <span class="temp" id="tempRead" title="Temperatur des Inhalts der Abdampfschale"></span>
+            </div>
+            <div class="ctl" id="ctlSep" role="group" aria-label="Scheidetrichter" hidden>
+              <span class="grp-l">Scheidetrichter</span>
+              <button type="button" class="lk-btn" id="btnStopper" aria-pressed="false">Stopfen auf</button>
+              <button type="button" class="lk-btn" id="btnShake">Schütteln</button>
+              <span class="grp-l">Hahn</span>
+              <div class="seg2 cock" id="cock" role="group" aria-label="Hahn"><button type="button" data-v="0">zu</button><button type="button" data-v="1">Tropfen</button><button type="button" data-v="2">offen</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="sr-only" id="readout" aria-live="polite"></p>
+      </section>
+      <div class="lk-splitter" id="splitter" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Breite des Bedienfelds ändern (Pfeiltasten, Doppelklick setzt zurück)" aria-valuemin="300" aria-valuemax="620"><span class="lk-splitter-grip"></span></div>
+      <aside class="lk-panel" id="panel" aria-label="Bedienfeld">
+        <div class="lk-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-exp" data-tab="exp" aria-selected="true">Versuche</button>
+          <button type="button" role="tab" id="tab-quiz" data-tab="quiz" aria-selected="false">Kontrolle</button>
+          <button type="button" role="tab" id="tab-notebook" data-tab="notebook" aria-selected="false">Hefteintrag</button>
+        </div>
+        <div id="panelBody" class="lk-section" role="tabpanel"></div>
+      </aside>
+    </main>
+  </div>
+  <script src="labkit/js/core.js"></script>
+  <script src="labkit/js/splitter.js"></script>
+  <script src="labkit/js/scorm.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/geometry.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
