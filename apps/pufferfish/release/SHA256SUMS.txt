@@ -1,0 +1,2 @@
+7321adf2a693d7f7fbe13ddd4ab0c3eeb1009cd635d267fe6b6b57315ed930c9  pufferfish-0.1.0-web.zip
+0544f2db6c1d97a6096e3b988a7565ce17df69f99dbbb8473e110b2e554471ff  pufferfish-0.1.0-scorm12.zip
