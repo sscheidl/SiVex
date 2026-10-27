@@ -7,7 +7,7 @@ apps/
   titration/
     titralab3/        # geplanter Import des Claude-V3-Releases
   redoxlabor/
-  trennverfahren/     # geplant – aus dem Trennlabor 1.0.0 (Abschnitt 3A)
+  trennverfahren/     # Trennverfahren 0.1.0 (prototype) auf Basis des Labkits
   chromatographie/    # Papierchromatographie 0.2.0 (prototype) auf Basis des Labkits
   destillation/       # Destillation 0.3.0 (prototype) auf Basis des Labkits
   ester-gleichgewicht/
@@ -26,7 +26,7 @@ Verzeichnisse werden **nach Experiment**, nicht nach Fach oder Jahrgangsstufe an
 - Eine Anwendung pro Experiment; unabhängig entwickelbar, testbar und verteilbar.
 - **TitraLab 3 von Claude** ist die einzige gewählte Titrationsversion. TitraLab 2 wird nicht verwendet.
 - Redoxlabor: Implementierung durch Codex / Claude, anschließend Review und Import.
-- Das gebündelte Trennlabor 1.0.0 ist in Einzelanwendungen aufgegangen (Papierchromatographie, Destillation; Trennverfahren geplant) und wird nicht weiterentwickelt; einheitlicher Look und einheitliche Bedienlogik über `shared/labkit/` ([Entscheidung](decisions/2026-10-23-trennlabor-aufteilung.md)). Es wurde am 25.10.2026 von `main` entfernt; der letzte Stand ist über die Tags `archiv/trennlabor-1.0.0` (Fassung B) und `archiv/trennlabor-ccr` (Fassung A) erreichbar.
+- Das gebündelte Trennlabor 1.0.0 ist in Einzelanwendungen aufgegangen (Papierchromatographie, Destillation, Trennverfahren) und wird nicht weiterentwickelt; einheitlicher Look und einheitliche Bedienlogik über `shared/labkit/` ([Entscheidung](decisions/2026-10-23-trennlabor-aufteilung.md)). Es wurde am 25.10.2026 von `main` entfernt; der letzte Stand ist über die Tags `archiv/trennlabor-1.0.0` (Fassung B) und `archiv/trennlabor-ccr` (Fassung A) erreichbar.
 - Auf `main` liegt je Anwendung nur das aktuelle Release; frühere Pakete stehen in der Git-Historie.
 - Gemeinsamer Code unter `shared/` enthält keine Fachlogik und wird beim Paketieren in jede App kopiert; jedes Web- und SCORM-Paket bleibt eigenständig und offline lauffähig.
 - Browseranwendungen laufen nach Möglichkeit statisch ohne externes Backend.
