@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-27T22:09:30.309Z",
+  "browser": "msedge 156.0.4314.50",
+  "root": "dist\\pufferfish",
+  "results": [
+    {
+      "id": "E01",
+      "title": "Logo: Begrüßung pumpt sich auf, erneut per Klick/Tastatur, keine Layoutsprünge; reduzierte Bewegung",
+      "status": "PASS",
+      "detail": "Skalierung 1.30, Logo-Box unverändert 46×46",
+      "ms": 6562
+    },
+    {
+      "id": "E02",
+      "title": "Versuch 1: Vermutung vor dem Dosieren, ein Tropfen nacheinander in beide Gläser, Tropfenweg → Ankunft → Mischen → Messpunkt",
+      "status": "PASS",
+      "detail": "Wasser 3.779, Phosphat 7.197 nach 0,05 mL HCl",
+      "ms": 31671
+    },
+    {
+      "id": "E03",
+      "title": "Laugenreihe mit frischen Ansätzen, Säurereihe bleibt gespeichert, Gegenprobe ausdrücklich gekennzeichnet (H₃O⁺ + OH⁻)",
+      "status": "PASS",
+      "detail": "Gegenprobe startet bei pH 3.78",
+      "ms": 25609
+    },
+    {
+      "id": "E04",
+      "title": "Protokoll Versuch 1 → Auflösung Phosphat; Zeitlupe beider Protonenübertragungen mit Zwischenzuständen und Bestandsänderung",
+      "status": "PASS",
+      "detail": "HPO₄²⁻-Symbole 12 → 16 nach 5 mL NaOH; Balken „H₂PO₄⁻ HPO₄²⁻“",
+      "ms": 54162
+    },
+    {
+      "id": "E05",
+      "title": "Versuch 2: Essigsäure, Natriumacetat, Gemisch – Säure- und Laugenreihe, gleiche Zugaben, passende Reaktionswege",
+      "status": "PASS",
+      "detail": "Start 2.88 / 8.88 / 4.75",
+      "ms": 34505
+    },
+    {
+      "id": "E06",
+      "title": "Versuch 3: Weiterdosieren über die Reserve (kein NaN, kein Überlaufen), Ansatz ändern legt neuen Ansatz an, Kurve gezoomt",
+      "status": "PASS",
+      "detail": "13 Zugaben bis zum vollen Glas; 10:1 endet bei pH 1.18",
+      "ms": 231896
+    },
+    {
+      "id": "E07",
+      "title": "Versuch 4: gleiche Zugabe, zehnfach verdünnt hergestellt vs. aufgefüllt (400-mL-Glas)",
+      "status": "PASS",
+      "detail": "ΔpH: 0.058 / 0.676 / 0.058",
+      "ms": 13837
+    },
+    {
+      "id": "E08",
+      "title": "Doppelklick/Schnellbedienung ohne Doppeldosierung; Pause friert Tropfen ein; Schritt; Wechsel während Zugabe abgewiesen",
+      "status": "PASS",
+      "detail": "eine Dosierung trotz Doppelklick + Klick",
+      "ms": 9908
+    },
+    {
+      "id": "E09",
+      "title": "Neuladen: Messreihen, Antworten, Auflösung und Einstellungen bleiben erhalten",
+      "status": "PASS",
+      "detail": "Zustand nach Neuladen identisch",
+      "ms": 10404
+    },
+    {
+      "id": "E10",
+      "title": "Herleitung: gesperrt vor der Deutung, Fehler mit Rückmeldung, Tipps, alle Schritte, danach pKₛ ± 1 im Diagramm",
+      "status": "PASS",
+      "detail": "Schritte 1–7 geprüft",
+      "ms": 3564
+    },
+    {
+      "id": "E11",
+      "title": "Sechs Rechenaufgaben: Dezimalkomma, Einheiten, falscher Quotient, Stöchiometriefehler, Lösung erst nach Rückfrage",
+      "status": "PASS",
+      "detail": "Fehlerarten getrennt erkannt; alle sechs Aufgaben gelöst",
+      "ms": 3931
+    },
+    {
+      "id": "E12",
+      "title": "Anwendungen (vier Fälle), Journal ohne vorzeitige Lösungen, Export und Hefteintrag",
+      "status": "PASS",
+      "detail": "Hefteintrag 126 Wörter",
+      "ms": 10667
+    },
+    {
+      "id": "E13",
+      "title": "Tablet quer 1180×820 (Emulation, Touch): kein Querscrollen, Labor und Teilchenansicht gleichzeitig sichtbar, Touchziele",
+      "status": "PASS",
+      "detail": "Emulation (kein echtes iPad)",
+      "ms": 10253
+    },
+    {
+      "id": "E14",
+      "title": "Tablet quer 1024×768 (Emulation, Touch): kein Querscrollen, Labor und Teilchenansicht gleichzeitig sichtbar, Touchziele",
+      "status": "PASS",
+      "detail": "Emulation (kein echtes iPad)",
+      "ms": 10837
+    },
+    {
+      "id": "E15",
+      "title": "Tastaturbedienung (Tab/Enter dosiert) und verschiebbare Trennlinie (Pfeiltasten, Doppelklick)",
+      "status": "PASS",
+      "detail": "Bedienfeld 345.59375 → 370 → 345.59375 px",
+      "ms": 9260
+    },
+    {
+      "id": "NET",
+      "title": "Keine externen Anfragen",
+      "status": "PASS",
+      "detail": "255 Anfragen, alle lokal"
+    },
+    {
+      "id": "CON",
+      "title": "Keine Konsolen- oder Seitenfehler",
+      "status": "PASS",
+      "detail": "keine"
+    }
+  ]
+}
