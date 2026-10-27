@@ -1,6 +1,6 @@
 # Entscheidung: Trennlabor in drei Einzelanwendungen aufteilen
 
-**Datum:** 23.10.2026 · **Aktualisiert:** 25.10.2026 (Vorgehen bausteinweise; Papierchromatographie und Destillation veröffentlicht, Trennlabor von `main` entfernt) · **Status:** beschlossen, in Umsetzung · **Betrifft:** Trennlabor 1.0.0 (Fassungen A und B, Codex-Versuch), neue Apps `trennverfahren`, `chromatographie`, `destillation`, gemeinsamer Baukasten `shared/labkit/`
+**Datum:** 23.10.2026 · **Aktualisiert:** 27.10.2026 (Vorgehen bausteinweise; Papierchromatographie, Destillation und Trennverfahren veröffentlicht, Trennlabor von `main` entfernt) · **Status:** beschlossen, in Umsetzung · **Betrifft:** Trennlabor 1.0.0 (Fassungen A und B, Codex-Versuch), neue Apps `trennverfahren`, `chromatographie`, `destillation`, gemeinsamer Baukasten `shared/labkit/`
 
 ## Ausgangslage
 
@@ -100,17 +100,17 @@ Ohne gemeinsame Basis würden die drei Apps schnell auseinanderlaufen: andere Fa
 - **Drei mebis-Aktivitäten** statt einer. Querverweise zwischen den Apps sind innerhalb eines SCORM-Pakets nicht möglich; die Übersicht leistet das Repo-README bzw. der Kurs.
 - **Der Baukasten muss gepflegt werden.** Er bekommt eine eigene Versionsnummer; jede App vermerkt im Testbericht, mit welcher Baukasten-Version sie gebaut wurde. Änderungen am Baukasten werden in allen drei Apps getestet.
 - **Trennlabor 1.0.0** (Fassung B) wird nicht weiterentwickelt und wurde am 25.10.2026 von `main` entfernt (PR #26), samt Release-ZIPs. Alle Fassungen bleiben über die Tags `archiv/trennlabor-1.0.0` und `archiv/trennlabor-ccr` sowie die PR-Stände #9 und #10 erreichbar (siehe Ausgangslage). Andere SiVex-Anwendungen und deren Releases sind nicht betroffen.
-- Die neuen Apps beginnen mit Status `planned` und erhalten ihre erste Version erst nach Abnahme. Papierchromatographie 0.1.0 und Destillation 0.2.0 stehen auf `prototype`.
+- Die neuen Apps beginnen mit Status `planned` und erhalten ihre erste Version erst nach Abnahme. Papierchromatographie, Destillation und Trennverfahren 0.1.0 stehen auf `prototype`.
 
 ## Vorgehen
 
-| Phase | Inhalt | Ergebnis | Stand 25.10.2026 |
+| Phase | Inhalt | Ergebnis | Stand 27.10.2026 |
 | --- | --- | --- | --- |
 | 0 – Vorbereitung | diese Entscheidung, App-Gerüste, Umfang des Baukastens | Entscheidung, Gerüste | **erledigt** (PR #16) |
-| 1 – Bewertung | Codex-Review, eigene Eindrücke der Lehrkraft aus dem mebis-Test | je App eine Bausteinliste: Baustein → Quelle (A, B oder Codex) mit Begründung (korrekt, gefällt, funktioniert) bzw. „neu“; dazu die nötigen Änderungen und Ergänzungen | Chromatographie und Destillation erledigt (je `docs/UEBERNAHME.md`); Trennverfahren offen |
+| 1 – Bewertung | Codex-Review, eigene Eindrücke der Lehrkraft aus dem mebis-Test | je App eine Bausteinliste: Baustein → Quelle (A, B oder Codex) mit Begründung (korrekt, gefällt, funktioniert) bzw. „neu“; dazu die nötigen Änderungen und Ergänzungen | Chromatographie und Destillation erledigt (je `docs/UEBERNAHME.md`); Trennverfahren nach neuem Auftrag ([klassisches Trennlabor](../../prompts/trennlabor-klassik-build-claude.md)) neu aufgebaut, ohne Bausteinliste |
 | 2 – Gestaltungs-, Bedien- und Auswertungsregeln | einheitliche Regeln für Stil, Bedienung und die Auswertung (Aufgaben, Hilfestellung, Verbesserung, Hefteintrag) festlegen, **bevor** Code verschoben wird | `shared/labkit/DESIGN.md` | angelegt |
 | 3 – Baukasten | gemeinsame Bausteine aus den Fassungen zusammenführen, mit eigenen Tests | `shared/labkit/` | Labkit 0.1.1 (Zeittakt, Splitter, SCORM, Stil) |
-| 4 – Apps | je App eigener Auftrag, Branch und PR; Bausteinliste umsetzen, Inhalte unabhängig von den anderen Apps weiterentwickeln | drei Apps mit Tests, Testbericht, Web- und SCORM-ZIP | Papierchromatographie 0.1.0 (PR #23), Destillation 0.2.0 (PR #24); Trennverfahren offen |
+| 4 – Apps | je App eigener Auftrag, Branch und PR; Bausteinliste umsetzen, Inhalte unabhängig von den anderen Apps weiterentwickeln | drei Apps mit Tests, Testbericht, Web- und SCORM-ZIP | Papierchromatographie 0.1.0 (PR #23), Destillation 0.2.0 (PR #24), Trennverfahren 0.1.0 (PR #29) |
 | 5 – Praxistest | iPad/Safari, mebis, Unterricht je App | Status `prototype` → `ready` | offen |
 
 Die Reihenfolge der Apps in Phase 4 legt die Lehrkraft fest.

@@ -12,10 +12,11 @@ SiVex ist eine Sammlung interaktiver naturwissenschaftlicher Lernanwendungen fü
 | [**Redoxlabor** – Fehling- und Tollens-Probe](apps/redoxlabor/) | **ready** 1.3.1 · in mebis auf dem iPad freigegeben | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-web.zip) · [Testbericht](apps/redoxlabor/docs/TESTBERICHT.md) |
 | [**Papierchromatographie**](apps/chromatographie/) | prototype 0.2.0 · Jgst. 8/9 | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chromatographie/release/chromatographie-0.2.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chromatographie/release/chromatographie-0.2.0-web.zip) · [Testbericht](apps/chromatographie/docs/TESTBERICHT.md) |
 | [**Destillation**](apps/destillation/) | prototype 0.3.0 · Jgst. 8/9 | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/destillation/release/destillation-0.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/destillation/release/destillation-0.3.0-web.zip) · [Testbericht](apps/destillation/docs/TESTBERICHT.md) |
+| [**Trennverfahren** – Stoffgemische trennen](apps/trennverfahren/) | prototype 0.1.0 · Jgst. 8/9 | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/trennverfahren/release/trennverfahren-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/trennverfahren/release/trennverfahren-0.1.0-web.zip) · [Testbericht](apps/trennverfahren/docs/TESTBERICHT.md) |
 | [**Halbtitrationslabor**](apps/halbtitration/) – pKₛ- und pK_B-Werte | prototype 0.1.0 · Q13 eA | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/halbtitration/release/halbtitration-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/halbtitration/release/halbtitration-0.1.0-web.zip) · [Testbericht](apps/halbtitration/docs/TESTBERICHT.md) |
 | [**Pufferfish**](apps/pufferfish/) – Warum bleibt der pH fast gleich? (Puffer) | prototype 0.1.0 · Q13 eA | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/pufferfish/release/pufferfish-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/pufferfish/release/pufferfish-0.1.0-web.zip) · [Testbericht](apps/pufferfish/docs/TESTBERICHT.md) |
 
-In Planung: [Trennverfahren](apps/trennverfahren/) (Sand/Wasser, Salz, Eisen, Öl/Wasser, Hibiskustee) und [Esterbildung und chemisches Gleichgewicht](apps/ester-gleichgewicht/).
+In Planung: [Esterbildung und chemisches Gleichgewicht](apps/ester-gleichgewicht/).
 
 ## Vorschau
 
@@ -26,6 +27,8 @@ In Planung: [Trennverfahren](apps/trennverfahren/) (Sand/Wasser, Salz, Eisen, Ö
 | [![Papierchromatographie](apps/chromatographie/docs/screenshots/09-front-spaet.png)](apps/chromatographie/) | [![Destillation](apps/destillation/docs/screenshots/07-kondensat-tropfen.png)](apps/destillation/) |
 | **Halbtitrationslabor** | **Pufferfish** |
 | [![Halbtitrationslabor](apps/halbtitration/docs/screenshots/3-phosphorsaeure-1-erstdurchgang.png)](apps/halbtitration/) | [![Pufferfish](apps/pufferfish/docs/screenshots/16-labor-nach-herleitung.png)](apps/pufferfish/) |
+| **Trennverfahren** | |
+| [![Trennverfahren](apps/trennverfahren/docs/screenshots/03-v2-filtriert.png)](apps/trennverfahren/) | |
 
 ## Einsatz im Unterricht
 
