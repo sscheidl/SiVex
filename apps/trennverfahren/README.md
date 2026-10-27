@@ -1,28 +1,55 @@
 # Trennverfahren – Stoffgemische trennen
 
-**Status: planned** · Jahrgangsstufe 8/9 (NTG 8 / SG 9)
+**Status: prototype 0.1.0** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.1.1
 
-Eine der drei Einzelanwendungen, die aus dem Trennlabor 1.0.0 hervorgehen. Begründung und Vorgehen: [Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md). Look und Bedienlogik kommen aus dem gemeinsamen Baukasten [`shared/labkit/`](../../shared/labkit/README.md).
+Virtuelles Labor zum letzten Aufgabenblock „Klassische Trennverfahren“: Die Lernenden führen fünf Versuche selbst durch, notieren eigene Beobachtungen, prüfen ihr Wissen in einer gemeinsamen Kontrolle und schreiben am Schluss einen Hefteintrag ab.
 
-## Umfang
+| Nr. | Versuch | Was die Lernenden tun |
+| --- | --- | --- |
+| 1 | Sand und Wasser: sedimentieren und dekantieren | aufrühren, absetzen lassen, vorsichtig abgießen und rechtzeitig stoppen; trübes Dekantat erneut absetzen lassen und abgießen |
+| 2 | Sand und Wasser: filtrieren | Filterpapier einlegen, Trichter in den Ring setzen, Vorlage unterstellen, aufrühren, gießen, nachgießen, Rest ausspülen |
+| 3 | Kochsalzlösung: eindampfen | Lösung in die Abdampfschale gießen, Heizplatte steuern, Trockenlaufen vermeiden |
+| 4 | Öl und Wasser: scheiden | Scheidetrichter einhängen, befüllen, Stopfen auf, schütteln, entmischen lassen, Stopfen ab, untere Schicht über den Hahn ablassen, Vorlage wechseln |
+| 5 | Eisen, Sand und Kochsalz: eigene Trennkette | Magnet, Extraktion mit Wasser, Filtration, Nachspülen, Eindampfen – in eigener, fachlich sinnvoller Reihenfolge |
 
-Grundlage ist Abschnitt 3A des [Masterauftrags](../../prompts/trennlabor-v1.0-claude-code.md):
+Grundlage: [Build-Auftrag](../../prompts/trennlabor-klassik-build-claude.md) und [Trennlabor-Planung](../../docs/TRENNLABOR-PLANUNG.md); einheitlicher Stil über den Baukasten [`shared/labkit/`](../../shared/labkit/README.md) ([Entscheidung zur Aufteilung des Trennlabors](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)).
 
-- K-01 Sand/Wasser: Sedimentieren, Dekantieren, Filtrieren
-- K-02 Sand/Kochsalz: Lösen, Filtrieren, Eindampfen – Sand **und** festes Salz zurückgewinnen
-- K-03 Eisen/Sand/Kochsalz: Magnettrennung, dann wie K-02
-- K-04 Öl/Wasser: Scheidetrichter mit Stopfen und Hahn, Absetzen, Ablassen
-- K-05 Hibiskustee: Extraktion kalt/heiß; Tee bleibt ein Stoffgemisch
+## Download
 
-## Ausgangsmaterial
+- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.1.0-scorm12.zip`](release/trennverfahren-0.1.0-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
+- **Web/offline:** [`release/trennverfahren-0.1.0-web.zip`](release/trennverfahren-0.1.0-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
+- Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
-Welche Fassung die Basis wird, wird nach dem [Codex-Review](../../prompts/trennlabor-review-codex.md) und dem Praxistest in mebis entschieden. Pfade jeweils unter `apps/trennlabor/` im jeweiligen Tag (das Trennlabor liegt nicht mehr auf `main`):
+## Lernen
 
-| Fassung A (`486f370`, Tag `archiv/trennlabor-ccr`) | Fassung B (`a5d6d0e`, Tag `archiv/trennlabor-1.0.0`) |
-| --- | --- |
-| `js/model/classic.js` | `js/classic.js` |
-| `js/tasks/classic-tasks.js` | K-Aufgaben in `js/tasks.js` |
-| `js/render/classic-render.js` | `js/render-classic.js` |
-| `tests/unit/classic.test.js` | `tests/unit/classic.test.js` |
+- **Vier Perspektiven** in Versuch, Kontrolle und Hefteintrag: Stoffebene (Beobachtung), Teilchenebene (Erklärung), Aggregatzustände (nur dort ein Wechsel, wo er stattfindet), Kenneigenschaft/Trennprinzip (Dichte, Löslichkeit, Mischbarkeit, Magnetismus, Flüchtigkeit; Korngröße als Trennkriterium).
+- **Eigene Beobachtung:** frei formuliert, als Zwischenstand mit Versuchszeit und Zustand speicherbar, getrennt von der Erklärung; Freitext wird nicht automatisch bewertet.
+- **Einordnung und Trennprinzip:** geschlossene Formate mit ✓/✗, Begründung bei Fehlern, Tipp in drei Stufen, Vorgehen nach Rückfrage.
+- **Kontrolle:** 10 Multiple-Choice-Aufgaben in vier Gruppen und ein Lückentext mit 10 Fachbegriffen (tolerant bei Schreibweise und gleichwertigen Begriffen).
+- **Hefteintrag:** erst nach Versuchen und korrigierter Kontrolle; vollständig, mit Versuchskarten, Trennkette, Teilchenbildern und Merksätzen.
+- **Teilchenmodell:** zuschaltbar in der Kopfzeile, zustandsabhängig und synchron zur Laborfläche.
 
-Noch kein lauffähiger Stand eingecheckt.
+## Bedienung
+
+Gerät antippen → Ziel antippen (oder Zielschaltfläche), erneutes Antippen stellt zurück; Tastatur und Ziehen ebenfalls möglich. Ausführlich: [docs/BEDIENUNG.md](docs/BEDIENUNG.md).
+
+## Entwicklung und Tests
+
+```bash
+npm install            # Playwright 1.56.1 (PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, nutzt installiertes Edge)
+npm start              # http://localhost:8080 (bildet /labkit/ auf shared/labkit ab)
+npm test               # Unit-Tests Modell, Geometrie, Aufgaben + Labkit
+npm run package        # Build-Prüfung, Web- und SCORM-ZIP, Prüfsummen
+npm run test:e2e       # Browserabnahme E1–E8 (Screenshots in docs/screenshots)
+npm run test:scorm     # Paketprüfung: Manifest, Mock-LMS, Pflichtablauf im Paket, file://
+```
+
+Aufbau: `js/model.js` (Fachmodell, ohne DOM), `js/geometry.js` (Gefäße, Spiegel, Posen), `js/tasks.js` (Aufgaben, Kontrolle, Hefteintrag), `js/render.js` (Laborbühne, Canvas 2D), `js/particles.js` (Teilchenmodell), `js/ui.js` (Oberfläche). Fachmodell und Parameter: [docs/CHEMIE.md](docs/CHEMIE.md). Prüfstand: [docs/TESTBERICHT.md](docs/TESTBERICHT.md).
+
+Der Quellstand lädt den Baukasten unter `labkit/` – direkt per `index.html` startet daher nur der Build bzw. das Web-ZIP; im Quellstand `npm start` verwenden (wie bei Destillation und Papierchromatographie).
+
+## Grenzen
+
+- Status **prototype**: Fachliche Freigabe durch die Lehrkraft, Test auf echtem iPad/Safari und in mebis sowie Unterrichtserprobung stehen aus (siehe Testbericht).
+- Vereinfachtes, beschleunigtes Unterrichtsmodell; die Zeitkonstanten sind keine Messwerte (siehe CHEMIE.md).
+- Kein Versuch mit Hibiskustee (laut Auftrag nicht erforderlich).

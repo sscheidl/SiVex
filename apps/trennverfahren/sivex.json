@@ -1,15 +1,18 @@
 {
   "id": "chemie/trennverfahren",
   "title": "Trennverfahren – Stoffgemische trennen",
-  "description": "Stoffgemische frei trennen: Sedimentieren, Dekantieren, Filtrieren, Lösen und Extrahieren, Eindampfen, Magnettrennung und Scheidetrichter (Sand/Wasser, Sand/Kochsalz, Eisen/Sand/Kochsalz, Öl/Wasser, Hibiskustee).",
+  "description": "Fünf klassische Trennversuche selbst durchführen: Sand/Wasser sedimentieren und dekantieren, filtrieren, Kochsalzlösung eindampfen, Öl/Wasser im Scheidetrichter scheiden, Eisen/Sand/Kochsalz mit eigener Trennkette trennen. Mit schaltbarem Teilchenmodell, Beobachtungsprotokoll, Kontrolle und Hefteintrag.",
   "subject": "Chemie",
   "topics": [
     "Stoffgemische und Reinstoffe",
-    "Trennverfahren"
+    "homogene und heterogene Gemische",
+    "Trennverfahren",
+    "Teilchenmodell",
+    "Aggregatzustände"
   ],
   "grades": [
     8,
     9
   ],
-  "status": "planned"
+  "status": "prototype"
 }

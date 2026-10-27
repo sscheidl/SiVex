@@ -1,0 +1,138 @@
+# Trennverfahren – Fachmodell, Quellen und Parameter
+
+Stand 0.1.0 · 27.10.2026 · Modellcode: [`js/model.js`](../js/model.js), Geometrie: [`js/geometry.js`](../js/geometry.js), Teilchenmodell: [`js/particles.js`](../js/particles.js)
+
+Das Modell ist ein **kleines, bilanztreues Unterrichtsmodell**. Es koppelt Stoffbestand, Verteilung und Handlungen und soll die Beobachtungen fachlich richtig erklären. Es ist **keine** Strömungs- oder Kinetiksimulation; Zeiten sind beschleunigt, Mengen gerundet.
+
+## 1. Stoffe, Gefäße, Bilanz
+
+| Größe | Einheit | Bedeutung |
+| --- | --- | --- |
+| `water`, `oil` | mL | Wasser, Speiseöl |
+| `sandC`, `sandF` | g | Sand: grobe Körner (90 %) und Feinanteil (10 %, „Schluff“) |
+| `iron` | g | Eisenpulver |
+| `saltS`, `saltD` | g | Kochsalz fest (Kristalle) bzw. gelöst |
+
+Jedes Gefäß (Becherglas, Erlenmeyerkolben, Abdampfschale, Uhrglas, Porzellanschale, Trichter, Scheidetrichter) und der Magnet führen ihren Bestand. Was ein Gefäß verlässt, landet in einem anderen Gefäß oder in einem Verlusttopf: **verschüttet** (z. B. Filtrat ohne Vorlage), **verdampft** (nur Wasser), **verspritzt** (Salz beim Trockenlaufen). Wasser aus der Spritzflasche wird als Zugabe mitgeführt. Die Bilanz `Anfang + Zugabe = Gefäße + Magnet + Verlusttöpfe` wird in allen Unit-Tests nach jeder Handlungsfolge geprüft (Abweichung < 10⁻⁶).
+
+Eine Trennung erzeugt **keine neuen Stoffe**: Kein Programmteil wandelt einen Stoff in einen anderen um; einzig gelöst ⇄ fest beim Kochsalz ist ein Zustandswechsel desselben Stoffes.
+
+## 2. Teilmodelle
+
+### Sedimentation und Dekantieren (Absetzfront)
+
+Für jeden ungelösten Feststoff gibt es eine **Absetzfront**: Unterhalb der Front schwebt der Stoff gleichmäßig verteilt, darüber ist die Flüssigkeit klar. In Ruhe sinkt die Front mit einer festen Geschwindigkeit; die schwebende Menge lagert sich dabei als Bodensatz ab (Konzentration in der Schwebezone bleibt gleich). Das entspricht dem Bild einer sinkenden Trübungsgrenze, das man im Becherglas sieht.
+
+- **Rühren** (Glasstab) wirbelt Bodensatz auf: Schwebanteil → Feststoff × Aufwirbelbarkeit; die Front springt an die Oberfläche.
+- **Zügiges Gießen** bewegt die Quelle und wirbelt nach; **vorsichtiges Gießen** kaum.
+- **Abgießen** nimmt die oberste Schicht: Liegt die Front darunter, ist das Dekantat klar; reicht die Schwebezone bis zur entnommenen Schicht, trägt die Flüssigkeit die entsprechende Sandmenge mit. Gegen Ende (weniger als 12 mL über dem Bodensatz) wird der Bodensatz zunehmend mitgerissen – „bis zum letzten Tropfen gießen“ spült Sand aus.
+
+Folge: Zu frühes oder zu schnelles Abgießen ergibt ein trübes Dekantat; Absetzenlassen und erneutes Abgießen in ein drittes Gefäß korrigiert das.
+
+### Lösen und Kristallisieren
+
+- Kochsalz löst sich **nur in vorhandenem Wasser** und **höchstens bis zur Löslichkeitsgrenze** `c_sat(T) = 0,359 + 0,00041 · (T − 20 °C)` g je mL Wasser.
+- Lösegeschwindigkeit ∝ Kristalloberfläche (m^2/3) × Untersättigung; ohne Rühren etwa 15 % der Geschwindigkeit mit Rühren.
+- Übersteigt die gelöste Menge die Grenze (Wasser verdampft), kristallisiert der Überschuss als festes Salz aus. Ohne Wasser liegt alles Salz fest vor.
+- Gelöstes Salz wird nie als Körnchen gezeichnet; die Lösung ist klar wie Wasser.
+
+### Filtrieren
+
+- Ein Rundfilter hält **alle ungelösten Körner** zurück (Sand, Eisen, ungelöste Salzkristalle). Wasser und **gelöstes Salz** passieren.
+- Der Ablauf hängt von der Füllhöhe ab (`q = V/6 s`, höchstens 2,5 mL/s); der Trichter fasst 45 mL über dem Papier. Läuft er fast voll, stoppt das Gießen mit einem Hinweis – nachgießen, wenn Flüssigkeit durchgelaufen ist.
+- Im nassen Papier bleiben 1,2 mL, im Rückstand je g Sand 0,25 mL (Feinanteil 0,3 mL, Eisen 0,08 mL, Salzkristalle 0,12 mL) Flüssigkeit hängen – mit dem darin gelösten Salz. Nachspülen verdünnt diese anhaftende Lösung.
+- **Ohne Papier** läuft alles samt Sand durch das Trichterrohr. **Trocken** auf den Filter gegebenes Sand-Salz-Gemenge bleibt vollständig liegen; erst Wasser löst das Salz heraus.
+- Steht nichts unter dem Trichter, tropft das Filtrat auf den Tisch (Verlusttopf „verschüttet“, sichtbar als Pfütze).
+
+### Scheiden (Öl/Wasser)
+
+- Öl ist im Modell **nicht mit Wasser mischbar** und hat die **geringere Dichte**: Ohne Schütteln liegen zwei Schichten vor, Öl oben.
+- **Schütteln** (nur mit Stopfen, Hahn zu) erzeugt eine Emulsion: Ein Anteil `emul` des Öls ist als Tröpfchen im Wasser verteilt. In Ruhe nimmt `emul` mit τ = 10 s ab (Tröpfchen steigen auf und vereinigen sich).
+- Der Hahn lässt die **untere Schicht zuerst** ab: Wasser mit den noch verteilten Öltröpfchen. Nähert sich die Grenzfläche dem Hahn (weniger als 2,5 mL Wasser), wird zunehmend Öl mitgezogen – kein perfekter Schnitt. Stufen: zu / Tropfen (0,6 mL/s) / offen (4 mL/s).
+- Mit aufgesetztem Stopfen kann keine Luft nachströmen: Nach etwa 0,8 mL kommt der Fluss zum Stillstand (Hinweis).
+- Folgen: Zu früh abgelassen → Öltröpfchen im Wasser; zu spät geschlossen → Öl in der Wasserfraktion. Zurückgießen und erneut scheiden korrigiert.
+
+### Magnettrennung
+
+Der Magnet (in einer Kunststofftüte) zieht **nur Eisen** an: je Durchgang 80 % des Eisens aus trockenem, 65 % aus nassem Gemisch oder Filterrückstand. An nassem Eisen haftet ein dünner Film Lösung (0,05 mL je g). Abstreifen über einem Gefäß überführt das Eisen dorthin. Sand und Salz bleiben unverändert liegen.
+
+### Heizen und Eindampfen
+
+- Heizplatte mit Trägheit: Plattentemperatur strebt 180 °C (niedrig) bzw. 330 °C (hoch) an (τ 12 s beim Aufheizen, 40 s beim Abkühlen); Wärmestrom in die Schale 1,5 W/K × (T_Platte − T_Inhalt).
+- Inhalt mit Wärmekapazität (Wasser 4,18 J/(g·K), Salz 0,85, Schale 90 J/K) und Wärmeverlust 0,35 W/K.
+- Unter der Siedetemperatur verdunstet wenig Wasser (stark temperaturabhängig). Beim **Sieden** geht die überschüssige Leistung vollständig in die Verdampfung (2257 J/g). Siedetemperatur der Lösung: 100 °C + 8 K × Sättigungsgrad (gesättigte Sole ≈ 108 °C).
+- **Siedeblasen nur beim Sieden**; keine Blasen bei kalter Lösung.
+- **Wasserdampf ist unsichtbar.** Gezeichnet wird über der heißen Flüssigkeit erst mit Abstand ein heller Dunst: kondensierte Wassertröpfchen.
+- Salz wird nicht gasförmig und schmilzt nicht (Schmelztemperatur ≈ 801 °C wird nie erreicht).
+- **Trockenlaufen:** Ist auf hoher Stufe nur noch wenig Wasser (< 1,5 mL) über reichlich Kristallen, spritzen Salzkristalle heraus (Verlusttopf „verspritzt“, Warnung „herunterschalten oder ausschalten – die Restwärme genügt“). Ist die Schale trocken und weiter heiß, erscheint „Heizplatte ausschalten“.
+
+### Gefäßgeometrie und Flüssigkeitsdarstellung
+
+Gefäße sind Rotationskörper mit realen Abmessungen (1 mm = 1,25 px; Becherglas 250 mL: Ø 70 mm innen, Füllhöhe 100 mL ≈ 30 mm). Füllhöhen ergeben sich aus dem Volumen. Beim Neigen bleibt der Spiegel **waagrecht**: Die Spiegelhöhe wird so bestimmt, dass die Querschnittsfläche unterhalb der Waagrechten der Füllung entspricht; der Neigungswinkel beim Gießen ist der Winkel, bei dem der Spiegel den Ausguss erreicht (plus wenige Grad je nach Gießtempo). Der Strahl beginnt am Ausguss und folgt einer Wurfparabel bis zum Spiegel des Ziels. Bodensatz haftet am Gefäßboden und kippt mit.
+
+## 3. Trennziele und Toleranzen (Unterrichtsparameter)
+
+Bewertet wird der **tatsächliche Bestand in getrennten Fraktionen**, nicht eine Klickfolge. Die Schwellen erlauben realistische Restmengen.
+
+| Versuch | Ausgangsmengen | Ziel (alle Kriterien) | Begründung der Schwellen |
+| --- | --- | --- | --- |
+| 1 Dekantieren | 100 mL Wasser, 20 g Sand | einmal aufgerührt (≥ 50 % schwebend); ≥ 50 mL Wasser in anderem Becherglas mit ≤ 0,3 g Sand; ≥ 15 g Sand bleiben in A | Beim Dekantieren bleiben 20–30 mL über dem Sand stehen; 0,3 g in ≥ 50 mL ist „fast klar“. Eine verlustfreie Trennung ist nicht verlangt. |
+| 2 Filtrieren | 100 mL Wasser, 20 g Sand | Papier im Trichter, Trichter im Ring; ≥ 60 mL Filtrat ohne Sand (≤ 0,05 g); ≥ 15 g Sand im Filter | ≈ 6 mL bleiben im nassen Rückstand; ein kleiner Sandrest im Becherglas wird toleriert. |
+| 3 Eindampfen | 40 mL Lösung mit 8 g Kochsalz | ≥ 5,6 g Kristalle in der Schale; ≤ 1 mL Restwasser; ≥ 25 mL verdampft | 70 % Ausbeute erlaubt Reste im Becherglas und Spritzverluste. |
+| 4 Scheiden | 50 mL Wasser, 50 mL Öl | Emulsion beobachtet (≥ 60 % verteilt); ≥ 30 mL über den Hahn abgelassen; Gefäß mit ≥ 40 mL Wasser und ≤ 1,5 mL Öl; anderes Gefäß mit ≥ 40 mL Öl und ≤ 1,5 mL Wasser | Mit „Tropfen“ an der Grenzfläche erreichbar (Test: 0,9 mL Öl im Wasser, 0,4 mL Wasser im Öl). |
+| 5 Trennkette | 5 g Eisen, 10 g Sand, 5 g Kochsalz | Eisen ≥ 4 g mit ≤ 0,1 g Sand und ≤ 0,15 g Salz; Sand ≥ 7,5 g mit ≤ 0,3 g Eisen und ≤ 0,6 g Salz (fest + gelöst); Salz ≥ 3,5 g trocken (≤ 1 mL Wasser) mit ≤ 0,05 g Sand und Eisen | Zwei Magnetdurchgänge genügen; ungelöstes oder in der Restfeuchte gelöstes Salz im Sand muss durch genug Wasser bzw. Nachspülen entfernt werden. |
+
+Erreichte Ziele werden je Versuch mit Ansatz und Versuchszeit gespeichert; ein späteres Verändern des Ansatzes nimmt den Erfolg nicht zurück. „Ergebnis prüfen“ zeigt jederzeit den aktuellen Zustand.
+
+## 4. Unterrichtsparameter (bewusst gesetzt, beschleunigt)
+
+| Parameter | Wert im Modell | Realität / Begründung |
+| --- | --- | --- |
+| Absinken der Front (grober Sand / Feinanteil / Eisen / Salzkristalle) | 22 / 1,25 / 60 / 30 mL Säule je s | Grober Sand setzt sich in Sekunden, Schluff in Minuten ab; Feinanteil im Modell ≈ 80 s für 100 mL. Zeitraffer 10×/30× verkürzt das Warten. |
+| Filterdurchfluss | ≤ 2,5 mL/s, τ = 6 s | Qualitatives Papier (Whatman Grade 1) braucht ca. 150 s für 100 mL im Herzberg-Test – das Modell ist etwa 4-fach schneller. |
+| Gießen | vorsichtig 4 mL/s, zügig 12 mL/s; Feststoffe 3 bzw. 8 g/s | anschauliche Werte |
+| Entmischung | τ = 10 s | Speiseöl/Wasser ohne Emulgator entmischt sich in etwa einer Minute (Klassenversuch); beschleunigt |
+| Heizleistung | effektiv bis ≈ 300 W | Eindampfen von 40 mL dauert ≈ 7 min Versuchszeit (bei 30× ≈ 15 s) |
+| Lösen | 0,6 · m^2/3 g/s bei Sättigung 0, Rühren × 6,7 | 5 g Salz in 40 mL lösen sich gerührt in wenigen Sekunden |
+| Sand-Feinanteil | 10 % | erzeugt die länger anhaltende Trübung |
+| Anhaftende Feuchte | 0,25 mL/g Sand, 1,2 mL Papier | Größenordnung feuchter Sand (Porenvolumen ≈ 35–40 %) |
+| Zeitraffer während Handgriffen | höchstens 1× | Gießen, Ablassen und Bewegungen bleiben beobachtbar und stoppbar |
+
+## 5. Literaturwerte
+
+| Wert | im Modell | Quelle |
+| --- | --- | --- |
+| Löslichkeit Kochsalz in Wasser | 0,359 g/mL (20 °C), 0,392 g/mL (100 °C) | ≈ 358 g/L bei 22 °C ([chemie.de-Lexikon „Natriumchlorid“](https://www.chemie.de/lexikon/NaCl.html)); 360 g/L bei 20 °C ([Sicherheitsdatenblatt Carl Roth, 2015](https://www.wmi.badw.de/fileadmin/WMI/Intranet/Sicherheit/Sicherheitsdatenbaetter/Sicherheitsdatenblatt_Natriumchlorid_Roth_20150825.pdf)); 39,2 g/100 g bei 100 °C (CRC Handbook of Chemistry and Physics) |
+| Schmelztemperatur Kochsalz | nur Text (≈ 801 °C) | 800–802 °C (Sicherheitsdatenblatt Carl Roth) |
+| Siedetemperatur gesättigter Kochsalzlösung | ≈ 108 °C | 108,7 °C bei 1 atm ([Smith College, Phasendiagramm H₂O–NaCl](https://www.science.smith.edu/~jbrady/petrology/igrocks-diagrams/binary/ice-halite-third.php)); gemessen 108,1 °C bei 100,85 kPa ([IYPT 2010](https://2010.iypt.org/dl/heatandtemperature.pdf)) |
+| Verdampfungsenthalpie Wasser | 2257 J/g | bei 100 °C, Standardwert (z. B. CRC Handbook) |
+| spezifische Wärmekapazität Wasser | 4,18 J/(g·K) | Standardwert |
+| Dichte Speiseöl / Wasser | 0,92 / 1,00 g/mL | Sonnenblumenöl ≈ 0,92 g/cm³ (Lebensmittelkunde, Standardwert) |
+| Dichte Quarzsand / Eisen | 2,65 / 7,87 g/cm³ | Standardwerte; Schüttdichte Sand ≈ 1,5 g/cm³ (Darstellung des Bodensatzes) |
+| Rückhalt Filterpapier | alle Körner | qualitatives Papier, z. B. Whatman Grade 1: Partikelrückhalt 11 µm ([Avantor/Cytiva](https://avantorsciences.com/ca/en/product/NA3948151/whatman-grade-1-qualitative-filter-paper-whatman-products-cytiva), [Sigma-Aldrich](https://www.sigmaaldrich.com/CA/en/product/aldrich/wha1001813)); Feinsand ≥ 63 µm, Ionen und Wassermoleküle < 1 nm |
+
+Die verlinkten Online-Quellen wurden für diese Umsetzung am 27.10.2026 geprüft; als „Standardwert“ bzw. „CRC Handbook“ bezeichnete Werte sind gängige Tabellenwerte und wurden nicht gesondert nachgeschlagen – vor einer Freigabe bitte durch die Lehrkraft gegenprüfen. Die Literaturwerte bestimmen die Lage (Löslichkeit, Siedepunkterhöhung, Dichteverhältnis), die Zeitkonstanten sind Unterrichtsparameter (Abschnitt 4).
+
+## 6. Vereinfachungen und Grenzen
+
+- Volumenkontraktion beim Lösen, Temperaturabhängigkeit der Dichten und Verdunstung bei Raumtemperatur über Minuten sind vernachlässigt bzw. stark vereinfacht.
+- Der Feinanteil des Sandes wird vom Papier vollständig zurückgehalten (reale Filtrate können anfangs leicht trüb sein).
+- Öl wird nicht filtriert; Öl kommt nur in Versuch 4 vor. Emulgierte Wassertröpfchen im Öl werden nicht geführt.
+- Eisen rostet im Modell nicht.
+- Gefäßvolumina im gekippten Zustand werden über die Querschnittsfläche bestimmt (für zylindrische Bechergläser exakt, solange der Spiegel den Boden nicht schneidet; für den Erlenmeyerkolben eine Näherung).
+- Gießen in sehr enge Öffnungen (Hals des Scheidetrichters) wird ohne zusätzlichen Trichter zugelassen.
+
+## 7. Teilchenmodell (schematisch)
+
+Das Teilchenmodell zeigt einen vergrößerten Ausschnitt des gewählten Gefäßes. **Anzahl und Lage der Symbole folgen dem Modellzustand** (Füllstand, Schwebanteil und Absetzfront, gelöstes und festes Salz, Öl als Schicht oder Tröpfchen, Filterdurchlauf, Verdampfen, Magnet). Symbole stehen stellvertretend für sehr viele Teilchen; weder Teilchenzahl noch Größenverhältnis sind maßstäblich.
+
+| Stoff | Symbol |
+| --- | --- |
+| Wasser | kleiner blauer Kreis |
+| gelöstes Kochsalz | Na⁺ (kleiner violetter Kreis mit +), Cl⁻ (größerer grüner Kreis mit −), einzeln zwischen den Wasserteilchen |
+| festes Kochsalz | regelmäßiges Gitter aus Na⁺ und Cl⁻ |
+| Öl | gelbe Ovale (andere Form als Wasser); Tröpfchen = Gruppe vieler Ölteilchen |
+| Sand, Eisen | große unregelmäßige Körner mit Punkten („ein Korn besteht aus sehr vielen Teilchen“) |
+| gasförmiges Wasser | einzelne, weit auseinander liegende Wasserteilchen über der Flüssigkeit |
+
+Keine Hydrathüllen, keine „Kochsalzmoleküle“, keine festen Krümel für gelöstes Salz. Der Text unter dem Bild trennt **Beobachtung** (Stoffebene) und **Modell** (Teilchenebene).

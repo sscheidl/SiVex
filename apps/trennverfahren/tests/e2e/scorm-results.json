@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-27T22:15:09.193Z",
+  "package": "trennverfahren-0.1.0-scorm12.zip",
+  "web": "trennverfahren-0.1.0-web.zip",
+  "passed": 16,
+  "total": 16,
+  "results": [
+    {
+      "id": "SCORM-1",
+      "status": "PASS",
+      "detail": "imsmanifest.xml im Paketstamm, SCORM 1.2, SCO mit Startpunkt index.html"
+    },
+    {
+      "id": "SCORM-2",
+      "status": "PASS",
+      "detail": "Manifest listet alle 14 Dateien des Pakets (inkl. labkit/)"
+    },
+    {
+      "id": "SCORM-3",
+      "status": "PASS",
+      "detail": "alle 12 Verweise relativ und im Paket vorhanden, keine externen Ressourcen"
+    },
+    {
+      "id": "WEB-1",
+      "status": "PASS",
+      "detail": "Web-ZIP enthält dieselben 14 Laufzeitdateien im Ordner trennverfahren/"
+    },
+    {
+      "id": "PKG-1",
+      "status": "PASS",
+      "detail": "Paketinhalt byte-identisch mit dem getesteten Build dist/trennverfahren"
+    },
+    {
+      "id": "SCORM-iframe-1",
+      "status": "PASS",
+      "detail": "eingebettet: LMSInitialize genau einmal"
+    },
+    {
+      "id": "SCORM-iframe-2",
+      "status": "PASS",
+      "detail": "eingebettet: Versuch 1 vollständig über die Oberfläche bearbeitet"
+    },
+    {
+      "id": "SCORM-iframe-4",
+      "status": "PASS",
+      "detail": "keine Werte gelesen oder geschrieben (keine Noten, Antworten, Personendaten)"
+    },
+    {
+      "id": "SCORM-iframe-5",
+      "status": "PASS",
+      "detail": "keine Konsolenfehler, keine externen Anfragen"
+    },
+    {
+      "id": "SCORM-popup-1",
+      "status": "PASS",
+      "detail": "neues Fenster: LMSInitialize genau einmal"
+    },
+    {
+      "id": "SCORM-popup-2",
+      "status": "PASS",
+      "detail": "neues Fenster: Pflichtablauf (fünf Versuche, Kontrolle, Hefteintrag) über die Oberfläche bearbeitet"
+    },
+    {
+      "id": "SCORM-popup-3",
+      "status": "PASS",
+      "detail": "neues Fenster: LMSFinish beim Schließen genau einmal"
+    },
+    {
+      "id": "SCORM-popup-4",
+      "status": "PASS",
+      "detail": "keine Werte gelesen oder geschrieben (keine Noten, Antworten, Personendaten)"
+    },
+    {
+      "id": "SCORM-popup-5",
+      "status": "PASS",
+      "detail": "keine Konsolenfehler, keine externen Anfragen"
+    },
+    {
+      "id": "SCORM-iframe-3",
+      "status": "PASS",
+      "detail": "eingebettet: LMSFinish beim Entfernen des Lernpakets genau einmal"
+    },
+    {
+      "id": "WEB-2",
+      "status": "PASS",
+      "detail": "entpacktes Web-ZIP per file:// (offline): Pflichtablauf vollständig, keine Fehler, keine Netzanfragen"
+    }
+  ]
+}
