@@ -1,0 +1,20 @@
+{
+  "id": "chemie/pufferfish",
+  "title": "Pufferfish – Warum bleibt der pH fast gleich?",
+  "description": "Pipetten-/Tropfversuch mit Bechergläsern: Wasser und Puffer, Essigsäure/Acetat, Verhältnis, Kapazität und Verdünnung; synchronisierte Teilchenebene mit Protonenübertragung in Zeitlupe, wachsende pH-Zugabekurve, Herleitung der Henderson-Hasselbalch-Gleichung, sechs Rechenaufgaben, Puffer in Natur und Technik.",
+  "subject": "Chemie",
+  "topics": [
+    "Säure-Base-Gleichgewichte",
+    "Puffer",
+    "Henderson-Hasselbalch-Gleichung",
+    "Pufferbereich",
+    "Pufferkapazität"
+  ],
+  "grades": [
+    13
+  ],
+  "version": "0.1.0",
+  "labkit": "0.1.1",
+  "status": "prototype",
+  "entry": "index.html"
+}

@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-27T21:35:16.884Z",
+  "version": "0.1.0",
+  "results": [
+    {
+      "name": "Paketstruktur",
+      "status": "PASS",
+      "detail": {
+        "web": 16,
+        "scorm": 17,
+        "manifestFiles": 16
+      }
+    },
+    {
+      "name": "Web-ZIP entpackt",
+      "status": "PASS",
+      "errors": [],
+      "bad": [],
+      "lms": null
+    },
+    {
+      "name": "SCORM-ZIP entpackt (Test-LMS)",
+      "status": "PASS",
+      "errors": [],
+      "bad": [],
+      "lms": {
+        "init": 2,
+        "finish": 1,
+        "set": [],
+        "get": []
+      }
+    },
+    {
+      "name": "Web-ZIP per file://",
+      "status": "PASS",
+      "errors": []
+    }
+  ]
+}

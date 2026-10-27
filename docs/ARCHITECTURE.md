@@ -10,6 +10,7 @@ apps/
   trennverfahren/     # Trennverfahren 0.1.0 (prototype) auf Basis des Labkits
   chromatographie/    # Papierchromatographie 0.2.0 (prototype) auf Basis des Labkits
   destillation/       # Destillation 0.3.0 (prototype) auf Basis des Labkits
+  halbtitration/      # Halbtitrationslabor 0.1.0 (prototype), Laboraufbau aus TitraLab 3
   ester-gleichgewicht/
   _template/
 shared/

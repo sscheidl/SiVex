@@ -1,0 +1,149 @@
+{
+  "root": "dist\\halbtitration",
+  "date": "2026-10-27T21:35:08.874Z",
+  "browser": "Microsoft Edge (Playwright channel msedge)",
+  "results": [
+    {
+      "name": "E1",
+      "status": "PASS",
+      "seconds": 34,
+      "detail": {
+        "pHs": [
+          4.76
+        ],
+        "notes": [
+          "Kurvenpixel blau/orange 0/92",
+          "activity markiert"
+        ],
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E2",
+      "status": "PASS",
+      "seconds": 28,
+      "detail": {
+        "pHs": [
+          9.25
+        ],
+        "notes": [
+          "Kurvenpixel blau/orange 0/77",
+          "pKₛ(NH₄⁺) = 9,24 (Literatur) @ 9.24"
+        ],
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E3",
+      "status": "PASS",
+      "seconds": 42,
+      "detail": {
+        "pHs": [
+          2.48,
+          7.2
+        ],
+        "notes": [
+          "Kurvenpixel blau/orange 0/508"
+        ],
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E4",
+      "status": "PASS",
+      "seconds": 42,
+      "detail": {
+        "pHs": [
+          2.57,
+          9.77
+        ],
+        "notes": [
+          "Kurvenpixel blau/orange 0/194"
+        ],
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E5",
+      "status": "PASS",
+      "seconds": 11,
+      "detail": {
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E6",
+      "status": "PASS",
+      "seconds": 12,
+      "detail": {
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E7",
+      "status": "PASS",
+      "seconds": 3,
+      "detail": {
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E8",
+      "status": "PASS",
+      "seconds": 26,
+      "detail": {
+        "frames": [
+          "0/0/0.26",
+          "0/0/0.36",
+          "1/0/0.32",
+          "1/0/0.13",
+          "1/0/0.07",
+          "2/0/0.14",
+          "1/1/0.45",
+          "1/1/0.54",
+          "2/1/0.32",
+          "1/2/0.64",
+          "2/2/0.17",
+          "1/3/0.6",
+          "1/3/0.35",
+          "0/4/0.38",
+          "0/4/0.53",
+          "0/4/0.25"
+        ],
+        "calm": 0.0000016822282304929104,
+        "errors": []
+      },
+      "errors": []
+    },
+    {
+      "name": "E9",
+      "status": "PASS",
+      "seconds": 49,
+      "detail": {
+        "desktop-1440x900": {
+          "lab": 545,
+          "chart": 444,
+          "errors": []
+        },
+        "tablet-1180x820": {
+          "lab": 442,
+          "chart": 357,
+          "errors": []
+        },
+        "tablet-1024x768": {
+          "lab": 363,
+          "chart": 289,
+          "errors": []
+        }
+      },
+      "errors": []
+    }
+  ]
+}
