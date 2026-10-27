@@ -1,0 +1,19 @@
+{
+  "name": "sivex-halbtitration",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Halbtitrationslabor: pKs- und pKB-Werte experimentell bestimmen (statische Webanwendung, SiVex)",
+  "scripts": {
+    "start": "node scripts/serve.mjs . 8080",
+    "build": "node scripts/build.mjs",
+    "test": "node --test \"tests/unit/*.test.js\"",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "test:packages": "node tests/e2e/packages.mjs",
+    "package": "node scripts/package.mjs",
+    "test:all": "npm test && npm run package && npm run test:e2e && npm run test:packages"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  },
+  "license": "UNLICENSED"
+}

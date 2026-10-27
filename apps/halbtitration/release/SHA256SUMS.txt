@@ -1,0 +1,2 @@
+b4d338210df92083107b960e72d121d29c1f769772574e8ab74ea3b38c5bbf13  halbtitration-0.1.0-web.zip
+edd9eaaedacb921e129032ce12873a9b9531e4fcbfd611131bfc2d149e11ca66  halbtitration-0.1.0-scorm12.zip
