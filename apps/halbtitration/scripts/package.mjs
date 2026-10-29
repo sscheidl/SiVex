@@ -38,9 +38,9 @@ function crc32(buf) {
   for (const b of buf) c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8);
   return (c ^ 0xffffffff) >>> 0;
 }
-// DOS-Zeitstempel 27.10.2026 12:00:00
+// DOS-Zeitstempel 29.10.2026 12:00:00
 const DOS_TIME = (12 << 11) | (0 << 5) | 0;
-const DOS_DATE = ((2026 - 1980) << 9) | (10 << 5) | 27;
+const DOS_DATE = ((2026 - 1980) << 9) | (10 << 5) | 29;
 
 function zip(entries) {
   const locals = [], centrals = [];

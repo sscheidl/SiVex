@@ -1,83 +1,113 @@
-# Bedienung
+# Bedienung (ab 0.2.0)
 
-Vier Arbeitsphasen in der Kopfzeile. Sie lassen sich jederzeit wechseln; Messreihen, Rechnungen und Antworten bleiben erhalten (lokal im Browser).
+Die App startet direkt im Labor:
 
-1. **Theorie**: Begriffe, Herleitung der Henderson-Hasselbalch-Gleichung aus dem MWG, Basen (pOH/pK_B), mehrprotonige Systeme, Indikator und Elektrode. Fünf Verständnisfragen mit „Prüfen“, „Tipp n/3“ und „Lösung anzeigen“.
-2. **Planung**: Wähle Versuch, Maßlösung, bei mehrprotonigen Systemen den Äquivalenzpunkt für den Indikator, die Teilchen am ÄP, die pH-Erwartung, den Indikator und die Begründung. Nach „Planung prüfen“ mit passender Maßlösung ist das Labor freigeschaltet. Die Indikatortabelle zeigt Farben und Umschlagsbereiche, aber keine fertige Kurve.
-3. **Labor**: links Titrierstand und Kurve, rechts das Bedienfeld. Die Trennlinie lässt sich mit Maus, Finger oder Pfeiltasten verschieben; Doppelklick stellt die Standardbreite wieder her.
-4. **Auswertung**: Kurve mit Werkzeugen und Messtabelle (mit ΔpH/ΔV), rechts das Laborjournal mit den Rechnungen 1–7.
+- **Kopfzeile:** Hefteintrag, Bericht, Zurücksetzen und Bedienfeld ein/aus.
+- **Laborbühne (links):** Titrierstand und Titrationskurve stehen nebeneinander, darunter die Dosierleiste.
+- **Trennlinie:** Sie lässt sich mit Maus, Finger oder Pfeiltasten verschieben; ein Doppelklick stellt die Standardbreite wieder her.
+- **Bedienfeld (rechts):** Reiter **Aufgabe · Ergebnisse · Hefteintrag**.
+
+Messreihen, Eingaben und Antworten bleiben beim Wechsel von Versuch oder Reiter erhalten und werden lokal im Browser gespeichert.
+
+## Versuch wählen
+
+Über der Bühne stehen vier Versuche:
+
+- **1 Essigsäure (Kern)**
+- **2 Ammoniak (Transfer)**
+- **3 Phosphorsäure (Vertiefung)**
+- **4 Glycin (Vertiefung)**
+
+Jeder Versuch ist direkt anwählbar, es gibt keine Sperre. Daneben stehen drei Knöpfe:
+
+- **Neue Probe (Kurve)** und **Neue Probe (Halbtitration)** leeren nur den Kolben. Gespeicherte Messreihen, Rechnungen, Bürettenfüllung und Kalibrierung bleiben erhalten.
+- **Reihe wiederholen** verwirft nur die aktive Messreihe und setzt eine frische Probe für denselben Zweck an.
+- **Zurücksetzen** in der Kopfzeile löscht nach Rückfrage das gesamte Labor.
 
 ## Labor
 
-**Probe:** Wähle zuerst den Zweck („Erstdurchgang: ÄP untersuchen“ oder „Halbtitration: pK bestimmen“). Dann folgen:
+### Vorbereitung
 
-1. Probe pipettieren
-2. mit Wasser verdünnen
-3. Indikator zugeben (falls geplant)
-4. Magnetrührer einschalten (auch durch Antippen des Rührers)
+Die Vorbereitung steht in einer kompakten Zeile. Erledigte Schritte erscheinen als ✓-Chips; über „Vorbereitung“ klappst du sie wieder auf.
 
-**Bürette:** Vorspülen, befüllen, Spitze entlüften. Danach den Anfangsstand in der Ablesehilfe ablesen und eintragen; ohne Eintrag ist keine Zugabe möglich. Nachfüllen geht nur zwischen zwei Proben.
+- **Probe vorlegen:** 20,00 mL pipettieren, danach automatisch mit 30 mL Wasser verdünnen.
+- **Bürette füllen:** spülen, füllen und entlüften. Das geht erst, wenn im Bedienfeld die passende Maßlösung gewählt ist. Es gibt je eine Bürette für NaOH und für HCl; ihr Stand bleibt für alle Proben erhalten. **Nachfüllen** geht zwischen zwei Proben.
+- **pH-Meter kalibrieren:** einmal für alle Versuche, Zwei-Punkt-Kalibrierung.
+- **Elektrode eintauchen:** je Probe. Optional kommt danach die **Indikator**-Zugabe.
 
-**pH-Meter:** Mit Puffer pH 7,00 und einem zweiten Puffer kalibrieren (pH 10,01 bei Säuren, pH 4,01 bei Ammoniak), dann die Elektrode spülen und eintauchen. Das geht erst, wenn die Probe verdünnt ist.
+### Messen
 
-**Titrieren:**
+Die Anzeige zeigt V zugegeben, den Bürettenstand (digital abgelesen) und den pH-Wert mit Status (stabil, misst, Zugabe, ohne Rühren).
 
-- **Zugeben:** gibt die gewählte Dosiermenge ab (1 Tropfen = 0,05 mL bis 2,00 mL). Taste **D**.
-- **Hahn öffnen/schließen:** kontinuierlicher Fluss mit einstellbarer Tropfgeschwindigkeit. Auch per Antippen des Hahns im Bild oder mit Taste **H**.
-- **Messwert übernehmen:** protokolliert V und pH mit Messstatus. Taste **M**. Erst bei „stabil“ übernehmen; zu frühe Werte erscheinen in der Kurve als offene Kreise.
-- **Automatisch übernehmen:** übernimmt nach jeder Zugabe den Wert, sobald die Anzeige stabil ist. Nicht-stabile Werte übernimmt diese Funktion nie.
-- **Endpunkt notieren:** bei bleibender Indikatorfarbe. Danach den Bürettenstand ablesen und eintragen.
-- **Eigene Zielmarke** (nur bei der Halbtitration): Hilfslinie an Bürette und Kurve. Es wird nicht automatisch gestoppt.
-- **Messreihe beenden:** speichert die Reihe.
+- **Dosiermenge:** 1 Tropfen (0,05 mL) bis 2,00 mL, dann **Zugeben** (Taste **D**).
+- **Hahn öffnen/schließen:** kontinuierlicher Fluss (Taste **H** oder Antippen des Hahns im Bild); die Tropfgeschwindigkeit stellst du am Schieberegler ein.
+- **Messwert übernehmen** (Taste **M**): nur übernommene Werte bilden die Kurve. Zu frühe Werte erscheinen als offene Kreise mit dem Status „nicht stabil“.
+- **Rührer**, **Auto-Übernahme** (übernimmt nach jeder Zugabe erst, wenn die Anzeige stabil ist), **Endpunkt notieren** (nur mit Indikator), **Zielmarke** (nur bei der Halbtitration). Ein automatischer Stopp am Ziel erfolgt nicht.
 
-**Probe wechseln:**
+### Kurve
 
-- **Neue Probe:** frischer Kolben; alle gespeicherten Messreihen und Rechnungen bleiben.
-- **Messreihe wiederholen:** verwirft nur die aktive Reihe und setzt eine frische Probe für denselben Zweck an.
-- **Zurücksetzen** in der Kopfzeile: setzt das gesamte Labor zurück, also alle Versuche (mit Rückfrage).
+- **Volumenachse:** 0–50 mL (Bürettenskala) oder **Messbereich**, auf 5 mL gerundet.
+- **Marker ÄP:** erscheint, sobald eine Titrationskurve vorliegt. Antippen oder Ziehen setzt den Marker; die Pfeiltasten verschieben ihn um 0,05 mL (mit Umschalt um 0,5 mL). „Fertig“ beendet den Markermodus.
+- **Nach der Abgabe:** Modellreferenz, Literatur-pKₛ und Näherungswerte. Bei Ammoniak erscheint auf der pH-Achse nur pKₛ(NH₄⁺), kein pK_B.
 
-## Auswertung
+## Aufgabe (Schritte)
 
-- **Reihenauswahl:** Erstdurchgang und Halbtitration getrennt wählbar. Die nicht aktive Reihe erscheint blass.
-- **Ablesen:** Antippen oder Ziehen wählt den nächsten Messpunkt; Pfeiltasten springen von Punkt zu Punkt.
-- **Marker ÄP/HÄP:** Antippen oder Ziehen setzt den Marker. Die Pfeiltasten verschieben ihn um 0,05 mL, mit Umschalt um 0,5 mL; alternativ das Eingabefeld „Setzen“ nutzen. Interpolierte pH-Werte sind gekennzeichnet. Liegen die umgebenden Messpunkte mehr als 0,5 mL (ÄP) bzw. 1 mL (HÄP) auseinander, meldet die App eine Datenlücke.
-- **Bereich:** Bürettenskala 0–50 mL oder Messbereich (auf 5 mL gerundet, verrät keinen ÄP).
-- **Nach der Abgabe zuschaltbar:** Modellreferenz, Literatur-pK und Näherungswerte. Die Legende unterscheidet Messreihe, Interpolation, Näherungsrechnung und Modellreferenz.
+Der jeweils nächste offene Schritt ist aufgeklappt. Alle Schritte lassen sich jederzeit öffnen, eine feste Klickfolge gibt es nicht.
 
-### Laborjournal
+1. **Auftrag und Maßlösung:** kurzer Auftrag, Ausgangsdaten und die Wahl der Maßlösung. Ein Indikator ist als zusätzliche Beobachtung frei wählbar. Grundlagen gibt es als freiwillige Hilfe.
+2. **Titrationskurve und Äquivalenzpunkt:** Marker setzen oder V(ÄP) eintragen. Die Prüfung erfolgt an deiner eigenen Kurve: Liegt der Marker im steilsten Abschnitt? Freiwillig kannst du V(ÄP) mit der Stöchiometrie kontrollieren, mit absoluter und relativer Abweichung und benannter Referenz.
+3. **Halber Umsatz:** wenige geschlossene Fragen; bei mehrprotonigen Säuren auch zur zweiten Stufe.
+4. **Zielvolumen berechnen:** Rechenbasis wählen (eigener ÄP, berechnet oder bei Stufe 2 abgeleitet) und V(HÄP) eintragen.
+5. **Gezielt halbtitrieren:** frische Probe, Zielmarke, selbst dosieren, pH-Wert am HÄP aus der eigenen Messreihe eintragen.
+6. **Warum gilt das? (MWG):** ein Trainer in Schritten. Jeder Schritt erscheint erst, wenn der vorige gelöst ist. Die Henderson-Hasselbalch-Gleichung gibt es als Vertiefung.
+7. **Eigenen pK-Wert bestimmen und abgeben:**
+   - Die Abgabe setzt ein eigenes Zielvolumen und einen protokollierten Messpunkt der Halbtitration voraus.
+   - Mängel werden gekennzeichnet, etwa neben dem Ziel, zu früh abgelesen, nicht durchmischt oder Rechnung unpassend.
+   - **Lösung anzeigen** zeigt die Musterlösung. Sie wird als „Musterlösung angesehen“ gespeichert und zählt nicht als eigener Versuch.
+8. **Vergleichen und deuten** (nach Abgabe): Literaturwert, ΔpK mit Vorzeichen und eine knappe Fehlerdeutung zum Ankreuzen. Die Rückmeldung stammt aus den eigenen Daten.
 
-1. V(ÄP) aus der Stöchiometrie
-2. Erstdurchgang: Marker, Endpunkt, Anfangs-/Endstand, Verbrauch und Indikatorprüfung
-3. Zielvolumen V(HÄP) mit gewählter Rechenbasis (gemessen, stöchiometrisch, bei Stufe 2 auch „abgeleitet“)
-4. pH am HÄP und experimenteller pK-Wert → **Ergebnis abgeben**
-5. Nach der Freigabe: Literaturwerte und theoretische pH-Werte
-6. Abweichungen ΔpK und ΔpH mit Vorzeichen; Zerlegung der Abweichung
-7. Fehlerbetrachtung zum Ankreuzen mit Rückmeldung aus den eigenen Daten, dazu eine freie Begründung (wird nicht bewertet)
+Die **Vertiefung (freiwillig)** enthält:
 
-Jedes Feld hat „Prüfen“ (auch mit der Eingabetaste) und „Tipp 1/3 … 3/3“: Denkimpuls, Ansatz und eine Musterrechnung mit den eigenen Daten. Die Musterrechnung gibt es nach einem eigenen Versuch, sonst nur nach Rückfrage. Die Rückmeldungen sind gekennzeichnet als Rechnung, Messung/Durchführung oder Näherung.
+- Reaktionsfolge (schematisch)
+- Gleichgewichtsanteile aus dem Modell, nach der Abgabe
+- Wiederholung: Start-, HÄP- und ÄP-pH berechnen, mit ΔpH
+- Indikatoren untersuchen
+- Zerlegung der Abweichung
+
+### Prüfen und Hilfen
+
+Jedes Feld und jede Frage hat **Prüfen** (bei Feldern auch die Eingabetaste) und **Tipp 1/3 … 3/3**: Denkanstoß, Ansatz, Musterrechnung bzw. Antwort. Tipp 3 wird nach einem eigenen Versuch empfohlen, sonst erst nach einer Rückfrage.
+
+Ändert sich eine Eingabe oder eine ihrer Grundlagen, steht beim Feld **„Geändert – erneut prüfen“**. Grundlagen sind Marker, Rechenbasis, die ausgewählte Messreihe und deren Messpunkte. Eine alte Bestätigung gilt dann nicht mehr.
 
 **Eingaben:**
 
 - Dezimalkomma oder -punkt; Volumina auch mit Einheit (mL, cm³, L)
 - pH- und pK-Werte ohne Einheit
 
-**Toleranzen:**
+## Ergebnisse, Bericht, Hefteintrag
 
-- Volumenrechnung ± 0,01 mL
-- Bürettenablesung ± 0,02 mL
-- pK aus pH ± 0,01
-- theoretische pH-Werte ± 0,03
-
-**Bericht:** öffnet den Druckdialog (auch „als PDF speichern“) mit Planung, Kurve, Messdaten, Markern, Rechnungen, freigegebenen Referenzen und Fehlerbetrachtung. Vor der Abgabe enthält er keine Literaturwerte.
-
-**CSV-Export:** nur Messdaten.
-
-**Hefteintrag:** Zusammenfassung zum Abschreiben, unabhängig vom eigenen Versuch.
+- **Ergebnisse:** eine Karte je Versuch und Stufe mit:
+  - ÄP und Herkunft (Kurve oder abgeleitet)
+  - Ziel- und Messvolumen
+  - pH mit Status
+  - abgegebenem pK-Wert und späterer Korrektur
+  - nach der Freigabe Literaturwert und ΔpK
+  - Kennzeichnungen wie Musterlösung oder ein aus 0.1.0 übernommener Wert
+- **Bericht:** Druckdialog, auch „als PDF speichern“. Er enthält Aufgabe, Kurve, Messdaten, Rechnungen, Abgabe, freigegebene Referenzen und die Fehlerdeutung. Vor der Freigabe enthält er keine Literaturwerte.
+- **CSV:** nur Messdaten.
+- **Hefteintrag:** etwa 100 Wörter, unabhängig vom eigenen Versuch.
 
 ## Speicherung
 
-Alles bleibt in `localStorage` dieses Browsers (Schlüssel `sivex-halbtitration-v1`); es werden keine Daten übertragen. Ist das Speichern nicht möglich, etwa im privaten Modus, bleibt die App bedienbar und zeigt einen Hinweis an. Fallende Tropfen gelten beim Neuladen als angekommen.
+Die Daten liegen in `localStorage` unter dem Schlüssel `sivex-halbtitration-v2`. Ein Stand aus 0.1.0 (`…-v1`) wird beim ersten Start übernommen:
+
+- Messreihen, Marker und Eingaben bleiben erhalten.
+- Frühere Prüfungen müssen erneut ausgeführt werden.
+- Eine alte Abgabe bleibt sichtbar, schaltet aber nichts frei.
+
+Ist Speichern nicht möglich, bleibt die App bedienbar und zeigt einen Hinweis an. Es werden keine Daten übertragen.
 
 ## Für Tests
 
-`index.html?speed=25` beschleunigt die Laborzeit (Pipettieren, Tropfen, Mischen, Ansprechzeit) für automatische Tests. Für den Unterricht ist dieser Parameter nicht vorgesehen.
+`index.html?speed=25` beschleunigt die Laborzeit. Das ist nur für automatische Prüfungen gedacht.

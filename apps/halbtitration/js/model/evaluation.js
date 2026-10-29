@@ -159,19 +159,93 @@
     if (!pts.length) return result('gap', r.value, 'In der Halbtitration wurde noch kein pH-Wert protokolliert (Datenlücke).', 'measure');
     const matches = pts.filter(function (p) { return near(p.pH, r.value, TOL.readingMatch); });
     if (!matches.length) {
-      return result('wrong', r.value, 'Dieser pH-Wert steht nicht in deiner Halbtitrations-Messreihe. Trage den protokollierten Wert am Zielvolumen ein.', 'measure');
+      return result('wrong', r.value, 'Dieser pH-Wert steht nicht in deiner Halbtitrations-Messreihe. Trage einen protokollierten Wert ein – am besten den am Zielvolumen.', 'measure');
     }
-    // Den Punkt wählen, der dem Zielvolumen am nächsten liegt
-    let best = matches[0];
-    if (Number.isFinite(target)) matches.forEach(function (p) { if (Math.abs(p.v - target) < Math.abs(best.v - target)) best = p; });
+    const hasTarget = Number.isFinite(target) && target > 0;
+    // Den Punkt wählen, der dem Zielvolumen am nächsten liegt (ohne Ziel: den letzten passenden)
+    let best = matches[matches.length - 1];
+    if (hasTarget) matches.forEach(function (p) { if (Math.abs(p.v - target) < Math.abs(best.v - target)) best = p; });
+    const quality = { stable: !!best.stable, homogeneous: best.homogeneous !== false, stirred: best.stirred !== false };
+    if (!hasTarget) {
+      // Ohne eigenes Zielvolumen ist nur belegt, dass der Wert gemessen wurde – nicht, dass er am HÄP liegt
+      return Object.assign(result('present', r.value, 'Der pH-Wert steht in deiner Messreihe (V = ' + F.fmt(best.v, 2) + ' mL). Ob er zum Halbäquivalenzpunkt gehört, ist offen: Berechne zuerst dein Zielvolumen.', 'measure'), { point: best, target: null, quality: quality });
+    }
+    const dv = best.v - target;
+    const onTarget = Math.abs(dv) <= 0.025;
     const notes = [];
-    if (Number.isFinite(target) && Math.abs(best.v - target) > 0.025) {
-      notes.push('Messpunkt bei V = ' + F.fmt(best.v, 2) + ' mL statt am eigenen Zielvolumen ' + F.fmt(target, 2) + ' mL (' + F.signed(best.v - target, 2) + ' mL).');
+    notes.push(onTarget ? 'Messpunkt am eigenen Zielvolumen (' + F.fmt(target, 2) + ' mL).' : 'Messpunkt bei V = ' + F.fmt(best.v, 2) + ' mL statt am eigenen Zielvolumen ' + F.fmt(target, 2) + ' mL (' + F.signed(dv, 2) + ' mL).');
+    if (!quality.stable) notes.push('Der Wert wurde übernommen, bevor die Anzeige stabil war.');
+    if (!quality.homogeneous) notes.push('Die Lösung war beim Ablesen noch nicht durchmischt.');
+    const status = onTarget && quality.stable && quality.homogeneous ? 'ok' : 'measured-note';
+    return Object.assign(result(status, r.value, notes.join(' '), 'measure'), { point: best, target: { value: target, dv: dv, ok: onTarget }, quality: quality });
+  }
+
+  /**
+   * ÄP-Marker an der eigenen Messkurve prüfen (nicht gegen den Modellwert):
+   * Er soll in einem steilen Abschnitt liegen, dessen Steigung ein lokales
+   * Maximum ist und sich deutlich vom übrigen Verlauf abhebt.
+   * @param {object[]} points Messpunkte des Erstdurchgangs
+   * @param {number} v Marker in mL
+   * @param {number} direction +1 steigend (NaOH), −1 fallend (HCl)
+   */
+  function checkEqMarker(points, v, direction) {
+    const pts = sortPoints(points);
+    if (!Number.isFinite(v)) return result('empty', null, 'Noch kein Marker gesetzt.');
+    if (pts.length < 6) return result('gap', v, 'Für eine Auswertung braucht deine Kurve mehr Messpunkte.', 'measure');
+    if (v < pts[0].v || v > pts[pts.length - 1].v) return result('gap', v, 'Der Marker liegt außerhalb deiner Messwerte.', 'measure');
+    const seg = [];
+    for (let i = 1; i < pts.length; i++) {
+      const dv = pts[i].v - pts[i - 1].v;
+      if (dv > 1e-6) seg.push({ a: pts[i - 1].v, b: pts[i].v, s: ((pts[i].pH - pts[i - 1].pH) / dv) * direction, w: dv });
     }
-    if (!best.stable) notes.push('Der Wert wurde übernommen, bevor die Anzeige stabil war.');
-    if (best.homogeneous === false) notes.push('Die Lösung war beim Ablesen noch nicht durchmischt.');
-    const status = notes.length ? 'measured-note' : 'ok';
-    return Object.assign(result(status, r.value, notes.length ? notes.join(' ') : 'Protokollierter Messwert am Zielvolumen.', 'measure'), { point: best });
+    const slopes = seg.map(function (q) { return q.s; }).slice().sort(function (x, y) { return x - y; });
+    const median = slopes[Math.floor(slopes.length / 2)] || 0;
+    // Abschnitte, die den Marker enthalten (liegt er genau auf einem Messpunkt, sind es zwei)
+    const hits = [];
+    seg.forEach(function (q, i) { if (v >= q.a - 1e-9 && v <= q.b + 1e-9) hits.push(i); });
+    const here = hits[0];
+    // steilsten Abschnitt in der Umgebung des Markers suchen (± 1 Abschnitt)
+    let k = here;
+    for (let i = Math.max(0, here - 1); i <= Math.min(seg.length - 1, hits[hits.length - 1] + 1); i++) if (seg[i].s > seg[k].s) k = i;
+    const q = seg[k];
+    const isPeak = (k === 0 || seg[k - 1].s <= q.s) && (k === seg.length - 1 || seg[k + 1].s <= q.s);
+    const steep = q.s > Math.max(3 * Math.max(median, 0), 0.4);
+    if (!(isPeak && steep)) {
+      return result('weak', v, 'An dieser Stelle zeigt deine Kurve keinen deutlichen Sprung. Setze den Marker in die Mitte des steilsten Abschnitts – oder leite den Wert, falls kein Sprung erkennbar ist, aus der Stöchiometrie ab.', 'measure');
+    }
+    if (hits.indexOf(k) < 0 && hits.some(function (i) { return seg[i].s >= 0.5 * q.s; })) {
+      return result('measured-note', v, 'Der Marker liegt am Rand des Sprungs; der steilste Abschnitt deiner Kurve liegt zwischen ' + F.fmt(q.a, 2) + ' und ' + F.fmt(q.b, 2) + ' mL.', 'measure');
+    }
+    if (hits.indexOf(k) < 0) return result('wrong', v, 'Der steilste Abschnitt liegt knapp daneben (zwischen ' + F.fmt(q.a, 2) + ' und ' + F.fmt(q.b, 2) + ' mL).', 'measure');
+    if (q.w > 0.5) return result('measured-note', v, 'Der Marker liegt im Sprung, aber deine Messpunkte sind dort ' + F.fmt(q.w, 2) + ' mL auseinander – der ÄP ist entsprechend ungenau. Miss im Sprung in kleineren Schritten.', 'measure');
+    return result('ok', v, 'Der Marker liegt im steilsten Abschnitt deiner Kurve (' + F.fmt(q.a, 2) + '–' + F.fmt(q.b, 2) + ' mL).', 'measure');
+  }
+
+  /**
+   * Nachweis für die Abgabe eines eigenen experimentellen Ergebnisses einer Stufe.
+   * blocking: ohne diese Angaben ist es kein eigener Versuch.
+   * flags: Mängel, die die Abgabe erlauben, aber gekennzeichnet werden.
+   * @param {{target:number, targetStatus:string, points:object[], seriesId:string, pHRaw:string}} o
+   */
+  function evidence(o) {
+    const blocking = [];
+    const flags = [];
+    if (!(Number.isFinite(o.target) && o.target > 0)) blocking.push('Es fehlt ein eigenes Zielvolumen V(HÄP).');
+    else if (o.targetStatus && o.targetStatus !== 'ok') flags.push('Zielvolumen rechnerisch nicht bestätigt');
+    const pts = (o.points || []).filter(function (p) { return Number.isFinite(p.pH); });
+    if (!o.seriesId || !pts.length) blocking.push('Es gibt noch keine Halbtitrations-Messreihe mit protokollierten Messpunkten.');
+    const m = checkMeasuredPH(o.pHRaw, pts, o.target);
+    let point = null;
+    if (m.status === 'empty' || m.status === 'invalid') blocking.push('Trage den gemessenen pH-Wert am HÄP ein.');
+    else if (m.status === 'wrong' || m.status === 'gap') blocking.push('Der eingetragene pH-Wert gehört zu keinem protokollierten Messpunkt der gewählten Halbtitrationsreihe.');
+    else {
+      point = m.point;
+      if (m.target && !m.target.ok) flags.push('Messpunkt ' + F.signed(m.target.dv, 2) + ' mL neben dem Zielvolumen');
+      if (m.quality && !m.quality.stable) flags.push('vor Stabilisierung abgelesen');
+      if (m.quality && !m.quality.homogeneous) flags.push('nicht durchmischt');
+      if (m.quality && !m.quality.stirred) flags.push('ohne Rühren');
+    }
+    return { ok: !blocking.length, blocking: blocking, flags: flags, point: point, check: m };
   }
 
   /** pK aus dem eigenen pH-Wert: pKₛ = pH bzw. pK_B = pK_w − pH */
@@ -452,6 +526,8 @@
     checkReading: checkReading,
     checkConsumption: checkConsumption,
     checkMeasuredPH: checkMeasuredPH,
+    checkEqMarker: checkEqMarker,
+    evidence: evidence,
     checkPK: checkPK,
     theoryPoints: theoryPoints,
     checkTheoryPH: checkTheoryPH,

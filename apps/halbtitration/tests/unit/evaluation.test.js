@@ -148,3 +148,64 @@ test('Zerlegung der pK-Abweichung summiert sich zur Gesamtabweichung', () => {
   assert.equal(rel.volume.relevant, false);
   assert.equal(rel.early.relevant, false);
 });
+
+// ---------------------------------------------------------------- Regression 0.2.0 (Review 29.10.2026)
+
+test('Befund C: ohne Zielvolumen keine Bestätigung „am Zielvolumen“', () => {
+  const pts = [{ v: 12, pH: 4.76, stable: true }];
+  const r = E.checkMeasuredPH('4.76', pts, NaN);
+  assert.equal(r.status, 'present');
+  assert.doesNotMatch(r.message, /am Zielvolumen\./);
+  assert.match(r.message, /offen/);
+  const ok = E.checkMeasuredPH('4.76', pts, 12);
+  assert.equal(ok.status, 'ok');
+  assert.equal(ok.target.ok, true);
+  const off = E.checkMeasuredPH('4,76', pts, 11.5);
+  assert.equal(off.status, 'measured-note');
+  assert.equal(off.target.ok, false);
+  assert.ok(Math.abs(off.target.dv - 0.5) < 1e-9);
+  const early = E.checkMeasuredPH('4,76', [{ v: 12, pH: 4.76, stable: false }], 12);
+  assert.equal(early.target.ok, true, 'Volumen und Messstatus getrennt');
+  assert.equal(early.quality.stable, false);
+});
+
+test('Befund B: Abgabe nur mit eigenem Zielvolumen und protokolliertem Messpunkt', () => {
+  const none = E.evidence({ target: NaN, points: [], seriesId: null, pHRaw: '4,76' });
+  assert.equal(none.ok, false);
+  assert.equal(none.blocking.length, 3);
+  const noPoint = E.evidence({ target: 12, targetStatus: 'ok', points: [{ v: 12, pH: 4.76, stable: true }], seriesId: 'R2', pHRaw: '4,90' });
+  assert.equal(noPoint.ok, false, 'pH ohne zugehörigen Messpunkt');
+  const good = E.evidence({ target: 12, targetStatus: 'ok', points: [{ v: 12, pH: 4.76, stable: true, homogeneous: true, stirred: true }], seriesId: 'R2', pHRaw: '4,76' });
+  assert.equal(good.ok, true);
+  assert.deepEqual(good.flags, []);
+  // ungenaue, aber echte Messung: abgebbar, gekennzeichnet
+  const rough = E.evidence({ target: 12, targetStatus: 'wrong', points: [{ v: 12.4, pH: 4.83, stable: false, homogeneous: false, stirred: false }], seriesId: 'R2', pHRaw: '4,83' });
+  assert.equal(rough.ok, true);
+  assert.equal(rough.flags.length, 5);
+});
+
+test('ÄP-Marker wird an der eigenen Kurve geprüft, nicht am Modellwert', () => {
+  const C2 = require('../../js/model/chemistry.js');
+  const ex = C2.experiment('acetic');
+  const pts = [];
+  for (let v = 0; v <= 22; v += 1) pts.push({ v: v, pH: C2.phAt(ex, v) });
+  for (let v = 22.2; v <= 26.01; v += 0.2) pts.push({ v: Math.round(v * 100) / 100, pH: C2.phAt(ex, v) });
+  assert.equal(E.checkEqMarker(pts, 23.9, 1).status, 'ok');
+  assert.equal(E.checkEqMarker(pts, 12, 1).status, 'weak', 'flacher Pufferbereich');
+  assert.equal(E.checkEqMarker(pts, 30, 1).status, 'gap', 'außerhalb der Messwerte');
+  // grobe Messung: Sprung nur zwischen 2-mL-Punkten erfasst
+  const coarse = [];
+  for (let v = 0; v <= 28; v += 2) coarse.push({ v: v, pH: C2.phAt(ex, v) });
+  assert.equal(E.checkEqMarker(coarse, 23, 1).status, 'measured-note');
+  // fallende Kurve (Ammoniak) mit direction −1
+  const am = C2.experiment('ammonia');
+  const pa = [];
+  for (let v = 0; v <= 22; v += 0.5) pa.push({ v: v, pH: C2.phAt(am, v) });
+  assert.equal(E.checkEqMarker(pa, 18, -1).status, 'ok');
+  // Glycin: am zweiten ÄP kein deutlicher Sprung
+  const gl = C2.experiment('glycine');
+  const pg = [];
+  for (let v = 0; v <= 28; v += 0.5) pg.push({ v: v, pH: C2.phAt(gl, v) });
+  assert.equal(E.checkEqMarker(pg, 12, 1).status, 'ok');
+  assert.equal(E.checkEqMarker(pg, 24, 1).status, 'weak');
+});
