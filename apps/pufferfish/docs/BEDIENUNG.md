@@ -1,6 +1,6 @@
 # Pufferfish – Bedienhinweise
 
-Stand 0.2.1
+Stand 0.2.2
 
 ## Aufbau des Bildschirms
 
@@ -20,11 +20,11 @@ Die Trennlinie zwischen Bühne und Bedienfeld lässt sich mit Maus, Finger oder 
 1. **Lösung wählen:** die **HCl-** oder **NaOH-Flasche** im Laborbild antippen (ohne Zusatzbeschriftung, die Auswahl wird an der Flasche hervorgehoben) *oder* den Schalter „1 Lösung“ in der Dosierleiste nutzen – beide wirken auf denselben Zustand und zeigen dieselbe Lösung (dunkel, mit Häkchen).
 2. **Pipette** (im Ständer antippen oder Schalter „2 Pipette“) und **Menge** wählen (Tropfpipette: 1 oder 5 Tropfen à 0,050 mL; Messpipette: 0,5 / 1,0 / 5,0 mL). Die Wahl einer Menge der anderen Pipette wechselt die Pipette mit.
 3. **Ziel** wählen und **„Zugeben“** drücken. Im Vergleichsmodus wandert die Pipette nacheinander über alle Gläser. Erst wenn der Tropfen auftrifft, ändert sich die Probe; nach dem Mischen erscheint der Messpunkt.
-4. **Zugesetzte Menge (nur Versuch 1):** Rechts neben jedem Glasschild steht „zugesetzt – HCl … mL / NaOH … mL“. Die Anzeige zählt während der Zugabe mit, gehört zur jeweiligen Messreihe (der Wechsel HCl ↔ NaOH zeigt die andere Reihe) und steht nach „Neue Reihe“ wieder auf 0,00 mL. In der Gegenprobe zählt die Vorbehandlung mit.
+4. **Zugesetzte Menge (nur Versuch 1):** Rechts neben jedem Glasschild steht „zugesetzt – HCl … mL / NaOH … mL“. Die Anzeige zählt während der Zugabe mit, gehört zur jeweiligen Messreihe und steht nach einem Wechsel HCl ↔ NaOH oder nach „Neue Reihe“ wieder auf 0,00 mL. In der Gegenprobe zählt die Vorbehandlung mit.
 
 Nur ausgewählte Schaltflächen sind dunkel (mit Häkchen); alle anderen sind hell. Während einer laufenden Zugabe sind die Auswahlfelder gesperrt (abgeblendet, gestrichelt); sie unterscheiden sich damit von „nicht ausgewählt“.
 
-**Säure- und Laugenreihe** sind getrennte Messreihen mit frischen Ansätzen: Wer von HCl auf NaOH wechselt, erhält frische Proben; die Säurereihe bleibt gespeichert und ist mit HCl wieder auswählbar (ein Hinweis erscheint beim Wechsel). Wer bewusst dieselben, bereits behandelten Ansätze mit der anderen Lösung weiterbehandeln will, wählt **Gegenprobe** – sie ist im Umschalter, im Bühnenhinweis, im Diagramm und in der Ergebnisliste als solche gekennzeichnet.
+**Säure- und Laugenreihe** sind getrennte Messreihen: **Jeder Wechsel HCl ↔ NaOH beginnt mit frischen Ansätzen** (Wasser pH 7,00, Pufferlösung pH 7,20). Eine schon benutzte Reihe wird dabei automatisch unter **„Ergebnisse“** abgelegt (Hinweis erscheint) und lässt sich dort im Diagramm vergleichen; sie wird nicht fortgesetzt. Wer bewusst dieselben, bereits behandelten Ansätze mit der anderen Lösung weiterbehandeln will, wählt **Gegenprobe** – sie ist im Umschalter, im Bühnenhinweis, im Diagramm und in der Ergebnisliste als solche gekennzeichnet.
 
 Fragen zu Beobachtung, Deutung und Erklärung stehen im Bedienfeld → Aufgabe; **eine Vermutung ist nicht nötig**. Mit der Antwort auf die Deutungsfrage in Versuch 1 wird die Herleitung freigeschaltet.
 
