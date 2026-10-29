@@ -18,13 +18,13 @@
     acetic: {
       role: 'Kern',
       chip: 'Essigsäure',
-      task: 'Bestimme den pKₛ-Wert einer Essigsäurelösung mithilfe einer Titration und einer pH-Messung. Nimm zunächst eine Titrationskurve auf und bestimme das Äquivalenzvolumen.',
+      task: 'Bestimme den pKₛ-Wert einer Essigsäurelösung mithilfe einer Titration und einer pH-Messung. Titriere zunächst vollständig bis über den Äquivalenzpunkt: Der Sprung der Kurve liefert das Äquivalenzvolumen.',
       goals: null,
     },
     ammonia: {
       role: 'Transfer',
       chip: 'Ammoniak',
-      task: 'Was ändert sich, wenn die Probe eine schwache Base ist? Bestimme den pK_B-Wert von Ammoniak auf demselben Weg: Titrationskurve, Äquivalenzvolumen, gezielte Halbtitration.',
+      task: 'Was ändert sich, wenn die Probe eine schwache Base ist? Bestimme den pK_B-Wert von Ammoniak auf demselben Weg: vollständige Titration, Äquivalenzvolumen, gezielte Halbtitration.',
       goals: null,
     },
     phosphoric: {
@@ -253,7 +253,7 @@
     '<p>Am <strong>Halbäquivalenzpunkt (HÄP)</strong> ist eine Protolysestufe zur Hälfte umgesetzt: c(A⁻) ≈ c(HA).</p>' +
     '<span class="eq">Kₛ = c(H₃O⁺) · c(A⁻) / c(HA) &nbsp;⇒&nbsp; Kₛ ≈ c(H₃O⁺) &nbsp;⇒&nbsp; pKₛ ≈ pH(HÄP)</span>' +
     '<ul>' +
-    '<li><strong>Vorgehen:</strong> V(ÄP) aus der Titrationskurve, V(HÄP) = V(ÄP)/2, frische Probe bis V(HÄP) titrieren, pH messen.</li>' +
+    '<li><strong>Vorgehen:</strong> Vollständige Titration: V(ÄP) am Sprung der Kurve; Halbtitration: frische Probe bis V(HÄP) = V(ÄP)/2 titrieren, pH messen.</li>' +
     '<li><strong>Schwache Base</strong> (NH₃): am HÄP pOH ≈ pK_B, also pK_B ≈ 14,00 − pH; der pH entspricht pKₛ(NH₄⁺).</li>' +
     '<li><strong>Mehrprotonige Säuren:</strong> V(HÄP,2) = [V(ÄP,1) + V(ÄP,2)]/2.</li>' +
     '<li><strong>Grenze:</strong> pKₛ ≈ pH ist eine Näherung; bei starken Säurestufen liegt der pH am HÄP darüber.</li>' +

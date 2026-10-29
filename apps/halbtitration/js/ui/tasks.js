@@ -433,13 +433,13 @@
     h += stepHtml('start', 1, 'Auftrag und Maßlösung', res.start, b, { openDefault: def('start') });
 
     // 2 Kurve und ÄP
-    b = '<p>Titriere die Probe und übernimm Messpunkte. Im Sprung lohnen sich kleine Zugaben. Bestimme dann ' + (ex.stages > 1 ? 'die Äquivalenzpunkte' : 'das Äquivalenzvolumen') + ' an deiner eigenen Kurve.</p>';
-    b += '<p class="lk-muted">' + (s1 ? esc(A.seriesLabel(s1)) + ': ' + s1.points.length + ' Messpunkte bis ' + fmt(Math.max.apply(null, s1.points.map(function (p) { return p.v; })), 2) + ' mL' : 'Noch keine Titrationskurve.') + '</p>';
+    b = '<p>Titriere die Probe bis deutlich über den Sprung; die Messpunkte entstehen automatisch. Im Sprung lohnen sich kleine Zugaben. Der Sprung zeigt ' + (ex.stages > 1 ? 'die Äquivalenzpunkte' : 'den Äquivalenzpunkt') + ' – markiere ' + (ex.stages > 1 ? 'sie' : 'ihn') + ' an deiner Kurve.</p>';
+    b += '<p class="lk-muted">' + (s1 ? esc(A.seriesLabel(s1)) + ': ' + s1.points.length + ' Messpunkte bis ' + fmt(Math.max.apply(null, s1.points.map(function (p) { return p.v; })), 2) + ' mL' : 'Noch keine vollständige Titration.') + '</p>';
     b += '<div class="lk-row"><button type="button" class="lk-btn small" data-action="chart-marker" data-marker="eq1"' + (s1 ? '' : ' disabled') + '>ÄP' + (ex.stages > 1 ? ' 1' : '') + ' im Diagramm markieren</button>' + (ex.stages > 1 ? '<button type="button" class="lk-btn small" data-action="chart-marker" data-marker="eq2"' + (s1 ? '' : ' disabled') + '>ÄP 2 markieren</button>' : '') + '</div>';
     b += fieldHtml('eqm1', 'V(ÄP' + (ex.stages > 1 ? ',1' : '') + ') aus deiner Kurve', 'mL', 'Marker antippen/ziehen oder Wert eintragen.');
     if (ex.stages > 1) b += fieldHtml('eqm2', 'V(ÄP,2) aus deiner Kurve', 'mL', ex.id === 'glycine' ? 'Zeigt deine Kurve hier keinen deutlichen Sprung, wähle beim Zielvolumen „abgeleitet“.' : '');
     b += details('control', 'Kontrolle mit der Stöchiometrie (freiwillig)') + fieldHtml('veq1', 'V(ÄP' + (ex.stages > 1 ? ',1' : '') + ') berechnet', 'mL') + (ex.stages > 1 ? fieldHtml('veq2', 'V(ÄP,2) berechnet', 'mL') : '') + volumeCompare() + '</details>';
-    h += stepHtml('curve', 2, 'Titrationskurve und Äquivalenzpunkt', res.curve, b, { openDefault: def('curve') });
+    h += stepHtml('curve', 2, 'Vollständige Titration und Äquivalenzpunkt', res.curve, b, { openDefault: def('curve') });
 
     // 3 Halber Umsatz
     b = '<p>Untersuche die Hälfte deines Äquivalenzvolumens.</p>';
@@ -454,10 +454,11 @@
       b += '<div class="field"><label for="basis' + j + '">Rechenbasis</label><select id="basis' + j + '" data-basis="half' + j + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (st.basis['half' + j] === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select><div class="sub">' + basisText(j, basisValues(j)) + '</div></div>';
       b += fieldHtml('vhalf' + j, 'Zielvolumen V(HÄP' + (ex.stages > 1 ? ',' + j : '') + ')', 'mL');
     }
+    b = '<p>Für die Halbtitration wählst du ' + (ex.stages > 1 ? 'je Stufe die Mitte zwischen zwei Äquivalenzpunkten – für die erste Stufe das halbe Äquivalenzvolumen deiner vollständigen Titration.' : 'das halbe Äquivalenzvolumen deiner vollständigen Titration.') + '</p>' + b;
     h += stepHtml('target', 4, 'Zielvolumen berechnen', res.target, b, { openDefault: def('target') });
 
     // 5 Halbtitration
-    b = '<p>Setze eine <strong>frische, gleich große Probe</strong> an und dosiere selbst bis zu deinem Zielvolumen. Rühren, Anzeige stabil werden lassen, Messwert übernehmen. Es wird nicht automatisch gestoppt.</p>';
+    b = '<p>Setze eine <strong>frische, gleich große Probe</strong> an und dosiere selbst bis zu deinem Zielvolumen. Bei stabiler Anzeige wird der Messpunkt automatisch aufgenommen. Es wird nicht automatisch gestoppt – überschreitest du das Ziel, setze eine neue Probe an.</p>';
     b += '<div class="lk-row"><button type="button" class="lk-btn small primary" data-action="new-sample" data-kind="half">Frische Probe für die Halbtitration</button>';
     for (let j = 1; j <= ex.stages; j++) if (Number.isFinite(num('vhalf' + j))) b += '<button type="button" class="lk-btn small" data-action="set-target" data-v="' + num('vhalf' + j) + '">Zielmarke ' + fmt(num('vhalf' + j), 2) + ' mL setzen</button>';
     b += '</div>';
@@ -637,7 +638,7 @@
     const s = survey();
     const used = s ? s.indicator : 'none';
     let h = '';
-    if (!s || used === 'none') h += '<p class="lk-muted">Wähle im Schritt 1 einen Indikator und nimm eine Titrationskurve mit ihm auf. Notiere den Endpunkt bei bleibender Farbe.</p>';
+    if (!s || used === 'none') h += '<p class="lk-muted">Wähle im Schritt 1 einen Indikator und titriere mit ihm vollständig. Notiere den Endpunkt bei bleibender Farbe.</p>';
     if (s && used !== 'none') {
       const ind = Ind.get(used);
       h += '<p>' + esc(ind.name) + ' (pH ' + fmt(ind.range[0], 1) + '–' + fmt(ind.range[1], 1) + ')' + (s.endpoint ? ': Endpunkt notiert bei ' + fmt(s.endpoint.v, 2) + ' mL.' : ': kein Endpunkt notiert.') + '</p>';
@@ -717,7 +718,7 @@
       const ex = Chem.experiment(id);
       A.state.exps[id].series.forEach(function (s) {
         s.points.forEach(function (p) {
-          rows.push([ex.title, s.no, s.kind === 'survey' ? 'Titrationskurve' : 'Halbtitration', fmt(p.v, 2), fmt(p.pH, 2), p.stable && p.homogeneous !== false ? 'stabil' : 'nicht stabil', Ind.get(s.indicator || 'none').name, s.endpoint ? fmt(s.endpoint.v, 2) : ''].join(';'));
+          rows.push([ex.title, s.no, s.kind === 'survey' ? 'vollständige Titration' : 'Halbtitration', fmt(p.v, 2), fmt(p.pH, 2), p.stable && p.homogeneous !== false ? 'stabil' : 'nicht stabil', Ind.get(s.indicator || 'none').name, s.endpoint ? fmt(s.endpoint.v, 2) : ''].join(';'));
         });
       });
     });

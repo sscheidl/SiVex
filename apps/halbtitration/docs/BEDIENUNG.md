@@ -20,7 +20,7 @@ Messreihen, Eingaben und Antworten bleiben beim Wechsel von Versuch oder Reiter 
 
 Jeder Versuch ist direkt anwählbar, es gibt keine Sperre. Daneben stehen drei Knöpfe:
 
-- **Neue Probe (Kurve)** und **Neue Probe (Halbtitration)** leeren nur den Kolben. Gespeicherte Messreihen, Rechnungen, Bürettenfüllung und Kalibrierung bleiben erhalten.
+- **Neue Probe (vollständig)** und **Neue Probe (Halbtitration)** leeren nur den Kolben. Gespeicherte Messreihen, Rechnungen, Bürettenfüllung und Kalibrierung bleiben erhalten.
 - **Reihe wiederholen** verwirft nur die aktive Messreihe und setzt eine frische Probe für denselben Zweck an.
 - **Zurücksetzen** in der Kopfzeile löscht nach Rückfrage das gesamte Labor.
 
@@ -43,8 +43,8 @@ Die Anzeige zeigt V zugegeben, den Bürettenstand (digital abgelesen) und den pH
 
 - **Dosiermenge:** 1 Tropfen (0,05 mL) bis 2,00 mL, dann **Zugeben** (Taste **D**).
 - **Hahn öffnen/schließen:** kontinuierlicher Fluss (Taste **H** oder Antippen des Hahns im Bild); die Tropfgeschwindigkeit stellst du am Schieberegler ein.
-- **Erfassung: automatisch | manuell.** Standard ist *automatisch*: Nach jeder Zugabe wird der Messwert übernommen, sobald die Anzeige stabil ist, und die Kurve wächst mit. Bei *manuell* entsteht ein Punkt nur mit „Messwert übernehmen“.
-- **Messwert übernehmen** (grün, Taste **M**) übernimmt den aktuellen Wert sofort. Ist die Anzeige noch nicht stabil, erscheint der Punkt als offener Kreis.
+- **Messpunkte entstehen automatisch** (ab 0.2.2), sobald die Anzeige stabil ist: beim Eintauchen der Elektrode (Startpunkt bei 0 mL), nach jeder Zugabe bzw. nach dem Schließen des Hahns und nach dem Ein-/Ausschalten des Rührers. Die Kurve wächst beim Titrieren mit. Ein neuer Wert beim gleichen Volumen ersetzt den alten.
+- Ohne Rühren mischt die Lösung nur langsam; der Punkt entsteht dann erst später und kann als „nicht durchmischt“ gekennzeichnet sein.
 - **Rührer** (links in der Messzeile), **Endpunkt notieren** (nur mit Indikator), **Zielmarke** (nur bei der Halbtitration). Ein automatischer Stopp am Ziel erfolgt nicht.
 
 ### Kurve

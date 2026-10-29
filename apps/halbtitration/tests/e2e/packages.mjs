@@ -103,7 +103,7 @@ async function smoke(dir, url, label, wrapper) {
   await F.chooseTitrant(frame, 'NaOH');
   await F.prepare(frame);
   await F.waitStable(frame);
-  await F.act(frame, 'take');
+  await F.waitPoint(frame);
   await F.doseAndTake(frame, 2);
   const n = await frame.evaluate(() => Halbtitration.App.activeSeries().points.length);
   assert(n === 2, label + ': Messung im entpackten Paket nicht möglich');

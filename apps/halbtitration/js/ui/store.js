@@ -57,7 +57,7 @@
       meter: { calibration: 0 },
       burettes: { NaOH: emptyBurette(), HCl: emptyBurette() },
       exps: exps,
-      prefs: { capture: 'auto' }, // Messwerterfassung: 'auto' (bei stabiler Anzeige) oder 'manual'
+      prefs: {},
       migratedFrom: null,
     };
   }

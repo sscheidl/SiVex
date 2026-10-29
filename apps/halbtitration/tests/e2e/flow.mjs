@@ -71,9 +71,13 @@ export async function chooseTitrant(page, value) {
   return page.evaluate(() => (Halbtitration.App.es().answers.titrant || {}).status);
 }
 
-/** Messwerterfassung umschalten: 'auto' oder 'manual' */
-export async function capture(page, mode) {
-  await page.click(`[data-action="capture"][data-mode="${mode}"]`);
+/** Warten, bis der automatische Messpunkt beim aktuellen Volumen aufgenommen ist (ab 0.2.2) */
+export async function waitPoint(page) {
+  await waitFor(page, () => {
+    const l = Halbtitration.App.lab();
+    const s = Halbtitration.App.activeSeries();
+    return l.isSettled && !!s && s.points.some((p) => Math.abs(p.v - l.addedRounded) < 0.005 && p.stable);
+  });
 }
 
 /** Probe und Geräte vorbereiten, bis gemessen werden kann */
@@ -114,7 +118,7 @@ export async function doseAndTake(page, size, { take = true, stable = true } = {
   await act(page, 'dose');
   await waitSettled(page);
   if (stable) await waitStable(page);
-  if (take) await act(page, 'take');
+  if (take) await waitPoint(page);
 }
 
 export async function doseTo(page, target, size) {
@@ -131,7 +135,7 @@ export async function doseTo(page, target, size) {
 /** Titrationskurve: grob, fein um alle ÄP, danach Überschuss; optional Endpunkt */
 export async function surveyRun(page, eqs, vEnd, endpoint) {
   await waitStable(page);
-  await act(page, 'take');
+  await waitPoint(page);
   let v = 0;
   let marked = false;
   const fine = eqs.map((e) => [e - 1.2, e + 1.0]);

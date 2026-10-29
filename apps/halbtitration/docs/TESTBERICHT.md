@@ -1,4 +1,4 @@
-# Testbericht Halbtitrationslabor 0.2.1
+# Testbericht Halbtitrationslabor 0.2.2
 
 Stand 29.10.2026. Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS**, **HOLD – failed**, **HOLD – incomplete**, **HOLD – unverified**.
 
@@ -19,14 +19,14 @@ Stand 29.10.2026. Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md
 - `tests/e2e/packages-results.json`
 - Screenshots in `docs/screenshots/`
 
-Grundlage: Review vom 29.10.2026 (Stand `9bd514b`, Befunde A–D) und Überarbeitungsauftrag (0.2.0); Rückmeldung der Lehrkraft zur Bedienung im Labor (0.2.1). Alle Prüfungen unten liefen mit dem Stand 0.2.1.
+Grundlage: Review vom 29.10.2026 (Stand `9bd514b`, Befunde A–D) und Überarbeitungsauftrag (0.2.0); Rückmeldung der Lehrkraft zur Bedienung im Labor (0.2.1). Alle Prüfungen unten liefen mit dem Stand 0.2.2: Messpunkte entstehen nur noch automatisch bei stabiler Anzeige; es gibt keinen Knopf „Messwert übernehmen“ und keinen Erfassungsumschalter mehr (E1 prüft, dass beide fehlen). Szenarien zu zu früher manueller Ablesung entfallen; ohne Rühren entsteht erst nach stabiler Anzeige ein Punkt (E7).
 
 **Neu in 0.2.1 geprüft (E1):**
 
 - Vorbereitung in der Reihenfolge ① Bürette ② pH-Meter ③ Probe ④ Indikator ⑤ Rührer ⑥ Elektrode.
 - Die Erfassung steht standardmäßig auf „automatisch“.
 - Wählt man an der Bürette die falsche Maßlösung, bleibt sie leer, und das Bedienfeld gibt eine Rückmeldung.
-- Bei automatischer Erfassung entsteht nach einer Zugabe ohne Klick auf „Messwert übernehmen“ ein stabiler Messpunkt.
+- Nach einer Zugabe entsteht automatisch ein stabiler Messpunkt.
 - Indikatorzugabe über den Knopf im Labor (E4, E8).
 
 ## Gesamtbild
@@ -135,7 +135,6 @@ Alle Handlungen laufen über Klicks, Tippen und Eingaben. Die Laborzeit läuft m
 - Marker per Zeiger verschoben → ÄP- und HÄP-Prüfung veraltet.
 - Rechenbasis gewechselt → veraltet; zurück → wieder gültig.
 - pH geändert → pK veraltet.
-- Benutzter Messpunkt ersetzt (neu eingetaucht, zu früh übernommen) → Nachweis veraltet.
 - Neue Halbtitrationsreihe → Nachweis veraltet; die Abgabe prüft neu und blockiert, weil der pH-Wert in der aktuellen Reihe fehlt.
 - Abgabe mit gültigem Nachweis → spätere Korrektur ändert die Momentaufnahme nicht und wird als „aktuell korrigiert“ angezeigt.
 
@@ -144,7 +143,7 @@ Alle Handlungen laufen über Klicks, Tippen und Eingaben. Die Laborzeit läuft m
 - Frischer Stand, nur pK eingetragen → Abgabe verweigert (Zielvolumen und Messreihe fehlen).
 - „Musterlösung ansehen“: keine Abgabe, keine erfundenen Messwerte; in der Ergebnisübersicht „Musterlösung angesehen – kein eigener Versuch“.
 - pH vor dem Zielvolumen → nur „vorhanden, Zuordnung offen“.
-- Überschießen auf 12,50 mL und zu frühe Ablesung → „12,50 mL statt … · bevor die Anzeige stabil“.
+- Überschießen auf 12,50 mL → automatischer Messpunkt bei 12,50 mL, Rückmeldung „12,50 mL statt …“.
 - Richtige Rechnung daraus wird erkannt; die Abgabe wird mit Kennzeichnung angenommen.
 
 **E7 Durchführung und Speicherung**
@@ -161,14 +160,14 @@ Alle Handlungen laufen über Klicks, Tippen und Eingaben. Die Laborzeit läuft m
 
 - 16 Einzelbilder nach einer 0,2-mL-Zugabe kurz vor dem ÄP: fallende Tropfen, Mischschlieren (lokal pink bei farbloser Lösung) und Oberflächenimpulse; das Volumen steigt schrittweise.
 - Ohne Rührer nach 6 s keine Wellen (< 0,05).
-- Tasten D und M funktionieren.
+- Taste D erzeugt eine Zugabe, der Messpunkt folgt automatisch.
 
 **E9 Größen und Bedienung**
 
 - Geprüft bei 1440×900 (Maus), 1180×820 und 1024×768 (Touch).
 - Keine horizontale Überbreite.
 - Knöpfe in Dosierleiste, Kopfzeile, Versuchsleiste, Reitern und Kurvenwerkzeugen sind ≥ 44 px hoch.
-- Labor, Kurve, Zugeben, Hahn und Messwert übernehmen sind gleichzeitig im Bild.
+- Labor, Kurve, Rührer, Zugeben und Hahn sind gleichzeitig im Bild.
 - Antippen des Hahns im Bild öffnet und schließt.
 - Bedienfeld einklappen verbreitert die Bühne.
 - Trennlinie per Pfeiltasten und Ziehen.

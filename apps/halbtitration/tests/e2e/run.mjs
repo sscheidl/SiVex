@@ -80,7 +80,7 @@ async function coreRun(page, o) {
   await F.prepare(page);
   await page.click('.step[data-step="measure"] [data-action="set-target"]');
   await F.waitStable(page);
-  await F.act(page, 'take');
+  await F.waitPoint(page);
   for (const h of o.halves) { await F.doseTo(page, Math.floor(h - 0.5), 2); await F.doseTo(page, h, 0.5); }
   const ser = await page.evaluate(() => Halbtitration.App.es().series.map((s) => ({ kind: s.kind, n: s.points.length })));
   assert(ser.some((s) => s.kind === 'survey' && s.n > 10) && ser.some((s) => s.kind === 'half'), 'Erste Messreihe nicht erhalten: ' + JSON.stringify(ser));
@@ -136,7 +136,7 @@ const scenarios = {
     // Vorbereitung in Laborreihenfolge, Messwerterfassung standardmäßig automatisch
     const order = await page.$$eval('.deck .prep .pstep', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ').trim()));
     assert(/^1 Bürette/.test(order[0]) && /^2 pH-Meter/.test(order[1]) && /^3 Probe/.test(order[2]) && /^4 Indikator/.test(order[3]) && /^5 Rührer/.test(order[4]) && /^6 Elektrode/.test(order[5]), 'Reihenfolge der Vorbereitung: ' + order.join(' | '));
-    assert(await page.$('[data-action="capture"][data-mode="auto"][aria-pressed="true"]'), 'Erfassung nicht automatisch');
+    assert(!(await page.$('[data-action="take"]')) && !(await page.$('[data-action="capture"]')), 'Knopf oder Umschalter für die Erfassung noch vorhanden');
     // falsche Maßlösung an der Bürette → Rückmeldung, Bürette bleibt leer
     assert((await F.chooseTitrant(page, 'HCl')) === 'wrong', 'falsche Maßlösung nicht erkannt');
     assert(!(await F.labState(page)).filled, 'Bürette trotz falscher Maßlösung gefüllt');
@@ -247,7 +247,6 @@ const scenarios = {
   async E5(browser) {
     const page = await newPage(browser);
     await fresh(page);
-    await F.capture(page, 'manual');
     await F.openStep(page, 'curve');
     await page.click('.step[data-step="curve"] details summary');
     let r = await F.fillField(page, 'veq1', '24');
@@ -286,7 +285,7 @@ const scenarios = {
     // Halbtitration, pH, pK
     await F.newSample(page, 'half');
     await F.prepare(page);
-    await F.waitStable(page); await F.act(page, 'take');
+    await F.waitStable(page); await F.waitPoint(page);
     await F.doseTo(page, 10, 2); await F.doseTo(page, 12, 0.5);
     const pH = await page.evaluate(() => Halbtitration.App.activeSeries().points.slice(-1)[0].pH);
     await F.openStep(page, 'measure');
@@ -300,17 +299,10 @@ const scenarios = {
     assert((await field(page, 'pk_pKs1')) === 'stale' && (await field(page, 'phhalf1')) === 'stale', 'pH-Änderung entwertet pK nicht');
     await page.fill('[data-field="phhalf1"] input', de(pH));
     await page.dispatchEvent('[data-field="phhalf1"] input', 'input');
-    // Benutzten Messpunkt ersetzen (erneute Übernahme bei 12,00 mL nach Neueintauchen) → Punktnachweis veraltet
-    await F.act(page, 'toggle-prep');
-    await F.act(page, 'electrode'); await F.act(page, 'electrode');
-    await page.waitForTimeout(80);
-    await F.act(page, 'take'); // noch nicht stabil: Punkt mit neuem Status ersetzt
-    assert((await field(page, 'phhalf1')) === 'stale', 'Ersetzter Messpunkt entwertet den Nachweis nicht');
-    await F.waitStable(page); await F.act(page, 'take');
     // Reihe wechseln: neue Halbtitrationsreihe → alter Nachweis gilt nicht mehr
     await F.newSample(page, 'half');
     await F.prepare(page);
-    await F.waitStable(page); await F.act(page, 'take');
+    await F.waitStable(page); await F.waitPoint(page);
     assert((await field(page, 'phhalf1')) === 'stale', 'Reihenwechsel entwertet den Nachweis nicht');
     // Abgabe bewertet aktuelle Daten: in neuer Reihe kein Punkt am Ziel → blockiert
     await F.openStep(page, 'result');
@@ -342,7 +334,6 @@ const scenarios = {
   async E6(browser) {
     const page = await newPage(browser);
     await fresh(page);
-    await F.capture(page, 'manual');
     await F.openStep(page, 'result');
     await page.fill('[data-field="pk_pKs1"] input', '4,8');
     await F.act(page, 'submit');
@@ -360,17 +351,13 @@ const scenarios = {
     await F.chooseTitrant(page, 'NaOH');
     await F.newSample(page, 'half');
     await F.prepare(page);
-    await F.waitStable(page); await F.act(page, 'take');
+    await F.waitStable(page); await F.waitPoint(page);
     await F.doseTo(page, 10, 2);
-    await F.setDose(page, 2); await F.act(page, 'dose'); // bis 12 mL ohne Ablesung
-    await F.waitSettled(page);
-    await page.evaluate(() => { Halbtitration.App.lab().timeScale = 1; });
-    await F.setDose(page, 0.5); await F.act(page, 'dose'); // überschießen: 12,50 mL
-    await F.waitSettled(page);
-    await F.act(page, 'take'); // zu früh
-    await page.evaluate(() => { Halbtitration.App.lab().timeScale = 25; });
+    await F.setDose(page, 2); await F.act(page, 'dose'); // bis 12 mL
+    await F.setDose(page, 0.5); await F.act(page, 'dose'); // gleich weiter: überschießen auf 12,50 mL
+    await F.waitPoint(page);
     const p = await page.evaluate(() => Halbtitration.App.activeSeries().points.slice(-1)[0]);
-    assert(!p.stable, 'frühe Ablesung nicht als instabil gekennzeichnet');
+    assert(p.v === 12.5 && p.stable, 'automatischer Messpunkt nach dem Überschießen fehlt');
     await F.openStep(page, 'measure');
     const pres = await F.fillField(page, 'phhalf1', de(p.pH));
     assert(pres.current === 'present' && /offen/.test(pres.message), 'Ohne Ziel bestätigt: ' + JSON.stringify(pres));
@@ -380,16 +367,16 @@ const scenarios = {
     await F.fillField(page, 'vhalf1', '12,00');
     await F.openStep(page, 'measure');
     const m = await F.fillField(page, 'phhalf1', de(p.pH));
-    assert(m.current === 'measured-note' && /12,50 mL statt/.test(m.message) && /bevor die Anzeige stabil/.test(m.message), 'Ziel, Abweichung und Status nicht getrennt: ' + JSON.stringify(m));
+    assert(m.current === 'measured-note' && /12,50 mL statt/.test(m.message), 'Zielabweichung nicht ausgewiesen: ' + JSON.stringify(m));
     await F.openStep(page, 'result');
     assert((await F.fillField(page, 'pk_pKs1', de(p.pH))).current === 'ok', 'richtige Rechnung aus ungenauer Messung nicht erkannt');
     await F.act(page, 'submit');
     await page.waitForSelector('#modal:not([hidden])');
     const fl = await page.$eval('#modalBody', (e) => e.innerText);
-    assert(/neben dem Zielvolumen/.test(fl) && /vor Stabilisierung/.test(fl), 'Mängel nicht gekennzeichnet: ' + fl);
+    assert(/neben dem Zielvolumen/.test(fl), 'Mangel nicht gekennzeichnet: ' + fl);
     await page.click('#modalActions .lk-btn.primary');
     const sb = await page.evaluate(() => Halbtitration.App.es().submission);
-    assert(sb && sb.flags.length >= 2 && sb.stages[1].v === 12.5, 'Ungenaue echte Messung nicht angenommen');
+    assert(sb && sb.flags.length >= 1 && sb.stages[1].v === 12.5, 'Ungenaue echte Messung nicht angenommen');
     return { errors: page.__errors };
   },
 
@@ -397,18 +384,18 @@ const scenarios = {
   async E7(browser) {
     const page = await newPage(browser);
     await fresh(page);
-    await F.capture(page, 'manual');
     await F.chooseTitrant(page, 'NaOH');
     await F.prepare(page, { stir: false });
-    await F.waitStable(page); await F.act(page, 'take');
+    await F.waitStable(page); await F.waitPoint(page);
     await F.setDose(page, 2); await F.act(page, 'dose');
     await F.waitSettled(page);
     const still = await F.labState(page);
     assert(!still.stable && still.unmixed > 0.5, 'Ohne Rühren sofort stabil');
-    await F.act(page, 'take');
+    const nStill = await page.evaluate(() => Halbtitration.App.activeSeries().points.length);
+    assert(nStill === 1, 'Ohne stabile Anzeige wurde ein Punkt erzeugt');
     await shot(page, '7-ohne-ruehren');
-    await F.act(page, 'stir');
-    await F.waitStable(page); await F.act(page, 'take');
+    await page.click('.measure [data-action="stir"]');
+    await F.waitPoint(page);
     // neue Probe: Bürette und Kalibrierung bleiben, Reihen bleiben
     await F.newSample(page, 'half');
     const keep = await page.evaluate(() => ({ cal: Halbtitration.App.lab().calibration, filled: Halbtitration.App.lab().burette.filled, n: Halbtitration.App.es().series.length, btn: !!document.querySelector('[data-action="prep-burette"]:not([disabled])') }));
@@ -446,7 +433,7 @@ const scenarios = {
     await F.chooseTitrant(p3, 'NaOH');
     await p3.waitForSelector('.toast.show');
     await F.prepare(p3);
-    await F.waitStable(p3); await F.act(p3, 'take');
+    await F.waitStable(p3); await F.waitPoint(p3);
     assert((await p3.evaluate(() => Halbtitration.App.activeSeries().points.length)) === 1, 'Ohne Speicher nicht bedienbar');
     return { errors: page.__errors.concat(p2.__errors, p3.__errors) };
   },
@@ -457,7 +444,7 @@ const scenarios = {
     await fresh(page);
     await F.chooseTitrant(page, 'NaOH');
     await F.prepare(page, { indicator: 'phenolphthalein' });
-    await F.waitStable(page); await F.act(page, 'take');
+    await F.waitStable(page); await F.waitPoint(page);
     await F.doseTo(page, 22, 2);
     await F.doseTo(page, 23.8, 0.2);
     await page.evaluate(() => { Halbtitration.App.lab().timeScale = 1; });
@@ -483,9 +470,8 @@ const scenarios = {
     await F.setDose(page, 'drop');
     await page.evaluate(() => document.activeElement.blur());
     await page.keyboard.press('d');
-    await F.waitSettled(page); await F.waitStable(page);
-    await page.keyboard.press('m');
-    assert((await page.evaluate(() => Halbtitration.App.activeSeries().points.length)) === n0 + 1, 'Tasten D/M wirken nicht');
+    await F.waitPoint(page);
+    assert((await page.evaluate(() => Halbtitration.App.activeSeries().points.length)) === n0 + 1, 'Taste D bzw. automatischer Messpunkt wirkt nicht');
     return { frames: frames.map((f) => [f.drops, f.plumes, +f.wave.toFixed(2)].join('/')), calm, errors: page.__errors };
   },
 
@@ -511,7 +497,7 @@ const scenarios = {
       const m = await page.evaluate(() => {
         const vis = (sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return r.width > 0 && r.top >= 0 && r.bottom <= window.innerHeight + 1 && r.left >= 0 && r.right <= window.innerWidth + 1; };
         const small = Array.from(document.querySelectorAll('.deck button, .lk-head button, .expchip, .seriesbar button, .lk-tabs button, .chart-tools button')).filter((b) => b.offsetParent && b.getBoundingClientRect().height < 43.5).map((b) => b.textContent.trim().slice(0, 24));
-        return { overflow: document.documentElement.scrollWidth - window.innerWidth, small, lab: document.getElementById('labCanvas').getBoundingClientRect().width, chart: document.getElementById('chart').getBoundingClientRect().width, dose: vis('[data-action="dose"]'), take: vis('[data-action="take"]'), valve: vis('#btnValve'), chartVis: vis('#chart'), labVis: vis('#labCanvas') };
+        return { overflow: document.documentElement.scrollWidth - window.innerWidth, small, lab: document.getElementById('labCanvas').getBoundingClientRect().width, chart: document.getElementById('chart').getBoundingClientRect().width, dose: vis('[data-action="dose"]'), take: vis('.measure [data-action="stir"]'), valve: vis('#btnValve'), chartVis: vis('#chart'), labVis: vis('#labCanvas') };
       });
       assert(m.overflow <= 0, 'Überbreite bei ' + vp.name);
       assert(!m.small.length, 'Zu kleine Touchziele bei ' + vp.name + ': ' + m.small.join(', '));
