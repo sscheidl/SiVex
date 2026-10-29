@@ -151,7 +151,7 @@ Das Paket `0.1.0` wurde aus `release/` entfernt und bleibt über die Git-Histori
 | P13 | **PASS** | E12: Diagramm liest echte Stoffmengen (Säulen = `pairAmounts`, auch im Zwischenzustand), HA/A⁻, Zahlen, Legende; Messung erst nach „Mischen und pH messen“ |
 | P14 | **PASS** | E04, E10, E13–E15, E20–E22, SCORM-Test, 60 Unit-Tests; veraltete V3-/V4-/Zeitlupen-Tests ersetzt (Abschnitt 3) |
 | P15 | **PASS** | E16–E19 (1440×900, 1180×820, 1024×768, 768×1024; Touch-Emulation), CON ohne Konsolenfehler; Screenshots `09`–`11` |
-| P16 | **PASS** | Abschnitt 2–4: `npm test`, `npm run package`, `npm run test:e2e`, `npm run test:scorm` erfolgreich; beide ZIPs frisch entpackt geprüft; Prüfsummen, Dokumentation und PR vollständig |
+| P16 | **PASS** | Abschnitt 2–4: `npm test`, `npm run package`, `npm run test:e2e`, `npm run test:scorm` erfolgreich; beide ZIPs frisch entpackt geprüft; Prüfsummen und Dokumentation vollständig; PR: https://github.com/sscheidl/SiVex/pull/33 |
 
 Es gibt keine `HOLD – failed`- oder `HOLD – incomplete`-Punkte. **P12-Interpretation:** Die Toleranzen waren fachlich haltbar; der Solver wurde nicht angepasst.
 
