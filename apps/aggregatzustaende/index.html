@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Aggregatzustände – SiVex</title>
+  <meta name="description" content="Aggregatzustände und Teilchenmodell: Wasser, Iod, Eisen und Kochsalz fest, flüssig und gasförmig – auf der Stoffebene und auf der Teilchenebene (Chemie Jgst. 8/9).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b2430'/%3E%3Cg fill='%2357a0ee'%3E%3Ccircle cx='14' cy='46' r='5'/%3E%3Ccircle cx='25' cy='46' r='5'/%3E%3Ccircle cx='14' cy='35' r='5'/%3E%3Ccircle cx='25' cy='35' r='5'/%3E%3C/g%3E%3Cg fill='%23a8cdf5'%3E%3Ccircle cx='40' cy='47' r='4'/%3E%3Ccircle cx='49' cy='41' r='4'/%3E%3Ccircle cx='52' cy='17' r='4'/%3E%3Ccircle cx='38' cy='14' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="labkit/css/labkit.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="lk-app">
+    <header class="lk-head">
+      <div class="lk-brand">
+        <svg class="brandmark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+          <g fill="#57a0ee"><circle cx="8" cy="31" r="3.4"/><circle cx="15.5" cy="31" r="3.4"/><circle cx="8" cy="23.5" r="3.4"/><circle cx="15.5" cy="23.5" r="3.4"/></g>
+          <g fill="#a8cdf5"><circle cx="25" cy="31.5" r="3"/><circle cx="31.5" cy="27" r="3"/><circle cx="33" cy="9" r="3"/><circle cx="23" cy="7" r="3"/></g>
+        </svg>
+        <div><b>Aggregatzustände</b><br><small>Teilchenmodell · Chemie 8/9</small></div>
+      </div>
+      <button type="button" class="lk-btn small" id="btnNotebook">Hefteintrag</button>
+      <button type="button" class="lk-btn small" id="btnPanel" aria-expanded="true" aria-controls="panel">Bedienfeld</button>
+    </header>
+    <main class="lk-main" id="main">
+      <section class="lk-stage" id="stage" aria-label="Versuch">
+        <div class="ctrlbar">
+          <div class="lk-seg light subs" id="subs" role="group" aria-label="Stoff wählen">
+            <button type="button" data-sub="water" aria-pressed="true">Wasser</button>
+            <button type="button" data-sub="iodine" aria-pressed="false">Iod</button>
+            <button type="button" data-sub="iron" aria-pressed="false">Eisen</button>
+            <button type="button" data-sub="salt" aria-pressed="false">Kochsalz</button>
+          </div>
+          <div class="lk-seg light levels" id="levels" role="group" aria-label="Ansicht wählen">
+            <button type="button" data-level="matter" aria-pressed="true">Stoffebene</button>
+            <button type="button" data-level="particles" aria-pressed="false">Teilchenebene</button>
+          </div>
+          <button type="button" class="lk-btn small cold" id="btnCold" aria-pressed="false" hidden>Kalte Oberfläche einblenden</button>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="matter" role="img" aria-label="Stoffebene"></canvas>
+          <canvas id="particles" role="img" aria-label="Teilchenebene" hidden></canvas>
+        </div>
+        <div class="infobar" id="infobar"></div>
+        <div class="tempbar" id="tempbar">
+          <label class="tlabel" for="temp">Temperatur <output id="tempOut" for="temp" aria-live="off">20 °C</output></label>
+          <div class="slider">
+            <input type="range" id="temp" min="-30" max="130" step="1" value="20" aria-valuetext="20 °C">
+            <div class="ticks" id="ticks" aria-hidden="true"></div>
+          </div>
+        </div>
+        <p class="sr-only" id="srState" aria-live="polite"></p>
+      </section>
+      <div class="lk-splitter" id="splitter" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Breite des Bedienfelds ändern (Pfeiltasten, Doppelklick setzt zurück)" aria-valuemin="300" aria-valuemax="620"><span class="lk-splitter-grip"></span></div>
+      <aside class="lk-panel" id="panel" aria-label="Bedienfeld">
+        <div class="lk-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-task" data-tab="task" aria-selected="true">Aufgabe</button>
+          <button type="button" role="tab" id="tab-results" data-tab="results" aria-selected="false">Ergebnisse</button>
+          <button type="button" role="tab" id="tab-notebook" data-tab="notebook" aria-selected="false">Hefteintrag</button>
+        </div>
+        <div id="panelBody" class="lk-section" role="tabpanel"></div>
+      </aside>
+    </main>
+  </div>
+  <div class="print-only" id="printArea"></div>
+  <script src="labkit/js/core.js"></script>
+  <script src="labkit/js/splitter.js"></script>
+  <script src="labkit/js/scorm.js"></script>
+  <script src="js/substances.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/render-matter.js"></script>
+  <script src="js/render-particles.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
