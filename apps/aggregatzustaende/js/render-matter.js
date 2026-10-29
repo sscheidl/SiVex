@@ -34,6 +34,8 @@
   const OX0 = 140, OX1 = 860, OY0 = 92, OFX0 = 206, OFX1 = 794, OFY0 = 156, OFY1 = 532;
   const CK = 0.72, CTX = 500 * (1 - CK), CTY = 526 - 574 * CK;   // Tiegel → Welt: x' = CTX + CK·x, y' = CTY + CK·y
   const cmap = (x, y) => ({ x: CTX + CK * x, y: CTY + CK * y });
+  // Bildausschnitt je Gefäß: Das Gefäß füllt den verfügbaren Bildbereich weitgehend aus
+  const FOCUS = { beaker: { x: 268, y: 116, w: 464, h: 488 }, crucible: { x: 126, y: 78, w: 748, h: 516 } };
 
   /** Glühfarbe nach Temperatur (schematisch, nach der Farbe glühender Körper). */
   const GLOW = [[600, [110, 25, 8]], [900, [190, 60, 20]], [1200, [240, 100, 30]], [1500, [255, 150, 52]], [2000, [255, 205, 112]], [2900, [255, 244, 214]]];
@@ -109,10 +111,12 @@
       const r = this.canvas.getBoundingClientRect();
       const dpr = Math.min(2.5, root.devicePixelRatio || 1);
       const w = Math.max(1, r.width), h = Math.max(1, r.height);
-      if (w === this.view.w && h === this.view.h && dpr === this.view.dpr) return false;
+      const fk = this.model.substance.vessel;
+      if (w === this.view.w && h === this.view.h && dpr === this.view.dpr && fk === this.view.fk) return false;
       this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
-      const scale = Math.min(w / SW, h / SH);
-      Object.assign(this.view, { w, h, dpr, scale, ox: (w - SW * scale) / 2, oy: (h - SH * scale) / 2 });
+      const F = FOCUS[fk];
+      const scale = Math.min(w / F.w, h / F.h);
+      Object.assign(this.view, { w, h, dpr, fk, scale, ox: w / 2 - (F.x + F.w / 2) * scale, oy: h / 2 - (F.y + F.h / 2) * scale });
       this.bg = null;
       return true;
     }

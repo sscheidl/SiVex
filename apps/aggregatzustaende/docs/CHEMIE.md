@@ -1,6 +1,6 @@
 # Aggregatzustände – fachliche Grundlagen und Vereinfachungen
 
-Stand 0.2.0 (prototype). Zielgruppe: Gymnasium Bayern, Chemie Jgst. 8 (NTG) bzw. 9 (SG). Die fachliche Freigabe durch die Lehrkraft steht aus.
+Stand 0.2.1 (prototype). Zielgruppe: Gymnasium Bayern, Chemie Jgst. 8 (NTG) bzw. 9 (SG). Die fachliche Freigabe durch die Lehrkraft steht aus.
 
 ## 1. Temperaturwerte
 
@@ -71,7 +71,7 @@ Gase wie Wasserdampf, Eisen- oder Kochsalzdampf sind in Wirklichkeit unsichtbar 
 
 ## 6. Schema der Phasenübergänge
 
-Zuschaltbar als Spalte neben dem Bild (nie darüber). Die drei Zustände sind Kästen, deren Farbe den Anteil des Stoffes in diesem Zustand zeigt; der Kasten mit dem größten Anteil ist umrandet. Läuft ein Übergang, wird sein Pfeil hervorgehoben und bewegt sich. Genau an der Schmelz- bzw. Siedetemperatur (beide Zustände nebeneinander) und bei Iod mit gleich bleibender Dampfmenge laufen **beide Richtungen** gleichzeitig – ein erster, unaufdringlicher Hinweis auf ein dynamisches Gleichgewicht, ohne den Begriff einzuführen. Die Fachbegriffe stehen im Schema immer; Schritt 3 der Aufgaben dient dann der Wiederholung.
+Zuschaltbar; es teilt sich den Bildbereich mit dem Versuch (Versuch 60 %, Schema 40 %, auf schmalen Bildschirmen darunter) und liegt nie darüber. Die drei Zustände sind Kästen, deren Farbe den Anteil des Stoffes in diesem Zustand zeigt; der Kasten mit dem größten Anteil ist umrandet. Läuft ein Übergang, wird sein Pfeil hervorgehoben und bewegt sich. Genau an der Schmelz- bzw. Siedetemperatur (beide Zustände nebeneinander) und bei Iod mit gleich bleibender Dampfmenge laufen **beide Richtungen** gleichzeitig – ein erster, unaufdringlicher Hinweis auf ein dynamisches Gleichgewicht, ohne den Begriff einzuführen. Die Fachbegriffe stehen im Schema immer; Schritt 3 der Aufgaben dient dann der Wiederholung.
 
 ## 7. Grenzen des Modells
 

@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.2.1 – 29.10.2026 (prototype)
+
+Rückmeldung der Lehrkraft zu 0.2.0:
+
+- **Schema im Bildbereich:** Eingeschaltet teilt es sich den Bildbereich mit dem Versuch (60 : 40, unter 1200 px 55 : 45, unter 900 px darunter) statt einer schmalen Spalte; Kästen und Beschriftung deutlich größer.
+- **Gefäß füllt seinen Bereich:** Becherglas bzw. Ofen werden auf ihren Bildausschnitt eingepasst und füllen den verfügbaren Bereich weitgehend aus – auch ohne Schema größer als bisher.
+- **Größere Schrift** in der ganzen App (Grundschrift 16 px; Hinweisleiste, Reglermarkierungen, Temperaturanzeige, Auswahlfelder, Tabellen).
+
 ## 0.2.0 – 29.10.2026 (prototype)
 
 Rückmeldung der Lehrkraft zu 0.1.0 umgesetzt:

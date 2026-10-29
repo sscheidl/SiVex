@@ -159,6 +159,7 @@
       $('#btnScheme').setAttribute('aria-pressed', String(!!ui.scheme));
       $('#btnScheme').title = ui.scheme ? 'Schema der Phasenübergänge ausblenden' : 'Schema der Phasenübergänge neben dem Bild einblenden';
       $('#scheme').hidden = !ui.scheme;
+      $('#viewrow').classList.toggle('with-scheme', !!ui.scheme);
       if (ui.scheme) renderScheme(true);
       $('#matter').hidden = ui.level !== 'matter';
       $('#particles').hidden = ui.level !== 'particles';
@@ -175,11 +176,11 @@
     // ------------------------------------------------------------ Schema der Phasenübergänge (dynamisch)
     // Zustände färben sich nach ihrem Anteil, der gerade ablaufende Übergang wird hervorgehoben
     // und läuft als bewegter Pfeil; an Schmelz- bzw. Siedetemperatur laufen beide Richtungen.
-    const SCH = { G: [130, 44], F: [48, 250], L: [212, 250] };
+    const SCH = { G: [170, 34], F: [62, 268], L: [278, 268] };
     const SCH_T = [['sl', 'F', 'L', 'Schmelzen'], ['ls', 'L', 'F', 'Erstarren'], ['lg', 'L', 'G', 'Verdampfen'], ['gl', 'G', 'L', 'Kondensieren'], ['sg', 'F', 'G', 'Sublimieren'], ['gs', 'G', 'F', 'Resublimieren']];
     const SCH_NAMES = { F: 'fest', L: 'flüssig', G: 'gasförmig' };
     function schemeSvg() {
-      const hw = 42, hh = 15;
+      const hw = 56, hh = 20;
       const edge = (u) => Math.min(hw / Math.max(1e-6, Math.abs(u[0])), hh / Math.max(1e-6, Math.abs(u[1])));
       const arrows = SCH_T.map(([id, a, b, label]) => {
         const A = SCH[a], B = SCH[b];
@@ -188,11 +189,11 @@
         const x1 = A[0] + u[0] * e + n[0] * off, y1 = A[1] + u[1] * e + n[1] * off, x2 = B[0] - u[0] * e + n[0] * off, y2 = B[1] - u[1] * e + n[1] * off;
         let ang = Math.atan2(u[1], u[0]) * 180 / Math.PI;
         if (ang > 90 || ang < -90) ang += 180;
-        const mx = (A[0] + B[0]) / 2 - n[0] * 19, my = (A[1] + B[1]) / 2 - n[1] * 19;
+        const mx = (A[0] + B[0]) / 2 - n[0] * 22, my = (A[1] + B[1]) / 2 - n[1] * 22;
         return `<g class="arr" data-t="${id}"><line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/><text x="${mx.toFixed(1)}" y="${my.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${ang.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)})">${label}</text></g>`;
       }).join('');
-      const boxes = Object.entries(SCH).map(([k, [x, y]]) => `<g class="box" data-s="${k}"><rect class="base" x="${x - hw}" y="${y - hh}" width="${2 * hw}" height="${2 * hh}" rx="8"/><rect class="fill" x="${x - hw}" y="${y - hh}" width="${2 * hw}" height="${2 * hh}" rx="8" opacity="0"/><rect class="frame" x="${x - hw}" y="${y - hh}" width="${2 * hw}" height="${2 * hh}" rx="8" fill="none"/><text x="${x}" y="${y + 4.5}" text-anchor="middle">${SCH_NAMES[k]}</text></g>`).join('');
-      return `<h2>Phasenübergänge</h2><svg viewBox="0 0 260 296" role="img" aria-label="Schema: fest, flüssig, gasförmig und die sechs Übergänge; der laufende Übergang ist hervorgehoben"><defs><marker id="sah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#9aa9b8"/></marker><marker id="sahOn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1f6fd1"/></marker></defs>${arrows}${boxes}</svg><p class="now" id="schemeNow" aria-live="off"></p><p class="legend">Farbe der Kästen: Anteil des Stoffes in diesem Zustand.</p>`;
+      const boxes = Object.entries(SCH).map(([k, [x, y]]) => `<g class="box" data-s="${k}"><rect class="base" x="${x - hw}" y="${y - hh}" width="${2 * hw}" height="${2 * hh}" rx="8"/><rect class="fill" x="${x - hw}" y="${y - hh}" width="${2 * hw}" height="${2 * hh}" rx="8" opacity="0"/><rect class="frame" x="${x - hw}" y="${y - hh}" width="${2 * hw}" height="${2 * hh}" rx="8" fill="none"/><text x="${x}" y="${y + 6}" text-anchor="middle">${SCH_NAMES[k]}</text></g>`).join('');
+      return `<h2>Phasenübergänge</h2><svg viewBox="0 0 340 300" role="img" aria-label="Schema: fest, flüssig, gasförmig und die sechs Übergänge; der laufende Übergang ist hervorgehoben"><defs><marker id="sah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#9aa9b8"/></marker><marker id="sahOn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1f6fd1"/></marker></defs>${arrows}${boxes}</svg><p class="now" id="schemeNow" aria-live="off"></p><p class="legend">Farbe der Kästen: Anteil des Stoffes in diesem Zustand.</p>`;
     }
     let schemeSig = '', vPrev = 0;
     function renderScheme(force) {
@@ -408,7 +409,7 @@
         <h2>Kenneigenschaften (bei 1013 hPa)</h2>
         <table><thead><tr><th>Stoff</th><th>Schmelztemperatur</th><th>Siedetemperatur</th><th>Zustand bei 1000 °C</th></tr></thead><tbody>${rows}</tbody></table>
         <h2>Meine Beobachtung beim Iod</h2><div class="lines"></div><div class="lines"></div><div class="lines"></div>
-        <p style="font-size:9pt;color:#555">SiVex · Aggregatzustände 0.2.0 · Teilchenebene schematisch, nicht maßstabsgetreu.</p>`;
+        <p style="font-size:9pt;color:#555">SiVex · Aggregatzustände 0.2.1 · Teilchenebene schematisch, nicht maßstabsgetreu.</p>`;
     }
 
     // ------------------------------------------------------------ Bedienfeld zeichnen und bedienen
