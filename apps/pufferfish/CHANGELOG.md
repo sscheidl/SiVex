@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 – 29.10.2026 (prototype)
+
+- **Wechsel HCl ↔ NaOH beginnt immer mit frischen Ansätzen** (Wunsch der Lehrkraft): Bisher zeigte die Rückkehr zu einer schon benutzten Reihe deren alten Stand (z. B. angesäuertes Wasser), was irritierte. Jetzt wird eine benutzte Reihe beim Wechsel automatisch unter „Ergebnisse“ abgelegt (Hinweis erscheint) und Wasser/Pufferlösung starten wieder bei pH 7,00/7,20. Unbenutzte Reihen werden nicht abgelegt. Die Gegenprobe (bewusstes Weiterbehandeln derselben Ansätze) bleibt unverändert.
+
 ## 0.2.1 – 29.10.2026 (prototype)
 
 Kleine Überarbeitung nach Rückmeldung der Lehrkraft. Status bleibt **prototype**.

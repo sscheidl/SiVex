@@ -1,4 +1,4 @@
-# Pufferfish 0.2.1 – Testbericht
+# Pufferfish 0.2.2 – Testbericht
 
 Stand 29.10.2026 · Labkit 0.1.1 · Status **prototype** (Entwicklungsstand, **nicht** für den Unterricht freigegeben)
 
@@ -20,6 +20,21 @@ Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = gepr
 **Keine Freigabeempfehlung.** Die Entwicklerprüfungen bestätigen P01–P16, ersetzen aber weder die Prüfung auf einem echten iPad noch den mebis-Import noch die fachlich-didaktische Durchsicht. Der Stand bleibt `prototype`; `ready`, „unterrichtsfreigegeben“ und ein Merge nach `main` sind durch diese Tests nicht legitimiert.
 
 Prüfumgebung: Node 22.22.0, Playwright 1.63.0 mit **Chromium 153.0.8010.12** (headless, Linux); keine Prüfung mit Edge, Safari oder Firefox.
+
+## Nachtrag 0.2.2 (29.10.2026)
+
+Änderung: Jeder Wechsel HCl ↔ NaOH beginnt mit frischen Ansätzen; eine benutzte Reihe wird dabei unter „Ergebnisse“ abgelegt (vorher: Rückkehr zur alten, z. B. angesäuerten Reihe). Prüfumgebung wie 0.2.1 (Windows 11, Edge 156.0.4314.50, Playwright 1.56.1).
+
+| Bereich | Ergebnis | Nachweis |
+| --- | --- | --- |
+| Unit-Tests (inkl. Labkit) | PASS 66/66 | `npm test` |
+| Browserprüfung Edge (1440×900, Touch-Emulation 1180×820, 1024×768, 768×1024) | PASS 25/25 | `tests/e2e/results.json` |
+| Pakete frisch entpackt (SCORM 1.2 Mock-LMS eingebettet/neues Fenster, Web-ZIP per HTTP und file://) | PASS 17/17 | `tests/e2e/scorm-results.json` |
+| Echtes iPad, mebis-Import, fachliche Freigabe | **HOLD – unverified** | nicht durchgeführt |
+
+E04 prüft jetzt: HCl → NaOH → HCl startet mit frischen Ansätzen (Wasser pH 7,00, Pufferlösung 7,20), Hinweis „Die vorige Säurereihe steht unter ‚Ergebnisse‘“, die vorige Reihe liegt mit ihren Messpunkten im Archiv, unbenutzte Reihen werden nicht abgelegt; Gegenprobe unverändert. E23: nach dem Wechsel steht die Mengenanzeige auf 0,00 mL.
+
+Pakete: `release/pufferfish-0.2.2-web.zip` (SHA-256 `9889d32f739e06a3448e41959b76a443d953dbf916d6b56feb1b913ecef30cf4`), `release/pufferfish-0.2.2-scorm12.zip` (SHA-256 `5b48b6f70e49970c3ee6f9dea2a4ad982b6db6d761ac8249e7f2af5cce892998`).
 
 ## Nachtrag 0.2.1 (29.10.2026)
 

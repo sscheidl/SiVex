@@ -1,4 +1,4 @@
-// End-to-End-Prüfung von Pufferfish 0.2.1 im echten Browser (Chromium/Edge über Playwright).
+// End-to-End-Prüfung von Pufferfish 0.2.2 im echten Browser (Chromium/Edge über Playwright).
 // Bedient ausschließlich die gerenderte Oberfläche; der Modellzustand wird nur gelesen.
 // Erwartungswerte für pH stammen aus chem.js im Browser bzw. aus unabhängigen Formeln.
 // Zugaben laufen über die Playwright-Uhr (clock) schneller als in Echtzeit ab.
@@ -179,7 +179,7 @@ await scenario('E03', 'P05', 'Flasche und Umschalter wählen synchron HCl/NaOH (
 });
 
 // =========================================================== E04 Säure-/Laugenreihe, Gegenprobe
-await scenario('E04', 'P05,P14', 'Laugenreihe mit frischen Ansätzen, Säurereihe bleibt gespeichert, Gegenprobe ausdrücklich gekennzeichnet (H₃O⁺ + OH⁻); nichts wird unbemerkt überschrieben', async () => {
+await scenario('E04', 'P05,P14', 'Jeder Wechsel HCl ↔ NaOH beginnt mit frischen Ansätzen, die vorige Reihe liegt unter „Ergebnisse“, Gegenprobe ausdrücklich gekennzeichnet (H₃O⁺ + OH⁻); nichts wird unbemerkt überschrieben', async () => {
   const { page, errors, done } = await open();
   await dose(page, 'HCl', 'd1'); await idle(page);
   await reagent(page, 'NaOH');
@@ -192,9 +192,15 @@ await scenario('E04', 'P05,P14', 'Laugenreihe mit frischen Ansätzen, Säurereih
   near(bs[1].records[1].pH, await refPH(page, { r: 'phos' }, 'NaOH', 0.05), 1e-9, 'Phosphat nach NaOH');
   await reagent(page, 'HCl');
   bs = await beakers(page);
-  near(bs[0].added, 0.05, 1e-12, 'Säurereihe unverändert erhalten'); assert(bs[0].records.length === 2, 'Säurereihe: Startwert + 1 Messpunkt');
+  assert(bs.every((b) => b.added === 0 && b.records.length === 1), 'zurück zu HCl: frische Ansätze (0.2.2)');
+  near(bs[0].records[0].pH, 7, 1e-9, 'Wasser startet neutral'); near(bs[1].records[0].pH, 7.2, 0.01, 'Pufferlösung startet bei 7,20');
+  assert(/vorige Säurereihe steht unter „Ergebnisse“/.test(await toastText(page)), 'Hinweis auf die abgelegte Reihe');
+  const arch = await S(page, (A) => A.eng.state.archive.filter((a) => a.exp === 'e1').map((a) => a.reagent + ':' + a.runs.map((r) => r.records.at(-1).v).join('/')));
+  assert(arch.includes('HCl:0.05/0.05'), 'vorige Säurereihe abgelegt, nicht gelöscht: ' + JSON.stringify(arch));
   await reagent(page, 'NaOH'); await reagent(page, 'HCl');
-  near((await beakers(page))[0].added, 0.05, 1e-12, 'mehrfaches Umschalten überschreibt nichts');
+  const n0 = await S(page, (A) => A.eng.state.archive.length);
+  assert(n0 === arch.length + 1, `unbenutzte Reihen werden beim Umschalten nicht abgelegt (${n0})`);
+  await go(page); await idle(page);
   await click(page, '#btnCont');
   const c = await S(page, (A) => ({ kind: A.eng.current().kind, reagent: A.eng.current().reagent, start: A.eng.current().beakers[0].records[0].pH, slot: A.eng.state.slot }));
   assert(c.kind === 'cont' && c.reagent === 'NaOH' && c.slot === 'cont', 'Gegenprobe mit NaOH');
@@ -207,8 +213,8 @@ await scenario('E04', 'P05,P14', 'Laugenreihe mit frischen Ansätzen, Säurereih
   assert(after.records.at(-1).pH > c.start + 0.5, 'NaOH hebt den pH-Wert des angesäuerten Wassers deutlich (Neutralisation)');
   // frische Reihe der Gegenseite bleibt erreichbar und wird nicht überschrieben
   await reagent(page, 'NaOH');
-  const f = await S(page, (A) => ({ kind: A.eng.current().kind, added: A.eng.current().beakers[0].added }));
-  assert(f.kind === 'fresh' && Math.abs(f.added - 0.05) < 1e-12, 'frische Laugenreihe mit ihrer eigenen Zugabe erhalten');
+  const f = await S(page, (A) => ({ kind: A.eng.current().kind, added: A.eng.current().beakers[0].added, arch: A.eng.state.archive.filter((a) => a.reagent === 'NaOH').length }));
+  assert(f.kind === 'fresh' && f.added === 0 && f.arch >= 1, 'Wechsel zu NaOH: frische Laugenreihe, die frühere liegt unter „Ergebnisse“');
   assert(!errors.length, errors.join(' | '));
   await done();
   return `Gegenprobe startet bei pH ${c.start.toFixed(2)}, endet bei ${after.records.at(-1).pH.toFixed(2)}`;
@@ -945,7 +951,10 @@ await scenario('E23', 'P05,P07,P14', '0.2.1: zugesetzte Gesamtmenge je Glas nur 
   assert(a.every((t) => /HCl 0,00 mL/.test(t) && /NaOH 0,00 mL/.test(t)), 'Laugenreihe: frische Ansätze, 0,00 mL: ' + JSON.stringify(a));
   await reagent(page, 'HCl');
   a = await add();
-  assert(/HCl 2,00 mL/.test(a[0]), 'zurück zur Säurereihe: Menge erhalten: ' + a[0]);
+  assert(a.every((t) => /HCl 0,00 mL/.test(t)), 'zurück zu HCl: frische Ansätze, 0,00 mL (vorige Reihe abgelegt): ' + JSON.stringify(a));
+  await go(page); await idle(page);
+  a = await add();
+  assert(/HCl 1,00 mL/.test(a[0]), 'neue Zugabe gezählt: ' + a[0]);
   await click(page, '#btnNewSeries');
   a = await add();
   assert(a.every((t) => /HCl 0,00 mL/.test(t)), 'Neue Reihe setzt die Mengen zurück: ' + JSON.stringify(a));

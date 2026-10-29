@@ -75,9 +75,14 @@
     const before = eng.state.slot;
     const r = eng.selectSlot(key);
     if (!r.ok) { U.toast(r.text); return; }
-    if (key !== before && !isMixExp()) {
-      const s = eng.current();
-      if (!eng.used(s) && key !== 'cont') U.toast(`${key === 'HCl' ? 'Säurereihe' : 'Laugenreihe'} mit ${key}: frische Ansätze. Bereits gespeicherte Messreihen bleiben erhalten.`);
+    // 0.2.2: Jeder Wechsel HCl ↔ NaOH beginnt mit frischen Ansätzen (Wasser pH 7,00, Puffer pH 7,20).
+    // Eine schon benutzte Reihe des gewählten Reagenzes wird dabei unter „Ergebnisse“ abgelegt, nicht gelöscht.
+    if (key !== before && !isMixExp() && key !== 'cont') {
+      const name = key === 'HCl' ? 'Säurereihe' : 'Laugenreihe';
+      if (eng.used(eng.current())) {
+        const n = eng.newSeries();
+        U.toast(n.ok ? `${name} mit ${key}: frische Ansätze. Die vorige ${name} steht unter „Ergebnisse“.` : n.text);
+      } else U.toast(`${name} mit ${key}: frische Ansätze.`);
     }
     afterLabChange(true);
   }
