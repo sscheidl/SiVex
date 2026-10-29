@@ -40,8 +40,8 @@
 
   /** Genau drei Stoffgemische, je eine feste Ausgangszusammensetzung (Volumen in mL, zusammen 100 mL). */
   const MIXES = {
-    ew: { id: 'ew', name: 'Ethanol + Wasser', short: 'Ethanol/Wasser', comp: { P: 0, E: 40, W: 60 }, expert: false, label: '40 mL Ethanol + 60 mL Wasser' },
-    pw: { id: 'pw', name: 'Propanon (Aceton) + Wasser', short: 'Propanon/Wasser', comp: { P: 40, E: 0, W: 60 }, expert: false, label: '40 mL Propanon + 60 mL Wasser' },
+    ew: { id: 'ew', name: 'Ethanol + Wasser', short: 'Ethanol/Wasser', comp: { P: 0, E: 40, W: 60 }, expert: false, burnTest: true, label: '40 mL Ethanol + 60 mL Wasser' },
+    pw: { id: 'pw', name: 'Propanon (Aceton) + Wasser', short: 'Propanon/Wasser', comp: { P: 40, E: 0, W: 60 }, expert: false, burnTest: true, label: '40 mL Propanon + 60 mL Wasser' },
     pew: { id: 'pew', name: 'Propanon + Ethanol + Wasser', short: 'Dreistoffgemisch', comp: { P: 30, E: 30, W: 40 }, expert: true, label: '30 mL Propanon + 30 mL Ethanol + 40 mL Wasser' }
   };
   const MIX_ORDER = ['ew', 'pw', 'pew'];
@@ -60,6 +60,7 @@
   const C_HEAD = 90;         // J/K Destillationsaufsatz
   const K_HV = 4.0;          // W/K Dampf → Aufsatzwand
   const K_HL = 0.25;         // W/K Aufsatz → Raum
+  const K_RES = 0.3;         // W/K Restdampf → Aufsatz zwischen zwei Fraktionen (beim Dampfdruck 1 atm)
   const UA = 3.0;            // W/K Kühlmantel voll mit Wasser
   const UA_AIR = 0.35;       // W/K Luftkühlung des Innenrohrs
   const V_JACKET = 45;       // mL Wasser im Kühlmantel
@@ -149,12 +150,15 @@
   }
 
   /**
-   * Brennprobe (Modellvereinfachung, docs/CHEMIE.md): Ethanol-Wasser-Gemische
-   * brennen bei Raumtemperatur nur, wenn genug Ethanol enthalten ist.
-   * ≥ 50 % Ethanol (Volumenanteil): anhaltende bläuliche Flamme;
+   * Brennprobe (Modellvereinfachung, docs/CHEMIE.md): Gemische mit Wasser brennen bei
+   * Raumtemperatur nur, wenn genug brennbarer Stoff (Ethanol, Propanon) enthalten ist.
+   * ≥ 50 % (Volumenanteil): anhaltende Flamme – Ethanol bläulich, kaum leuchtend; Propanon gelblich, leuchtend;
    * 30–50 %: kurzes Aufflackern; darunter keine anhaltende Flamme.
    */
   const BURN_LIMITS = { burns: 0.5, flicker: 0.3, out: 0.25 };
+  /** Brennstoff, der die Flamme prägt (für Farbe und Text): Propanon oder Ethanol. */
+  const burnFuel = (c) => (c.P > c.E ? 'P' : 'E');
+  const FLAME_TEXT = { E: 'bläulicher, kaum leuchtender', P: 'gelblicher, leuchtender' };
   function burnResult(c) {
     const s = share(c);
     const phi = s.E + s.P;
@@ -182,6 +186,7 @@
       heater: { on: false, level: 'mid' },
       water: { on: false, level: 'mid' },
       mantleT: ROOM, headT: ROOM, reading: ROOM,
+      headWet: false,                // Aufsatz schon einmal von Dampf durchströmt (statt mit Luft gefüllt)
       jacket: { fill: 0, T: ROOM },
       film: zero(),                  // Kondensat im Innenrohr des Kühlers
       tip: zero(),                   // hängender Tropfen am Vorstoß
@@ -401,7 +406,7 @@
         if (st.flask.T > 40 || st.heater.on) return stop('hotSample');
         return fail('Der Kolben ist mit dem Aufsatz verbunden. Proben nimmt man aus der Vorlage – dort ist das Destillat.', 'flaskSample');
       }
-      if (st.mix !== 'ew') return fail('Die Brennprobe gehört zum Ethanol-Wasser-Versuch.', 'noBurnTest');
+      if (!MIXES[st.mix].burnTest) return fail('Die Brennprobe gehört zum Ethanol-Wasser- und zum Propanon-Wasser-Versuch.', 'noBurnTest');
       if (st.pipette) return fail('In der Pipette ist schon eine Probe. Gib sie in die Porzellanschale.', 'pipetteFull');
       const r = source && String(source).startsWith('fraction:') ? st.fractions.find((f) => f.n === Number(String(source).slice(9))) : st.receiver;
       if (!r) return fail('Unbekannte Vorlage.', 'source');
@@ -442,11 +447,12 @@
         const s = share(d.c);
         d.phi0 = s.E + s.P;
         d.result = burnResult(d.c);
+        d.fuel = burnFuel(d.c);
         d.t0 = st.t;
         d.burning = d.result !== 'none';
         d.flicker = d.result === 'flicker' ? 1.6 : 0;
-        st.burnTests.push({ t: +st.t.toFixed(1), from: d.from, phi: +d.phi0.toFixed(3), result: d.result, run: st.run });
-        const text = { burns: 'Die Probe brennt mit bläulicher, kaum leuchtender Flamme.', flicker: 'Die Probe flackert kurz auf und erlischt.', none: 'Die Probe lässt sich nicht entzünden – keine anhaltende Flamme.' }[d.result];
+        st.burnTests.push({ t: +st.t.toFixed(1), from: d.from, phi: +d.phi0.toFixed(3), result: d.result, fuel: d.fuel, run: st.run });
+        const text = { burns: `Die Probe brennt mit ${FLAME_TEXT[d.fuel]} Flamme.`, flicker: 'Die Probe flackert kurz auf und erlischt.', none: 'Die Probe lässt sich nicht entzünden – keine anhaltende Flamme.' }[d.result];
         msg(text, d.result === 'none' ? 'warn' : 'info', 'burn');
       }
     }
@@ -648,9 +654,21 @@
           else f.c[k] += vap[k] * (1 - fPass);
         }
         Qpass = Qv * fPass;
+        if (Qpass > 0) st.headWet = true;
         st.headT += ((Qhead - K_HL * (st.headT - ROOM)) / C_HEAD) * h;
       } else {
-        st.headT += ((-K_HL * (st.headT - ROOM)) / C_HEAD) * h;
+        // Zwischen zwei Fraktionen: Der Aufsatz ist schon mit Dampf gefüllt und benetzt; die noch nicht
+        // siedende Flüssigkeit liefert umso mehr Dampf nach, je näher sie ihrem Siedepunkt ist
+        // (Dampfdruck nach Clausius-Clapeyron), und hält ihn warm. Vor dem ersten Sieden steht im
+        // Aufsatz Luft: Dort bleibt das Thermometer kalt, bis die Dampffront ankommt.
+        let Qres = 0;
+        if (st.headWet && vol(f.c) > 0.5 && f.T > st.headT) {
+          const x = moleFractions(f.c), Tb = boilingPoint(f.c);
+          const dH = KEYS.reduce((sum, k, i) => sum + x[i] * SUBSTANCES[k].dH, 0);
+          const pRel = Math.min(1, Math.exp((dH / 8.314) * (1 / (Tb + 273.15) - 1 / (f.T + 273.15))));
+          Qres = K_RES * pRel * (f.T - st.headT);
+        }
+        st.headT += ((Qres - K_HL * (st.headT - ROOM)) / C_HEAD) * h;
       }
       fx.vapor = vol(vap) / h;
       fx.pass = vol(pass) / h;
@@ -724,22 +742,26 @@
       if (st.op && st.op.type === 'fill') { target = ROOM; tau = 8; }
       st.reading += (target - st.reading) * (1 - Math.exp(-h / tau));
 
-      // --- Brennprobe in der Porzellanschale
+      // --- Brennprobe in der Porzellanschale: Ethanol und Propanon verbrennen anteilig
+      const burnOff = (c, amount) => {
+        const fuel = c.E + c.P;
+        if (fuel <= 0) return;
+        const b = Math.min(fuel, amount);
+        for (const k of ['E', 'P']) { const x = (b * c[k]) / fuel; c[k] -= x; st.lost.burned[k] += x; }
+      };
       const d = st.dish;
       fx.flame = 0;
       if (d && d.burning) {
         if (d.result === 'flicker') {
           d.flicker -= h;
-          const b = Math.min(d.c.E, 0.02 * h);
-          d.c.E -= b; st.lost.burned.E += b;
+          burnOff(d.c, 0.02 * h);
           fx.flame = clamp(d.flicker / 1.6, 0, 1) * 0.5;
           if (d.flicker <= 0) d.burning = false;
         } else {
-          const s = share(d.c);
-          const b = Math.min(d.c.E, BURN_RATE * h);
-          d.c.E -= b; st.lost.burned.E += b;
-          fx.flame = clamp((s.E - BURN_LIMITS.out) / 0.25, 0.25, 1);
-          if (s.E < BURN_LIMITS.out || d.c.E < 0.005) { d.burning = false; msg('Die Flamme ist erloschen. In der Schale bleibt vor allem Wasser zurück.', 'info', 'burnOut'); }
+          const s = share(d.c), phi = s.E + s.P;
+          burnOff(d.c, BURN_RATE * h);
+          fx.flame = clamp((phi - BURN_LIMITS.out) / 0.25, 0.25, 1);
+          if (phi < BURN_LIMITS.out || d.c.E + d.c.P < 0.005) { d.burning = false; msg('Die Flamme ist erloschen. In der Schale bleibt vor allem Wasser zurück.', 'info', 'burnOut'); }
         }
       }
 

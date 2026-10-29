@@ -189,7 +189,7 @@
     g.stonesDish = { x: g.stand1.base.x0 + 8, base: 0, w: 42, h: 12 };
     g.bottle = { x: g.stonesDish.x - 21 - 10 - 22, base: 0, w: 44, h: 92 };
 
-    // Getrennter Prüfplatz (nur Ethanol/Wasser), links von den Materialien
+    // Getrennter Prüfplatz (Ethanol/Wasser und Propanon/Wasser), links von den Materialien
     if (o.station) {
       const x1 = g.bottle.x - g.bottle.w / 2 - 12, x0 = x1 - 240;
       g.station = { x0, x1, y: 0, mat: { x0: x0 + 6, x1: x1 - 6, h: 8 }, dish: P(x0 + 118, -8), pipette: P(x0 + 12, -8), lighter: P(x0 + 60, -12), recv: P(x0 + 198, -8) };
@@ -333,13 +333,27 @@
     const inside = y0 < r.base - gl && (y0 < r.rim ? dx < r.neckHW - gl : dx < outerHW(y0) - gl);
     if (inside) {
       const lev = V > 0.005 ? receiverLevel({ receiver: r }, V) : null;
-      return { y: Math.max(y0, lev ? lev.y : r.base - gl), into: lev ? 'liquid' : 'bottom' };
+      const y = Math.max(y0, lev ? lev.y : r.base - gl);
+      // half: lichte halbe Breite in dieser Höhe – Spritzer bleiben zwischen den Wänden
+      return { y, into: lev ? 'liquid' : 'bottom', half: (y <= coneTop ? r.neckHW : outerHW(y)) - gl };
     }
     if (dx <= r.baseHW && y0 < r.base) {
       const yHit = dx <= r.neckHW ? r.rim : coneTop + ((dx - r.neckHW) / (r.baseHW - r.neckHW)) * (r.base - coneTop);
       return { y: Math.max(y0, yHit), into: 'glass' };
     }
     return null;
+  }
+
+  /**
+   * Spritzer nach dem Auftreffen eines Tropfens: Wurf ab dem Spiegel (x0, y0), endet, sobald er
+   * wieder auf den Spiegel fällt; seitlich höchstens bis zur Wand (half). Liefert die Lage nach t s
+   * oder null, wenn er schon zurückgefallen ist.
+   */
+  function splashAt(s, t, grav) {
+    const y = s.y0 + s.vy * t + 0.5 * grav * t * t;
+    if (t > 0 && y >= s.y0) return null;
+    const x = Math.max(s.x0 - s.half, Math.min(s.x0 + s.half, s.x0 + s.vx * t));
+    return P(x, y);
   }
 
   // ------------------------------------------------------------------ Ausgießen aus dem Becherglas
@@ -409,5 +423,5 @@
     return { pts, spout: s, entry, inFunnel: !!entry && Math.abs(entry.x - f.x) < f.hw };
   }
 
-  return { DIM, build, connections, checks, fit, toScreen, toWorld, bezierPoint, cubic, flaskLevel, receiverLevel, receiverVolumeAt, erlenStop, pourCapacity, pourLiquid, pourTilt, pourSpout, pourStream, dist };
+  return { DIM, build, connections, checks, fit, toScreen, toWorld, bezierPoint, cubic, flaskLevel, receiverLevel, receiverVolumeAt, erlenStop, splashAt, pourCapacity, pourLiquid, pourTilt, pourSpout, pourStream, dist };
 });

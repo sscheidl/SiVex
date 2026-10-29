@@ -27,8 +27,8 @@
     },
     pw: {
       id: 'pw', n: 2, short: '2 Propanon/Wasser', title: 'Propanon (Aceton) und Wasser trennen',
-      problem: 'Trenne Propanon (Aceton) von Wasser. Lies die Dampftemperatur ab, während das Destillat übergeht, und vergleiche sie mit dem Ethanol-Wasser-Versuch. Propanon ist leicht entzündlich – eine Brennprobe gehört nicht zu dieser Aufgabe.',
-      material: 'Fertig aufgebaute Destillationsapparatur, Propanon-Wasser-Gemisch (40 mL Propanon + 60 mL Wasser), Siedesteine, Kühlwasser'
+      problem: 'Trenne Propanon (Aceton) von Wasser. Lies die Dampftemperatur ab, während das Destillat übergeht, und vergleiche sie mit dem Ethanol-Wasser-Versuch. Weise am getrennten Prüfplatz mit einer Brennprobe nach, dass dein Destillat brennbar ist, und achte auf die Flammenfarbe. Vorsicht: Propanon ist leicht entzündlich – nur wenige Tropfen, Vorlage und Vorratsflasche weg von der Flamme.',
+      material: 'Fertig aufgebaute Destillationsapparatur, Propanon-Wasser-Gemisch (40 mL Propanon + 60 mL Wasser), Siedesteine, Kühlwasser, Prüfplatz mit Pipette, Porzellanschale und Stabfeuerzeug'
     },
     pew: {
       id: 'pew', n: 3, short: '3 Dreistoffgemisch', title: 'Expertenmodus: drei Stoffe nacheinander auffangen', expert: true,
@@ -80,16 +80,14 @@
     }
     const key = taskId === 'pw' ? 'P' : 'E';
     const f = mainFraction(taskId, snap, key);
-    if (!f || f.vol + (taskId === 'ew' ? snap.burnTests.length * M.SAMPLE_ML : 0) < 5) return no('little', `Es sind erst ${fmt(collected, 1)} mL Destillat aufgefangen.`);
+    if (!f || f.vol + snap.burnTests.length * M.SAMPLE_ML < 5) return no('little', `Es sind erst ${fmt(collected, 1)} mL Destillat aufgefangen.`);
     if (f.thermoOk === false) return no('thermo', 'Während das Destillat überging, saß das Thermometer nicht an der richtigen Stelle. Die abgelesene Temperatur ist nicht die Dampftemperatur.');
     if (f.share[key] < 0.8) return no('impure', `Vorlage ${f.n} enthält nicht überwiegend ${SUB[key].name}.`);
-    if (taskId === 'ew') {
-      const tests = snap.burnTests;
-      if (!tests.length) return no('noBurn', 'Die Brennprobe fehlt noch.');
-      if (!tests.some((t) => t.result === 'burns')) return no('burnFail', 'Deine Probe hat nicht anhaltend gebrannt.');
-      return { ok: true, code: 'done', text: `Vorlage ${f.n}: ${fmt(f.vol, 1)} mL ethanolreiches Destillat, übergegangen bei etwa ${fmt(f.Tmed, 1)} °C; die Probe brennt mit bläulicher Flamme.` };
-    }
-    return { ok: true, code: 'done', text: `Vorlage ${f.n}: ${fmt(f.vol, 1)} mL Destillat, übergegangen bei etwa ${fmt(f.Tmed, 1)} °C – deutlich niedriger als beim Ethanol.` };
+    const tests = snap.burnTests;
+    if (!tests.length) return no('noBurn', 'Die Brennprobe fehlt noch.');
+    if (!tests.some((t) => t.result === 'burns')) return no('burnFail', 'Deine Probe hat nicht anhaltend gebrannt.');
+    if (taskId === 'ew') return { ok: true, code: 'done', text: `Vorlage ${f.n}: ${fmt(f.vol, 1)} mL ethanolreiches Destillat, übergegangen bei etwa ${fmt(f.Tmed, 1)} °C; die Probe brennt mit bläulicher Flamme.` };
+    return { ok: true, code: 'done', text: `Vorlage ${f.n}: ${fmt(f.vol, 1)} mL Destillat, übergegangen bei etwa ${fmt(f.Tmed, 1)} °C – deutlich niedriger als beim Ethanol; die Probe brennt mit gelblicher, leuchtender Flamme.` };
   }
 
   /** Drei Hilfestufen je Befund. */
@@ -107,7 +105,7 @@
       thermo: ['Wo misst dein Thermometer?', 'Gemessen werden soll die Temperatur des Dampfes, der in den Kühler strömt.', 'Heizung AUS, abwarten, bis nichts mehr siedet, dann das Thermometer verschieben: Die Kugel gehört genau auf Höhe des seitlichen Abgangs. Danach erneut destillieren.'],
       impure: ['Was ist in deiner Vorlage gelandet?', 'Steigt die Temperatur deutlich an, geht ein anderer Stoff über. Auch zu starkes Heizen reißt Flüssigkeit mit.', 'Fange nur auf, solange die Temperatur nahezu gleich bleibt, und heize höchstens auf „mittel“. Beginne bei Bedarf neu.'],
       noBurn: ['Wie weist man nach, dass das Destillat brennbar ist?', 'Die Brennprobe findet am getrennten Prüfplatz statt – nie an der Apparatur. Die Probe nimmt man aus der abgenommenen Vorlage.', 'Heizung aus, dann unten „Vorlage“ antippen – sie kommt zum Prüfplatz. Pipette antippen, dann die Vorlage, dann die Porzellanschale. Stabfeuerzeug antippen und die Schale antippen.'],
-      burnFail: ['Wann brennt ein Ethanol-Wasser-Gemisch?', 'Nur wenn genug Ethanol enthalten ist. Was ist in deine Vorlage gelangt, nachdem die Temperatur gestiegen ist?', 'Nimm eine Probe aus einer Vorlage, die nur während des ersten Temperaturabschnitts gefüllt wurde. Beginne sonst neu und höre rechtzeitig auf.'],
+      burnFail: ['Wann brennt ein Gemisch mit Wasser?', 'Nur wenn genug brennbarer Stoff (Ethanol bzw. Propanon) enthalten ist. Was ist in deine Vorlage gelangt, nachdem die Temperatur gestiegen ist?', 'Nimm eine Probe aus einer Vorlage, die nur während des ersten Temperaturabschnitts gefüllt wurde. Beginne sonst neu und höre rechtzeitig auf.'],
       noChange: ['Wie trennt man die Stoffe in getrennte Gefäße?', 'Wenn die Temperatur auf den nächsten Abschnitt steigt, kommt ein anderer Stoff.', 'Tippe auf „Vorlage wechseln“, sobald die Temperatur nach dem ersten Abschnitt ansteigt.'],
       mixedFraction: ['Wann hast du die Vorlage gewechselt?', 'Im Temperatur-Zeit-Diagramm siehst du, wann die Temperatur ansteigt.', 'Wechsle die Vorlage genau dann, wenn die Temperatur den Abschnitt verlässt. Beginne bei Bedarf neu.'],
       needFractions: ['Welche Stoffe sollen getrennt werden?', 'Propanon geht zuerst über, Ethanol danach. Beide Fraktionen brauchen mindestens 3 mL.', 'Fange Propanon (um 57 °C) in Vorlage 1 auf, wechsle die Vorlage, fange Ethanol (um 79 °C) in Vorlage 2 auf.'],
@@ -163,13 +161,14 @@
         : { id: 'gap', type: 'gap', legend: '6. Fachbegriff: Im Liebigkühler wird der Dampf wieder flüssig. Dieser Vorgang heißt …',
           gap: { accept: ['Kondensation', 'Kondensieren', 'kondensieren'], forbid: [{ term: 'Verdampfen', hint: 'Verdampfen geschieht im Kolben (flüssig → gasförmig). Im Kühler geschieht das Umgekehrte.' }, { term: 'Verdunsten', hint: 'Verdunsten ist ein Übergang flüssig → gasförmig. Im Kühler geschieht das Umgekehrte.' }, { term: 'Resublimation', hint: 'Resublimation führt vom Gas direkt zum Feststoff. Hier entsteht eine Flüssigkeit.' }], hint: 'Gesucht ist der Übergang gasförmig → flüssig.' } }
     ];
-    if (taskId === 'ew') {
+    {
+      const S = SUB[key].name;
       qs.push({ id: 'burn', type: 'one', legend: '7. Was zeigt deine Brennprobe?', needs: 'burn',
         options: {
-          burns: 'Das Destillat enthält so viel brennbaren Stoff (hier: Ethanol), dass es anhaltend brennt.',
-          little: 'Das Destillat enthält Ethanol, aber zu wenig für eine anhaltende Flamme.',
-          none: 'Das Destillat enthält zu wenig Ethanol, um sich zu entzünden.',
-          pure: 'Die bläuliche Flamme beweist, dass das Destillat reines Ethanol ist.'
+          burns: `Das Destillat enthält so viel brennbaren Stoff (hier: ${S}), dass es anhaltend brennt.`,
+          little: `Das Destillat enthält ${S}, aber zu wenig für eine anhaltende Flamme.`,
+          none: `Das Destillat enthält zu wenig ${S}, um sich zu entzünden.`,
+          pure: `Die ${taskId === 'pw' ? 'gelbliche' : 'bläuliche'} Flamme beweist, dass das Destillat reines ${S} ist.`
         },
         answerFor: (sn) => { const t = sn.burnTests[sn.burnTests.length - 1]; return t ? { burns: 'burns', flicker: 'little', none: 'none' }[t.result] : 'burns'; },
         wrong: 'Erinnere dich an deine Flamme. Eine Flamme zeigt Brennbarkeit – sie beweist keine Reinheit.' });
@@ -261,7 +260,7 @@
 
   const SOLUTIONS = {
     ew: 'Mit Siedesteinen, korrekt angeschlossenem Kühlwasser (unten hinein, oben heraus), Thermometerkugel auf Höhe des seitlichen Abgangs und Heizstufe „mittel“ siedet das Gemisch nach einigen Minuten. Die Dampftemperatur steigt und bleibt dann bei etwa 79–80 °C nahezu gleich: Im Modell geht praktisch nur Ethanol über (Siedetemperatur 78 °C). Der unsichtbare Dampf kondensiert im Innenrohr des Liebigkühlers, das Destillat tropft in die Vorlage. Die Probe brennt am Prüfplatz mit bläulicher Flamme – das zeigt Brennbarkeit, beweist aber keine Reinheit. Real ist das Destillat nie reines Ethanol.',
-    pw: 'Propanon siedet bei 56 °C, also viel niedriger als Wasser (100 °C) und auch als Ethanol (78 °C). Die Dampftemperatur bleibt beim Übergehen bei etwa 57–58 °C. Wegen des großen Unterschieds der Siedetemperaturen lassen sich Propanon und Wasser auch real recht gut trennen. Danach steigt die Temperatur deutlich an.',
+    pw: 'Propanon siedet bei 56 °C, also viel niedriger als Wasser (100 °C) und auch als Ethanol (78 °C). Die Dampftemperatur bleibt beim Übergehen bei etwa 57–58 °C. Wegen des großen Unterschieds der Siedetemperaturen lassen sich Propanon und Wasser auch real recht gut trennen. Danach steigt die Temperatur deutlich an. Eine kleine Probe des Destillats brennt mit gelblicher, leuchtender Flamme – anders als die kaum sichtbare, bläuliche Ethanolflamme. Propanon ist leicht entzündlich: Schon bei Raumtemperatur entstehen zündfähige Dämpfe; deshalb nur wenige Tropfen am getrennten Prüfplatz anzünden.',
     pew: 'Die Temperaturkurve zeigt Abschnitte nahezu gleicher Temperatur: zuerst bei etwa 57 °C (Propanon), dann bei etwa 79 °C (Ethanol), schließlich bei 100 °C (Wasser). Zwischen den Abschnitten steigt die Temperatur an; dort wechselt man die Vorlage. So erhält man drei Fraktionen. Die Trennung ist im Modell idealisiert.'
   };
 
