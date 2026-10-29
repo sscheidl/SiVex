@@ -1,6 +1,6 @@
 # Trennverfahren – Fachmodell, Quellen und Parameter
 
-Stand 0.1.0 · 27.10.2026 · Modellcode: [`js/model.js`](../js/model.js), Geometrie: [`js/geometry.js`](../js/geometry.js), Teilchenmodell: [`js/particles.js`](../js/particles.js)
+Stand 0.2.0 · 29.10.2026 · Modellcode: [`js/model.js`](../js/model.js), Geometrie: [`js/geometry.js`](../js/geometry.js), Teilchenmodell: [`js/particles.js`](../js/particles.js)
 
 Das Modell ist ein **kleines, bilanztreues Unterrichtsmodell**. Es koppelt Stoffbestand, Verteilung und Handlungen und soll die Beobachtungen fachlich richtig erklären. Es ist **keine** Strömungs- oder Kinetiksimulation; Zeiten sind beschleunigt, Mengen gerundet.
 
@@ -43,13 +43,16 @@ Folge: Zu frühes oder zu schnelles Abgießen ergibt ein trübes Dekantat; Abset
 - Im nassen Papier bleiben 1,2 mL, im Rückstand je g Sand 0,25 mL (Feinanteil 0,3 mL, Eisen 0,08 mL, Salzkristalle 0,12 mL) Flüssigkeit hängen – mit dem darin gelösten Salz. Nachspülen verdünnt diese anhaftende Lösung.
 - **Ohne Papier** läuft alles samt Sand durch das Trichterrohr. **Trocken** auf den Filter gegebenes Sand-Salz-Gemenge bleibt vollständig liegen; erst Wasser löst das Salz heraus.
 - Steht nichts unter dem Trichter, tropft das Filtrat auf den Tisch (Verlusttopf „verschüttet“, sichtbar als Pfütze).
+- **Filterpapier entnehmen:** Wenn nichts mehr tropft, wird das Papier samt feuchtem Rückstand (Sand, ggf. ungelöstes Salz, anhaftende Lösung) vollständig auf ein leeres Uhrglas gelegt. Der Trichter ist danach leer und kann ein neues Papier aufnehmen.
+- **Spritzflasche:** 5 oder 20 mL; das Wasser fließt nur während der sichtbaren Strahlphase des Handgriffs (nach 0,35 s bis 0,25 s vor Ende), bilanziert als Zugabe.
 
 ### Scheiden (Öl/Wasser)
 
 - Öl ist im Modell **nicht mit Wasser mischbar** und hat die **geringere Dichte**: Ohne Schütteln liegen zwei Schichten vor, Öl oben.
-- **Schütteln** (nur mit Stopfen, Hahn zu) erzeugt eine Emulsion: Ein Anteil `emul` des Öls ist als Tröpfchen im Wasser verteilt. In Ruhe nimmt `emul` mit τ = 10 s ab (Tröpfchen steigen auf und vereinigen sich).
+- **Schütteln** ist ein freiwilliger Zusatzversuch: nur außerhalb des Stativrings („in der Hand“), mit aufgesetztem Stopfen und geschlossenem Hahn. Es erzeugt eine Emulsion: Ein Anteil `emul` des Öls ist als Tröpfchen im Wasser verteilt. In Ruhe nimmt `emul` mit τ = 10 s ab (Tröpfchen steigen auf und vereinigen sich). Druck ablassen ist bei Speiseöl/Wasser nicht nötig (keine Gasentwicklung) und wird nicht verlangt. Herausnehmen ist nur mit Stopfen und geschlossenem Hahn möglich; ein in der Hand geöffneter Hahn lässt Flüssigkeit auf den Tisch tropfen (Verlusttopf „verschüttet“).
 - Der Hahn lässt die **untere Schicht zuerst** ab: Wasser mit den noch verteilten Öltröpfchen. Nähert sich die Grenzfläche dem Hahn (weniger als 2,5 mL Wasser), wird zunehmend Öl mitgezogen – kein perfekter Schnitt. Stufen: zu / Tropfen (0,6 mL/s) / offen (4 mL/s).
-- Mit aufgesetztem Stopfen kann keine Luft nachströmen: Nach etwa 0,8 mL kommt der Fluss zum Stillstand (Hinweis).
+- Mit aufgesetztem Stopfen kann keine Luft nachströmen: Nach etwa 0,8 mL kommt der Fluss zum Stillstand (Hinweis). Der Stopfen ist ein eigenes Objekt auf der Ablage und bewegt sich sichtbar zur Öffnung und zurück.
+- Nachgießen in den Scheidetrichter (z. B. eine verunreinigte Fraktion aus einem beliebigen Becherglas) setzt voraus: Scheidetrichter im Ring, Stopfen ab, **Hahn geschlossen** – sonst wird mit Begründung abgewiesen.
 - Folgen: Zu früh abgelassen → Öltröpfchen im Wasser; zu spät geschlossen → Öl in der Wasserfraktion. Zurückgießen und erneut scheiden korrigiert.
 
 ### Magnettrennung
@@ -62,7 +65,8 @@ Der Magnet (in einer Kunststofftüte) zieht **nur Eisen** an: je Durchgang 80 % 
 - Inhalt mit Wärmekapazität (Wasser 4,18 J/(g·K), Salz 0,85, Schale 90 J/K) und Wärmeverlust 0,35 W/K.
 - Unter der Siedetemperatur verdunstet wenig Wasser (stark temperaturabhängig). Beim **Sieden** geht die überschüssige Leistung vollständig in die Verdampfung (2257 J/g). Siedetemperatur der Lösung: 100 °C + 8 K × Sättigungsgrad (gesättigte Sole ≈ 108 °C).
 - **Siedeblasen nur beim Sieden**; keine Blasen bei kalter Lösung.
-- **Wasserdampf ist unsichtbar.** Gezeichnet wird über der heißen Flüssigkeit erst mit Abstand ein heller Dunst: kondensierte Wassertröpfchen.
+- **Wasserdampf ist unsichtbar.** Gasförmiges Wasser sieht man nicht. Über der heißen Flüssigkeit wird erst mit Abstand eine weiße Wolke gezeichnet – in Schülertexten „Dampf“ genannt; sie besteht aus kondensierten Wassertröpfchen. Der Hintergrund ist dafür etwas dunkler als in 0.1.0.
+- **Abkühlen und Entnehmen:** Kristalle lassen sich erst unter 45 °C (Unterrichtsparameter `HANDLE_T`) und ohne restliche Lösung (≤ 1 mL Wasser) mit dem Spatel auf ein leeres Uhrglas überführen; die gesamte Masse samt Restfeuchte wird übertragen.
 - Salz wird nicht gasförmig und schmilzt nicht (Schmelztemperatur ≈ 801 °C wird nie erreicht).
 - **Trockenlaufen:** Ist auf hoher Stufe nur noch wenig Wasser (< 1,5 mL) über reichlich Kristallen, spritzen Salzkristalle heraus (Verlusttopf „verspritzt“, Warnung „herunterschalten oder ausschalten – die Restwärme genügt“). Ist die Schale trocken und weiter heiß, erscheint „Heizplatte ausschalten“.
 
@@ -77,12 +81,26 @@ Bewertet wird der **tatsächliche Bestand in getrennten Fraktionen**, nicht eine
 | Versuch | Ausgangsmengen | Ziel (alle Kriterien) | Begründung der Schwellen |
 | --- | --- | --- | --- |
 | 1 Dekantieren | 100 mL Wasser, 20 g Sand | einmal aufgerührt (≥ 50 % schwebend); ≥ 50 mL Wasser in anderem Becherglas mit ≤ 0,3 g Sand; ≥ 15 g Sand bleiben in A | Beim Dekantieren bleiben 20–30 mL über dem Sand stehen; 0,3 g in ≥ 50 mL ist „fast klar“. Eine verlustfreie Trennung ist nicht verlangt. |
-| 2 Filtrieren | 100 mL Wasser, 20 g Sand | Papier im Trichter, Trichter im Ring; ≥ 60 mL Filtrat ohne Sand (≤ 0,05 g); ≥ 15 g Sand im Filter | ≈ 6 mL bleiben im nassen Rückstand; ein kleiner Sandrest im Becherglas wird toleriert. |
-| 3 Eindampfen | 40 mL Lösung mit 8 g Kochsalz | ≥ 5,6 g Kristalle in der Schale; ≤ 1 mL Restwasser; ≥ 25 mL verdampft | 70 % Ausbeute erlaubt Reste im Becherglas und Spritzverluste. |
-| 4 Scheiden | 50 mL Wasser, 50 mL Öl | Emulsion beobachtet (≥ 60 % verteilt); ≥ 30 mL über den Hahn abgelassen; Gefäß mit ≥ 40 mL Wasser und ≤ 1,5 mL Öl; anderes Gefäß mit ≥ 40 mL Öl und ≤ 1,5 mL Wasser | Mit „Tropfen“ an der Grenzfläche erreichbar (Test: 0,9 mL Öl im Wasser, 0,4 mL Wasser im Öl). |
+| 2 Filtrieren | 100 mL Wasser, 20 g Sand | mindestens 30 mL durch ein Filterpapier im Ring filtriert; ≥ 60 mL Filtrat ohne Sand (≤ 0,05 g); ≥ 15 g Sand im Filterpapier – im Trichter **oder** mit dem Papier auf dem Uhrglas | ≈ 6 mL bleiben im nassen Rückstand; ein kleiner Sandrest im Becherglas wird toleriert. |
+| 3 Eindampfen | 40 mL Lösung mit 8 g Kochsalz | ≥ 5,6 g Kristalle in der Schale **oder** nach dem Überführen auf dem Uhrglas; ≤ 1 mL Restwasser; ≥ 25 mL verdampft | 70 % Ausbeute erlaubt Reste im Becherglas und Spritzverluste. |
+| 4 Scheiden | 50 mL Wasser, 50 mL Öl | ≥ 30 mL über den Hahn abgelassen (kein Schüttelkriterium – Schütteln ist freiwillig); Gefäß mit ≥ 40 mL Wasser und ≤ 1,5 mL Öl; anderes Gefäß mit ≥ 40 mL Öl und ≤ 1,5 mL Wasser | Mit „Tropfen“ an der Grenzfläche erreichbar (Test: 0,9 mL Öl im Wasser, 0,4 mL Wasser im Öl). |
 | 5 Trennkette | 5 g Eisen, 10 g Sand, 5 g Kochsalz | Eisen ≥ 4 g mit ≤ 0,1 g Sand und ≤ 0,15 g Salz; Sand ≥ 7,5 g mit ≤ 0,3 g Eisen und ≤ 0,6 g Salz (fest + gelöst); Salz ≥ 3,5 g trocken (≤ 1 mL Wasser) mit ≤ 0,05 g Sand und Eisen | Zwei Magnetdurchgänge genügen; ungelöstes oder in der Restfeuchte gelöstes Salz im Sand muss durch genug Wasser bzw. Nachspülen entfernt werden. |
 
 Erreichte Ziele werden je Versuch mit Ansatz und Versuchszeit gespeichert; ein späteres Verändern des Ansatzes nimmt den Erfolg nicht zurück. „Ergebnis prüfen“ zeigt jederzeit den aktuellen Zustand.
+
+### Bewertung des Trennprinzips (Protokoll)
+
+Gefragt wird nach der Eigenschaft, die **unmittelbar** zum Trennen genutzt wird. Antwortoptionen sind nach Materialart getrennt formuliert (Dichte; Löslichkeit eines **Feststoffs** in Wasser; **Nichtmischbarkeit** zweier Flüssigkeiten; Korngröße gegenüber den Filterporen als Trennkriterium; Magnetismus; Flüchtigkeit). Drei Kategorien:
+
+| Versuch | verlangt | nicht nötig, aber nicht falsch (mit Erläuterung) |
+| --- | --- | --- |
+| 1 Dekantieren | Dichte | Löslichkeit (Unlöslichkeit des Sandes ist die Voraussetzung) |
+| 2 Filtrieren | Korngröße | Löslichkeit (Voraussetzung) |
+| 3 Eindampfen | Flüchtigkeit | Löslichkeit (Ausgangslage) |
+| 4 Scheiden | Nichtmischbarkeit, Dichte | Löslichkeit (gegenseitige Unlöslichkeit = Nichtmischbarkeit; das genauere Kreuz wird erläutert) |
+| 5 Trennkette | Magnetismus, Löslichkeit, Korngröße, Flüchtigkeit | Dichte (Absetzen kann vorkommen) |
+
+Alle anderen Kreuze (z. B. Farbe) sind falsch. Freitexte werden nicht bewertet.
 
 ## 4. Unterrichtsparameter (bewusst gesetzt, beschleunigt)
 
@@ -136,3 +154,5 @@ Das Teilchenmodell zeigt einen vergrößerten Ausschnitt des gewählten Gefäße
 | gasförmiges Wasser | einzelne, weit auseinander liegende Wasserteilchen über der Flüssigkeit |
 
 Keine Hydrathüllen, keine „Kochsalzmoleküle“, keine festen Krümel für gelöstes Salz. Der Text unter dem Bild trennt **Beobachtung** (Stoffebene) und **Modell** (Teilchenebene).
+
+**Versuch 3 – Vergleichsbilder (zuschaltbar über die Gefäßwahl im Teilchenmodell):** reines Wasser (Reinstoff, nur Wassermoleküle), festes Kochsalz (Reinstoff/Verbindung, Na⁺ und Cl⁻ im Ionengitter, keine „Kochsalzmoleküle“) und Kochsalzlösung (homogenes Gemisch, einzelne Ionen zwischen Wassermolekülen; „gelöst“ ist kein Aggregatzustand). Diese Bilder sind feste Vergleichszustände und stammen nicht aus dem laufenden Versuch; sie sind entsprechend gekennzeichnet.

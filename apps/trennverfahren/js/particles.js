@@ -18,6 +18,20 @@
   const FONT = '"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
   const C = { water: '#3d8fe0', na: '#8a4fd0', cl: '#2e9a5a', oil: '#d9a514', sand: '#c9a56b', sandEdge: '#8a6a3a', iron: '#5b6069' };
 
+  /**
+   * Vergleichsbilder für Versuch 3 (Reinstoff / Stoffgemisch): feste Zustände, die nicht aus dem
+   * laufenden Versuch stammen, aber dieselbe Darstellung nutzen.
+   */
+  const ref = (id, name, c, obs, text) => ({ id, name, ref: true, type: 'beaker', c: Object.assign({ water: 0, oil: 0, sandC: 0, sandF: 0, iron: 0, saltS: 0, saltD: 0 }, c), susp: { sandC: { m: 0, fv: 0 }, sandF: { m: 0, fv: 0 }, iron: { m: 0, fv: 0 }, saltS: { m: 0, fv: 0 } }, emul: 0, agit: 0, temp: 20, evap: 0, boil: false, obs, text });
+  const REF = {
+    'ref:water': ref('ref:water', 'Vergleich: reines Wasser (Reinstoff)', { water: 40 }, 'Klare, farblose Flüssigkeit (Vergleichsbild, nicht aus dem Versuch).',
+      'Reinstoff: Es gibt nur eine Teilchensorte, die Wassermoleküle. Sie bewegen sich ständig ungeordnet.'),
+    'ref:salt': ref('ref:salt', 'Vergleich: festes Kochsalz (Reinstoff)', { saltS: 8 }, 'Weiße, feste Kristalle (Vergleichsbild, nicht aus dem Versuch).',
+      'Reinstoff (Verbindung aus Natrium und Chlor): Na⁺- und Cl⁻-Ionen sind regelmäßig in einem Ionengitter angeordnet. Es gibt keine „Kochsalzmoleküle“.'),
+    'ref:sol': ref('ref:sol', 'Vergleich: Kochsalzlösung (homogenes Gemisch)', { water: 40, saltD: 8 }, 'Klare, farblose Flüssigkeit – sie sieht aus wie reines Wasser (Vergleichsbild).',
+      'Homogenes Gemisch aus zwei Stoffen: Einzelne Na⁺- und Cl⁻-Ionen sind gleichmäßig zwischen den Wassermolekülen verteilt. Gelöst ist kein eigener Aggregatzustand – das Wasser ist flüssig, das Salz ist nicht geschmolzen.')
+  };
+
   const rnd = Math.random;
   function grainShape(seed) {
     const pts = []; let s = seed;
@@ -218,7 +232,7 @@
       const e = getEngine();
       const st = e.state;
       const id = getFocus();
-      const o = st.objs[id];
+      const o = st.objs[id] || REF[id];
       if (e !== exp || id !== focus) { exp = e; focus = id; reset(); }
       const dpr = canvas.width / Math.max(1, canvas.getBoundingClientRect().width);
       const s = Math.min(canvas.width / dpr / W, canvas.height / dpr / Hh);
@@ -314,6 +328,7 @@
 
   /** Beschreibung auf Teilchenebene (Modellinterpretation) für das Gefäß. */
   function modelText(st, o) {
+    if (o && o.ref) return o.text;
     if (!o || !o.c) return '';
     const c = o.c;
     const L = Mo.liq(c);
@@ -328,10 +343,10 @@
     if (c.saltS > 0.02) parts.push(o.evap > 0.002 || o.type === 'dish' ? 'Wenn Wasser verdampft, ordnen sich Na⁺- und Cl⁻-Teilchen regelmäßig zu festen Kristallen an; das Salz schmilzt dabei nicht und wird nicht gasförmig.' : 'Festes Kochsalz: Na⁺- und Cl⁻-Teilchen sind regelmäßig in einem Kristall angeordnet.');
     if (c.oil > 0.05 && c.water > 0.05) parts.push(o.emul > 0.25 ? 'Beim Schütteln wurde das Öl in Tröpfchen zerteilt; jedes Tröpfchen ist eine Ansammlung sehr vieler Ölteilchen. In Ruhe vereinigen sie sich wieder zu einer Schicht.' : 'Öl- und Wasserteilchen mischen sich nicht: Die Ölteilchen bleiben in einem eigenen Bereich oben, weil Öl eine geringere Dichte hat.');
     else if (c.oil > 0.05) parts.push('Nur Ölteilchen.');
-    if (o.evap > 0.002 && o.temp > 50) parts.push('Wasserteilchen verlassen die Flüssigkeit und werden gasförmig (Wasserdampf, unsichtbar). Den sichtbaren Dunst bilden winzige Tröpfchen aus wieder kondensiertem Wasser.');
+    if (o.evap > 0.002 && o.temp > 50) parts.push('Wasserteilchen verlassen die Flüssigkeit und werden gasförmig. Dieser Wasserdampf ist unsichtbar; die sichtbare weiße Wolke („Dampf“) besteht aus winzigen Tröpfchen von wieder kondensiertem Wasser.');
     if (!parts.length) parts.push(L > 0.02 ? 'Nur Wasserteilchen, die sich ständig ungeordnet bewegen.' : 'Das Gefäß ist leer.');
     return parts.join(' ');
   }
 
-  (root.TV = root.TV || {}).particles = { createParticleView, modelText, COLORS: C };
+  (root.TV = root.TV || {}).particles = { createParticleView, modelText, COLORS: C, REF };
 })(typeof self !== 'undefined' ? self : this);

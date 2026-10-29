@@ -26,7 +26,7 @@ export async function exp1(page, o = {}) {
   await page.locator('[data-a="check"]').click();
   assert(await S(page, (st, M, app) => app.notes[1].goalAt != null), 'V1: Trennziel erreicht');
   await note(page, 'Nach dem Umrühren ist alles trüb. Der Sand sinkt nach unten, oben wird es klar. Beim vorsichtigen Abgießen bleibt der Sand im Becherglas.', 'Sand ist schwerer (dichter) als Wasser und löst sich nicht.');
-  await classify(page, 'het', 'suspension', ['dichte', 'loes']);
+  await classify(page, 'het', 'suspension', ['dichte']);
   assert(await isComplete(page, 1), 'V1 abgeschlossen');
 }
 
@@ -50,8 +50,12 @@ export async function exp2(page, o = {}) {
   await L.speed(page, 30); await L.waitFor(page, (st) => st.drip.F < 0.01 && st.objs.F.c.water < 8); await L.speed(page, 1);
   await page.locator('[data-a="check"]').click();
   assert(await S(page, (st, M, app) => app.notes[2].goalAt != null), 'V2: Trennziel erreicht ' + JSON.stringify(await S(page, (st, M) => M.evaluate(st))));
+  if (!o.skipTransfer) {
+    await L.use(page, 'F', 'U', o.touch); await L.idle(page);
+    assert(await S(page, (st, M) => st.objs.U.paper && M.sand(st.objs.U.c) > 15 && M.evaluate(st).done), 'V2: Filterpapier mit Rückstand auf dem Uhrglas, Ziel weiterhin erreicht');
+  }
   await note(page, 'Im Filterpapier bleibt der Sand liegen. Unten tropft klares Wasser in den Erlenmeyerkolben. Das Filtrat ist klarer als beim Abgießen.', 'Die Sandkörner sind größer als die Poren im Papier.');
-  await classify(page, 'het', 'suspension', ['korn', 'loes']);
+  await classify(page, 'het', 'suspension', ['korn']);
   assert(await isComplete(page, 2), 'V2 abgeschlossen');
 }
 
@@ -66,6 +70,11 @@ export async function exp3(page, o = {}) {
   await L.speed(page, 1);
   await page.locator('[data-a="check"]').click();
   assert(await S(page, (st, M, app) => app.notes[3].goalAt != null), 'V3: Trennziel erreicht');
+  if (!o.skipTransfer) {
+    await L.speed(page, 30); await L.waitFor(page, (st, M) => st.objs.D.c.water < 0.01 && st.objs.D.temp < M.HANDLE_T); await L.speed(page, 1);
+    await L.use(page, 'D', 'U', o.touch); await L.idle(page);
+    assert(await S(page, (st, M) => st.objs.U.c.saltS > 7 && M.evaluate(st).done), 'V3: Kristalle auf dem Uhrglas, Ziel weiterhin erreicht');
+  }
   await note(page, 'Die klare Lösung siedet, es steigt Dunst auf. Die Flüssigkeit wird weniger, am Rand entstehen weiße Kristalle.', 'Das Wasser verdampft, das Salz bleibt zurück.');
   await classify(page, 'hom', 'loesung', ['fluecht']);
   assert(await isComplete(page, 3), 'V3 abgeschlossen');
@@ -75,25 +84,48 @@ export async function exp4(page, o = {}) {
   await L.exp(page, 4);
   await L.use(page, 'S', 'sepring', o.touch); await L.idle(page);
   await L.pour(page, 'A', 'S', null, { speed: 'fast', touch: o.touch });
-  const tap = async (sel) => { const l = page.locator(sel); if (o.touch) await l.tap(); else await l.click(); await sleep(60); };
-  await tap('#btnStopper'); await tap('#btnShake'); await L.idle(page);
+  if (o.shake) await shakeOutside(page, o);
   await L.speed(page, 30); await L.waitFor(page, (st) => st.objs.S.emul < 0.005); await L.speed(page, 1);
-  await tap('#btnStopper');
   await L.use(page, 'B', 'sepunder', o.touch); await L.idle(page);
-  await L.seg(page, '#cock', '2', o.touch);
+  // Hahn direkt am gezeichneten Scheidetrichter: zu → Tropfen → offen
+  await cock(page, 2, o.touch);
   await L.waitFor(page, (st) => st.objs.S.c.water < 5);
-  await L.seg(page, '#cock', '1', o.touch);
+  await cock(page, 1, o.touch, true);
   await L.waitFor(page, (st) => st.objs.S.c.water < 0.4);
-  await L.seg(page, '#cock', '0', o.touch);
+  await cock(page, 0, o.touch, true);
   await L.use(page, 'B', 'B', o.touch); await L.idle(page); // erneutes Antippen stellt zurück
   await L.use(page, 'C', 'sepunder', o.touch); await L.idle(page);
-  await L.seg(page, '#cock', '2', o.touch);
+  await cock(page, 2, o.touch);
   await L.waitFor(page, (st, M) => M.liq(st.objs.S.c) < 0.02);
+  await cock(page, 0, o.touch);
+  assert(!(await S(page, (st, M) => M.evaluate(st).criteria.some((c) => /schüttel/i.test(c.text)))), 'kein Schüttelkriterium');
   await page.locator('[data-a="check"]').click();
   assert(await S(page, (st, M, app) => app.notes[4].goalAt != null), 'V4: Trennziel erreicht ' + JSON.stringify(await S(page, (st, M) => M.evaluate(st))));
-  await note(page, 'Beim Schütteln wird alles trüb mit vielen gelben Tröpfchen. Nach einiger Zeit gibt es wieder zwei Schichten, Öl oben. Unten läuft zuerst das Wasser heraus.', 'Öl und Wasser mischen sich nicht; Öl ist leichter.');
+  await note(page, 'Zwei Schichten: oben gelbes Öl, unten Wasser. Unten läuft zuerst das Wasser heraus, die Grenzfläche sinkt.', 'Öl und Wasser mischen sich nicht; Öl hat die geringere Dichte.');
   await classify(page, 'het', 'emulsion', ['misch', 'dichte']);
   assert(await isComplete(page, 4), 'V4 abgeschlossen');
+}
+
+/** Hahn am Scheidetrichter antippen, bis die gewünschte Stellung erreicht ist (zu → Tropfen → offen → zu). */
+export async function cock(page, level, touch, keyboard) {
+  for (let i = 0; i < 3; i++) {
+    if (await S(page, (st, M, app, a) => st.objs.S.cock === a, level)) return;
+    if (keyboard) { await page.locator('#hits [data-hit="cock"]').focus(); await page.keyboard.press('Enter'); await sleep(60); }
+    else await L.tapHit(page, 'cock', touch);
+  }
+  assert(await S(page, (st, M, app, a) => st.objs.S.cock === a, level), 'Hahnstellung ' + level);
+}
+/** Optionales Schütteln außerhalb des Rings: Stopfen auf, Hahn zu, in die Hand, schütteln, einhängen, Stopfen ab. */
+export async function shakeOutside(page, o = {}) {
+  await L.use(page, 'stop', 'S', o.touch); await L.idle(page);
+  await L.use(page, 'S', 'hand', o.touch); await L.idle(page);
+  const l = page.locator('#btnShake'); if (o.touch) await l.tap(); else await l.click();
+  await L.idle(page);
+  assert(await S(page, (st) => st.objs.S.emul > 0.9 && st.objs.S.at === 'hand'), 'geschüttelt in der Hand');
+  await L.use(page, 'S', 'sepring', o.touch); await L.idle(page);
+  await L.speed(page, 30); await L.waitFor(page, (st) => st.objs.S.emul < 0.005); await L.speed(page, 1);
+  await L.tapHit(page, 'stop', o.touch); await L.idle(page); // Stopfen antippen: zurück auf die Ablage
+  assert(await S(page, (st) => !st.objs.S.stopper && st.objs.stop.at === 'pStop'), 'Stopfen abgenommen');
 }
 
 export async function exp5(page, o = {}) {

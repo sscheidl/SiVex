@@ -22,6 +22,8 @@
   const FRONT_Y = 552; // Ablage vorne
   const BENCH_TOP = 492; // Hinterkante der Tischplatte
   const BENCH_FRONT = 566; // Vorderkante der Tischplatte
+  const SHELF_Y = 268; // Oberkante der Wandablage über dem Tisch (hoch genug für Handgriffe darunter)
+  const HAND = { origin: 405 }; // Scheidetrichter in der Hand: Unterkante des Glaskörpers
 
   // ------------------------------------------------------------------ Profile (Innenraum)
   /** [h, r]-Stützstellen, h nach oben (px), r Innenradius (px). */
@@ -162,6 +164,10 @@
       case 'sepring': return { x, y: SEPR.origin, th: 0 };
       case 'plate': return { x, y: PLATE_TOP - (type === 'dish' ? 4 : 0), th: 0 };
       case 'front': return { x, y: FRONT_Y, th: 0 };
+      case 'hand': return { x, y: HAND.origin, th: 0, held: true };
+      case 'shelf':
+        if (type === 'sep') return { x, y: SHELF_Y - 43, th: Math.PI / 2, lying: true };
+        return { x, y: SHELF_Y, th: 0 };
       default:
         if (type === 'funnel') return { x, y: BASE_Y - HOLDER.funnel, th: 0 };
         if (type === 'sep') return { x, y: BASE_Y - 46, th: Math.PI / 2, lying: true };
@@ -198,12 +204,13 @@
     magnet: { x0: -52, x1: 52, y0: -22, y1: 4 },
     rod: { x0: -74, x1: 74, y0: -14, y1: 4 },
     paper: { x0: -40, x1: 40, y0: -16, y1: 4 },
-    wash: { x0: -34, x1: 44, y0: -150, y1: 0 }
+    wash: { x0: -34, x1: 44, y0: -150, y1: 0 },
+    stopper: { x0: -18, x1: 18, y0: -26, y1: 2 }
   };
 
   return {
     PX_PER_MM, ML_PER_PX3, H, BASE_Y, FRONT_Y, BENCH_TOP, BENCH_FRONT, PROFILES, BASE_OFFSET, LIP, BULK, PORE,
-    RING, SEPR, PLATE, PLATE_TOP, HOLDER, EXTENT,
+    RING, SEPR, PLATE, PLATE_TOP, HOLDER, EXTENT, SHELF_Y, HAND,
     rAt, topH, heightOf, volumeAt, areaOf, capacity, bedVolume, fillVolume, interiorPoly,
     polyArea, clipBelow, transform, toWorld, levelFor, pourAngle,
     placePose, openingOf, pourTarget, funnelTip, sepTip

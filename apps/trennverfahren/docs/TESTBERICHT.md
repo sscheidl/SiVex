@@ -1,6 +1,6 @@
-# Trennverfahren 0.1.0 – Testbericht
+# Trennverfahren 0.2.0 – Testbericht
 
-Stand 27.10.2026 · Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatus: **prototype** (echte iPad-, mebis- und Unterrichtsprüfung offen)
+Stand 29.10.2026 · Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Grundlage: Korrekturauftrag „Trennverfahren 0.2.0“ (P0, P1, P2) · Gesamtstatus: **prototype** – Entwicklungsabnahme der Prüfungen TV01–TV21 bestanden; iPad, mebis und fachliche Freigabe stehen aus (**HOLD – unverified**)
 
 ## Umgebung
 
@@ -10,58 +10,75 @@ Stand 27.10.2026 · Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALIT
 | Node.js | 24.22.1 |
 | Browser | Microsoft Edge 156.0.4314.50 über Playwright 1.56.1 (`channel: msedge`) |
 | Baukasten | Labkit 0.1.1 (unverändert) |
-| Pakete | `release/trennverfahren-0.1.0-web.zip`, `release/trennverfahren-0.1.0-scorm12.zip`, Prüfsummen in `release/SHA256SUMS.txt` |
+| Pakete | `release/trennverfahren-0.2.0-web.zip`, `release/trennverfahren-0.2.0-scorm12.zip`, Prüfsummen in `release/SHA256SUMS.txt` |
 
-## Ausgeführte Befehle
+## Ausgeführte Befehle und Reihenfolge
 
 ```bash
-npm test                  # 40 Unit-Tests (Modell 25, Aufgaben 7, Geometrie 3, Labkit 5)
-npm run package           # Build-Prüfung (keine externen Ressourcen/absoluten Pfade/Netzzugriffe), Web- und SCORM-ZIP
-node tests/e2e/run.mjs    # Szenarien E1–E8 (10 Läufe) über die gerenderte Oberfläche
+npm test                  # 46 Unit-Tests (Modell 30, Aufgaben 8, Geometrie 3, Labkit 5)
+npm run package           # Build-Prüfung, Web- und SCORM-ZIP 0.2.0, Prüfsummen
+node tests/e2e/run.mjs    # Browserszenarien E1–E12 (15 Läufe)
 node tests/e2e/scorm.mjs  # 16 Paketprüfungen auf den ausgelieferten ZIP-Dateien
 ```
 
-Ergebnisse maschinenlesbar: [`tests/e2e/results.json`](../tests/e2e/results.json), [`tests/e2e/scorm-results.json`](../tests/e2e/scorm-results.json).
+1. Gesamtlauf auf dem fertigen Code: 13 von 15 Browserszenarien PASS. E7 und E8 scheiterten, weil ihr **Testablauf** noch im Ring schüttelte – das weist 0.2.0 bewusst ab (P1.3). Testablauf korrigiert (Stopfen auf, in die Hand nehmen, schütteln, einhängen), E7 und E8 einzeln nachgelaufen: PASS.
+2. Danach eine Korrektur am Code: Die Legende des Teilchenmodells nennt beim Vergleichsbild „festes Kochsalz“ keine Wasserteilchen mehr. Anschließend Unit-Tests (46/46), Paketbau, E8 und alle 16 Paketprüfungen (inklusive vollständigem Pflichtablauf im SCORM-Paket und im Web-ZIP) erneut ausgeführt. Die ausgelieferten ZIPs sind byte-identisch mit diesem Build (Prüfung PKG-1).
 
-**Reihenfolge:** Der vollständige Lauf (Unit, Paket, E1–E8, Pakete) erfolgte auf dem finalen Code. Danach wurde nur noch ein Text der Materialliste von Versuch 5 berichtigt („Becherglas A“ statt „Bechergläser A und B“); anschließend wurden Unit-Tests, Paketbau, E1 (Pflichtablauf) und alle 16 Paketprüfungen erneut ausgeführt – die ausgelieferten ZIP-Dateien sind die danach gebauten.
+Prüfsummen der ausgelieferten Pakete (SHA-256):
 
-## Ergebnisse je Abnahmebereich
+```text
+1d4b24548ebb5c0a90c5a066bab81fe9673fd004645198239d23411710c70873  trennverfahren-0.2.0-web.zip
+09e6352fc6cf49e397d4a5ddcab939ecce019ccfce8aafb2d36571e86fc9b973  trennverfahren-0.2.0-scorm12.zip
+```
 
-| Bereich | Status | Nachweis |
-| --- | --- | --- |
-| **Fachmodell** | **PASS** | `tests/unit/model.test.js`: Bilanz nach jeder Handlungsfolge (Abweichung < 10⁻⁶, inkl. Spritzflasche, Verlusttöpfe); Löslichkeitsgrenze (Sättigung bei 5 mL, ungelöstes Salz bleibt fest), Lösen nur mit Wasser, Rühren ≥ 3× schneller; gelöstes Salz passiert das Papier, Sand und ungelöstes Salz nicht, trockenes Filtrieren trennt nicht; untere Wasserschicht fließt zuerst; Magnet nimmt nur Eisen; kein Sieden bei kalter Lösung, Salz wird nicht gasförmig, Kristalle entstehen bei Sättigung. |
-| **Alle Versuche** | **PASS** | E1: alle fünf Versuche über echte Klicks einschließlich Beobachtung, Einordnung, Trennprinzip; Kontrolle mit Fehlern und Korrektur; Hefteintrag. Zusätzlich vollständig im SCORM-Paket (neues Fenster) und im entpackten Web-ZIP per `file://` (SCORM-popup-2, WEB-2). |
-| **Korrekturen** | **PASS** | E4: zu früh/zügig dekantiert (3,3 g Sand im Dekantat) → absetzen, in C abgießen; ohne Papier filtriert (19,9 g Sand im Kolben, Warnung im Hinweisbereich); zu wenig Wasser (3,3 g ungelöstes Salz im Filter, Tipp 2/3 nennt das) → nachgespült (0,00 g); zu spät geschlossen (10 mL Öl im Wasser) → zurückgegossen und erneut geschieden; alternative Reihenfolge (lösen → filtrieren → Magnet am Rückstand → eindampfen) erreicht alle Ziele. Unit-Tests decken dieselben Fälle sowie Unterdruck bei Stopfen, Trichter-Überlauf und Filtrat ohne Vorlage ab. Keine Sackgasse gefunden; „Neu beginnen“ setzt nur den Ansatz zurück. |
-| **Animation** | **PASS** | E7 (Bildfolgen in `docs/screenshots/anim/`, je 5–10 Bilder, 2× Auflösung): Aufrühren, Sedimentation (schwebend 17,3 → 1,9 g, monoton), Gießen (A 100 → 82 mL, B 0 → 18 mL im selben Transfer, Summe inkl. Verdunstung konstant), Wellen am Auftreffpunkt (Amplitude 1,06 → 0,000 nach dem Stoppen), Tropfen des Filtrats (11,0 → 17,9 mL, 9 von 10 Bildern verändert), Schütteln und Entmischen (Emulsion 1,00 → 0,32), Lösen (3,24 → 1,20 g fest), Eindampfen (Wasser 21,7 → 0,0 mL, Kristalle 0,0 → 7,8 g). Gemessen wurde jeweils während des laufenden Vorgangs. Bilder visuell gesichtet: waagrechter Spiegel im gekippten Glas, Strahl beginnt am Ausguss, Bodensatz haftet, Tropfen fallen aus dem Trichterrohr in den Kolben, Tröpfchen steigen auf. |
-| **Teilchenmodell** | **PASS** | E8: Gefäßbezug und Legende passen (Lösung: Na⁺/Cl⁻, Text „kein eigener Aggregatzustand“); Filter (Poren-Text), Emulsion (Tröpfchen) dargestellt; Pause: Laborausschnitt, Teilchenbild und Versuchszeit bitgleich nach 1,2 s, nach Fortsetzen Bewegung; dreimaliges Umschalten ändert den Modellzustand nicht; Schalter bleibt über Reiter- und Versuchswechsel an. |
-| **Kopfzeile** | **PASS** (Emulation) | Beide Schalter einzeln und kombiniert in E6 (alle Versuche, drei Größen), per Tastatur (E3), per Tipp im Tablet-Profil (E2), Zustand über Neuladen (E5). Bei 1024×768 vollständig sichtbar und bedienbar. |
-| **Layout** | **PASS** | E6 bei 1024×768, 1180×820, 1920×1080, je Versuch alle vier Schalterkombinationen: keine horizontale Überbreite, Hinweisbereich oberhalb der Laborfläche, Namensfelder unterhalb, Teilchenmodell und Bedienleiste ohne Überlappung mit der Laborfläche, keine überlappenden Namensfelder, alle Bedienelemente ≥ 44 px; lange Meldung (Spritzwarnung) bei 1024/1180 auf zwei Zeilen gekürzt (Volltext als Tooltip), bei 1920 vollständig. Screenshots `40-layout-*`, `41-lange-meldung-*`. |
-| **Touch/Tastatur** | **PASS** (Emulation) · echtes iPad **HOLD – unverified** | E2: Versuche 1, 3, 4 vollständig per `tap()` im Tablet-Profil (`hasTouch`); E3: Geräte, Zielschaltflächen, „Gießen stoppen“ und Schalter nur mit Tastatur, sichtbarer Fokus. Kein Test auf einem echten iPad mit Safari. |
-| **Lernkontrolle** | **PASS** | E1: zuerst 5 falsche Optionen und 2 falsche Lücken markiert, Hefteintrag gesperrt, Antworten erhalten; nach Korrektur nur der betroffenen Felder vollständig richtig, Hefteintrag frei. `tasks.test.js`: Einfach-/Mehrfachauswahl, Teilantworten, Begründung jeder falschen Option, Lücken tolerant (Kleinschreibung, Synonyme, ein Tippfehler), Sperrwörter mit Erklärung. |
-| **Vier Perspektiven** | **PASS** | Kontrolle in vier Gruppen (Stoffebene, Teilchenebene, Aggregatzustände, Trennprinzip); Hefteintrag mit denselben Rubriken je Versuchskarte; Aggregatzustandswechsel nur bei Versuch 3 (geprüft); Merksätze „keine neuen Stoffe“, „gelöst ist kein Aggregatzustand“. |
-| **Speicherung** | **PASS** | E5: Entwurf und Zwischenstand bleiben über „Auswertung prüfen“ mit Fehler, Reiter-, Versuchs- und Ansichtswechsel und Neuladen erhalten; Schalterzustände bleiben; Neustart von Versuch 2 lässt Versuch 1 unberührt; Neustart von Versuch 1 erzeugt Ansatz 2, Notizen bleiben. |
-| **Pakete** | **PASS** (simuliertes LMS) · mebis **HOLD – unverified** | `scorm.mjs` 16/16: Manifest im ZIP-Stamm, SCORM 1.2, alle 14 Dateien gelistet, Verweise relativ, Paket byte-identisch mit dem Build; Mock-LMS eingebettet (Versuch 1) und als neues Fenster (vollständiger Pflichtablauf): `LMSInitialize`/`LMSFinish` je genau einmal, keine `LMSGetValue`/`LMSSetValue`/`LMSCommit`; Web-ZIP entpackt per `file://` mit vollständigem Pflichtablauf ohne Netzanfragen. Ein echter Import in mebis wurde **nicht** geprüft. |
+Ergebnisse maschinenlesbar: [`tests/e2e/results.json`](../tests/e2e/results.json) (Nachläufe vermerkt), [`tests/e2e/scorm-results.json`](../tests/e2e/scorm-results.json).
 
-Alle E2E-Szenarien prüfen zusätzlich: keine Konsolenfehler, keine Anfragen außerhalb des App-Servers.
+## PASS/HOLD-Matrix (TV01–TV21)
+
+| ID | Prüffall | Status | Nachweis |
+| --- | --- | --- | --- |
+| TV01 | Kopfzeile + Neustartbestätigung auf 4 Viewports | **PASS** | E6 bei 1024×768, 1180×820, 1440×900, 1920×1080: Bestätigungstext, Versuchsnummer und Trennziel ohne Abschneiden, beide Knöpfe sichtbar, ≥ 44 px, per Tastatur „Abbrechen“, „Neu beginnen“ erzeugt neuen Ansatz; Kopfzeilenknöpfe vollständig im Fenster. Screenshots `42-neustart-*` |
+| TV02 | Vorsichtig/zügig gießen V1–V4 | **PASS** | E9: Während des laufenden Gießens liegt der Treffpunkt des Strahls in jedem Bild innerhalb der Öffnung und genau am Spiegel bzw. Innenboden des Ziels (Abweichung < 0,6 Weltpixel), kein Verschütten. Bildfolgen `anim/tv02-v1-zuegig-leer-*`, `tv02-v1-vorsichtig-halbvoll-*`, `tv03-v3-abdampfschale-*`, `tv03-v4-scheidetrichter-*`; Vorher/Nachher `vergleich/*-giessen.png` |
+| TV03 | Leere/halbvolle/fast volle Gefäße, Filter, Scheidetrichter | **PASS** | E9: leeres und teilweise gefülltes Becherglas, Trichter mit Papier (Tropfen landen in der Vorlage, nichts verschüttet), Uhrglas als fast volles Ziel (Gießen stoppt mit „Uhrglas ist voll“, nichts verschüttet), Abdampfschale, Scheidetrichter (Tropfen aus dem Hahn landen in Becherglas B). Bilanz nach den Folgen unverändert (< 10⁻⁶). Bildfolgen `anim/tv03-v2-trichter-*`, `tv03-v2-uhrglas-fast-voll-*`, `tv03-v4-tropfen-*` |
+| TV04 | Spritzflasche: leer, Feststoffgemisch, Filter | **PASS** | Ursache des Fehlers in 0.1.0: Die Düsenposition war ein Zahlenpaar statt eines Punktes – der Strahl wurde nie gezeichnet. E9: Strahl in jeder aktiven Sprühphase sichtbar und trifft das Ziel (leeres Becherglas, Becherglas mit Sand, Filter), Wassermenge 5 bzw. 20 mL; Unit-Test: Wasser fließt nur während des Strahls. Bildfolgen `anim/tv04-spritzflasche-*`, Vorher/Nachher `vergleich/*-spritzflasche.png` |
+| TV05 | Sedimentation, Filtration: fachliche Auswertung | **PASS** | `tasks.test.js`: V1 verlangt Dichte, V2 Korngröße; Löslichkeit als Voraussetzung wird erläutert („nicht nötig, aber nicht falsch“), nicht als Fehler gewertet; E11 im Browser (Markierung ○) |
+| TV06 | Öl/Wasser ohne Schütteln | **PASS** | Unit-Test TV06 und E1/E2 (Pflichtablauf ohne Schütteln): Ziel erreicht, kein Schüttelkriterium mehr |
+| TV07 | Optionales Schütteln außerhalb des Rings | **PASS** | E10: Schütteln im Ring wird mit sichtbarer Begründung abgewiesen; Stopfen auf → in die Hand → schütteln → einhängen → entmischen → Stopfen ab → Trennung erfolgreich; Unit-Test: Herausnehmen ohne Stopfen bzw. mit offenem Hahn abgewiesen. Screenshot `51-tv07-schuetteln-in-der-hand` |
+| TV08 | Rückgießen verunreinigter Fraktion | **PASS** | E10: zu spät geschlossen (10 mL Öl im Wasser) → Rückgießen bei offenem Hahn mit Begründung abgewiesen → Hahn zu → zurückgegossen → erneut getrennt → Ziel erreicht; Unit-Test für Rückgießen aus A, B und C |
+| TV09 | Bedienung Stopfen und Hahn | **PASS** | Stopfen als Objekt auf der Ablage mit sichtbarer Bewegung (E10, `50-tv07-stopfen-auf`); Hahn direkt am Gerät per Maus (E1, E10), Touch (E2) und Tastatur (E10); Zustand als Griffstellung und in der Beschriftung |
+| TV10 | V2: Papier/Rückstand auf Uhrglas | **PASS** | Unit-Test: Sand und anhaftendes Wasser vollständig übertragen, während des Tropfens abgewiesen, Ziel bleibt erreicht; E1: im Pflichtablauf über die Oberfläche |
+| TV11 | V3: Kristalle nach Abkühlung entnehmen | **PASS** | Unit-Test: heiß bzw. nass abgewiesen, nach Abkühlen unter 45 °C Masse erhalten, Ziel bleibt erreicht; E1 und E2 über die Oberfläche (Maus, Touch) |
+| TV12 | Protokoll: Textfelder + Zwischenstand | **PASS** | E11: Speicherknopf nach beiden Feldern; Zwischenstand enthält Beobachtung, Erklärung, Ansatz, Versuchszeit, Zustand |
+| TV13 | Freitext-Unsinn und fachliche Kontrolle | **PASS** | E11: Unsinnstext erhält keine Markierung; Abschluss allein über Trennziel und Auswertungsfragen (auch mit leeren Feldern); Musterbeobachtung nach erreichtem Ziel |
+| TV14 | Schülertexte/Hefteintrag | **PASS** | `tasks.test.js`: keine Klammer-Aufzählungen und keine vorweggenommenen Beobachtungen in den Beobachtungsfragen, keine „schwerer“-Formulierung, Dampf: Wasserdampf unsichtbar, sichtbare Wolke = kondensierte Tröpfchen |
+| TV15 | Laborlayout und Teilchenansicht auf 4 Viewports | **PASS** | E6: keine Überbreite, keine Überlappung, alle Bedienelemente ≥ 44 px, Laborfläche ≥ 250 px hoch. Maßstab mit Teilchenmodell **und** Namen: 1024×768 V1 0,89 · V2 0,54 · V3 0,80 · V4 0,66 · V5 0,59; 1180×820 V1 1,03 · V2 0,62 · V3 0,93 · V4 0,76 · V5 0,69 (0.1.0 bei 1024×768 mit Teilchenmodell: V5 0,49). Vorher/Nachher `vergleich/` |
+| TV16 | Stoffbilanz nach allen neuen Handlungen | **PASS** | Unit-Tests prüfen nach jeder Handlungsfolge alle Stoffe (Abweichung < 10⁻⁶, inklusive Spritzflasche und Verlusttöpfe) sowie endliche, nicht negative Mengen |
+| TV17 | Alternative Vorgehensweise V5, Altversuche | **PASS** | E4 (alternative Reihenfolge, alle Korrekturfälle) und Unit-Tests aller bisherigen Fälle |
+| TV18 | Start/Stop/Pause/Zeitraffer während Aktionen | **PASS** | E12: Doppelklick erzeugt genau einen Gießvorgang; während des Gießens höchstens 1× (Anzeige „1×“); Pause hält Transfer an; Unit-Test: zweiter Handgriff während eines laufenden abgewiesen |
+| TV19 | Web-/SCORM-Paket frisch gebaut und entpackt | **PASS** (simuliertes LMS) | `scorm.mjs` 16/16: Manifest im Stamm, alle Dateien gelistet, Paket = Build; Mock-LMS über HTTP eingebettet (Versuch 1) und als neues Fenster (vollständiger Pflichtablauf), nur `LMSInitialize`/`LMSFinish`; Web-ZIP entpackt per `file://` ohne Netz mit vollständigem Pflichtablauf |
+| TV20 | Testdokumentation | **PASS** | dieser Bericht, `results.json`, `scorm-results.json`, Screenshots und Bildfolgen |
+| TV21 | V3: Reinstoff/Stoffgemisch-Teilchenansicht | **PASS** | E8: Wasser / festes Kochsalz / Kochsalzlösung wählbar; Ionengitter, einzelne Ionen in Lösung, „kein eigener Aggregatzustand“, keine „NaCl-Moleküle“, Legende passend. Screenshots `55-tv21-*` |
+| P2 | Kochsalz mit dem Löffel dosieren | **deferred** | nicht umgesetzt, als Folgeauftrag zurückgestellt |
+
+Zusätzlich weiter grün: E1 Pflichtablauf (jetzt mit Papier- und Kristallüberführung), E2 Touch, E3 Tastatur, E4 Korrekturen, E5 Speicherung, E7 Animation, E8 Teilchenmodell. Alle Szenarien prüfen außerdem: keine Konsolenfehler, keine Anfragen außerhalb des App-Servers.
 
 ## Ausstehende Prüfungen (nicht in dieser Umgebung möglich)
 
 | Prüfung | Status |
 | --- | --- |
-| iPad mit Safari (Touch, Leistung der Animation, Fenstergröße) | **HOLD – unverified** |
-| Import und Start in mebis („Neues Fenster“) | **HOLD – unverified** |
-| Fachliche Durchsicht durch die Lehrkraft (Modellannahmen, Toleranzen, Texte, Hefteintrag) | **HOLD – unverified** |
-| Unterrichtserprobung (Bearbeitungsdauer, Verständlichkeit) | **HOLD – unverified** |
+| iPad mit Safari (Touch, Animation, Fenstergröße) – Tablet wurde nur in Edge emuliert | **HOLD – unverified** |
+| Import und Start in mebis („Neues Fenster“) – geprüft nur im simulierten LMS | **HOLD – unverified** |
+| Fachliche Durchsicht durch die Lehrkraft (Trennprinzip-Bewertung, Toleranzen, Texte) | **HOLD – unverified** |
+| Unterrichtserprobung | **HOLD – unverified** |
 
-## Bekannte Grenzen und Beobachtungen
+## Bekannte Grenzen und Risiken für den Schulbetrieb
 
-- Bei 1024×768 mit eingeblendetem Bedienfeld **und** Teilchenmodell wird die Laborfläche in Versuch 5 (breitester Aufbau) recht klein; Ausblenden des Bedienfelds oder Verschieben der Trennlinie schafft Platz. Bedienbarkeit und Überlappungsfreiheit sind gegeben (E6).
-- Beim Schütteln wird der Inhalt des Scheidetrichters mit dem Glas mitgedreht (Schwappen), nicht als waagrechter Spiegel.
-- Der Hefteintrag ist deutlich länger als der Richtwert von 100 Wörtern aus `QUALITY.md`, weil der Auftrag fünf vollständige Versuchskarten mit sechs Rubriken, Trennkette und Teilchenbilder verlangt.
-- Abweichungen vom Labkit-Standard laut Auftrag: Hinweisbereich oberhalb statt Meldungsband auf der Bühne, Hefteintrag erst nach dem Lernablauf, freie Beobachtungstexte.
-- Zeiten sind beschleunigt; die Modellparameter sind in [CHEMIE.md](CHEMIE.md) von Literaturwerten getrennt dokumentiert.
-- Der Quellstand startet wie die anderen Labkit-Apps über `npm start`; per Doppelklick startet das gebaute Web-ZIP.
+- Versuch 2 und 5 bleiben bei 1024×768 mit beiden Zusatzanzeigen die kleinsten Aufbauten (Maßstab 0,54 bzw. 0,59); Ausblenden des Bedienfelds oder Verschieben der Trennlinie vergrößert sie.
+- Die Spritzflasche wird bei Zielen am linken Rand gespiegelt geführt, unter der Wandablage flacher – die Bewegung ist schematisch.
+- Der Scheidetrichter wird zum Schütteln als „in der Hand“ gezeichnet (schematische Hände); sein Inhalt schwappt mit dem Glas.
+- Zeiten sind beschleunigt; Parameter in [CHEMIE.md](CHEMIE.md).
+- Echte Geräte- und Plattformprüfungen fehlen (siehe oben); bis dahin bleibt `sivex.json` auf `prototype`.
 
 ## Screenshots
 
-`docs/screenshots/`: `01-start` · `02`–`06` je Versuch nach Abschluss · `07-kontrolle-falsch`/`-richtig` · `08-hefteintrag`, `08b-hefteintrag-bilder` · `10-tablet-touch` · `11-tastatur-fokus` · `20`–`24` Korrekturfälle · `30-speicherung-neuer-ansatz` · `40-layout-*`, `41-lange-meldung-*` · `50`–`53` Teilchenmodell · `60-scorm-*`, `61-web-zip-file` · Bildfolgen in `anim/`.
+`docs/screenshots/`: `01`–`08b` Pflichtablauf · `10` Tablet/Touch · `11` Tastatur · `20`–`24` Korrekturfälle · `30` Speicherung · `40-layout-*` (4 Viewports, alle Versuche) · `41-lange-meldung-*` · `42-neustart-*` · `43` Scheidetrichter-Tropfen · `50`–`53` Scheidetrichter (TV07, TV08) · `54` Protokoll · `55-tv21-*` Vergleichsbilder · `60`/`61` Pakete · `anim/` Bildfolgen (Gießen, Tropfen, Spritzflasche, Sedimentation, Entmischung, Lösen, Kristalle) · `vergleich/` Vorher (0.1.0) / Nachher (0.2.0) bei 1024×768 und 1180×820.

@@ -53,7 +53,11 @@
   const HEAT = { set: [20, 180, 330], tauUp: 12, tauDown: 40, h: { dish: 1.5, beaker: 1.2, erlenmeyer: 1.1 } };
   const LV = 2257; // J/g Verdampfungsenthalpie Wasser
   const ROOM = 20;
-  const OPS = { move: 0.7, go: 0.9, back: 0.8, stir: 3, wash: 1.6, paper: 1.4, magnet: 2.6, magdrop: 1.8, shake: 3 };
+  const OPS = { move: 0.7, go: 0.9, back: 0.8, stir: 3, wash: 1.6, paper: 1.4, magnet: 2.6, magdrop: 1.8, shake: 3, stopper: 0.8, paperOut: 1.6, scrape: 2.2 };
+  /** Spritzflasche: Wasser fließt nur, solange der Strahl sichtbar ist (Vorlauf und Nachlauf in s). */
+  const WASH_WIN = [0.35, 0.25];
+  /** Unter dieser Temperatur darf eine Schale angefasst werden (°C). */
+  const HANDLE_T = 45;
   const WASH = [5, 20];
 
   /** Gefäß- und Gerätetypen. cap: Fassungsvermögen (mL Flüssigkeit). */
@@ -68,24 +72,26 @@
     magnet: { name: 'Magnet', tool: true },
     rod: { name: 'Glasstab', tool: true },
     wash: { name: 'Spritzflasche', tool: true },
-    paper: { name: 'Filterpapier', tool: true }
+    paper: { name: 'Filterpapier', tool: true },
+    stopper: { name: 'Stopfen', tool: true }
   };
-  /** Sonderplätze: welcher Typ dort stehen kann. */
-  const SLOT_ACCEPT = { ring: ['funnel'], under: ['beaker', 'erlenmeyer'], sepring: ['sep'], sepunder: ['beaker', 'erlenmeyer'], plate: ['dish', 'beaker'] };
+  /** Sonderplätze: welcher Typ dort stehen kann. hand: Scheidetrichter in der Hand (außerhalb des Rings). */
+  const SLOT_ACCEPT = { ring: ['funnel'], under: ['beaker', 'erlenmeyer'], sepring: ['sep'], sepunder: ['beaker', 'erlenmeyer'], plate: ['dish', 'beaker'], hand: ['sep'] };
 
   // ------------------------------------------------------------------ Versuche
   /**
    * Plätze: x in Weltkoordinaten (Renderer), kind: bench (Tisch, hinten), front (Tisch, vorne),
-   * ring/under/sepring/sepunder/plate (Sonderplätze). Objekte stehen auf ihrem Heimplatz.
+   * shelf (Wandablage über dem Tisch), ring/under/sepring/sepunder/plate/hand (Sonderplätze).
+   * Objekte stehen auf ihrem Heimplatz.
    */
   const EXPERIMENTS = {
     1: {
-      key: 'sed', short: 'Dekantieren', title: 'Sand und Wasser: sedimentieren und dekantieren', width: 640, viewTop: 240,
+      key: 'sed', short: 'Dekantieren', title: 'Sand und Wasser: sedimentieren und dekantieren', width: 560, viewTop: 245,
       slots: [
-        { id: 'pA', x: 105, kind: 'bench', role: 'mix' },
-        { id: 'pRod', x: 235, kind: 'front' },
-        { id: 'pB', x: 365, kind: 'bench', role: 'recv' },
-        { id: 'pC', x: 535, kind: 'bench', role: 'recv' }
+        { id: 'pA', x: 95, kind: 'bench', role: 'mix' },
+        { id: 'pRod', x: 215, kind: 'front' },
+        { id: 'pB', x: 290, kind: 'bench', role: 'recv' },
+        { id: 'pC', x: 445, kind: 'bench', role: 'recv' }
       ],
       objects: [
         { id: 'A', type: 'beaker', name: 'Becherglas A', home: 'pA', c: { water: 100, sandC: 18, sandF: 2 } },
@@ -96,74 +102,81 @@
       main: 'A'
     },
     2: {
-      key: 'filt', short: 'Filtrieren', title: 'Sand und Wasser: filtrieren', width: 970, viewTop: 140,
+      key: 'filt', short: 'Filtrieren', title: 'Sand und Wasser: filtrieren', width: 930, viewTop: 100,
       slots: [
-        { id: 'pA', x: 95, kind: 'bench', role: 'mix' },
-        { id: 'pRod', x: 160, kind: 'front' },
-        { id: 'pPaper', x: 300, kind: 'front' },
-        { id: 'pF', x: 255, kind: 'bench', holder: true },
-        { id: 'ring', x: 460, kind: 'ring' },
-        { id: 'under', x: 460, kind: 'under' },
-        { id: 'pE', x: 680, kind: 'bench', role: 'recv' },
-        { id: 'pB', x: 800, kind: 'bench', role: 'recv' },
-        { id: 'pW', x: 900, kind: 'bench' }
+        { id: 'pW', x: 80, kind: 'shelf' },
+        { id: 'pRod', x: 190, kind: 'shelf' },
+        { id: 'pPaper', x: 295, kind: 'shelf' },
+        { id: 'pA', x: 90, kind: 'bench', role: 'mix' },
+        { id: 'pF', x: 240, kind: 'bench', holder: true },
+        { id: 'ring', x: 420, kind: 'ring' },
+        { id: 'under', x: 420, kind: 'under' },
+        { id: 'pE', x: 640, kind: 'bench', role: 'recv' },
+        { id: 'pB', x: 760, kind: 'bench', role: 'recv' },
+        { id: 'pU', x: 865, kind: 'bench', role: 'recv' }
       ],
       objects: [
         { id: 'A', type: 'beaker', name: 'Becherglas A', home: 'pA', c: { water: 100, sandC: 18, sandF: 2 } },
+        { id: 'wash', type: 'wash', name: 'Spritzflasche', home: 'pW' },
         { id: 'rod', type: 'rod', name: 'Glasstab', home: 'pRod' },
         { id: 'paper', type: 'paper', name: 'Filterpapier', home: 'pPaper' },
         { id: 'F', type: 'funnel', name: 'Trichter', home: 'pF' },
         { id: 'E', type: 'erlenmeyer', name: 'Erlenmeyerkolben', home: 'pE' },
         { id: 'B', type: 'beaker', name: 'Becherglas B', home: 'pB' },
-        { id: 'wash', type: 'wash', name: 'Spritzflasche', home: 'pW' }
+        { id: 'U', type: 'watch', name: 'Uhrglas', home: 'pU' }
       ],
       main: 'A'
     },
     3: {
       key: 'evap', short: 'Eindampfen', title: 'Kochsalzlösung: eindampfen', width: 620, viewTop: 250,
       slots: [
-        { id: 'pA', x: 120, kind: 'bench', role: 'mix' },
-        { id: 'plate', x: 380, kind: 'plate' },
-        { id: 'pRod', x: 530, kind: 'front' }
+        { id: 'pA', x: 105, kind: 'bench', role: 'mix' },
+        { id: 'plate', x: 335, kind: 'plate' },
+        { id: 'pU', x: 530, kind: 'bench', role: 'recv' },
+        { id: 'pRod', x: 470, kind: 'front' }
       ],
       objects: [
         { id: 'A', type: 'beaker', name: 'Becherglas A', home: 'pA', c: { water: 40, saltD: 8 } },
         { id: 'D', type: 'dish', name: 'Abdampfschale', home: 'plate' },
+        { id: 'U', type: 'watch', name: 'Uhrglas', home: 'pU' },
         { id: 'rod', type: 'rod', name: 'Glasstab', home: 'pRod' }
       ],
       plate: true, main: 'A'
     },
     4: {
-      key: 'sep', short: 'Scheiden', title: 'Öl und Wasser: scheiden', width: 1050, viewTop: 55,
+      key: 'sep', short: 'Scheiden', title: 'Öl und Wasser: scheiden', width: 760, viewTop: 50,
       slots: [
+        { id: 'pS', x: 150, kind: 'shelf', holder: true },
+        { id: 'pStop', x: 440, kind: 'shelf' },
         { id: 'pA', x: 90, kind: 'bench', role: 'mix' },
-        { id: 'pS', x: 245, kind: 'bench', holder: true },
-        { id: 'sepring', x: 620, kind: 'sepring' },
-        { id: 'sepunder', x: 620, kind: 'sepunder' },
-        { id: 'pB', x: 860, kind: 'bench', role: 'recv' },
-        { id: 'pC', x: 975, kind: 'bench', role: 'recv' }
+        { id: 'hand', x: 210, kind: 'hand' },
+        { id: 'pB', x: 330, kind: 'bench', role: 'recv' },
+        { id: 'pC', x: 450, kind: 'bench', role: 'recv' },
+        { id: 'sepring', x: 590, kind: 'sepring' },
+        { id: 'sepunder', x: 590, kind: 'sepunder' }
       ],
       objects: [
         { id: 'A', type: 'beaker', name: 'Becherglas A', home: 'pA', c: { water: 50, oil: 50 } },
         { id: 'S', type: 'sep', name: 'Scheidetrichter', home: 'pS' },
+        { id: 'stop', type: 'stopper', name: 'Stopfen', home: 'pStop' },
         { id: 'B', type: 'beaker', name: 'Becherglas B', home: 'pB' },
         { id: 'C', type: 'beaker', name: 'Becherglas C', home: 'pC' }
       ],
       main: 'A'
     },
     5: {
-      key: 'chain', short: 'Trennkette', title: 'Eisen, Sand und Kochsalz: eigene Trennkette', width: 960, viewTop: 140,
+      key: 'chain', short: 'Trennkette', title: 'Eisen, Sand und Kochsalz: eigene Trennkette', width: 840, viewTop: 100,
       slots: [
+        { id: 'pMag', x: 75, kind: 'shelf' },
+        { id: 'pW', x: 175, kind: 'shelf' },
+        { id: 'pRod', x: 280, kind: 'shelf' },
+        { id: 'pPaper', x: 375, kind: 'shelf' },
         { id: 'pM', x: 80, kind: 'bench', role: 'mix' },
-        { id: 'pMag', x: 115, kind: 'front' },
-        { id: 'pU', x: 205, kind: 'bench', role: 'recv' },
-        { id: 'pW', x: 300, kind: 'bench' },
-        { id: 'pA', x: 400, kind: 'bench' },
-        { id: 'pRod', x: 330, kind: 'front' },
-        { id: 'pPaper', x: 470, kind: 'front' },
-        { id: 'ring', x: 600, kind: 'ring' },
-        { id: 'under', x: 600, kind: 'under' },
-        { id: 'plate', x: 860, kind: 'plate' }
+        { id: 'pU', x: 200, kind: 'bench', role: 'recv' },
+        { id: 'pA', x: 320, kind: 'bench' },
+        { id: 'ring', x: 480, kind: 'ring' },
+        { id: 'under', x: 480, kind: 'under' },
+        { id: 'plate', x: 735, kind: 'plate' }
       ],
       objects: [
         { id: 'M', type: 'bowl', name: 'Porzellanschale', home: 'pM', c: { iron: 5, sandC: 9, sandF: 1, saltS: 5 } },
@@ -204,7 +217,7 @@
       if (T.liquid || o.type === 'magnet') {
         Object.assign(obj, { c: Object.assign(zero(), clone(o.c || {})), susp: zsusp(), emul: 0, agit: 0, temp: ROOM, evap: 0, boil: false });
       }
-      if (o.type === 'funnel') obj.paper = false;
+      if (o.type === 'funnel' || o.type === 'watch') obj.paper = false;
       if (o.type === 'sep') Object.assign(obj, { stopper: false, cock: 0, vac: 0 });
       objs[o.id] = obj;
     }
@@ -215,7 +228,7 @@
       op: null,
       lost: { spilled: zero(), evaporated: zero(), spatter: zero() },
       added: zero(),
-      flags: { maxSusp: 0, maxEmul: 0, sepOut: 0, magnetUses: 0, filtered: 0, stirs: 0 },
+      flags: { maxSusp: 0, maxEmul: 0, sepOut: 0, magnetUses: 0, filtered: 0, paperFiltered: 0, stirs: 0 },
       warned: {}, log: [], drip: { F: 0, S: 0 }
     };
     st.initial = inventory(st);
@@ -453,6 +466,7 @@
       if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
       if (!o || !o.c || o.type === 'magnet') return fail('Spritze das Wasser in ein Gefäß.', 'nowash');
       if (o.type === 'sep' && o.stopper) return fail('Nimm zuerst den Stopfen vom Scheidetrichter ab.', 'stopper');
+      if (o.type === 'sep' && o.at !== 'sepring') return fail('Hänge den Scheidetrichter zuerst in den Ring am Stativ.', 'ring');
       if (o.type === 'funnel' && o.at !== 'ring') return fail('Setze den Trichter zuerst in den Filtrierring.', 'ring');
       const room = T(o).cap - liq(o.c);
       if (room < 1) return fail(`${label(o)} ist voll.`, 'full');
@@ -482,13 +496,63 @@
       if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
       if (!o || !T(o).move) return fail('Dieses Gerät bleibt an seinem Platz.', 'nomove');
       if (o.at === slotId) return ok('');
-      if (o.type === 'sep' && o.at === 'sepring' && !isEmpty(o.c)) return fail('Der gefüllte Scheidetrichter bleibt im Ring hängen.', 'nomove');
+      if (o.type === 'sep') {
+        const kind = (slotOf(st, slotId) || {}).kind;
+        const filled = !isEmpty(o.c);
+        if (kind === 'hand' && !filled) return fail('Der Scheidetrichter ist leer. Zum Schütteln zuerst befüllen.', 'sepEmpty');
+        if (filled && slotId === o.home) return fail('Der gefüllte Scheidetrichter wird nicht abgelegt. Hänge ihn in den Ring oder nimm ihn zum Schütteln in die Hand.', 'nomove');
+        if (filled && kind === 'hand' && !o.stopper) return fail('Setze zuerst den Stopfen auf – sonst läuft beim Herausnehmen und Schütteln Flüssigkeit aus.', 'stopper');
+        if (filled && kind === 'hand' && o.cock > 0) return fail('Schließe zuerst den Hahn – sonst läuft beim Herausnehmen Flüssigkeit aus.', 'cock');
+      }
       if (o.type === 'funnel' && !isEmpty(o.c)) return fail('Der Trichter ist nicht leer und bleibt im Ring.', 'nomove');
       if (o.at === 'plate' && o.temp > 50) return fail('Das Gefäß ist heiß. Lass es abkühlen.', 'hot');
       const why = canMove(o, slotId);
       if (why) return fail(why, 'slot');
       st.op = { type: 'move', v: id, from: o.at, to: slotId, t: 0, dur: OPS.move };
       return ok('');
+    }
+
+    // ----- Produkte entnehmen
+    /** Filterpapier samt (feuchtem) Rückstand aus dem Trichter auf ein leeres Uhrglas legen. */
+    function transferPaper(fId, dstId) {
+      const f = O(fId), d = O(dstId);
+      if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
+      if (!f || f.type !== 'funnel' || !f.paper) return fail('Im Trichter liegt kein Filterpapier.', 'nopaper');
+      if (!d || d.type !== 'watch') return fail('Lege das Filterpapier mit dem Rückstand auf ein Uhrglas.', 'target');
+      if (d.paper || !isEmpty(d.c)) return fail(`${label(d)} ist nicht leer.`, 'target');
+      const R = PAPER_HOLD + SOLIDS.reduce((s, k) => s + f.c[k] * HOLD[k], 0);
+      if (f.c.water - R > 0.1 || f.c.oil > 0.05 || st.drip.F > 0.01) return fail('Es läuft noch Flüssigkeit durch das Filterpapier. Warte, bis nichts mehr tropft.', 'dripping');
+      st.op = { type: 'paperOut', v: fId, dst: dstId, t: 0, dur: OPS.paperOut };
+      return ok('Du nimmst das Filterpapier mit dem Rückstand aus dem Trichter und faltest es auf dem Uhrglas auseinander.');
+    }
+    function finishPaperOut(op) {
+      const f = O(op.v), d = O(op.dst);
+      const out = Object.assign(zero(), f.c);
+      for (const k of KEYS) f.c[k] = 0;
+      f.susp = zsusp(); f.paper = false;
+      addTo(d.c, out); d.paper = true;
+      msg(`Filterpapier mit Rückstand auf ${label(d)}: ${core.fmt(sand(out), 1)} g Sand${out.iron > 0.05 ? `, ${core.fmt(out.iron, 1)} g Eisen` : ''}, noch feucht.`, 'info', 'paperOut');
+    }
+    /** Kristalle (bzw. Feststoff) aus der abgekühlten Abdampfschale in ein leeres Gefäß überführen. */
+    function scrape(srcId, dstId) {
+      const o = O(srcId), d = O(dstId);
+      if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
+      if (!o || o.type !== 'dish') return fail('Mit dem Spatel werden Kristalle aus der Abdampfschale überführt.', 'noscrape');
+      if (solids(o.c) < 0.05) return fail(`In ${label(o)} sind keine Kristalle.`, 'empty');
+      if (o.temp > HANDLE_T) return fail(`${label(o)} ist noch heiß (${core.fmt(o.temp, 0)} °C). Schalte die Heizplatte aus und lass die Schale abkühlen.`, 'hot');
+      if (o.c.water > 1) return fail('In der Schale ist noch Lösung. Dampfe zuerst weiter ein, bis die Kristalle trocken sind.', 'wet');
+      if (!d || !(d.type === 'watch' || d.type === 'beaker') || d.paper || !isEmpty(d.c)) return fail('Überführe die Kristalle auf ein leeres Uhrglas.', 'target');
+      st.op = { type: 'scrape', v: srcId, dst: dstId, t: 0, dur: OPS.scrape };
+      return ok(`Mit dem Spatel schabst du die Kristalle aus der Abdampfschale in ${label(d)}.`);
+    }
+    function finishScrape(op) {
+      const o = O(op.v), d = O(op.dst);
+      const out = Object.assign(zero(), o.c);
+      for (const k of KEYS) o.c[k] = 0;
+      o.susp = zsusp();
+      addTo(d.c, out);
+      d.temp = Math.max(d.temp, o.temp);
+      msg(`${core.fmt(out.saltS, 1)} g Kochsalzkristalle in ${label(d)}.`, 'info', 'scrape');
     }
 
     // ----- Magnet
@@ -514,24 +578,26 @@
     }
 
     // ----- Scheidetrichter
+    /** Stopfen aufsetzen bzw. abnehmen (sichtbare Bewegung zwischen Ablage und Öffnung). */
     function stopper(on) {
       const s = sepf(st);
       if (!s) return { ok: false };
-      if (st.op && st.op.type === 'shake') return fail('Warte, bis das Schütteln fertig ist.', 'busy');
+      if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
       if (s.stopper === !!on) return ok('');
-      s.stopper = !!on; s.vac = 0;
-      return ok(on ? 'Stopfen aufgesetzt.' : 'Stopfen abgenommen – beim Ablassen kann Luft nachströmen.');
+      if (on && s.at !== 'sepring' && s.at !== 'hand') return fail('Hänge den Scheidetrichter zuerst in den Ring – dann kannst du den Stopfen aufsetzen.', 'ring');
+      st.op = { type: 'stopper', v: s.id, on: !!on, t: 0, dur: OPS.stopper };
+      return ok(on ? 'Du setzt den Stopfen auf den Scheidetrichter.' : 'Du nimmst den Stopfen ab und legst ihn auf die Ablage.');
     }
     function shake() {
       const s = sepf(st);
       if (!s) return { ok: false };
       if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
-      if (s.at !== 'sepring') return fail('Hänge den Scheidetrichter zuerst in den Ring.', 'ring');
       if (liq(s.c) < 1) return fail('Der Scheidetrichter ist leer.', 'empty');
+      if (s.at !== 'hand') return fail(s.at === 'sepring' ? 'Geschüttelt wird nicht im Ring: Setze den Stopfen auf, schließe den Hahn und nimm den Scheidetrichter in die Hand.' : 'Nimm den Scheidetrichter zum Schütteln in die Hand.', 'hand');
       if (!s.stopper) return fail('Ohne Stopfen würde die Flüssigkeit beim Schütteln herausspritzen. Setze den Stopfen auf.', 'stopper');
       if (s.cock > 0) return fail('Schließe zuerst den Hahn.', 'cock');
       st.op = { type: 'shake', v: s.id, t: 0, dur: OPS.shake };
-      return ok('Du schüttelst den Scheidetrichter kräftig (und lässt zwischendurch Druck über den Hahn ab).');
+      return ok('Du schüttelst den verschlossenen Scheidetrichter kräftig. Danach wieder in den Ring hängen und stehen lassen.');
     }
     function setCock(level) {
       const s = sepf(st);
@@ -541,6 +607,7 @@
       if (s.cock === lv) return ok('');
       s.cock = lv; s.vac = 0;
       if (lv > 0 && s.at === 'sepring' && !objAt(st, 'sepunder') && liq(s.c) > 0.1) warnOnce('nosepRecv', 'Unter dem Scheidetrichter steht kein Gefäß – die Flüssigkeit läuft auf den Tisch!');
+      if (lv > 0 && s.at === 'hand' && liq(s.c) > 0.1) warnOnce('handCock', 'Der Hahn ist offen, während du den Scheidetrichter in der Hand hältst – Flüssigkeit tropft auf den Tisch. Schließe den Hahn.');
       return ok(lv === 0 ? 'Hahn geschlossen.' : lv === 1 ? 'Hahn leicht geöffnet: Es tropft.' : 'Hahn ganz geöffnet.');
     }
 
@@ -578,7 +645,8 @@
         if (liq(o.c) > 0.3 && o.c.oil > 0.3 && o.c.water > 0.3) o.emul = Math.max(o.emul, Math.min(0.55, o.emul + dt * 0.4));
       } else if (op.type === 'wash') {
         const o = O(op.v);
-        const want = op.amt * p - op.done;
+        const q = clamp((op.t - WASH_WIN[0]) / (op.dur - WASH_WIN[0] - WASH_WIN[1]), 0, 1);
+        const want = op.amt * q - op.done;
         if (want > 0) { deliver(o, { water: want }, 0.45); st.added.water += want; op.done += want; }
       } else if (op.type === 'shake') {
         const o = O(op.v);
@@ -609,6 +677,9 @@
         st.op = null;
         if (done.type === 'move') { O(done.v).at = done.to; }
         if (done.type === 'paper') { O(done.v).paper = true; }
+        if (done.type === 'stopper') { const s = O(done.v); s.stopper = done.on; s.vac = 0; const so = Object.values(st.objs).find((q) => q.type === 'stopper'); if (so) so.at = done.on ? s.id : so.home; msg(done.on ? 'Stopfen aufgesetzt.' : 'Stopfen abgenommen – beim Ablassen kann Luft nachströmen.', 'info', 'stopper'); }
+        if (done.type === 'paperOut') finishPaperOut(done);
+        if (done.type === 'scrape') finishScrape(done);
         if (done.type === 'magnet') msg(`Am Magneten hängen jetzt ${core.fmt(O('mag').c.iron, 1)} g Eisen. Sand und Salz bleiben zurück.`, 'info', 'magnet');
         if (done.type === 'magdrop') msg(`Eisen abgestreift: ${label(O(done.v))} enthält jetzt ${core.fmt(O(done.v).c.iron, 1)} g Eisen.`, 'info', 'magdrop');
         if (done.type === 'shake') msg('Geschüttelt: Das Öl ist in vielen Tröpfchen im Wasser verteilt.', 'info', 'shaken');
@@ -643,13 +714,14 @@
       deliver(recv, out, 0.12);
       st.drip.F = (liq(out) + solids(out)) / dt;
       st.flags.filtered += out.water;
+      if (f.paper) st.flags.paperFiltered += out.water;
       if (!f.paper && solids(out) > 0.02) warnOnce('noPaper', 'Ohne Filterpapier läuft die trübe Suspension mitsamt dem Sand durch den Trichter.');
     }
 
     function sepStep(dt) {
       const s = sepf(st);
       st.drip.S = 0;
-      if (!s || s.at !== 'sepring' || s.cock === 0) return;
+      if (!s || (s.at !== 'sepring' && s.at !== 'hand') || s.cock === 0) return;
       const c = s.c;
       const L = liq(c);
       if (L < 1e-6) return;
@@ -675,10 +747,10 @@
       for (const k of KEYS) c[k] -= out[k];
       s.emul = c.oil > 1e-9 ? clamp(Math.max(0, disp - out.oil) / c.oil, 0, 1) : 0;
       tidy(c);
-      const recv = objAt(st, 'sepunder');
-      if (!recv) warnOnce('nosepRecv', 'Unter dem Scheidetrichter steht kein Gefäß – die Flüssigkeit läuft auf den Tisch!');
+      const recv = s.at === 'sepring' ? objAt(st, 'sepunder') : null;
+      if (!recv && s.at === 'sepring') warnOnce('nosepRecv', 'Unter dem Scheidetrichter steht kein Gefäß – die Flüssigkeit läuft auf den Tisch!');
       deliver(recv, out, 0.25);
-      st.flags.sepOut += liq(out);
+      if (s.at === 'sepring') st.flags.sepOut += liq(out);
       st.drip.S = liq(out) / dt;
       if (liq(c) < 0.02 && !st.warned.sepEmpty) { st.warned.sepEmpty = st.t; msg('Der Scheidetrichter ist leer gelaufen. Schließe den Hahn.', 'info', 'sepEmpty'); }
     }
@@ -806,7 +878,7 @@
 
     function advance(sec) { const n = clock.advance(sec); if (n) bus.emit('tick'); return n; }
 
-    const ACTIONS = { pour, stopPour, setPourSpeed, stir, wash, setWashAmount, insertPaper, move, magnet, magnetDrop, stopper, shake, setCock, heat };
+    const ACTIONS = { pour, stopPour, setPourSpeed, stir, wash, setWashAmount, insertPaper, transferPaper, scrape, move, magnet, magnetDrop, stopper, shake, setCock, heat };
     function act(name, ...args) {
       const fn = ACTIONS[name];
       if (!fn) return { ok: false, message: 'Unbekannte Handlung ' + name };
@@ -844,23 +916,24 @@
         break;
       }
       case 2: {
-        const F = o.F;
-        add('paper', F.paper && F.at === 'ring', 'Trichter mit Filterpapier im Filtrierring', F.paper ? (F.at === 'ring' ? '' : 'Trichter steht noch nicht im Ring.') : 'Kein Filterpapier im Trichter.');
-        const cands = vessels(st, ['A', 'F']).filter((v) => v.c.water > 1);
+        const F = o.F, U = o.U;
+        add('paper', st.flags.paperFiltered >= 30, 'Durch ein Filterpapier im Trichter filtriert (Trichter im Ring)', st.flags.paperFiltered >= 30 ? '' : (F.paper ? (F.at === 'ring' ? 'Noch nicht durch das Papier filtriert.' : 'Trichter steht noch nicht im Ring.') : 'Kein Filterpapier im Trichter.'));
+        const cands = vessels(st, ['A', 'F', 'U']).filter((v) => v.c.water > 1);
         const best = cands.filter((v) => sand(v.c) <= 0.05).sort((a, b) => b.c.water - a.c.water)[0] || cands.sort((a, b) => b.c.water - a.c.water)[0];
         add('filtrate', best && best.c.water >= 60 && sand(best.c) <= 0.05, 'Klares Filtrat: mindestens 60 mL Wasser ohne Sand in einem Auffanggefäß', best ? `${best.name}: ${fx(best.c.water, 0)} mL, ${fx(sand(best.c), 2)} g Sand` : 'Noch kein Filtrat.');
-        add('residue', F.paper && sand(F.c) >= 15, 'Sand als Rückstand im Filterpapier (mindestens 15 von 20 g)', `im Filter: ${fx(sand(F.c))} g Sand`);
+        const resF = F.paper ? sand(F.c) : 0, resU = U && U.paper ? sand(U.c) : 0;
+        add('residue', Math.max(resF, resU) >= 15, 'Sand als Rückstand im Filterpapier (im Trichter oder mit dem Papier auf dem Uhrglas, mindestens 15 von 20 g)', resU > resF ? `auf dem Uhrglas: ${fx(resU)} g Sand` : `im Filter: ${fx(resF)} g Sand`);
         break;
       }
       case 3: {
-        const D = o.D;
-        add('salt', D.c.saltS >= 5.6, 'Festes Kochsalz in der Abdampfschale (mindestens 5,6 von 8 g)', `Abdampfschale: ${fx(D.c.saltS)} g Salzkristalle`);
-        add('dry', D.c.saltS >= 0.5 && D.c.water <= 1, 'Das Wasser ist (fast) vollständig verdampft (höchstens 1 mL Rest)', `Restwasser: ${fx(D.c.water)} mL`);
+        const vs = vessels(st, ['A']).filter((v) => v.c.saltS > 0.01).sort((a, b) => b.c.saltS - a.c.saltS);
+        const best = vs[0] || o.D;
+        add('salt', best.c.saltS >= 5.6, 'Festes Kochsalz gewonnen (mindestens 5,6 von 8 g, in der Schale oder auf dem Uhrglas)', `${best.name}: ${fx(best.c.saltS)} g Salzkristalle`);
+        add('dry', best.c.saltS >= 0.5 && best.c.water <= 1, 'Das Wasser ist (fast) vollständig verdampft (höchstens 1 mL Rest)', `Restwasser bei den Kristallen: ${fx(best.c.water)} mL`);
         add('evap', st.lost.evaporated.water >= 25, 'Das Wasser ist als Wasserdampf entwichen (es wird hier nicht aufgefangen)', `verdampft: ${fx(st.lost.evaporated.water, 0)} mL`);
         break;
       }
       case 4: {
-        add('shaken', st.flags.maxEmul >= 0.6, 'Öl und Wasser geschüttelt: vorübergehende Emulsion beobachtet', st.flags.maxEmul >= 0.6 ? '' : 'Noch nicht kräftig geschüttelt.');
         add('sepUsed', st.flags.sepOut >= 30, 'Mit dem Scheidetrichter über den Hahn abgelassen', `abgelassen: ${fx(st.flags.sepOut, 0)} mL`);
         const vs = vessels(st, ['S']);
         const w = vs.filter((v) => v.c.water >= 40).sort((a, b) => a.c.oil - b.c.oil)[0];
@@ -884,7 +957,7 @@
   }
 
   return {
-    KEYS, SOLIDS, RHO, TYPES, SETTLE, SUSPEND, HOLD, PAPER_HOLD, POUR, POUR_SOLID, FILTER, COCK, EMUL_TAU, HEAT, OPS, WASH, SLOT_ACCEPT,
+    KEYS, SOLIDS, RHO, TYPES, SETTLE, SUSPEND, HOLD, PAPER_HOLD, POUR, POUR_SOLID, FILTER, COCK, EMUL_TAU, HEAT, OPS, WASH, WASH_WIN, HANDLE_T, SLOT_ACCEPT,
     EXPERIMENTS, EXP_IDS, csat, liq, sand, salt, solids, total, isEmpty, zero,
     initialState, inventory, balance, describe, evaluate, createEngine, slotOf, objAt
   };
