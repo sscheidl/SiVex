@@ -44,7 +44,7 @@
     const appsOpen = () => L.TASKS.every(taskTried) || !!ui.forced.apps;
     const numbersOpen = () => theoryDone();
     /** Versuch 3 baut auf der Herleitung auf; die sechs Rechenaufgaben sind dafür nicht nötig. */
-    const mixOpen = () => theoryDone() || !!ui.forced.mix;
+    const mixOpen = () => true; // 0.2.1: Versuch 3 ohne Voraussetzung (in einer Einzelstunde nutzbar)
     const reagentName = (r) => (E.REAGENTS[r] ? E.REAGENTS[r].formula : r);
     const isMix = () => !!exp().mixing;
     const sysObj = () => (ui.mix.system ? C.SYSTEMS[ui.mix.system] : null);
@@ -509,7 +509,7 @@
       $('#btnStep').disabled = ui.speed !== 0;
       $('#chkIndicator').checked = ui.indicator;
       $('#indWrap').hidden = !!x.mixing; $('#uiScale').hidden = !!x.mixing;
-      $('#btnStir').disabled = false;
+      $('#btnStir').disabled = false; $('#btnStir').setAttribute('aria-pressed', String(!!eng.state.stirOn)); $('#btnStir').textContent = eng.state.stirOn ? '✓ Rühren an' : 'Rühren';
       const pk = $('#chkPka'); pk.disabled = !numbersOpen() || !!x.mixing; pk.checked = ui.pka && numbersOpen();
       $('#pkaWrap').classList.toggle('disabled', !numbersOpen());
       $('#pkaWrap').hidden = !!x.mixing;
@@ -528,7 +528,6 @@
     /** Warum ist „Zugeben“ gerade nicht möglich? (null = möglich) */
     function dosingBlock() {
       if (!isMix()) return null;
-      if (!mixOpen()) return 'Versuch 3 baut auf der Herleitung auf (Reiter „2 Herleitung“).';
       if (ui.mix.target == null || !ui.mix.system) return 'Erst Ziel-pH und Puffersystem wählen (Bedienfeld → Aufgabe).';
       if (!ui.mix.checked) return 'Erst selbst rechnen und die Rechnung prüfen (Bedienfeld → Aufgabe, Schritt 3).';
       return null;
@@ -576,10 +575,11 @@
       const s = series();
       const keys = [];
       for (const b of s.beakers) for (const k of PV.speciesOf(b.comp0)) if (!keys.includes(k)) keys.push(k);
-      keys.sort((p, q) => ['HA', 'H2PO4', 'A', 'HPO4', 'H3PO4', 'PO4', 'H3O', 'OH'].indexOf(p) - ['HA', 'H2PO4', 'A', 'HPO4', 'H3PO4', 'PO4', 'H3O', 'OH'].indexOf(q));
+      const ORDER = ['HA', 'H2PO4', 'A', 'HPO4', 'H3PO4', 'PO4', 'H3O', 'OH', 'H2O'];
+      keys.sort((p, q) => ORDER.indexOf(p) - ORDER.indexOf(q));
       $('#plegend').innerHTML = PV.legendHtml(keys);
-      $('#extraNote').innerHTML = `Schematisch, <b>nicht maßstäblich</b>: 1 Symbol ≙ ${de(PV.SCALE, 1)} mmol Puffer-Teilchen · H₃O⁺/OH⁻ stark überhöht`;
-      $('#extraNote').title = 'Freie H₃O⁺/OH⁻ sind stark überhöht dargestellt (Anzahl nur logarithmisch). Gestrichelter Rand = saure Form. Na⁺/Cl⁻ und Wasser werden nicht gezeigt. Der pH-Wert stammt aus der Modellrechnung, nicht aus gezählten Symbolen.';
+      $('#extraNote').innerHTML = `Schematisch, <b>nicht maßstäblich</b>: 1 Symbol ≙ ${de(PV.SCALE, 1)} mmol Puffer-Teilchen · H₃O⁺/OH⁻ stark überhöht · Hintergrund = Wasser (Lösungsmittel), H₂O-Symbol: entsteht kurz bei der Neutralisation`;
+      $('#extraNote').title = 'Freie H₃O⁺/OH⁻ sind stark überhöht dargestellt (Anzahl nur logarithmisch). Gestrichelter Rand = saure Form. Na⁺/Cl⁻ werden nicht gezeigt; Wasser ist der Hintergrund. Reagiert eine Zugabe mit dem Puffer, entsteht kurz ein H₂O-Symbol, das sich im Lösungsmittel auflöst – ein Bestandssymbol wandelt sich erst nach vielen Zugaben um (1 Symbol ≙ 0,2 mmol). Der pH-Wert stammt aus der Modellrechnung, nicht aus gezählten Symbolen.';
     }
 
     function updateViews(dt, real) {
@@ -602,6 +602,28 @@
         v.frame(dt, { reduceMotion: ui.reduceMotion, real });
       });
     }
+    /**
+     * Zugabe ist im Glas angekommen: Reaktionsweg aus dem Modell bestimmen und im Teilchenmodell
+     * zeigen (nur Versuche 1/2, höchstens alle 0,35 s je Glas – Strahl und Tropfenserien).
+     */
+    const lastReact = {};
+    function onLand(f) {
+      const s = series();
+      if (s.kind === 'mix' || f.series !== s.id || curView() !== 'main') return;
+      const v = views[f.beaker], b = s.beakers[f.beaker];
+      if (!v || !b) return;
+      const now = performance.now();
+      if (now - (lastReact[f.beaker] || 0) < 350) return;
+      const reagent = f.reagent || s.reagent;
+      if (reagent !== 'HCl' && reagent !== 'NaOH') return;
+      const n = C.C_REAGENT * f.vol, c = b.comp;
+      const before = Object.assign({}, c, { V: c.V - f.vol, Cl: c.Cl - (reagent === 'HCl' ? n : 0), Na: c.Na - (reagent === 'NaOH' ? n : 0) });
+      if (!(before.V > 0) || before.Cl < -1e-12 || before.Na < -1e-12) return;
+      before.Cl = Math.max(0, before.Cl); before.Na = Math.max(0, before.Na);
+      let an;
+      try { an = C.doseAnalysis(before, reagent, f.vol); } catch (e) { return; }
+      if (v.react(an)) lastReact[f.beaker] = now;
+    }
     function updateMix(s) {
       if (!mixView) mixView = new root.PF.MixView($('#mixview'));
       if (curView() !== 'main') return;
@@ -615,7 +637,7 @@
     function barHtml(b, tc) {
       const r = tc.r, c = b.shown.comp, nums = numbersOpen();
       const seg = (cls, label, f) => (f > 0.004 ? `<div class="${cls}" style="flex-basis:${(f * 100).toFixed(2)}%">${f > 0.12 ? label + (nums ? ' ' + de(f * 100, 0) + ' %' : '') : ''}</div>` : '');
-      if (c.Ac > 0) return seg('acid', 'HA', r.HA / c.Ac) + seg('base', 'A⁻', r.A / c.Ac);
+      if (c.Ac > 0) return seg('acid', 'HAc', r.HA / c.Ac) + seg('base', 'Ac⁻', r.A / c.Ac);
       if (c.P > 0) return seg('acid2', 'H₃PO₄', r.H3PO4 / c.P) + seg('acid', 'H₂PO₄⁻', r.H2PO4 / c.P) + seg('base', 'HPO₄²⁻', r.HPO4 / c.P) + seg('base2', 'PO₄³⁻', r.PO4 / c.P);
       return `<div class="info">keine Puffer-Teilchen${nums ? ` · c(H₃O⁺) ≈ ${sci(r.h)} mol/L, c(OH⁻) ≈ ${sci(r.oh)} mol/L` : ' · freie H₃O⁺/OH⁻ siehe Symbole'}</div>`;
     }
@@ -638,38 +660,65 @@
     function sci(x) { const e = Math.floor(Math.log10(x)), m = x / Math.pow(10, e); return `${de(m, 1)}·10${String(e).split('').map((ch) => (ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(ch)])).join('')}`; }
 
     // ---------------------------------------------------------- Beschriftungen über der Bühne
+    /** Zugesetzte Gesamtmengen je Glas (Versuch 1): {HCl, NaOH} in mL; Gegenprobe zählt die Vorbehandlung mit. */
+    function addedTotals(s, i) {
+      const b = s.beakers[i], t = { HCl: 0, NaOH: 0 };
+      if (s.reagent in t) t[s.reagent] += b.added;
+      if (s.kind === 'cont' && s.from && s.from.reagent in t) t[s.from.reagent] += s.from.added[i] || 0;
+      return t;
+    }
     function updateTags() {
       const s = series(), geo = eng.geometry(), box = $('#tags');
       const reagents = eng.bottleKeys();
-      const sig = s.id + s.beakers.map((b) => b.key).join(',') + lab.view.w + 'x' + lab.view.h + ui.target + eng.activeReagent(s) + reagents.join(',') + eng.state.system + eng.state.exp + eng.busy();
+      const x = exp(), showAdd = x.id === 'e1';
+      const sig = s.id + s.beakers.map((b) => b.key).join(',') + lab.view.w + 'x' + lab.view.h + ui.target + eng.activeReagent(s) + reagents.join(',') + eng.state.system + eng.state.exp + eng.busy() + eng.state.tool + x.tools.join(',');
       if (sig !== tagsSig) {
         tagsSig = sig;
-        const sc = lab.view.scale;
+        const sc = lab.view.scale, B = G().BOTTLE;
         const R = E.REAGENTS, act = eng.state.slot; // gleicher Zustand wie der Umschalter (bei Gegenprobe ist keine Flasche gewählt)
-        // Flaschenschalter unter den Flaschen (nicht breiter als der Abstand, nie über den linken Rand)
-        const bk = reagents.length ? reagents : ['acid', 'base'];
-        const bw = Math.max(92, Math.min(100, (G().BOTTLE_X[1] - G().BOTTLE_X[0] - 6) * sc));
-        let prevEnd = 2;
-        const bpos = bk.map((k, i) => { const p = lab.toScreen(G().BOTTLE_X[i], G().BENCH + 6); p.x = Math.max(p.x, prevEnd + bw / 2 + 4); prevEnd = p.x + bw / 2; return p; });
         let h = '';
+        const tagBox = [];
         s.beakers.forEach((b, i) => {
           const g = geo[i], p = lab.toScreen(g.x, G().BENCH + 6);
           const next = geo[i + 1], prev = geo[i - 1];
           const room = Math.min(next ? (next.x - g.x) : 1e9, prev ? (g.x - prev.x) : 1e9) * sc - 6;
-          let w = Math.max(84, Math.min(200, room));
-          if (i === 0) { // die Anzeige des ersten Glases bleibt neben den Flaschenschaltern
-            const lim = prevEnd + 6;
-            if (p.x - w / 2 < lim) { w = Math.max(84, 2 * (p.x - lim)); if (p.x - w / 2 < lim) p.x = lim + w / 2; }
-          }
+          // Versuch 1: Platz zwischen Glasschild und Mengenanzeige teilen (Name möglichst ungekürzt)
+          const w = showAdd ? (room >= 290 ? Math.min(168, room - 126) : next ? Math.max(100, room - 106) : Math.max(116, room - 94)) : Math.max(84, Math.min(200, room));
           const sel = !isMix() && (ui.target === 'all' || String(ui.target) === String(i));
           const el = lab.toScreen(lab.electrodeX(g), g.top - 78);
+          tagBox.push({ x: p.x, w });
           h += `<div class="tag ${sel ? 'target' : ''}" data-tag="${i}" style="left:${p.x}px;top:${p.y}px;width:${w}px"><b class="nm">${isMix() ? 'Becherglas' : LETTER(i) + ' · ' + esc(sampleName(b.key))}</b><span class="ln2"><span class="ph"></span> <span class="st"></span></span></div>`;
           h += `<div class="eltag" style="left:${el.x}px;top:${el.y}px" aria-hidden="true">pH-Messelektrode</div>`;
         });
-        bk.forEach((k, i) => {
-          const p = bpos[i], reg = R[k], w = bw;
-          if (!reg) { h += `<div class="bottlebtn generic" style="left:${p.x}px;top:${p.y}px;width:${w}px"><b>${i ? 'Base' : 'Säure'}</b><small>Stammlösung</small></div>`; return; }
-          h += `<button type="button" class="bottlebtn" data-bottle="${esc(k)}" aria-pressed="${act === k}" ${eng.busy() ? 'disabled' : ''} style="left:${p.x}px;top:${p.y}px;width:${w}px" aria-label="${esc(reg.name)} ${esc(reg.formula)}, 0,100 mol/L, als Zugabelösung wählen" title="${esc(reg.name)} – antippen zum Auswählen"><b>${esc(reg.formula)}</b><small>${isMix() ? (reg.tone === 'acid' ? 'Säure' : 'Base') : '0,1 M'}</small></button>`;
+        // Versuch 1: zugesetzte Gesamtmenge rechts neben dem Glasschild
+        if (showAdd) s.beakers.forEach((b, i) => {
+          const t = tagBox[i], p = lab.toScreen(geo[i].x, G().BENCH + 6);
+          const left = t.x + t.w / 2 + 6;
+          const limit = tagBox[i + 1] ? tagBox[i + 1].x - tagBox[i + 1].w / 2 - 6 : lab.view.w - 6;
+          const w = Math.min(130, limit - left);
+          if (w < 84) return;
+          h += `<div class="addtag" data-add="${i}" style="left:${left}px;top:${p.y}px;width:${w}px" aria-live="off"><span class="ah">zugesetzt</span><span class="ar" data-r="HCl"></span><span class="ar" data-r="NaOH"></span></div>`;
+        });
+        // Flaschen: unsichtbare Klickflächen über der Zeichnung (Auswahl wird im Bild hervorgehoben)
+        reagents.forEach((k, i) => {
+          const reg = R[k];
+          if (!reg) return;
+          const tl = lab.toScreen(G().BOTTLE_X[i] - B.w / 2 - 4, G().BENCH - B.h - 4), br = lab.toScreen(G().BOTTLE_X[i] + B.w / 2 + 4, G().BENCH);
+          const w = Math.max(44, br.x - tl.x), hh = Math.max(44, br.y - tl.y), cx = (tl.x + br.x) / 2;
+          h += `<button type="button" class="bottlebtn hit" data-bottle="${esc(k)}" aria-pressed="${act === k}" ${eng.busy() ? 'disabled' : ''} style="left:${cx - w / 2}px;top:${br.y - hh}px;width:${w}px;height:${hh}px" aria-label="${esc(reg.name)} ${esc(reg.formula)}, 0,100 mol/L${isMix() ? (reg.tone === 'acid' ? ', Säure' : ', Base') : ''} – als Zugabelösung wählen" title="${esc(reg.name)} (${esc(reg.formula)}) – antippen zum Auswählen"></button>`;
+        });
+        // Pipetten im Ständer: antippen wählt den Pipettentyp (Klickflächen überlappen weder einander noch die Flaschen)
+        const label = { dropper: 'Tropfpipette', measure: 'Messpipette' };
+        const tools = x.tools.filter((t) => G().PIPETTES[t]).sort((p, q) => G().PIPETTES[p].rest.x - G().PIPETTES[q].rest.x);
+        const bottleRight = reagents.length ? lab.toScreen(G().BOTTLE_X[reagents.length - 1] + B.w / 2 + 4, 0).x : -1e9;
+        const px = tools.map((t) => lab.toScreen(G().PIPETTES[t].rest.x, 0).x);
+        tools.forEach((t, i) => {
+          const P = G().PIPETTES[t];
+          const lo = i ? (px[i - 1] + px[i]) / 2 : Math.max(bottleRight + 2, px[i] - 22);
+          const hi = i < tools.length - 1 ? (px[i] + px[i + 1]) / 2 : px[i] + 22;
+          const w = Math.max(8, Math.min(44, 2 * Math.min(px[i] - lo, hi - px[i]) - 2));
+          const top = lab.toScreen(P.rest.x, P.rest.y - P.len - 18), bot = lab.toScreen(P.rest.x, P.rest.y + 4);
+          h += `<button type="button" class="piphit" data-pip="${t}" aria-pressed="${eng.state.tool === t}" ${eng.busy() ? 'disabled' : ''} style="left:${px[i] - w / 2}px;top:${top.y}px;width:${w}px;height:${Math.max(44, bot.y - top.y)}px" aria-label="${label[t]} wählen" title="${label[t]} – antippen zum Auswählen"></button>`;
         });
         box.innerHTML = h;
       }
@@ -682,6 +731,15 @@
         if (ph.textContent !== t1) ph.textContent = t1;
         const t2 = isMix() ? (m.mixing ? 'misst …' : m.measured ? '✓ gemessen' : 'nicht gemessen') : m.mixing ? '…' : '✓';
         if (st.textContent !== t2) { st.textContent = t2; st.classList.toggle('mix', m.mixing); }
+        const ad = box.querySelector(`[data-add="${i}"]`);
+        if (ad) {
+          const tot = addedTotals(s, i);
+          for (const r of ['HCl', 'NaOH']) {
+            const e2 = ad.querySelector(`[data-r="${r}"]`), txt = `${r} ${de(tot[r], 2)} mL`;
+            if (e2.textContent !== txt) e2.textContent = txt;
+            e2.classList.toggle('on', s.reagent === r);
+          }
+        }
       });
     }
 
@@ -743,7 +801,7 @@
 
     return {
       ui, toast, save, saveNow, load, evidence, setPage, renderSteps, renderPage, renderPanel, renderBars, buildViews, updateViews, updateTags, updateReadouts, updateChart, refreshLab, gradeAll, journalDoc, journalBody,
-      theoryOpen, theoryDone, tasksOpen, appsOpen, mixOpen, numbersOpen, sampleName, dosingBlock, renderFormulaBar, renderExtra,
+      theoryOpen, addedTotals, onLand, views: () => views, theoryDone, tasksOpen, appsOpen, mixOpen, numbersOpen, sampleName, dosingBlock, renderFormulaBar, renderExtra,
       views: () => views
     };
   }

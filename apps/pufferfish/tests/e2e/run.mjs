@@ -1,4 +1,4 @@
-// End-to-End-Prüfung von Pufferfish 0.2.0 im echten Browser (Chromium/Edge über Playwright).
+// End-to-End-Prüfung von Pufferfish 0.2.1 im echten Browser (Chromium/Edge über Playwright).
 // Bedient ausschließlich die gerenderte Oberfläche; der Modellzustand wird nur gelesen.
 // Erwartungswerte für pH stammen aus chem.js im Browser bzw. aus unabhängigen Formeln.
 // Zugaben laufen über die Playwright-Uhr (clock) schneller als in Echtzeit ab.
@@ -140,11 +140,19 @@ await scenario('E03', 'P05', 'Flasche und Umschalter wählen synchron HCl/NaOH (
   // genau ein gewählter Zustand je Gruppe; nur Gewähltes dunkel, alles andere hell
   const groups = await page.evaluate(() => [...document.querySelectorAll('#doseBar [role="group"]')].map((g) => ({ n: g.querySelectorAll('[aria-pressed="true"]').length, all: g.querySelectorAll('[aria-pressed]').length, label: g.getAttribute('aria-label') })));
   for (const g of groups) assert(g.n === 1, `genau eine Auswahl in „${g.label}“ (${g.n}/${g.all})`);
-  const cols = await page.evaluate(() => [...document.querySelectorAll('#doseBar .opt, .bottlebtn')].map((b) => ({ p: b.getAttribute('aria-pressed'), bg: getComputedStyle(b).backgroundColor, t: b.innerText.replace(/\s+/g, ' ').trim().slice(0, 16) })));
+  const cols = await page.evaluate(() => [...document.querySelectorAll('#doseBar .opt')].map((b) => ({ p: b.getAttribute('aria-pressed'), bg: getComputedStyle(b).backgroundColor, t: b.innerText.replace(/\s+/g, ' ').trim().slice(0, 16) })));
   for (const c of cols) {
     if (c.p === 'true') assert(lum(c.bg) < 0.2, `ausgewählt ist dunkel: ${c.t} ${c.bg}`);
     else assert(lum(c.bg) > 0.85, `nicht ausgewählt ist hell: ${c.t} ${c.bg}`);
   }
+  // Flaschen sind Klickflächen über der Zeichnung, ohne eigene Beschriftung darunter
+  const hits = await page.evaluate(() => [...document.querySelectorAll('.bottlebtn')].map((b) => ({ txt: b.textContent.trim(), cls: b.className, label: b.getAttribute('aria-label') })));
+  assert(hits.length === 2 && hits.every((h) => h.txt === '' && /hit/.test(h.cls) && /wählen/.test(h.label)), 'Flaschen-Klickflächen ohne Zusatzbeschriftung: ' + JSON.stringify(hits));
+  // Pipette im Ständer antippen wählt den Pipettentyp (gleicher Zustand wie die Leiste)
+  await click(page, '.piphit[data-pip="measure"]', true);
+  assert((await state()).tool === 'measure' && await pressed('#doseBar [data-tool="measure"]') === 'true' && await pressed('.piphit[data-pip="measure"]') === 'true', 'Messpipette per Antippen im Labor gewählt');
+  await click(page, '.piphit[data-pip="dropper"]', true);
+  assert((await state()).tool === 'dropper' && await pressed('#doseBar [data-tool="dropper"]') === 'true', 'Tropfpipette per Antippen im Labor gewählt');
   // Auswahl von Pipette und Menge: Tropfpipette → Messpipette → Menge
   await tool(page, 'measure', true);
   assert((await state()).tool === 'measure' && await pressed('#doseBar [data-tool="measure"]') === 'true' && await pressed('#doseBar [data-tool="dropper"]') === 'false', 'Pipettenwahl');
@@ -244,7 +252,7 @@ await scenario('E05', 'P07,P14', 'Versuch 1: Tropfen → Ankunft → Mischen →
 });
 
 // =========================================================== E06 Versuch 2
-await scenario('E06', 'P02,P07,P14', 'Versuch 2: Essigsäure, Natriumacetat und Gemisch ohne Vorabantwort – Säure- und Laugenreihe, Modellwerte, Teilchenmodell mit CH₃COOH/CH₃COO⁻', async () => {
+await scenario('E06', 'P02,P07,P14', 'Versuch 2: Essigsäure, Natriumacetat und Gemisch ohne Vorabantwort – Säure- und Laugenreihe, Modellwerte, Teilchenmodell mit HAc/Ac⁻', async () => {
   const { page, errors, done } = await open();
   await exp(page, 'e2');
   assert(await page.locator('#predictForm').count() === 0, 'keine Vermutung');
@@ -253,7 +261,7 @@ await scenario('E06', 'P02,P07,P14', 'Versuch 2: Essigsäure, Natriumacetat und 
   const start = bs.map((b) => b.records[0].pH);
   near(start[0], 2.88, 0.01, 'Essigsäure'); near(start[1], 8.88, 0.02, 'Acetat'); near(start[2], 4.75, 0.002, 'Gemisch');
   const leg = await page.locator('#plegend').innerText();
-  assert(/CH₃COOH/.test(leg) && /CH₃COO⁻/.test(leg), 'Legende CH₃COOH/CH₃COO⁻');
+  assert(/HAc/.test(leg) && /Ac⁻/.test(leg) && /Essigsäure/.test(leg) && /Ethanoat/.test(leg) && /H₂O/.test(leg), 'Legende HAc/Ac⁻ mit Namen und H₂O: ' + leg.replace(/\s+/g, ' '));
   await go(page); await idle(page);
   bs = await beakers(page);
   const ref = (r, ha, a) => S(page, (A, C, x) => C.pH(C.add(C.acetate(30, x.ha, x.a), x.r, 0.05)), { r, ha, a });
@@ -322,7 +330,7 @@ await scenario('E08', 'P04', 'Labor dominiert: Becherglas ≥ 25 % höher als in
   assert(el.length === 2 && el.every((e) => e.t === 'pH-Messelektrode' && e.vis), 'jede Elektrode sichtbar mit „pH-Messelektrode“ beschriftet: ' + JSON.stringify(el.map((e) => e.t)));
   const wrap = await page.locator('#canvasWrap').boundingBox();
   const tags = await page.evaluate(() => [...document.querySelectorAll('.tag')].map((e) => { const r = e.getBoundingClientRect(); return { t: e.innerText.replace(/\s+/g, ' ').trim(), x: r.x, y: r.y, w: r.width, h: r.height, ph: e.querySelector('.ph').textContent }; }));
-  const boxes = [...el.map((e) => ({ n: 'Elektrode ' + e.t, ...e })), ...tags.map((t) => ({ n: 'Anzeige ' + t.t, ...t })), ...await page.evaluate(() => [...document.querySelectorAll('.bottlebtn')].map((e) => { const r = e.getBoundingClientRect(); return { n: 'Flasche ' + e.textContent.trim(), x: r.x, y: r.y, w: r.width, h: r.height }; }))];
+  const boxes = [...el.map((e) => ({ n: 'Elektrode ' + e.t, ...e })), ...tags.map((t) => ({ n: 'Anzeige ' + t.t, ...t })), ...await page.evaluate(() => [...document.querySelectorAll('.bottlebtn, .piphit, .addtag')].map((e) => { const r = e.getBoundingClientRect(); return { n: (e.dataset.bottle ? 'Flasche ' + e.dataset.bottle : e.dataset.pip ? 'Pipette ' + e.dataset.pip : 'Menge ' + e.textContent.trim()), x: r.x, y: r.y, w: r.width, h: r.height }; }))];
   for (const b of boxes) assert(b.x >= wrap.x - 1 && b.y >= wrap.y - 1 && b.x + b.w <= wrap.x + wrap.width + 1 && b.y + b.h <= wrap.y + wrap.height + 1, `${b.n} liegt vollständig im Laborbild`);
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) { const a = boxes[i], b = boxes[j]; const ov = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h; assert(!ov, `${a.n} überdeckt ${b.n} nicht`); }
   // pH-Anzeige gehört eindeutig zum Glas: Mitte der Anzeige unter dem Glas
@@ -484,7 +492,7 @@ await scenario('E10', 'P14,P08', 'Herleitung (nach der Deutung freigeschaltet, o
 });
 
 // =========================================================== Hilfen für Versuch 3
-async function openMix(page) { await exp(page, 'e3'); await click(page, '[data-force="mix"]'); }
+async function openMix(page) { await exp(page, 'e3'); }
 async function planMix(page, targetPH, sysId, entries) {
   await click(page, `[data-mixtarget="${targetPH}"]`);
   await page.locator(`input[data-mixsystem="${sysId}"]`).check(); await adv(page, 100);
@@ -501,15 +509,11 @@ async function doseStock(page, stock, mL) {
 const mixState = (page) => S(page, (A, C) => { const s = A.eng.current(), b = s.beakers[0]; const m = A.eng.meter(b); return { V: b.comp.V, vols: b.vols, measured: m.measured, mixing: m.mixing, pH: m.pH, hist: A.eng.state.history.length, sys: A.eng.state.system, target: A.eng.state.target }; });
 
 // =========================================================== E11 Versuch 3: Sperre, Systemwahl, Rechnung, Reihenfolge
-await scenario('E11', 'P10,P05', 'Versuch 3 beginnt mit Systemwahl und Rechnung: Sperre bis zur Herleitung, ungeeignete Systeme/Ziel-pH zurückgewiesen, Stammlösungen statt HCl/NaOH, Dosieren erst nach der Rechnung, Formel immer sichtbar', async () => {
+await scenario('E11', 'P10,P05', 'Versuch 3 beginnt mit Systemwahl und Rechnung: ohne Voraussetzung zugänglich (Einzelstunde), ungeeignete Systeme/Ziel-pH zurückgewiesen, Stammlösungen statt HCl/NaOH, Dosieren erst nach der Rechnung, Formel immer sichtbar', async () => {
   const { page, errors, done } = await open();
   await exp(page, 'e3');
-  assert(await page.locator('#panelBody .lockcard').count() === 1 && /Herleitung/.test(await page.locator('#panelBody .lockcard').innerText()), 'Versuch 3 vor der Herleitung gesperrt (Hinweis)');
-  assert(await page.locator('#expChips [data-exp="e3"] .lockmark').count() === 1, 'Sperre am Versuchsknopf sichtbar');
-  await go(page);
-  assert(/Herleitung/.test(await toastText(page)) && (await mixState(page)).V === 0, 'Zugeben bei gesperrtem Versuch abgewiesen');
-  await click(page, '[data-force="mix"]');
-  assert(await page.locator('#expChips [data-exp="e3"] .lockmark').count() === 0, 'nach „Trotzdem öffnen“ entsperrt');
+  assert(await page.locator('#panelBody .lockcard').count() === 0 && await page.locator('[data-mixtarget]').count() === 3, 'Versuch 3 sofort zugänglich, ohne Herleitung (0.2.1)');
+  assert(await page.locator('#expChips [data-exp="e3"] .lockmark').count() === 0, 'keine Sperre am Versuchsknopf');
   // Formel gut sichtbar – in beiden Zusatzansichten, bei Eingaben, nach Reiterwechsel
   const formula = async (label) => {
     const vis = await page.evaluate(() => { const f = document.querySelector('#formulaBar'); const r = f.getBoundingClientRect(); const vp = { w: innerWidth, h: innerHeight }; const fs = parseFloat(getComputedStyle(f.querySelector('.eqn')).fontSize); return { text: f.innerText.replace(/\s+/g, ' '), shown: !f.hidden && r.width > 200 && r.height > 20 && r.top >= 0 && r.bottom <= vp.h, fs }; });
@@ -529,7 +533,7 @@ await scenario('E11', 'P10,P05', 'Versuch 3 beginnt mit Systemwahl und Rechnung:
   let msg = await page.locator('[data-mixstep="2"] .ffb').innerText();
   assert(/✗/.test(msg) && /Faustregel pKₛ ± 1/.test(msg) && /Acetat/.test(msg), 'Acetat für pH 6,90 abgewiesen: ' + msg);
   assert((await mixState(page)).sys === null && await page.locator('[data-mixstep="3"]').count() === 0, 'kein Rechenteil bei ungeeignetem System');
-  assert(await page.locator('.bottlebtn.generic').count() === 2, 'Flaschen bleiben neutral (Säure/Base-Stammlösung)');
+  assert(await page.locator('.bottlebtn').count() === 0, 'vor der Systemwahl keine wählbaren Flaschen (Bild zeigt neutrale Säure/Base)');
   await page.locator('input[data-mixsystem="am"]').check(); await adv(page, 100);
   assert(/✗/.test(await page.locator('[data-mixstep="2"] .ffb').innerText()), 'Ammonium für pH 6,90 abgewiesen');
   // geeignetes System
@@ -537,7 +541,7 @@ await scenario('E11', 'P10,P05', 'Versuch 3 beginnt mit Systemwahl und Rechnung:
   msg = await page.locator('[data-mixstep="2"] .ffb').innerText();
   assert(/✓ Phosphat passt/.test(msg) && /Näherung/.test(msg), 'Phosphat akzeptiert: ' + msg);
   assert((await mixState(page)).sys === 'ph', 'Engine kennt das gewählte System');
-  const bottles = await page.locator('.bottlebtn').allInnerTexts();
+  const bottles = await page.evaluate(() => [...document.querySelectorAll('.bottlebtn')].map((b) => b.getAttribute('aria-label')));
   assert(bottles.join(' ').includes('NaH₂PO₄') && bottles.join(' ').includes('Na₂HPO₄'), 'Stammlösungen als Flaschen: ' + bottles.join(' | '));
   await formula('System gewählt');
   // Diagramm zeigt vor der Rechnung nichts vorweg (kein Soll-Balken, keine Zielgröße)
@@ -685,7 +689,8 @@ async function formula2(page) {
 
 // =========================================================== E13 Anwendungen, Journal, Export, Hefteintrag
 await scenario('E13', 'P09,P14', 'Anwendungen (vier Fälle), Journal mit Leitfrage ohne vorzeitige Lösungen, Export und Hefteintrag', async () => {
-  const { page, errors, done } = await open();
+  // echte Uhr: mit der Playwright-Uhr löst Edge unter Windows keinen Download aus (Testumgebung, nicht die App)
+  const { page, errors, done } = await open({ clock: false });
   await dose(page, 'HCl', 'd1'); await idle(page);
   await page.locator('textarea[data-free="f1"]').fill('Die Pufferlösung enthält HPO₄²⁻.');
   await tab(page, 'journal');
@@ -805,7 +810,7 @@ async function layoutChecks(page, W, H, label) {
   assert(lab.width >= 380 && lab.height >= 200, `${label}: Laborbild nutzbar (${Math.round(lab.width)}×${Math.round(lab.height)})`);
   // Beschriftungen liegen im Laborbild und überlappen sich nicht
   const wrap = await page.locator('#canvasWrap').boundingBox();
-  const boxes = await page.evaluate(() => [...document.querySelectorAll('.eltag, .tag, .bottlebtn')].map((e) => { const r = e.getBoundingClientRect(); return { n: (e.className + ' ' + e.textContent).slice(0, 30), x: r.x, y: r.y, w: r.width, h: r.height }; }));
+  const boxes = await page.evaluate(() => [...document.querySelectorAll('.eltag, .tag, .bottlebtn, .piphit, .addtag')].map((e) => { const r = e.getBoundingClientRect(); return { n: (e.className + ' ' + e.textContent).slice(0, 30), x: r.x, y: r.y, w: r.width, h: r.height }; }));
   for (const b of boxes) assert(b.x >= wrap.x - 1 && b.x + b.w <= wrap.x + wrap.width + 1 && b.y >= wrap.y - 1 && b.y + b.h <= wrap.y + wrap.height + 1, `${label}: ${b.n} liegt im Laborbild`);
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) { const a = boxes[i], b = boxes[j]; assert(!(a.x < b.x + b.w - 1 && b.x < a.x + a.w - 1 && a.y < b.y + b.h - 1 && b.y < a.y + a.h - 1), `${label}: ${a.n} überdeckt ${b.n}`); }
   return { lab: `${Math.round(lab.width)}×${Math.round(lab.height)}` };
@@ -905,12 +910,74 @@ await scenario('E22', 'P05,P14', 'Versuch 3: Ziel/System-Wechsel während Zugabe
   return 'kein Einfrieren, kein Zustandsunterschied';
 });
 
+// =========================================================== E23 0.2.1: mL-Anzeige, Rührfisch, Neutralisation zu H₂O
+await scenario('E23', 'P05,P07,P14', '0.2.1: zugesetzte Gesamtmenge je Glas nur in Versuch 1 (Neue Reihe setzt zurück), Rühren an/aus mit Rührfisch, im Puffer entsteht H₂O, im Wasser nicht', async () => {
+  const { page, errors, done } = await open();
+  const pressed = (sel) => page.locator(sel).first().getAttribute('aria-pressed');
+  const add = () => page.evaluate(() => [...document.querySelectorAll('.addtag')].map((a) => a.innerText.replace(/\s+/g, ' ').trim()));
+  let a = await add();
+  assert(a.length === 2 && a.every((t) => /HCl 0,00 mL/.test(t) && /NaOH 0,00 mL/.test(t)), 'Start: zugesetzt 0,00 mL je Glas: ' + JSON.stringify(a));
+  await tool(page, 'measure'); await kind(page, 'm1'); await go(page);
+  await waitFor(page, (A) => A.eng.current().beakers[0].added > 0.2 && A.eng.current().beakers[0].added < 0.99);
+  a = await add();
+  assert(/HCl 0,\d\d mL/.test(a[0]) && !/HCl 0,00/.test(a[0]), 'Anzeige zählt während der Zugabe mit: ' + a[0]);
+  await idle(page);
+  a = await add();
+  assert(/HCl 1,00 mL/.test(a[0]) && /HCl 1,00 mL/.test(a[1]) && /NaOH 0,00 mL/.test(a[1]), 'nach 1,0 mL in beide Gläser: ' + JSON.stringify(a));
+  // Teilchenmodell: im Puffer reagiert die Zugabe zu H₂O, im Wasser bleibt H₃O⁺ frei
+  await target(page, 'all'); await go(page);
+  let sawWater = false, waterInA = false;
+  for (let i = 0; i < 400; i++) { // Messpipette: erst Glas A, dann nachfüllen und Glas B
+    const fx = await page.evaluate(() => window.PF.app.U.views().map((v) => v.fx.map((f) => f.sp)));
+    if (fx[1] && fx[1].includes('H2O')) sawWater = true;
+    if (fx[0] && fx[0].length) waterInA = true;
+    if (sawWater && !(await S(page, (A) => A.eng.busy()))) break;
+    await adv(page, 60);
+  }
+  await idle(page);
+  assert(sawWater, 'Pufferlösung: H₃O⁺ reagiert mit HPO₄²⁻, H₂O entsteht sichtbar');
+  assert(!waterInA, 'Wasser: keine Neutralisation, kein H₂O-Symbol (H₃O⁺ häuft sich an)');
+  const h3o = await page.evaluate(() => window.PF.app.U.views()[0].parts.filter((p) => p.sp === 'H3O' && !p.leaving).length);
+  assert(h3o >= 6, `Wasser: freie H₃O⁺ sichtbar angehäuft (${h3o})`);
+  // Laugenreihe zeigt ihre eigene Menge; Neue Reihe setzt zurück
+  await reagent(page, 'NaOH');
+  a = await add();
+  assert(a.every((t) => /HCl 0,00 mL/.test(t) && /NaOH 0,00 mL/.test(t)), 'Laugenreihe: frische Ansätze, 0,00 mL: ' + JSON.stringify(a));
+  await reagent(page, 'HCl');
+  a = await add();
+  assert(/HCl 2,00 mL/.test(a[0]), 'zurück zur Säurereihe: Menge erhalten: ' + a[0]);
+  await click(page, '#btnNewSeries');
+  a = await add();
+  assert(a.every((t) => /HCl 0,00 mL/.test(t)), 'Neue Reihe setzt die Mengen zurück: ' + JSON.stringify(a));
+  // Rühren an/aus mit Rührfisch
+  const s0 = await page.evaluate(() => document.getElementById('lab').toDataURL().length);
+  await click(page, '#btnStir');
+  assert(await pressed('#btnStir') === 'true' && await S(page, (A) => A.eng.state.stirOn && A.eng.stirring(A.eng.current().beakers[0])), 'Rühren an');
+  await adv(page, 300);
+  const s1 = await page.evaluate(() => document.getElementById('lab').toDataURL().length);
+  await adv(page, 137);
+  const s2 = await page.evaluate(() => document.getElementById('lab').toDataURL().length);
+  assert(s1 !== s0 && s2 !== s1, 'Rührfisch dreht sich (Bild ändert sich)');
+  await click(page, '#btnStir');
+  assert(await pressed('#btnStir') === 'false' && !(await S(page, (A) => A.eng.state.stirOn)), 'Rühren aus');
+  // Versuch 2 und 3: keine Mengenanzeige
+  await exp(page, 'e2');
+  assert(await page.locator('.addtag').count() === 0, 'Versuch 2 ohne Mengenanzeige');
+  await exp(page, 'e3');
+  assert(await page.locator('.addtag').count() === 0, 'Versuch 3 ohne Mengenanzeige');
+  await exp(page, 'e1');
+  await shot(page, '14-versuch1-menge-ruehrfisch');
+  assert(!errors.length, errors.join(' | '));
+  await done();
+  return `H₂O im Puffer, ${h3o} H₃O⁺ im Wasser; Mengen zählen live und werden zurückgesetzt`;
+});
+
 // =========================================================== E21 Zufallsbedienung (Robustheit)
 async function monkey(seed, steps, startMix) {
   let st = seed >>> 0; const rnd = () => (st = (Math.imul(st, 1664525) + 1013904223) >>> 0) / 4294967296;
   const { page, errors, done } = await open();
   if (startMix) {
-    await exp(page, 'e3'); await click(page, '[data-force="mix"]'); await click(page, '[data-mixtarget="5.05"]');
+    await exp(page, 'e3'); await click(page, '[data-mixtarget="5.05"]');
     await page.locator('input[data-mixsystem="ac"]').check(); await page.locator('[data-mixf="r"]').fill('2'); await page.locator('[data-mixf="vb"]').fill('20'); await page.locator('[data-mixf="va"]').fill('10');
     await click(page, '[data-mixaction="check"]');
   }

@@ -10,6 +10,14 @@
  * ist nicht maßstäblich. Na⁺/Cl⁻ sind ausgeblendet, Wasser ist der Hintergrund.
  * Der pH-Wert wird nie aus Symbolen gezählt; der Bestand folgt dem Modell.
  * Umwandlungen (z. B. HPO₄²⁻ → H₂PO₄⁻ bei Säurezugabe) werden kurz umrandet.
+ *
+ * Reaktion je Zugabe (0.2.1, schematisch): Setzt das Modell die zugegebenen
+ * H₃O⁺/OH⁻ überwiegend mit dem Puffer um (chem.doseAnalysis), wandert ein
+ * kurzzeitiges H₃O⁺ bzw. OH⁻ zum Partner und es entsteht sichtbar H₂O, das sich
+ * im Lösungsmittel auflöst (H₃O⁺ + Ac⁻ → HAc + H₂O, HAc + OH⁻ → Ac⁻ + H₂O).
+ * Ohne Puffer (oder nach Erschöpfung) entsteht kein H₂O – freie Ionen häufen
+ * sich an. Wasser selbst bleibt Hintergrund; die kurzlebigen Teilchen werden
+ * nicht gezählt und ändern den Bestand nicht.
  */
 (function (root) {
   'use strict';
@@ -20,15 +28,17 @@
 
   /** Rollen: Säureform (violett), Basenform (türkis), freie Ionen (orange/lila). */
   const SPECIES = {
-    HA: { label: 'CH₃COOH', name: 'Essigsäure (Säure HA)', role: 'Säure', color: '#5f3dc4' },
-    A: { label: 'CH₃COO⁻', name: 'Acetat (Base A⁻)', role: 'Base', color: '#0b7285' },
+    HA: { label: 'HAc', name: 'Essigsäure HAc (Säure)', role: 'Säure', color: '#5f3dc4' },
+    A: { label: 'Ac⁻', name: 'Acetat/Ethanoat Ac⁻ (Base)', role: 'Base', color: '#0b7285' },
     H3PO4: { label: 'H₃PO₄', name: 'Phosphorsäure', role: 'Säure', color: '#862e9c' },
     H2PO4: { label: 'H₂PO₄⁻', name: 'Dihydrogenphosphat (Säure HA)', role: 'Säure', color: '#5f3dc4' },
     HPO4: { label: 'HPO₄²⁻', name: 'Hydrogenphosphat (Base A⁻)', role: 'Base', color: '#0b7285' },
     PO4: { label: 'PO₄³⁻', name: 'Phosphat', role: 'Base', color: '#1971c2' },
     H3O: { label: 'H₃O⁺', name: 'Oxonium-Ion (frei)', role: 'frei', color: '#e8590c' },
-    OH: { label: 'OH⁻', name: 'Hydroxid-Ion (frei)', role: 'frei', color: '#9c36b5' }
+    OH: { label: 'OH⁻', name: 'Hydroxid-Ion (frei)', role: 'frei', color: '#9c36b5' },
+    H2O: { label: 'H₂O', name: 'Wasser (entsteht bei der Neutralisation)', role: 'Wasser', color: '#a5d8ff', ink: '#0b3d5c' }
   };
+  const REACT_LIFE = { travel: 0.9, water: 1.6 }; // Sekunden Modellzeit (¼× und Pause wirken mit)
   const P_KEYS = ['H3PO4', 'H2PO4', 'HPO4', 'PO4'];
 
   // ------------------------------------------------------------ Zielbestand
@@ -57,7 +67,19 @@
     if (comp.Ac > 0) keys.push('HA', 'A');
     if (comp.P > 0) keys.push('H2PO4', 'HPO4');
     keys.push('H3O', 'OH');
+    if (comp.Ac > 0 || comp.P > 0) keys.push('H2O');
     return keys;
+  }
+
+  /** Partner-Spezies einer Zugabe im Teilchenmodell (null: kein sichtbarer Umsatz). */
+  function partnerOf(an) {
+    if (!an || an.path === 'free') return null;
+    const acid = an.reagent === 'HCl';
+    if (an.path === 'partner') return acid ? 'OH' : 'H3O';
+    if (!an.pair) return null;
+    if (an.pair.sys === 'Ac') return acid ? 'A' : 'HA';
+    if (an.pair.sys === 'P') return acid ? P_KEYS[an.pair.k + 1] : P_KEYS[an.pair.k];
+    return null;
   }
 
   // ------------------------------------------------------------ Ansicht je Probe
@@ -66,6 +88,43 @@
       this.canvas = canvas; this.ctx = canvas.getContext('2d');
       this.parts = []; this.key = null; this.w = 0; this.h = 0; this.dpr = 1;
       this.reduceMotion = false;
+      this.fx = []; // kurzlebig: ankommende Ionen und entstehendes H₂O (nicht gezählt)
+    }
+
+    /**
+     * Reaktion einer Zugabe zeigen. an: Ergebnis von chem.doseAnalysis.
+     * Nur wenn das Modell die Zugabe überwiegend umsetzt; höchstens drei gleichzeitig.
+     */
+    react(an) {
+      const sp = partnerOf(an);
+      if (!sp || this.fx.length >= 6) return false;
+      const targets = this.parts.filter((p) => p.sp === sp && !p.leaving);
+      if (!targets.length) return false;
+      const t = targets[Math.floor(Math.random() * targets.length)];
+      const ion = an.reagent === 'HCl' ? 'H3O' : 'OH';
+      this.fx.push({ kind: 'ion', sp: ion, x: 0.12 + Math.random() * 0.76, y: 0.1, target: t, age: 0, water: an.path === 'partner' ? 2 : 1 });
+      return true;
+    }
+    stepFx(dt) {
+      const out = [];
+      for (const f of this.fx) {
+        f.age += dt;
+        if (f.kind === 'ion') {
+          const u = Math.min(1, f.age / REACT_LIFE.travel), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+          if (!f.x0) { f.x0 = f.x; f.y0 = f.y; }
+          f.x = f.x0 + (f.target.x - f.x0) * e; f.y = f.y0 + (f.target.y - f.y0) * e;
+          if (u >= 1) {
+            f.target.flash = 1;
+            for (let i = 0; i < f.water; i++) out.push({ kind: 'water', sp: 'H2O', x: f.target.x + (i ? 0.06 : -0.03), y: f.target.y - 0.04, age: 0 });
+            continue;
+          }
+        } else {
+          f.y -= dt * 0.04;
+          if (f.age >= REACT_LIFE.water) continue;
+        }
+        out.push(f);
+      }
+      this.fx = out;
     }
     resize() {
       const r = this.canvas.getBoundingClientRect();
@@ -151,6 +210,7 @@
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       ctx.clearRect(0, 0, this.w, this.h);
       this.step(this.reduceMotion ? 0 : dt, opts.real);
+      this.stepFx(dt);
       this.draw(ctx);
     }
 
@@ -166,7 +226,8 @@
       const ph = clamp(Math.sqrt((W * H) / (n + 14)) * 0.6, 17, 26); // Höhe einer Plakette
       const fs = ph * 0.56;
       ctx.font = `700 ${fs}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      for (const p of this.parts) {
+      const all = this.parts.concat(this.fx.map((f) => Object.assign(f, { appear: f.kind === 'water' ? Math.max(0, 1 - f.age / REACT_LIFE.water) : Math.min(1, f.age * 4), leaving: 0 })));
+      for (const p of all) {
         const S = SPECIES[p.sp];
         const free = p.sp === 'H3O' || p.sp === 'OH';
         const tw = ctx.measureText(S.label).width;
@@ -180,7 +241,8 @@
         ctx.fillStyle = S.color;
         ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill();
         if (S.role === 'Säure') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6; ctx.setLineDash([3, 2]); ctx.stroke(); ctx.setLineDash([]); }
-        ctx.fillStyle = '#fff';
+        if (S.role === 'Wasser') { ctx.strokeStyle = '#4dabf7'; ctx.lineWidth = 1.4; ctx.stroke(); }
+        ctx.fillStyle = S.ink || '#fff';
         ctx.fillText(S.label, x, y + 0.5);
         ctx.restore();
       }
@@ -196,9 +258,9 @@
   function legendHtml(keys) {
     return keys.map((k) => {
       const S = SPECIES[k];
-      return `<span class="sym"><span class="chip ${S.role === 'Säure' ? 'dash' : ''}" style="background:${S.color}">${S.label}</span><span class="symname">${S.name}${S.role === 'Säure' || S.role === 'Base' ? '' : ''}</span></span>`;
+      return `<span class="sym"><span class="chip ${S.role === 'Säure' ? 'dash' : ''} ${S.role === 'Wasser' ? 'water' : ''}" style="background:${S.color};${S.ink ? 'color:' + S.ink : ''}">${S.label}</span><span class="symname">${S.name}${S.role === 'Säure' || S.role === 'Base' ? '' : ''}</span></span>`;
     }).join('');
   }
 
-  (root.PF = root.PF || {}).particles = { ParticleView, targetCounts, speciesOf, legendHtml, SPECIES, SCALE, P_KEYS };
+  (root.PF = root.PF || {}).particles = { ParticleView, targetCounts, speciesOf, partnerOf, legendHtml, SPECIES, SCALE, P_KEYS };
 })(typeof self !== 'undefined' ? self : this);

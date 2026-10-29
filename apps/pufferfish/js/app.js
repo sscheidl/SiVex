@@ -67,7 +67,6 @@
     const r = eng.selectExperiment(b.dataset.exp);
     if (r.ok) {
       lab.resetFx(); ui.tab = 'task'; U.refreshLab(true); U.renderPanel(); U.save();
-      if (b.dataset.exp === 'e3' && !U.mixOpen()) U.toast('Versuch 3 baut auf der Herleitung auf – siehe Bedienfeld → Aufgabe.');
     } else U.toast(r.text);
   });
 
@@ -84,7 +83,11 @@
   }
   const isMixExp = () => E.expById(eng.state.exp).mixing;
 
-  $('#tags').addEventListener('click', (e) => { const b = e.target.closest('[data-bottle]'); if (b) selectReagent(b.dataset.bottle); });
+  $('#tags').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-bottle]'); if (b) { selectReagent(b.dataset.bottle); return; }
+    const p = e.target.closest('[data-pip]');
+    if (p) { const r = eng.setTool(p.dataset.pip); if (!r.ok) U.toast(r.text); else afterLabChange(false); }
+  });
 
   function doDose() {
     if (ui.speed === 0) { U.toast('Die Zeit ist angehalten. Wähle ¼× oder 1×, um zu dosieren.'); return; }
@@ -113,7 +116,7 @@
     if (t.dataset.target) { ui.target = t.dataset.target; U.renderBars(); U.updateTags(); U.save(); return; }
     if (t.dataset.speed != null) { ui.speed = Number(t.dataset.speed); U.renderBars(); U.save(); return; }
     if (t.id === 'btnStep') { if (ui.speed === 0) eng.step(0.2); return; }
-    if (t.id === 'btnStir') { eng.stir(isMixExp() || ui.target === 'all' ? null : [Number(ui.target)]); U.toast('Umrühren: Die Lösung wird mit dem Glasstab durchmischt.'); return; }
+    if (t.id === 'btnStir') { eng.setStir(!eng.state.stirOn); U.toast(eng.state.stirOn ? 'Rühren an: Die Rührfische drehen sich, die Lösungen mischen sich schneller.' : 'Rühren aus.'); U.renderBars(); return; }
     if (t.id === 'btnGo') { doDose(); return; }
     if (t.id === 'btnMeasure') { doMeasure(); return; }
   });
@@ -349,7 +352,7 @@
     eng.step(dt);
     let committed = false, measured = null;
     for (const f of eng.drainFx()) {
-      if (f.type === 'land') { lab.onLand(f, eng.geometry(), eng.current()); nod(); }
+      if (f.type === 'land') { lab.onLand(f, eng.geometry(), eng.current()); U.onLand(f); nod(); }
       else if (f.type === 'commit') committed = true;
       else if (f.type === 'measured') measured = f.entry;
     }

@@ -83,8 +83,9 @@
       const t = this.eng.state.time;
       s.beakers.forEach((b, i) => {
         const f = this.beakerFx(i);
-        const stirring = b.stirUntil > t;
-        if (stirring && !this.opts.reduceMotion) f.stirA += dt * 7;
+        const stirring = this.eng.stirring(b);
+        f.stirSpeed = lerp(f.stirSpeed || 0, stirring ? 1 : 0, 1 - Math.exp(-dt * 3));
+        if (!this.opts.reduceMotion) f.stirA += f.stirSpeed * 15 * dt;
         // Wellengleichung mit Dämpfung (TitraLab 3)
         const h = f.h, v = f.v;
         const sub = Math.max(2, Math.ceil(dt / 0.004)), sdt = dt / sub;
@@ -269,7 +270,7 @@
       for (let j = 0; j < 4; j++) f.color[j] = lerp(f.color[j], target[j], 0.25);
       const col = f.color;
       const surf = G.surfaceY(g, b.comp.V);
-      const stirring = b.stirUntil > this.eng.state.time;
+      const stirring = this.eng.stirring(b);
       f.stirDepth = lerp(f.stirDepth || 0, stirring && !this.opts.reduceMotion ? 3.5 : 0, 0.08);
 
       this.shadow(ctx, g.x, G.BENCH + 3, g.half * 1.25, 9, 0.35);
@@ -292,6 +293,8 @@
       const side = ctx.createLinearGradient(g.x - g.half, 0, g.x + g.half, 0);
       side.addColorStop(0, 'rgba(30,50,70,0.18)'); side.addColorStop(0.28, 'rgba(30,50,70,0)'); side.addColorStop(0.72, 'rgba(30,50,70,0)'); side.addColorStop(1, 'rgba(30,50,70,0.2)');
       ctx.fillStyle = side; ctx.fill();
+      // Rührfisch am Boden (über der Flüssigkeitsfarbe, leicht durchscheinend)
+      ctx.save(); ctx.globalAlpha = 0.92; this.drawStirBar(ctx, g, f); ctx.restore();
       // Schlieren
       if (!mixing) { ctx.save(); this.liquidPath(ctx, g, surf, f); ctx.clip(); this.drawPlumes(ctx, b, g, surf, f, col, k, stirring); ctx.restore(); }
       // Oberfläche und Ringwellen
@@ -307,9 +310,8 @@
       }
       ctx.restore();
 
-      // Elektrodenschaft vor dem Glas oberhalb der Flüssigkeit, Glasstab beim Rühren
+      // Elektrodenschaft vor dem Glas oberhalb der Flüssigkeit
       this.drawElectrode(ctx, g, surf, false);
-      if (stirring || f.rodFade > 0) this.drawRod(ctx, g, surf, f, stirring);
 
       // Vorderes Glas
       this.beakerPath(ctx, g, 0);
@@ -332,7 +334,7 @@
         ctx.beginPath(); ctx.moveTo(g.x - g.half + 14, y); ctx.lineTo(g.x - g.half + 28, y); ctx.stroke();
         ctx.fillText(String(ml), g.x - g.half + 31, y);
       }
-      ctx.font = '600 ' + this.px(10.5) + 'px ' + FONT; ctx.fillText(T.label, g.x - g.half + 14, g.bottom - 16);
+      ctx.font = '600 ' + this.px(10.5) + 'px ' + FONT; ctx.fillText(T.label, g.x - g.half + 14, g.bottom - 30);
       // Spritzer
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
       for (const p of this.splashes) { ctx.beginPath(); ctx.arc(p.x, p.y, 1.4, 0, 6.283); ctx.fill(); }
@@ -358,16 +360,18 @@
       ctx.strokeStyle = '#3a4757'; ctx.lineWidth = this.px(2); ctx.beginPath(); ctx.moveTo(x, y0); ctx.quadraticCurveTo(x + 8, y0 - 26, x + 30, y0 - 34); ctx.stroke();
     }
 
-    drawRod(ctx, g, surf, f, stirring) {
-      f.rodFade = clamp((f.rodFade || 0) + (stirring ? 0.08 : -0.06), 0, 1);
-      const a = f.stirA;
-      const bx = g.x - g.half * 0.1 + Math.cos(a) * g.half * 0.45, by = g.bottom - 10 + Math.sin(a) * 4;
-      const tx = g.x - g.half * 0.55, ty = g.top - 60;
-      ctx.save(); ctx.globalAlpha = f.rodFade;
-      ctx.strokeStyle = 'rgba(235,244,252,0.95)'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(bx, by); ctx.stroke();
-      ctx.strokeStyle = 'rgba(80,110,140,0.6)'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.restore();
+    /** Rührfisch nach TitraLab 3 (_drawStirBar): Projektion eines rotierenden Stabs; kein Rührgerät dargestellt. */
+    drawStirBar(ctx, g, f) {
+      const x = g.x - g.half * 0.12, y = g.bottom - 7;
+      const len = g.half * 1.05, hgt = 11;
+      const proj = Math.abs(Math.cos(f.stirA || 0)) * (len - hgt) + hgt;
+      const gr = ctx.createLinearGradient(0, y - hgt / 2, 0, y + hgt / 2);
+      gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.55, '#d9e0e7'); gr.addColorStop(1, '#9aa6b2');
+      ctx.fillStyle = gr;
+      rr(ctx, x - proj / 2, y - hgt / 2, proj, hgt, hgt / 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(80,100,120,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      rr(ctx, x - proj / 2 + 3, y - hgt / 2 + 2, Math.max(0, proj - 6), 2.5, 1.2); ctx.fill();
     }
 
     drawPlumes(ctx, b, g, surf, f, bulk, k, stirring) {

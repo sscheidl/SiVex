@@ -356,3 +356,16 @@ details.help summary { cursor: pointer; font-weight: 700; min-height: 32px; disp
 .fields > .frow.sel { flex: 0 1 auto; }
 .fields > .frow.sel .ffb { flex-basis: auto; }
 .deck .stir { min-height: var(--touch); }
+
+/* 0.2.1: Flaschen und Pipetten direkt antippen (unsichtbare Klickflächen über der Zeichnung) */
+.bottlebtn.hit, .piphit { position: absolute; transform: none; pointer-events: auto; padding: 0; min-width: 0; min-height: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; }
+.bottlebtn.hit:hover:not(:disabled), .piphit:hover:not(:disabled) { background: rgba(11, 114, 133, .08); }
+.bottlebtn.hit[aria-pressed="true"], .piphit[aria-pressed="true"] { background: transparent; }
+.bottlebtn.hit:focus-visible, .piphit:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.bottlebtn.hit:disabled, .piphit:disabled { cursor: default; }
+/* zugesetzte Gesamtmenge (Versuch 1) */
+.addtag { position: absolute; box-sizing: border-box; background: rgba(255, 255, 255, .94); border: 1px dashed var(--line-2); border-radius: 8px; padding: 2px 5px 3px; font-size: 12px; line-height: 1.25; white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums; pointer-events: none; }
+.addtag .ah { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.addtag .ar { display: block; color: var(--muted); }
+.addtag .ar.on { color: var(--text); font-weight: 700; }
+.chip.water { border: 1.4px solid #4dabf7; }

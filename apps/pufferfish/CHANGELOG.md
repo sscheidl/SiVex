@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 – 29.10.2026 (prototype)
+
+Kleine Überarbeitung nach Rückmeldung der Lehrkraft. Status bleibt **prototype**.
+
+- **Zugesetzte Gesamtmenge (nur Versuch 1):** neben jedem Glasschild „zugesetzt – HCl … mL / NaOH … mL“; zählt live mit, gehört zur Messreihe, „Neue Reihe“ setzt zurück. So sehen die SuS, wie viel mehr Säure/Lauge die Pufferlösung für dieselbe pH-Änderung braucht.
+- **Flaschen und Pipetten direkt antippen:** unsichtbare Klickflächen über der Zeichnung (Tastatur, `aria-pressed`); die Beschriftungs-Schalter unter den Flaschen entfallen. Pipettenwahl im Ständer synchron mit der Dosierleiste.
+- **Rührfisch:** „Umrühren“ (Glasstab) wird zum Schalter **Rühren an/aus**; in jedem Glas dreht sich ein Rührfisch (nach TitraLab 3), die Lösungen mischen sich schneller.
+- **Teilchenmodell:** Essigsäure/Acetat als **HAc/Ac⁻** (Legende mit Namen, Ethanoat). Reagiert eine Zugabe mit dem Puffer, wandert H₃O⁺/OH⁻ zum Partner und es entsteht kurz **H₂O**; ohne Puffer häufen sich freie Ionen an. Wasser bleibt Hintergrund (fachliche Begründung in `docs/CHEMIE.md`).
+- **Versuch 3 ohne Sperre:** auch ohne vorherige Herleitung zugänglich (Einzelstunde); erst rechnen, dann herstellen bleibt.
+
 ## 0.2.0 – 29.10.2026 (prototype)
 
 Änderungs- und Erweiterungsauftrag 0.2.0 (Q13 eA). Status bleibt **prototype**; echtes iPad, mebis-Import und fachlich-didaktische Freigabe stehen aus (siehe Testbericht).
