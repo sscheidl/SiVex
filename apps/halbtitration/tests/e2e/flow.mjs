@@ -63,25 +63,36 @@ export async function answerAll(page, kind) {
   return qs;
 }
 
+/** Maßlösung an der Bürette wählen (Vorbereitung ①); liefert den Status der Wahl */
 export async function chooseTitrant(page, value) {
-  await openStep(page, 'start');
-  return answer(page, 'titrant', value);
+  const sel = `[data-action="prep-burette"][data-titrant="${value}"]`;
+  if (!(await page.$(sel)) && (await page.$('.prepline [data-action="toggle-prep"]'))) await act(page, 'toggle-prep');
+  if (await page.$(sel)) await page.click(sel);
+  return page.evaluate(() => (Halbtitration.App.es().answers.titrant || {}).status);
+}
+
+/** Messwerterfassung umschalten: 'auto' oder 'manual' */
+export async function capture(page, mode) {
+  await page.click(`[data-action="capture"][data-mode="${mode}"]`);
 }
 
 /** Probe und Geräte vorbereiten, bis gemessen werden kann */
-export async function prepare(page, { stir = true } = {}) {
-  if (await page.$('[data-action="prep-sample"]:not([disabled])')) await act(page, 'prep-sample');
-  await waitFor(page, () => { const l = Halbtitration.App.lab(); return l.sampleReady && l.waterReady; });
-  if (await page.$('[data-action="prep-burette"]:not([disabled])')) await act(page, 'prep-burette');
+/** Vorbereitung in Laborreihenfolge: (① Bürette vorher über chooseTitrant) ② Kalibrieren ③ Probe ④ Indikator ⑤ Rührer ⑥ Elektrode */
+export async function prepare(page, { stir = true, indicator = null } = {}) {
   if (await page.$('[data-action="prep-meter"]:not([disabled])')) await act(page, 'prep-meter');
   await waitFor(page, () => Halbtitration.App.lab().calibration >= 2 && !Halbtitration.App.lab().calRunning);
+  if (await page.$('[data-action="prep-sample"]:not([disabled])')) await act(page, 'prep-sample');
+  await waitFor(page, () => { const l = Halbtitration.App.lab(); return l.sampleReady && l.waterReady; });
+  if (indicator) {
+    await page.selectOption('#deckIndicator', indicator);
+    await act(page, 'indicator');
+  }
+  const on = await page.evaluate(() => Halbtitration.App.lab().stirrer);
+  if (stir !== on) await page.click('.measure [data-action="stir"]');
   if (!(await page.evaluate(() => Halbtitration.App.lab().electrodeIn))) {
     await page.waitForSelector('[data-action="electrode"]:not([disabled])');
     await act(page, 'electrode');
   }
-  if (await page.$('[data-action="indicator"]:not([disabled])')) await act(page, 'indicator');
-  const on = await page.evaluate(() => Halbtitration.App.lab().stirrer);
-  if (stir !== on) await act(page, 'stir');
 }
 
 export async function fillField(page, id, value, check = true) {

@@ -55,9 +55,7 @@ async function coreRun(page, o) {
   await F.chooseExp(page, o.exp);
   const t = await F.chooseTitrant(page, o.titrant);
   assert(t === 'ok', 'Maßlösung nicht akzeptiert');
-  if (o.indicator) await page.selectOption('#selIndicator', o.indicator);
-  if (o.indicator) await F.newSample(page, 'survey'); // Indikator gilt ab frischer Probe
-  await F.prepare(page);
+  await F.prepare(page, { indicator: o.indicator || null });
   await page.waitForTimeout(100);
   const ink0 = await F.curveInk(page, 'chart');
   assert(ink0.blue < 5, 'Kurve zeigt vor der ersten Messung Punkte');
@@ -135,10 +133,20 @@ const scenarios = {
     const start = await page.evaluate(() => ({ task: document.querySelector('.step[data-step="start"]').innerText, tab: document.querySelector('.lk-tabs [aria-selected="true"]').dataset.tab, theory: !!document.querySelector('[data-view="theory"]') }));
     assert(/Bestimme den pKₛ-Wert einer Essigsäurelösung/.test(start.task) && start.tab === 'task' && !start.theory, 'Start nicht im Labor mit Auftrag');
     await shot(page, '01-start');
-    // falsche Maßlösung → Rückmeldung, kein Füllen der Bürette
-    await F.openStep(page, 'start');
-    assert((await F.answer(page, 'titrant', 'HCl')) === 'wrong', 'falsche Maßlösung nicht erkannt');
-    assert(await page.$('[data-action="prep-burette"][disabled]'), 'Bürette trotz falscher Maßlösung füllbar');
+    // Vorbereitung in Laborreihenfolge, Messwerterfassung standardmäßig automatisch
+    const order = await page.$$eval('.deck .prep .pstep', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ').trim()));
+    assert(/^1 Bürette/.test(order[0]) && /^2 pH-Meter/.test(order[1]) && /^3 Probe/.test(order[2]) && /^4 Indikator/.test(order[3]) && /^5 Rührer/.test(order[4]) && /^6 Elektrode/.test(order[5]), 'Reihenfolge der Vorbereitung: ' + order.join(' | '));
+    assert(await page.$('[data-action="capture"][data-mode="auto"][aria-pressed="true"]'), 'Erfassung nicht automatisch');
+    // falsche Maßlösung an der Bürette → Rückmeldung, Bürette bleibt leer
+    assert((await F.chooseTitrant(page, 'HCl')) === 'wrong', 'falsche Maßlösung nicht erkannt');
+    assert(!(await F.labState(page)).filled, 'Bürette trotz falscher Maßlösung gefüllt');
+    assert(/passt nicht zu dieser Probe/.test(await page.$eval('.step[data-step="start"]', (e) => e.innerText)), 'Rückmeldung im Bedienfeld fehlt');
+    // automatische Erfassung: Kurve wächst ohne Klick auf „Messwert übernehmen“
+    assert((await F.chooseTitrant(page, 'NaOH')) === 'ok', 'richtige Maßlösung nicht akzeptiert');
+    await F.prepare(page);
+    await F.setDose(page, 1); await F.act(page, 'dose');
+    await F.waitFor(page, () => Halbtitration.App.activeSeries().points.some((p) => p.v === 1 && p.stable));
+    await F.act(page, 'repeat'); await F.confirm(page);
     // Geschlossene Frage: falsch → Tipp → Rückmeldung bleibt bei der Frage
     await F.openStep(page, 'half');
     assert((await F.answer(page, 'h1', 'a')) === 'wrong', 'falsche Antwort nicht markiert');
@@ -239,6 +247,7 @@ const scenarios = {
   async E5(browser) {
     const page = await newPage(browser);
     await fresh(page);
+    await F.capture(page, 'manual');
     await F.openStep(page, 'curve');
     await page.click('.step[data-step="curve"] details summary');
     let r = await F.fillField(page, 'veq1', '24');
@@ -333,6 +342,7 @@ const scenarios = {
   async E6(browser) {
     const page = await newPage(browser);
     await fresh(page);
+    await F.capture(page, 'manual');
     await F.openStep(page, 'result');
     await page.fill('[data-field="pk_pKs1"] input', '4,8');
     await F.act(page, 'submit');
@@ -387,6 +397,7 @@ const scenarios = {
   async E7(browser) {
     const page = await newPage(browser);
     await fresh(page);
+    await F.capture(page, 'manual');
     await F.chooseTitrant(page, 'NaOH');
     await F.prepare(page, { stir: false });
     await F.waitStable(page); await F.act(page, 'take');
@@ -444,9 +455,8 @@ const scenarios = {
   async E8(browser) {
     const page = await newPage(browser);
     await fresh(page);
-    await page.selectOption('#selIndicator', 'phenolphthalein');
     await F.chooseTitrant(page, 'NaOH');
-    await F.prepare(page);
+    await F.prepare(page, { indicator: 'phenolphthalein' });
     await F.waitStable(page); await F.act(page, 'take');
     await F.doseTo(page, 22, 2);
     await F.doseTo(page, 23.8, 0.2);
