@@ -26,14 +26,16 @@ Jeder Versuch ist direkt anwählbar, es gibt keine Sperre. Daneben stehen drei K
 
 ## Labor
 
-### Vorbereitung
+### Vorbereitung (ab 0.2.1 nummeriert, von links nach rechts)
 
-Die Vorbereitung steht in einer kompakten Zeile. Erledigte Schritte erscheinen als ✓-Chips; über „Vorbereitung“ klappst du sie wieder auf.
+Der nächste offene Schritt ist blau hervorgehoben. Erledigte Schritte erscheinen nach dem Einklappen als ✓-Chips; über „Vorbereitung“ klappst du sie wieder auf.
 
-- **Probe vorlegen:** 20,00 mL pipettieren, danach automatisch mit 30 mL Wasser verdünnen.
-- **Bürette füllen:** spülen, füllen und entlüften. Das geht erst, wenn im Bedienfeld die passende Maßlösung gewählt ist. Es gibt je eine Bürette für NaOH und für HCl; ihr Stand bleibt für alle Proben erhalten. **Nachfüllen** geht zwischen zwei Proben.
-- **pH-Meter kalibrieren:** einmal für alle Versuche, Zwei-Punkt-Kalibrierung.
-- **Elektrode eintauchen:** je Probe. Optional kommt danach die **Indikator**-Zugabe.
+1. **Bürette: Natronlauge | Salzsäure.** Hier wählst du die Maßlösung. Die richtige Wahl spült, füllt und entlüftet die Bürette; eine falsche Wahl gibt eine Rückmeldung, die Bürette bleibt leer. Es gibt je eine Bürette für NaOH und für HCl; ihr Stand bleibt für alle Proben erhalten. **Nachfüllen** geht zwischen zwei Proben.
+2. **pH-Meter kalibrieren:** einmal für alle Versuche, Zwei-Punkt-Kalibrierung.
+3. **Probe vorlegen:** 20,00 mL pipettieren, danach automatisch mit 30 mL Wasser verdünnen.
+4. **Indikator (freiwillig):** Auswahl und „zugeben“. Der Knopf bleibt auch in der eingeklappten Vorbereitung sichtbar, solange die Probe keinen Indikator hat.
+5. **Rührer einschalten.**
+6. **Elektrode eintauchen:** je Probe.
 
 ### Messen
 
@@ -41,8 +43,9 @@ Die Anzeige zeigt V zugegeben, den Bürettenstand (digital abgelesen) und den pH
 
 - **Dosiermenge:** 1 Tropfen (0,05 mL) bis 2,00 mL, dann **Zugeben** (Taste **D**).
 - **Hahn öffnen/schließen:** kontinuierlicher Fluss (Taste **H** oder Antippen des Hahns im Bild); die Tropfgeschwindigkeit stellst du am Schieberegler ein.
-- **Messwert übernehmen** (Taste **M**): nur übernommene Werte bilden die Kurve. Zu frühe Werte erscheinen als offene Kreise mit dem Status „nicht stabil“.
-- **Rührer**, **Auto-Übernahme** (übernimmt nach jeder Zugabe erst, wenn die Anzeige stabil ist), **Endpunkt notieren** (nur mit Indikator), **Zielmarke** (nur bei der Halbtitration). Ein automatischer Stopp am Ziel erfolgt nicht.
+- **Erfassung: automatisch | manuell.** Standard ist *automatisch*: Nach jeder Zugabe wird der Messwert übernommen, sobald die Anzeige stabil ist, und die Kurve wächst mit. Bei *manuell* entsteht ein Punkt nur mit „Messwert übernehmen“.
+- **Messwert übernehmen** (grün, Taste **M**) übernimmt den aktuellen Wert sofort. Ist die Anzeige noch nicht stabil, erscheint der Punkt als offener Kreis.
+- **Rührer** (links in der Messzeile), **Endpunkt notieren** (nur mit Indikator), **Zielmarke** (nur bei der Halbtitration). Ein automatischer Stopp am Ziel erfolgt nicht.
 
 ### Kurve
 
@@ -54,7 +57,7 @@ Die Anzeige zeigt V zugegeben, den Bürettenstand (digital abgelesen) und den pH
 
 Der jeweils nächste offene Schritt ist aufgeklappt. Alle Schritte lassen sich jederzeit öffnen, eine feste Klickfolge gibt es nicht.
 
-1. **Auftrag und Maßlösung:** kurzer Auftrag, Ausgangsdaten und die Wahl der Maßlösung. Ein Indikator ist als zusätzliche Beobachtung frei wählbar. Grundlagen gibt es als freiwillige Hilfe.
+1. **Auftrag und Maßlösung:** kurzer Auftrag und Ausgangsdaten. Die Maßlösung wählst du an der Bürette; das Bedienfeld zeigt, ob die Wahl passt, und bietet Tipps. Grundlagen gibt es als freiwillige Hilfe.
 2. **Titrationskurve und Äquivalenzpunkt:** Marker setzen oder V(ÄP) eintragen. Die Prüfung erfolgt an deiner eigenen Kurve: Liegt der Marker im steilsten Abschnitt? Freiwillig kannst du V(ÄP) mit der Stöchiometrie kontrollieren, mit absoluter und relativer Abweichung und benannter Referenz.
 3. **Halber Umsatz:** wenige geschlossene Fragen; bei mehrprotonigen Säuren auch zur zweiten Stufe.
 4. **Zielvolumen berechnen:** Rechenbasis wählen (eigener ÄP, berechnet oder bei Stufe 2 abgeleitet) und V(HÄP) eintragen.

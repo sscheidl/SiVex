@@ -1,5 +1,16 @@
 # Änderungen
 
+## 0.2.1 – 29.10.2026
+
+Bedienung im Labor nach Rückmeldung der Lehrkraft vereinfacht:
+
+- Die Vorbereitung ist nummeriert, in Laborreihenfolge von links nach rechts: ① Bürette ② pH-Meter kalibrieren ③ Probe vorlegen ④ Indikator (freiwillig) ⑤ Rührer ⑥ Elektrode. Der nächste offene Schritt ist hervorgehoben.
+- Die Maßlösung wird direkt an der Bürette gewählt („Bürette: Natronlauge | Salzsäure“), nicht mehr im Bedienfeld. Eine falsche Wahl gibt eine Rückmeldung, die Bürette bleibt leer.
+- Der Indikator wird mit Auswahl und Knopf im Labor zugegeben und bleibt auch in der eingeklappten Vorbereitung erreichbar.
+- Die Messwerterfassung steht standardmäßig auf **automatisch**: Nach jeder Zugabe wird der Messwert übernommen, sobald die Anzeige stabil ist – die Kurve wächst beim Titrieren mit. Umschaltbar auf **manuell**.
+- „Messwert übernehmen“ ist grün hervorgehoben; der Rührer steht links in der Messzeile.
+- Bei zu früher Übernahme kommt eine verständlichere Meldung.
+
 ## 0.2.0 – 29.10.2026
 
 Überarbeitung nach dem Review vom 29.10.2026 (Stand `9bd514b`).

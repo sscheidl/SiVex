@@ -179,12 +179,12 @@
     const r = l.reading();
     const p = { v: r.v, pH: r.pH, stable: r.stable, settled: r.settled, homogeneous: r.homogeneous, stirred: r.stirred, t: Math.round(l.time * 10) / 10 };
     const i = s.points.findIndex(function (q) { return Math.abs(q.v - p.v) < 0.005; });
+    const replaced = i >= 0 ? s.points[i] : null;
     if (i >= 0) s.points[i] = p; else s.points.push(p);
     s.points.sort(function (a, b) { return a.v - b.v; });
     if (!auto) {
-      if (!r.settled) toast('Übernommen, während noch Maßlösung fließt – Messstatus „nicht stabil“.', 'warn');
-      else if (!r.stable) toast('Übernommen, bevor die Anzeige stabil war (offener Kreis in der Kurve).', 'warn');
-      else if (i >= 0) toast('Messpunkt bei ' + fmt(p.v, 2) + ' mL ersetzt.');
+      if (!r.settled || !r.stable) toast('Messpunkt gespeichert, aber noch nicht stabil (offener Kreis). Nach dem Zugeben kurz warten, bis die Anzeige „stabil“ zeigt.', 'warn', 6000);
+      else if (replaced && (replaced.pH !== p.pH || replaced.stable !== p.stable)) toast('Messpunkt bei ' + fmt(p.v, 2) + ' mL ersetzt.');
     }
     autoPending = false;
     save();
@@ -276,19 +276,29 @@
 
   function prepStatus() {
     const l = lab();
-    const ind = es().indicator;
-    const s = activeSeries();
     return {
-      sample: l.sampleReady && l.waterReady,
-      burette: l.buretteReady,
+      burette: l.buretteReady && titrantOk(),
       meter: l.calibration >= 2,
+      sample: l.sampleReady && l.waterReady,
+      indicator: !!l.indicator,
+      stir: l.stirrer,
       electrode: l.electrodeIn,
-      indicator: !s || s.indicator === 'none' || !!l.indicator,
-      allDone: function () { return this.sample && this.burette && this.meter && this.electrode && this.indicator; },
+      // der Indikator ist freiwillig und zählt nicht als Pflichtschritt
+      allDone: function () { return this.burette && this.meter && this.sample && this.electrode; },
     };
   }
 
   function chip(done, text) { return '<span class="pchip' + (done ? ' done' : '') + '">' + (done ? '✓ ' : '○ ') + text + '</span>'; }
+
+  /** Indikatorwahl mit Knopf – sichtbar, solange die Probe noch keinen Indikator hat */
+  function indicatorControl() {
+    const l = lab();
+    const e = es();
+    const sel = e.indicator && e.indicator !== 'none' ? e.indicator : 'phenolphthalein';
+    return '<span class="pgroup"><select id="deckIndicator" aria-label="Indikator wählen (freiwillig)" title="Freiwillige zusätzliche Beobachtung – maßgeblich ist die pH-Messung">' + Ind.list().filter(function (i) { return i.range; }).map(function (i) {
+      return '<option value="' + i.id + '"' + (sel === i.id ? ' selected' : '') + ' title="Umschlag pH ' + fmt(i.range[0], 1) + '–' + fmt(i.range[1], 1) + '">' + esc(i.name) + '</option>';
+    }).join('') + '</select>' + btn('indicator', 'zugeben', l.sampleReady && !l.indicator, false, '3 Tropfen Indikatorlösung zugeben (freiwillig – maßgeblich ist die pH-Messung)') + '</span>';
+  }
 
   function deckHtml() {
     const l = lab();
@@ -300,41 +310,52 @@
     const allDone = p.allDone();
     const showPrep = e.open.prep !== undefined ? e.open.prep : !allDone;
     let h = '';
-    // Vorbereitung: offen als kompakte Handlungen, erledigt als Statuszeile
     if (!showPrep) {
-      h += '<div class="deck-row prepline">' + chip(p.sample, 'Probe ' + (e.sampleNo + 1)) + chip(p.burette, 'Bürette ' + tit.formula.replace('(aq)', '') + (s && s.startReading !== null ? ' · Start ' + fmt(s.startReading, 2) + ' mL' : '')) + chip(p.meter, 'pH-Meter') + chip(p.electrode, 'Elektrode') + (s && s.indicator !== 'none' ? chip(p.indicator, Ind.get(s.indicator).name) : '') +
-        '<button type="button" class="lk-btn small" data-action="toggle-prep">Vorbereitung</button></div>';
+      // erledigt: kompakte Statuszeile; der Indikator bleibt als Knopf erreichbar
+      h += '<div class="deck-row prepline">' + chip(p.burette, 'Bürette ' + tit.formula.replace('(aq)', '') + (s && s.startReading !== null ? ' · Start ' + fmt(s.startReading, 2) + ' mL' : '')) + chip(p.meter, 'pH-Meter') + chip(p.sample, 'Probe ' + (e.sampleNo + 1)) +
+        (p.indicator ? chip(true, Ind.get(l.indicator).name) : l.sampleReady ? '<span class="pchip">Indikator ' + indicatorControl() + '</span>' : '') +
+        chip(p.electrode, 'Elektrode') + '<button type="button" class="lk-btn small" data-action="toggle-prep">Vorbereitung</button></div>';
     } else {
+      // Laborreihenfolge von links nach rechts; der nächste offene Schritt ist hervorgehoben
       const busy = l.pipetting ? (l.pipetting.kind === 'sample' ? 'Pipettiert …' : 'Verdünnt …') : null;
-      h += '<div class="deck-row prep"><span class="deck-label">Vorbereitung</span>' +
-        btn('prep-sample', busy || (p.sample ? '✓ Probe' : 'Probe vorlegen'), !p.sample && !l.pipetting && l.sample === 0 && !!s && !s.finished, p.sample, fmt(x.vSample, 2) + ' mL Probe pipettieren und mit ' + fmt(x.vWater, 0) + ' mL Wasser verdünnen') +
-        btn('prep-burette', p.burette ? '✓ Bürette' : 'Bürette füllen (' + tit.formula.replace('(aq)', '') + ')', !p.burette && titrantOk(), p.burette, titrantOk() ? 'Mit ' + tit.name + ' spülen, füllen und entlüften' : 'Zuerst im Bedienfeld die Maßlösung wählen') +
-        btn('prep-meter', l.calRunning ? 'Kalibriert …' : p.meter ? '✓ pH-Meter' : 'pH-Meter kalibrieren', !p.meter && !l.calRunning && !l.electrodeIn, p.meter, 'Zwei-Punkt-Kalibrierung mit Pufferlösungen pH 7,00 und ' + (x.direction > 0 ? '10,01' : '4,01')) +
-        btn('electrode', l.electrodeIn ? '✓ Elektrode' : 'Elektrode eintauchen', !l.calRunning && (l.electrodeIn || (p.meter && p.sample)), l.electrodeIn, l.electrodeIn ? 'Antippen nimmt die Elektrode heraus' : 'Elektrode spülen und in die Probe tauchen') +
-        (s && s.indicator !== 'none' ? btn('indicator', l.indicator ? '✓ ' + Ind.get(s.indicator).name : Ind.get(s.indicator).name + ' zugeben', l.sampleReady && !l.indicator, !!l.indicator, '3 Tropfen Indikatorlösung') : '') +
+      const steps = [
+        { done: p.burette, html: p.burette ? '✓ Bürette ' + tit.formula.replace('(aq)', '') : 'Bürette: ' + btn('prep-burette', 'Natronlauge', !l.isFlowing, false, 'Bürette mit Natronlauge NaOH(aq), 0,100 mol/L, spülen, füllen und entlüften', ' data-titrant="NaOH"') + btn('prep-burette', 'Salzsäure', !l.isFlowing, false, 'Bürette mit Salzsäure HCl(aq), 0,100 mol/L, spülen, füllen und entlüften', ' data-titrant="HCl"') },
+        { done: p.meter, html: p.meter ? '✓ pH-Meter kalibriert' : btn('prep-meter', l.calRunning ? 'Kalibriert …' : 'pH-Meter kalibrieren', !l.calRunning && !l.electrodeIn, false, 'Zwei-Punkt-Kalibrierung mit Pufferlösungen pH 7,00 und ' + (x.direction > 0 ? '10,01' : '4,01')) },
+        { done: p.sample, html: p.sample ? '✓ Probe ' + (e.sampleNo + 1) : btn('prep-sample', busy || 'Probe vorlegen', !l.pipetting && l.sample === 0 && !!s && !s.finished, false, fmt(x.vSample, 2) + ' mL Probe pipettieren und mit ' + fmt(x.vWater, 0) + ' mL Wasser verdünnen') },
+        { done: p.indicator, optional: true, html: p.indicator ? '✓ ' + Ind.get(l.indicator).name : 'Indikator ' + indicatorControl() },
+        { done: p.stir, html: btn('stir', p.stir ? '✓ Rührer an' : 'Rührer einschalten', true, p.stir, p.stir ? 'Antippen schaltet den Rührer aus' : 'Magnetrührer einschalten') },
+        { done: p.electrode, html: btn('electrode', p.electrode ? '✓ Elektrode eingetaucht' : 'Elektrode eintauchen', !l.calRunning && (l.electrodeIn || (p.meter && p.sample)), p.electrode, l.electrodeIn ? 'Antippen nimmt die Elektrode heraus' : 'Elektrode spülen und in die Probe tauchen') },
+      ];
+      const next = steps.findIndex(function (q) { return !q.done && !q.optional; });
+      h += '<div class="deck-row prep">' + steps.map(function (q, i) {
+        return '<span class="pstep' + (q.done ? ' done' : '') + (i === next ? ' next' : '') + '"><span class="pn">' + (i + 1) + '</span>' + q.html + '</span>';
+      }).join('') +
         (l.burette.filled && !l.dispensed && !l.isFlowing && l.burette.reading > 20 ? btn('refill', 'Nachfüllen', true, false, 'Bürette vor dieser Probe nachfüllen') : '') +
         (allDone ? '<button type="button" class="lk-btn small" data-action="toggle-prep">Einklappen</button>' : '') + '</div>';
     }
-    // Messen: Anzeige, Dosierung, Übernahme
+    // Messen: Rührer, Dosierung, Übernahme, Erfassungsart
+    const auto = state.prefs.capture !== 'manual';
     h += '<div class="deck-row measure">' +
+      '<button type="button" class="lk-btn small stir" data-action="stir" aria-pressed="' + l.stirrer + '">Rührer ' + (l.stirrer ? 'an' : 'aus') + '</button>' +
       '<div class="readout" aria-live="off"><span>V zugegeben</span><b id="roV">–</b><span>Bürette</span><b id="roR">–</b><span>pH</span><b><span id="roPH">–</span><span id="roSt" class="status-pill"></span></b></div>' +
       '<div class="lk-seg light dose" role="group" aria-label="Dosiermenge">' + [['drop', '1 Tr.'], [0.1, '0,10'], [0.2, '0,20'], [0.5, '0,50'], [1, '1,00'], [2, '2,00']].map(function (d) {
         return '<button type="button" data-action="dose-size" data-size="' + d[0] + '" aria-pressed="' + (String(doseSize) === String(d[0])) + '"' + (d[0] === 'drop' ? ' aria-label="1 Tropfen (0,05 mL)"' : ' aria-label="' + d[1] + ' mL"') + '>' + d[1] + '</button>';
       }).join('') + '</div>' +
       '<button type="button" class="lk-btn primary" data-action="dose" title="Taste D">Zugeben <span id="doseLbl"></span></button>' +
       '<button type="button" class="lk-btn" data-action="valve" id="btnValve" title="Taste H">Hahn öffnen</button>' +
-      '<button type="button" class="lk-btn primary take" data-action="take" title="Taste M">Messwert übernehmen</button>';
-    // Zusätze
-    h += '<span class="util"><button type="button" class="lk-btn small" data-action="stir" aria-pressed="' + l.stirrer + '">Rührer ' + (l.stirrer ? 'an' : 'aus') + '</button><label class="rate">Tropfgeschwindigkeit <input type="range" id="rate" min="0" max="100" step="1" value="' + rateToSlider(l.flowRate) + '" aria-label="Tropfgeschwindigkeit bei offenem Hahn"><span id="rateLbl"></span></label>' +
-      '<label class="chk" title="Nach jeder Zugabe den Messwert übernehmen, sobald die Anzeige stabil ist"><input type="checkbox" id="autoTake"' + (state.prefs.autoTake ? ' checked' : '') + '> Auto-Übernahme</label>' +
+      '<button type="button" class="lk-btn take" data-action="take" title="Taste M">Messwert übernehmen</button>' +
+      '<div class="lk-seg light capture" role="group" aria-label="Messwerterfassung"><span class="seg-label">Erfassung</span>' +
+      '<button type="button" data-action="capture" data-mode="auto" aria-pressed="' + auto + '" title="Nach jeder Zugabe wird der Messwert übernommen, sobald die Anzeige stabil ist – die Kurve wächst mit">automatisch</button>' +
+      '<button type="button" data-action="capture" data-mode="manual" aria-pressed="' + !auto + '" title="Messwerte nur mit „Messwert übernehmen“ (Taste M)">manuell</button></div>' +
+      '<span class="util"><label class="rate">Tropfgeschwindigkeit <input type="range" id="rate" min="0" max="100" step="1" value="' + rateToSlider(l.flowRate) + '" aria-label="Tropfgeschwindigkeit bei offenem Hahn"><span id="rateLbl"></span></label>' +
       (s && !s.finished && s.indicator !== 'none' ? '<button type="button" class="lk-btn small" data-action="endpoint">Endpunkt notieren</button>' : '') +
       (s && !s.finished && s.kind === 'half' ? '<span class="target"><label for="targetIn">Zielmarke</label><input type="text" inputmode="decimal" id="targetIn" value="' + esc(s.targetDraft !== undefined ? s.targetDraft : Number.isFinite(s.target) ? fmt(s.target, 2) : '') + '" autocomplete="off"><span class="unit">mL</span><button type="button" class="lk-btn small" data-action="set-target">Setzen</button></span>' : '') +
       '</span><span class="deck-hint" id="deckHint"></span></div>';
     return h;
   }
 
-  function btn(action, label, enabled, done, title) {
-    return '<button type="button" class="lk-btn small' + (done ? ' done' : '') + '" data-action="' + action + '"' + (enabled ? '' : ' disabled') + (title ? ' title="' + esc(title) + '"' : '') + '>' + label + '</button>';
+  function btn(action, label, enabled, done, title, extra) {
+    return '<button type="button" class="lk-btn small' + (done ? ' done' : '') + '" data-action="' + action + '"' + (extra || '') + (enabled ? '' : ' disabled') + (title ? ' title="' + esc(title) + '"' : '') + '>' + label + '</button>';
   }
 
   function rateFromSlider(v) { return 0.01 * Math.pow(100, v / 100); }
@@ -523,7 +544,7 @@
     const s = activeSeries();
     if (!$('#roV')) return;
     const p = prepStatus();
-    const lock = [p.sample, p.burette, p.meter, p.electrode, p.indicator, !!l.pipetting, !!l.calRunning, !!(s && s.points.length), l.dispensed > 0, s && s.endpoint ? s.endpoint.v : ''].join('|');
+    const lock = [p.sample, p.burette, p.meter, p.electrode, p.indicator, p.stir, !!l.pipetting, !!l.calRunning, !!(s && s.points.length), l.dispensed > 0, s && s.endpoint ? s.endpoint.v : ''].join('|');
     if (lock !== lastLock) { lastLock = lock; if (!force) { refreshLab(); return; } }
     const sigNow = [l.addedRounded, l.burette.reading, l.displayPH, l.stable, l.isFlowing, l.valveOpen, s ? s.points.length : -1, l.homogeneous, doseSize, l.flowRate].join('|');
     if (sigNow === lastDyn && !force) return;
@@ -590,11 +611,25 @@
       }
       case 'prep-sample': l.pipetteSample(); refreshLab(); break;
       case 'prep-burette': {
-        l.rinseBurette();
-        l.fillBurette(START_READINGS[es().sampleNo % START_READINGS.length]);
-        l.purgeTip(0.15);
-        toast('Bürette mit ' + Chem.TITRANTS[exp().titrant].name + ' gespült, gefüllt und entlüftet. Der Stand wird digital abgelesen.');
-        save(); refreshLab();
+        const want = exp().titrant;
+        const pick = b.dataset.titrant;
+        const a = es().answers.titrant = es().answers.titrant || {};
+        a.choice = [pick];
+        if (pick !== want) {
+          a.status = 'wrong';
+          toast(want === 'NaOH' ? 'Salzsäure neutralisiert keine Säure – für diese Probe brauchst du eine Base als Maßlösung.' : 'Natronlauge reagiert nicht mit der Base Ammoniak – für diese Probe brauchst du eine Säure als Maßlösung.', 'warn', 6000);
+          save(); refresh();
+          break;
+        }
+        a.status = 'ok';
+        es().titrant = want;
+        if (!l.buretteReady) {
+          l.rinseBurette();
+          l.fillBurette(START_READINGS[es().sampleNo % START_READINGS.length]);
+          l.purgeTip(0.15);
+          toast('Bürette mit ' + Chem.TITRANTS[want].name + ' gespült, gefüllt und entlüftet. Der Stand wird digital abgelesen.');
+        } else toast('Die Bürette mit ' + Chem.TITRANTS[want].name + ' ist bereits gefüllt.');
+        save(); refresh();
         break;
       }
       case 'refill': {
@@ -612,7 +647,16 @@
         save(); refreshLab();
         break;
       }
-      case 'indicator': if (s) { l.addIndicator(s.indicator); save(); refreshLab(); } break;
+      case 'indicator': {
+        const sel = $('#deckIndicator');
+        const id = sel ? sel.value : es().indicator;
+        if (!id || id === 'none' || !l.addIndicator(id)) break;
+        es().indicator = id;
+        if (s && (s.indicator === 'none' || !s.indicator)) s.indicator = id;
+        save(); refresh();
+        break;
+      }
+      case 'capture': state.prefs.capture = b.dataset.mode === 'manual' ? 'manual' : 'auto'; save(); refreshLab(); break;
       case 'toggle-prep': { const p = prepStatus(); const open = es().open.prep !== undefined ? es().open.prep : !p.allDone(); es().open.prep = !open; save(); refreshLab(); break; }
       case 'stir': l.setStirrer(!l.stirrer); save(); refreshLab(); break;
       case 'dose-size': doseSize = b.dataset.size === 'drop' ? 'drop' : Number(b.dataset.size); $$('[data-action="dose-size"]').forEach(function (q) { q.setAttribute('aria-pressed', String(q === b)); }); renderDynamic(true); break;
@@ -674,7 +718,7 @@
   document.addEventListener('change', function (ev) {
     const t = ev.target;
     if (T.onChange(ev)) return;
-    if (t.id === 'autoTake') { state.prefs.autoTake = t.checked; save(); return; }
+    if (t.id === 'deckIndicator') { es().indicator = t.value; save(); return; }
     const e = es();
     if (t.id === 'chkBand') { e.view.band = t.checked; save(); updateChart(); }
     if (t.id === 'chkModel') { e.view.model = t.checked; save(); updateChart(); }
@@ -730,7 +774,7 @@
     Object.keys(labs).forEach(function (id) { labs[id].update(dt); });
     if (pendingEndpoint && l.isSettled) recordEndpoint();
     const s = activeSeries();
-    if (autoPending && state.prefs.autoTake && l.isSettled && l.stable && s && !s.finished && l.meterReady) takeReading(true);
+    if (autoPending && state.prefs.capture !== 'manual' && l.isSettled && l.stable && s && !s.finished && l.meterReady) takeReading(true);
     renderer.setOptions({ targetReading: s && s.kind === 'half' && Number.isFinite(s.target) && l.burette.filled ? (s.startReading !== null ? s.startReading : l.burette.reading) + s.target : null });
     renderer.frame(dt);
     renderDynamic(false);

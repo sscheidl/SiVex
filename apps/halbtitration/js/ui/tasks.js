@@ -421,9 +421,14 @@
     if (role.goals) b += '<ul class="goals">' + role.goals.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>';
     const v0 = ex.vSample + ex.vWater;
     b += '<div class="kv"><span>Probe</span><span>' + fmt(ex.vSample, 2) + ' mL ' + esc(ex.sampleName) + ', c = ' + fmt(ex.cSample, 3) + ' mol/L</span><span>verdünnt</span><span>mit ' + fmt(ex.vWater, 0) + ' mL Wasser auf ' + fmt(v0, 0) + ' mL (Elektrode taucht ein)</span><span>Maßlösungen</span><span>NaOH(aq) oder HCl(aq), je 0,100 mol/L · Bürette 50 mL</span><span>Bedingungen</span><span>25 °C, pK_W = 14,00</span></div>';
-    const tq = C.TITRANT_QUESTION;
-    b += questionHtml(Object.assign({}, tq, { options: [opt('NaOH', 'Natronlauge NaOH(aq)', ex.titrant === 'NaOH'), opt('HCl', 'Salzsäure HCl(aq)', ex.titrant === 'HCl')] }));
-    b += '<div class="field"><label for="selIndicator">Indikator als zusätzliche Beobachtung (freiwillig)</label><select id="selIndicator">' + Ind.list().map(function (i) { return '<option value="' + i.id + '"' + (st.indicator === i.id ? ' selected' : '') + '>' + esc(i.name) + (i.range ? ' (pH ' + fmt(i.range[0], 1) + '–' + fmt(i.range[1], 1) + ')' : '') + '</option>'; }).join('') + '</select><div class="sub">Maßgeblich ist die pH-Messung. Gilt für eine noch unbenutzte bzw. die nächste frische Probe; die Eignung kannst du in der Vertiefung untersuchen.</div></div>';
+    const ta = st.answers.titrant || {};
+    const tName = function (k) { return Chem.TITRANTS[k].name + ' ' + Chem.TITRANTS[k].formula; };
+    b += '<div class="field" data-q="titrant"><label>Maßlösung</label>';
+    if (ta.status === 'ok' || ta.shown) b += '<div class="lk-note ok">✓ ' + esc(tName(ex.titrant)) + ' – passend.</div>';
+    else if (ta.status === 'wrong') b += '<div class="lk-note bad">✗ ' + esc(tName(ta.choice[0])) + ' passt nicht zu dieser Probe. Wähle an der Bürette (Vorbereitung ①) die andere Maßlösung.</div>';
+    else b += '<p class="lk-muted" style="margin:0">Wähle unten an der Bürette (Vorbereitung ①) die passende Maßlösung.</p>';
+    b += '<div class="lk-row" style="margin-top:6px">' + hintButton('q:titrant') + '</div>' + hintBox('q:titrant', C.TITRANT_QUESTION.hints) + '</div>';
+    b += '<p class="lk-muted">Einen Indikator kannst du als zusätzliche Beobachtung im Labor zugeben (Vorbereitung ④). Maßgeblich ist die pH-Messung; die Eignung untersuchst du in der Vertiefung.</p>';
     b += details('basics', 'Grundlagen (freiwillig)') + C.BASICS + '</details>';
     h += stepHtml('start', 1, 'Auftrag und Maßlösung', res.start, b, { openDefault: def('start') });
 

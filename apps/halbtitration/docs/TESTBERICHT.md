@@ -1,4 +1,4 @@
-# Testbericht Halbtitrationslabor 0.2.0
+# Testbericht Halbtitrationslabor 0.2.1
 
 Stand 29.10.2026. Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS**, **HOLD – failed**, **HOLD – incomplete**, **HOLD – unverified**.
 
@@ -19,7 +19,15 @@ Stand 29.10.2026. Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md
 - `tests/e2e/packages-results.json`
 - Screenshots in `docs/screenshots/`
 
-Grundlage der Überarbeitung: Review vom 29.10.2026 (Stand `9bd514b`, Befunde A–D) und der Überarbeitungsauftrag.
+Grundlage: Review vom 29.10.2026 (Stand `9bd514b`, Befunde A–D) und Überarbeitungsauftrag (0.2.0); Rückmeldung der Lehrkraft zur Bedienung im Labor (0.2.1). Alle Prüfungen unten liefen mit dem Stand 0.2.1.
+
+**Neu in 0.2.1 geprüft (E1):**
+
+- Vorbereitung in der Reihenfolge ① Bürette ② pH-Meter ③ Probe ④ Indikator ⑤ Rührer ⑥ Elektrode.
+- Die Erfassung steht standardmäßig auf „automatisch“.
+- Wählt man an der Bürette die falsche Maßlösung, bleibt sie leer, und das Bedienfeld gibt eine Rückmeldung.
+- Bei automatischer Erfassung entsteht nach einer Zugabe ohne Klick auf „Messwert übernehmen“ ein stabiler Messpunkt.
+- Indikatorzugabe über den Knopf im Labor (E4, E8).
 
 ## Gesamtbild
 
@@ -73,7 +81,7 @@ Alle Handlungen laufen über Klicks, Tippen und Eingaben. Die Laborzeit läuft m
 
 | Szenario | Status | Inhalt |
 | --- | --- | --- |
-| E1 Essigsäure (Kern) | PASS | Siehe unten. |
+| E1 Essigsäure (Kern, inkl. 0.2.1-Bedienung) | PASS | Siehe unten. |
 | E2 Ammoniak (Transfer) | PASS | Siehe unten. |
 | E3 Phosphorsäure (Vertiefung) | PASS | Siehe unten. |
 | E4 Glycin (Vertiefung) | PASS | Siehe unten. |
@@ -86,7 +94,8 @@ Alle Handlungen laufen über Klicks, Tippen und Eingaben. Die Laborzeit läuft m
 **E1 Essigsäure (Kern)**
 
 - Start im Labor mit Auftrag und leerer Kurve; kein Theorieblock, kein Eingangstest.
-- Falsche Maßlösung wird erkannt; die Bürette lässt sich dann nicht füllen.
+- Die falsche Maßlösung an der Bürette wird erkannt; die Bürette bleibt leer.
+- Bei automatischer Erfassung wächst die Kurve ohne Klick.
 - Falsche Antwort zum halben Umsatz → Tipp 1/3.
 - Kein Kurvenpunkt vor der ersten Messung (Pixelzählung).
 - Titrationskurve → ÄP-Marker an der eigenen Kurve geprüft → Fragen zum halben Umsatz → V(HÄP) → frische Probe, Zielmarke, Halbtitration → pH am Ziel → MWG-Trainer.
@@ -113,7 +122,7 @@ Alle Handlungen laufen über Klicks, Tippen und Eingaben. Die Laborzeit läuft m
 
 **E4 Glycin (Vertiefung)**
 
-- Bromthymolblau mit Endpunkt.
+- Bromthymolblau über den Indikatorknopf im Labor, mit Endpunkt.
 - ÄP 1 ok; ÄP 2 → „kein deutlicher Sprung“.
 - V(ÄP,2) abgeleitet und gekennzeichnet, V(HÄP,2) = 18 mL.
 - pKₛ2 = 14 − pH wird als Fehler erkannt.
