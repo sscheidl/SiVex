@@ -220,66 +220,100 @@ function sepFilled() {
   pour(e, 'A', 'S', { speed: 'fast' });
   return e;
 }
-test('V4: Schütteln nur mit Stopfen; Emulsion entmischt sich in Ruhe; Wasser liegt unten und fließt zuerst', () => {
+/** Wasser in B ablassen, an der Grenzfläche schließen, Öl in C ablassen. closeAt: Restwasser beim Schließen. */
+function drain(e, closeAt) {
+  act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
+  runUntil(e, (st) => st.objs.S.c.water < 6, 60, 0.05); e.act('setCock', 1);
+  runUntil(e, (st) => st.objs.S.c.water < closeAt, 60, 0.05); e.act('setCock', 0);
+  act(e, 'move', 'B', 'pB'); act(e, 'move', 'C', 'sepunder'); e.act('setCock', 2);
+  runUntil(e, (st) => M.liq(st.objs.S.c) < 0.02, 120, 0.05); e.act('setCock', 0);
+}
+/** Optionales Schütteln: Stopfen auf, Hahn zu, in die Hand nehmen, schütteln, einhängen, Stopfen ab. */
+function shakeOutside(e, settle) {
+  act(e, 'stopper', true);
+  act(e, 'move', 'S', 'hand');
+  act(e, 'shake');
+  act(e, 'move', 'S', 'sepring');
+  wait(e, settle);
+  act(e, 'stopper', false);
+}
+test('V4 (TV06): sauber getrennt ohne Schütteln ist ein voller Erfolg; Wasser liegt unten und fließt zuerst', () => {
+  const e = sepFilled();
+  wait(e, 20); // kurz absetzen lassen: Beim Eingießen entstehen einige Tröpfchen
+  act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2); wait(e, 2);
+  assert.ok(e.state.objs.B.c.water > 6 && e.state.objs.B.c.oil < 0.1, 'zuerst die untere Wasserschicht: ' + JSON.stringify(e.state.objs.B.c));
+  e.act('setCock', 0); act(e, 'move', 'B', 'pB'); act(e, 'move', 'B', 'sepunder');
+  const e2 = sepFilled(); wait(e2, 20); drain(e2, 0.4);
+  assert.equal(e2.state.flags.maxEmul < 0.6, true, 'nicht geschüttelt');
+  assert.ok(e2.evaluate().done, JSON.stringify(e2.evaluate().criteria));
+  assert.ok(!e2.evaluate().criteria.some((c) => /schüttel/i.test(c.text)), 'kein Schüttelkriterium');
+  balanced(e2);
+});
+test('V4 (TV07): Schütteln nur außerhalb des Rings mit Stopfen und geschlossenem Hahn; danach Trennung erfolgreich', () => {
   const e = sepFilled();
   const S = e.state.objs.S;
-  assert.equal(act(e, 'shake').ok, false, 'ohne Stopfen nicht schütteln');
-  act(e, 'stopper', true); act(e, 'shake');
+  act(e, 'stopper', true);
+  assert.equal(act(e, 'shake').ok, false, 'im Ring wird nicht geschüttelt');
+  act(e, 'stopper', false);
+  assert.equal(act(e, 'move', 'S', 'hand').ok, false, 'ohne Stopfen nicht herausnehmen');
+  act(e, 'stopper', true); e.act('setCock', 1);
+  assert.equal(act(e, 'move', 'S', 'hand').ok, false, 'mit offenem Hahn nicht herausnehmen');
+  e.act('setCock', 0);
+  assert.equal(act(e, 'move', 'S', 'pS').ok, false, 'gefüllt nicht ablegen');
+  assert.ok(act(e, 'move', 'S', 'hand').ok);
+  assert.equal(S.at, 'hand');
+  assert.ok(act(e, 'shake').ok);
   assert.ok(S.emul > 0.9, 'Emulsion nach dem Schütteln');
   assert.equal(M.describe(S).kind, 'emulsion');
-  wait(e, 10); const mid = S.emul;
-  wait(e, 50);
+  act(e, 'move', 'S', 'sepring');
+  wait(e, 10); const mid = S.emul; wait(e, 50);
   assert.ok(mid < 0.6 && S.emul < 0.01, 'entmischt sich mit der Zeit');
-  assert.equal(M.describe(S).kind, 'layers');
-  act(e, 'stopper', false); act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
-  wait(e, 2);
-  const B = e.state.objs.B;
-  assert.ok(B.c.water > 6 && B.c.oil < 0.1, 'zuerst fließt die untere Wasserschicht: ' + JSON.stringify(B.c));
+  act(e, 'stopper', false);
+  drain(e, 0.4);
+  assert.ok(e.evaluate().done, JSON.stringify(e.evaluate().criteria));
   balanced(e);
 });
-test('V4: Stopfen beim Ablassen → Unterdruck stoppt den Fluss', () => {
+test('V4 (TV09): Stopfen ist ein eigenes Objekt; Unterdruck bei aufgesetztem Stopfen stoppt den Fluss', () => {
   const e = sepFilled();
-  act(e, 'stopper', true); act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
+  const stop = e.state.objs.stop;
+  assert.equal(stop.at, 'pStop');
+  act(e, 'stopper', true);
+  assert.equal(stop.at, 'S'); assert.equal(e.state.objs.S.stopper, true);
+  act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
   wait(e, 10);
   assert.ok(M.liq(e.state.objs.B.c) < 1, 'kaum etwas abgelaufen');
   assert.ok(e.state.warned.vacuum != null);
+  e.act('setCock', 0); act(e, 'stopper', false);
+  assert.equal(stop.at, 'pStop'); assert.equal(e.state.objs.S.stopper, false);
+  for (const lv of [1, 2, 0]) { e.act('setCock', lv); assert.equal(e.state.objs.S.cock, lv); }
 });
-test('V4: sauberes Scheiden erreicht das Ziel; zu frühes Ablassen und zu spätes Schließen verunreinigen', () => {
-  const run = (settle, closeAt) => {
-    const e = sepFilled();
-    act(e, 'stopper', true); act(e, 'shake'); wait(e, settle); act(e, 'stopper', false);
-    act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
-    runUntil(e, (st) => st.objs.S.c.water < 6, 60, 0.05); e.act('setCock', 1);
-    runUntil(e, (st) => st.objs.S.c.water < closeAt, 60, 0.05); e.act('setCock', 0);
-    act(e, 'move', 'B', 'pB'); act(e, 'move', 'C', 'sepunder'); e.act('setCock', 2);
-    runUntil(e, (st) => M.liq(st.objs.S.c) < 0.02, 120, 0.05);
-    return e;
-  };
-  const good = run(60, 0.4);
-  assert.ok(good.evaluate().done, JSON.stringify(good.evaluate().criteria));
-  const early = run(1, 0.4);
+test('V4: zu frühes Ablassen nach dem Schütteln und zu spätes Schließen verunreinigen', () => {
+  const early = sepFilled(); shakeOutside(early, 1); drain(early, 0.4);
   assert.ok(early.state.objs.B.c.oil > 1.5, 'zu früh: Öltröpfchen im Wasser ' + early.state.objs.B.c.oil);
-  const late = run(60, -1);
-  assert.ok(late.state.objs.B.c.oil > 1.5 || late.state.objs.C.c.water > 1.5 || !late.evaluate().done, 'zu spät geschlossen: Fraktion verunreinigt');
-  balanced(good); balanced(early);
+  const late = sepFilled(); wait(late, 20); drain(late, -1);
+  assert.equal(late.evaluate().done, false, 'zu spät geschlossen: Fraktion verunreinigt');
+  balanced(early); balanced(late);
 });
-test('V4: verunreinigte Fraktion lässt sich zurückgießen und erneut scheiden', () => {
-  const e = sepFilled();
-  act(e, 'stopper', true); act(e, 'shake'); act(e, 'stopper', false);
-  act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
-  runUntil(e, (st) => M.liq(st.objs.S.c) < 0.02, 60, 0.05);
-  assert.equal(e.evaluate().done, false);
-  act(e, 'move', 'B', 'pB');
-  assert.equal(pour(e, 'B', 'S', { speed: 'fast' }).ok, false, 'bei offenem Hahn wird nicht nachgegossen');
-  e.act('setCock', 0);
-  pour(e, 'B', 'S', { speed: 'fast' });
-  wait(e, 60);
-  act(e, 'move', 'C', 'sepunder'); e.act('setCock', 2);
-  runUntil(e, (st) => st.objs.S.c.water < 0.4, 60, 0.05); e.act('setCock', 0);
-  act(e, 'move', 'C', 'pC'); act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
-  runUntil(e, (st) => M.liq(st.objs.S.c) < 0.02, 60, 0.05);
-  assert.ok(e.evaluate().done, JSON.stringify(e.evaluate().criteria));
-  balanced(e);
+test('V4 (TV08): verunreinigte Fraktion aus jedem Becherglas zurückgießen und erneut scheiden', () => {
+  for (const back of ['B', 'C', 'A']) {
+    const e = sepFilled();
+    act(e, 'move', 'B', 'sepunder'); e.act('setCock', 2);
+    runUntil(e, (st) => st.objs.S.c.oil < 40, 60, 0.05); // zu spät geschlossen
+    e.act('setCock', 0); act(e, 'move', 'B', 'pB');
+    if (back !== 'B') { pour(e, 'B', back, { speed: 'fast' }); }
+    assert.equal(e.evaluate().done, false);
+    e.act('setCock', 1);
+    const refused = act(e, 'pour', back, 'S');
+    assert.equal(refused.ok, false, 'bei offenem Hahn wird nicht nachgegossen');
+    assert.match(refused.message, /Hahn/);
+    e.act('setCock', 0);
+    pour(e, back, 'S', { speed: 'fast' });
+    pour(e, 'A', 'S', { speed: 'fast' });
+    wait(e, 20);
+    drain(e, 0.4);
+    assert.ok(e.evaluate().done, back + ': ' + JSON.stringify(e.evaluate().criteria));
+    balanced(e);
+  }
 });
 
 // ------------------------------------------------------------------ Versuch 5
@@ -347,6 +381,77 @@ test('V5: alternative Reihenfolge (lösen, filtrieren, Magnet am Rückstand, ein
   pour(e, 'E', 'D');
   e.act('heat', 2); runUntil(e, (st) => st.objs.D.c.water < 2, 900); e.act('heat', 0); runUntil(e, (st) => st.objs.D.c.water < 0.01, 600);
   assert.ok(e.evaluate().done, JSON.stringify(e.evaluate().criteria));
+  balanced(e);
+});
+
+
+// ------------------------------------------------------------------ 0.2.0: Entnahmen, Spritzflasche, Bilanzen
+test('V2 (TV10): Filterpapier mit Rückstand auf das Uhrglas – bilanztreu, Trennziel bleibt erreicht', () => {
+  const e = M.createEngine(2);
+  act(e, 'insertPaper', 'F'); act(e, 'move', 'F', 'ring'); act(e, 'move', 'E', 'under');
+  for (let i = 0; i < 8 && e.state.objs.A.c.water > 0.1; i++) { act(e, 'stir', 'A'); pour(e, 'A', 'F', { speed: 'fast' }); wait(e, 3); }
+  const dripping = act(e, 'transferPaper', 'F', 'U');
+  assert.equal(dripping.ok, false, 'während es noch tropft: abgewiesen');
+  wait(e, 60);
+  assert.ok(e.evaluate().done, 'vorher erreicht');
+  assert.equal(act(e, 'transferPaper', 'F', 'B').ok, false, 'nur auf ein Uhrglas');
+  const before = Object.assign({}, e.state.objs.F.c);
+  assert.ok(act(e, 'transferPaper', 'F', 'U').ok);
+  const U = e.state.objs.U, F = e.state.objs.F;
+  assert.equal(U.paper, true); assert.equal(F.paper, false);
+  near(sand(U), before.sandC + before.sandF, 1e-9, 'Sand vollständig übertragen');
+  near(U.c.water, before.water, 0.01, 'anhaftendes Wasser mit übertragen (abzüglich Verdunstung)');
+  assert.ok(M.isEmpty(F.c));
+  assert.ok(e.evaluate().done, 'Trennziel nach dem Überführen weiterhin erreicht: ' + JSON.stringify(e.evaluate().criteria));
+  assert.equal(act(e, 'transferPaper', 'F', 'U').ok, false, 'kein zweites Papier');
+  assert.ok(act(e, 'insertPaper', 'F').ok, 'neues Papier möglich');
+  balanced(e);
+});
+test('V3 (TV11): Kristalle erst nach dem Abkühlen auf das Uhrglas – Menge erhalten, Ziel bleibt erreicht', () => {
+  const e = M.createEngine(3);
+  pour(e, 'A', 'D'); e.act('heat', 2);
+  runUntil(e, (st) => st.objs.D.c.water < 6, 900);
+  assert.equal(act(e, 'scrape', 'D', 'U').ok, false, 'heiß/nass: abgewiesen');
+  runUntil(e, (st) => st.objs.D.c.water < 2, 900); e.act('heat', 0);
+  runUntil(e, (st) => st.objs.D.c.water < 0.01, 600);
+  const hot = act(e, 'scrape', 'D', 'U');
+  assert.equal(hot.ok, false); assert.match(hot.message, /heiß/);
+  runUntil(e, (st) => st.objs.D.temp < M.HANDLE_T, 900);
+  const salt = e.state.objs.D.c.saltS;
+  assert.ok(act(e, 'scrape', 'D', 'U').ok);
+  near(e.state.objs.U.c.saltS, salt, 1e-9, 'Salzmasse erhalten');
+  assert.ok(M.isEmpty(e.state.objs.D.c));
+  assert.ok(e.evaluate().done, JSON.stringify(e.evaluate().criteria));
+  balanced(e);
+});
+test('Spritzflasche (TV04): Wasser fließt nur während des sichtbaren Strahls; genau 5 bzw. 20 mL, auch in leere Gefäße und den Filter', () => {
+  const e = M.createEngine(2);
+  for (const [amt, tgt] of [[5, 'B'], [20, 'B']]) {
+    e.act('setWashAmount', amt);
+    const w0 = e.state.objs[tgt].c.water;
+    e.act('wash', tgt);
+    e.advance(M.WASH_WIN[0] - 0.05);
+    near(e.state.objs[tgt].c.water, w0, 0.001, 'vor dem Strahl kein Wasser (nur Verdunstung)');
+    act(e, 'wash', tgt);
+    near(e.state.objs[tgt].c.water - w0, amt, 0.01, amt + ' mL');
+  }
+  act(e, 'insertPaper', 'F'); act(e, 'move', 'F', 'ring'); act(e, 'move', 'E', 'under');
+  const ev0 = e.state.lost.evaporated.water;
+  e.act('setWashAmount', 5); act(e, 'wash', 'F'); wait(e, 30);
+  near(e.state.objs.E.c.water + e.state.objs.F.c.water, 5, 0.03, 'Spülwasser im Filter und Kolben (bis auf Verdunstung in 30 s)'); void ev0;
+  balanced(e);
+});
+test('TV16/TV18: keine negativen oder ungültigen Mengen; ein zweiter Handgriff während eines laufenden wird abgewiesen', () => {
+  const e = M.createEngine(5);
+  assert.ok(e.act('pour', 'M', 'A').ok);
+  assert.equal(e.act('pour', 'M', 'A').ok, false, 'Doppelklick: kein zweiter Transfer');
+  assert.equal(e.act('stir', 'A').ok, false);
+  runUntil(e, (st) => st.op && st.op.phase === 'flow', 5, 0.05); e.act('stopPour'); runUntil(e, (st) => !st.op, 5, 0.05);
+  for (const n of M.EXP_IDS) {
+    const x = M.createEngine(n);
+    const st = x.state;
+    for (const o of Object.values(st.objs)) if (o.c) for (const k of M.KEYS) assert.ok(Number.isFinite(o.c[k]) && o.c[k] >= 0, `${n}/${o.id}/${k}`);
+  }
   balanced(e);
 });
 

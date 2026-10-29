@@ -24,18 +24,18 @@
     { id: 'reinstoff', label: 'Reinstoff (kein Gemisch)' }
   ];
   const PRINCIPLES = [
-    { id: 'dichte', label: 'Dichte (der schwerere Stoff sinkt nach unten)' },
-    { id: 'loes', label: 'Löslichkeit in Wasser (löslich / unlöslich)' },
-    { id: 'misch', label: 'Mischbarkeit zweier Flüssigkeiten' },
-    { id: 'korn', label: 'Korngröße im Vergleich zu den Filterporen (Trennkriterium)' },
+    { id: 'dichte', label: 'Dichte: Der Stoff mit der größeren Dichte sinkt nach unten, die Flüssigkeit mit der geringeren Dichte liegt oben.' },
+    { id: 'loes', label: 'Löslichkeit eines Feststoffs in Wasser (z. B. Kochsalz löst sich, Sand nicht)' },
+    { id: 'misch', label: 'Nichtmischbarkeit zweier Flüssigkeiten (sie bilden zwei Schichten)' },
+    { id: 'korn', label: 'Korngröße: Körner, die größer als die Filterporen sind, werden zurückgehalten (Trennkriterium)' },
     { id: 'magn', label: 'Magnetismus' },
-    { id: 'fluecht', label: 'Flüchtigkeit: Wasser verdampft, Salz nicht' },
+    { id: 'fluecht', label: 'Flüchtigkeit (Verdampfbarkeit): Wasser verdampft, Salz nicht' },
     { id: 'farbe', label: 'Farbe' }
   ];
   const PRINCIPLE_WHY = {
-    dichte: 'Dichte: Was dichter ist, sinkt nach unten – beim Absetzen (Sand) und bei zwei Flüssigkeitsschichten (Öl oben).',
-    loes: 'Löslichkeit: Sand löst sich nicht in Wasser, Kochsalz schon.',
-    misch: 'Mischbarkeit: Öl und Wasser mischen sich nicht, deshalb entstehen zwei Schichten.',
+    dichte: 'Dichte: Sand hat eine größere Dichte als Wasser und sinkt nach unten; Öl hat eine geringere Dichte als Wasser und liegt oben.',
+    loes: 'Löslichkeit: Kochsalz löst sich in Wasser, Sand nicht.',
+    misch: 'Nichtmischbarkeit: Öl und Wasser lösen sich nicht ineinander, deshalb entstehen zwei Schichten.',
     korn: 'Korngröße: Ungelöste Körner sind größer als die Poren des Filterpapiers. Das ist ein Trennkriterium, aber keine Kenneigenschaft des Stoffes.',
     magn: 'Magnetismus: Nur Eisen wird vom Magneten angezogen.',
     fluecht: 'Flüchtigkeit: Beim Erhitzen verdampft das Wasser, das Salz bleibt zurück.',
@@ -49,9 +49,11 @@
       problem: 'In Becherglas A sind Sand und Wasser. Trenne möglichst klares Wasser vom Sand ab, ohne Filter. Rühre zuerst auf und beobachte, was dann passiert.',
       material: 'Becherglas A mit 100 mL Wasser und 20 g Sand, zwei leere Bechergläser (B, C), Glasstab',
       cls: { q: 'Sand und Wasser nach dem Aufrühren:', hom: 'het', kind: 'suspension' },
-      prin: ['dichte', 'loes'],
-      obsHint: 'Was siehst du nach dem Aufrühren, beim Warten und beim Abgießen? (Trübung, Bodensatz, Farbe …)',
-      explHint: 'Warum setzt sich der Sand ab? Warum wird das abgegossene Wasser manchmal trüb?',
+      prin: ['dichte'],
+      prinNeutral: { loes: 'Dass sich Sand nicht löst, ist die Voraussetzung dafür, dass er sich absetzen kann; getrennt wird aber durch den Dichteunterschied. Dein Kreuz ist nicht falsch, aber nicht nötig.' },
+      obsHint: 'Beschreibe, was du nach dem Aufrühren, beim Warten und beim Abgießen beobachtest.',
+      explHint: 'Erkläre deine Beobachtungen.',
+      sample: 'Nach dem Umrühren ist das Gemisch gleichmäßig trüb und bräunlich. In Ruhe sinkt der Sand nach unten; über dem Bodensatz wird das Wasser von oben her klar. Beim vorsichtigen Abgießen läuft klares Wasser in das zweite Becherglas, der nasse Sand bleibt zurück. Gießt man zu früh oder zu schnell, ist das abgegossene Wasser trüb.',
       tips: [
         () => 'Was passiert mit dem Sand, wenn das Gemisch eine Weile ruhig steht?',
         (st, ev) => !ok(ev, 'stirred') ? 'Wähle den Glasstab und tippe Becherglas A an, damit eine trübe Suspension entsteht. Beobachte dann den Bereich über dem Sand – mit dem Zeitraffer geht das Warten schneller.'
@@ -69,68 +71,76 @@
     2: {
       goal: 'Trennziel: Sand als Rückstand und klares Wasser als Filtrat gewinnen.',
       problem: 'Ein frischer Ansatz Sand und Wasser soll vollständiger getrennt werden als beim Dekantieren. Richte die Filtration selbst ein und filtriere. Vergleiche mit Versuch 1.',
-      material: 'Becherglas A mit 100 mL Wasser und 20 g Sand, Glasstab, Rundfilter, Trichter, Stativ mit Filtrierring, Erlenmeyerkolben, Becherglas B, Spritzflasche mit Wasser',
+      material: 'Becherglas A mit 100 mL Wasser und 20 g Sand, Glasstab, Rundfilter, Trichter, Stativ mit Filtrierring, Erlenmeyerkolben, Becherglas B, Uhrglas, Spritzflasche mit Wasser',
       cls: { q: 'Sand und Wasser nach dem Aufrühren:', hom: 'het', kind: 'suspension' },
-      prin: ['korn', 'loes'],
-      obsHint: 'Was siehst du im Filter, unter dem Trichter und im Auffanggefäß? Wie unterscheidet sich das Ergebnis von Versuch 1?',
-      explHint: 'Warum bleibt der Sand im Papier, das Wasser aber nicht?',
+      prin: ['korn'],
+      prinNeutral: { loes: 'Dass der Sand ungelöst bleibt, ist die Voraussetzung; zurückgehalten wird er wegen seiner Korngröße. Dein Kreuz ist nicht falsch, aber nicht nötig.' },
+      obsHint: 'Beschreibe, was du beim Filtrieren beobachtest – im Trichter und im Auffanggefäß. Vergleiche mit Versuch 1.',
+      explHint: 'Erkläre deine Beobachtungen.',
+      sample: 'Die trübe Suspension läuft in den Trichter. Durch das Filterpapier tropft eine klare, farblose Flüssigkeit in den Erlenmeyerkolben. Im Filterpapier bleibt nasser Sand liegen. Das Filtrat ist klarer als das abgegossene Wasser beim Dekantieren.',
       tips: [
         () => 'Was muss im Trichter liegen, damit der Sand zurückgehalten wird – und wohin soll die durchlaufende Flüssigkeit?',
         (st, ev) => !ok(ev, 'paper') ? 'Lege ein Filterpapier in den Trichter, setze den Trichter in den Ring am Stativ und stelle ein Auffanggefäß darunter, bevor du gießt.'
           : ok(ev, 'filtrate') && !ok(ev, 'residue') ? 'Ein Teil des Sandes ist noch in Becherglas A. Gib mit der Spritzflasche wenig Wasser dazu, rühre auf und gieße den Rest auf den Filter.'
           : 'Rühre auf und gieße die Suspension auf den Filter. Läuft der Trichter voll, warte, bis Flüssigkeit durchgelaufen ist, und gieße dann nach.',
-        () => 'Filterpapier antippen → Trichter antippen (Papier einlegen). Trichter antippen → Ring am Stativ antippen. Erlenmeyerkolben antippen → Platz unter dem Trichter antippen. Glasstab → A (aufrühren), A → Trichter (gießen, „zügig“ ist hier in Ordnung). Rest mit der Spritzflasche ausspülen.'
+        () => 'Filterpapier antippen → Trichter antippen (Papier einlegen). Trichter antippen → Ring am Stativ antippen. Erlenmeyerkolben antippen → Platz unter dem Trichter antippen. Glasstab → A (aufrühren), A → Trichter (gießen, „zügig“ ist hier in Ordnung). Rest mit der Spritzflasche ausspülen. Zum Schluss kannst du das Filterpapier mit dem Rückstand auf das Uhrglas legen (Trichter → Uhrglas).'
       ],
       solution: [
         'Filterpapier in den Trichter legen, Trichter in den Filtrierring setzen, Erlenmeyerkolben als Vorlage darunterstellen.',
         'Gemisch aufrühren und auf den Filter gießen; bei vollem Trichter warten und nachgießen.',
         'Restlichen Sand mit wenig Wasser aus der Spritzflasche ausspülen und ebenfalls auf den Filter geben.',
-        'Ergebnis: Sand bleibt als Rückstand im Filterpapier, klares Filtrat im Erlenmeyerkolben. Etwas Wasser bleibt im feuchten Rückstand hängen. Anders als beim Dekantieren gelangt kein Sand ins Wasser.'
+        'Ergebnis: Sand bleibt als Rückstand im Filterpapier, klares Filtrat im Erlenmeyerkolben. Etwas Wasser bleibt im feuchten Rückstand hängen. Anders als beim Dekantieren gelangt kein Sand ins Wasser.',
+        'Wenn nichts mehr tropft: Trichter antippen, dann das Uhrglas – das Filterpapier mit dem Rückstand wird auf das Uhrglas gelegt.'
       ]
     },
     3: {
       goal: 'Trennziel: festes Kochsalz aus der Kochsalzlösung gewinnen.',
       problem: 'In Becherglas A ist eine klare Kochsalzlösung. Gewinne das Salz als Feststoff zurück. Beobachte genau, was mit dem Wasser und mit dem Salz passiert.',
-      material: 'Becherglas A mit 40 mL Kochsalzlösung (8 g Kochsalz gelöst), Abdampfschale auf einer Heizplatte, Glasstab',
+      material: 'Becherglas A mit 40 mL Kochsalzlösung (8 g Kochsalz gelöst), Abdampfschale auf einer Heizplatte, Uhrglas, Glasstab, Spatel',
       cls: { q: 'Die klare Kochsalzlösung ist …', hom: 'hom', kind: 'loesung' },
       prin: ['fluecht'],
-      obsHint: 'Was siehst du beim Erhitzen, kurz vor dem Trocknen und danach? (Flüssigkeitsstand, Dunst, Blasen, Kristalle …)',
-      explHint: 'Was geschieht mit dem Wasser und was mit dem Salz?',
+      prinNeutral: { loes: 'Dass das Kochsalz gelöst ist, ist die Ausgangslage; getrennt wird durch die unterschiedliche Flüchtigkeit. Dein Kreuz ist nicht falsch, aber nicht nötig.' },
+      obsHint: 'Beschreibe, was du während des Erwärmens und nach dem Abkühlen beobachtest.',
+      explHint: 'Erkläre deine Beobachtungen.',
+      sample: 'Die klare Lösung wird warm und beginnt zu sieden. Über der Schale steigt weißer Dampf auf. Die Flüssigkeit wird weniger, am Rand und am Boden entstehen weiße, würfelförmige Kristalle. Kurz vor dem Trocknen knistert und spritzt es. Nach dem Abkühlen liegen trockene, weiße Kristalle in der Schale.',
       tips: [
         () => 'Welcher Bestandteil der Lösung lässt sich durch Erhitzen entfernen – und welcher bleibt zurück?',
         (st, ev) => st.objs.D.c.water + st.objs.D.c.saltD < 0.5 && st.objs.A.c.water > 1 ? 'Gieße die Lösung zuerst in die Abdampfschale, dann schalte die Heizplatte ein.'
           : st.plate && st.plate.level === 0 && st.objs.D.c.water > 1 ? 'Schalte die Heizplatte ein. Mit dem Zeitraffer siehst du schneller, wie der Flüssigkeitsstand sinkt.'
-          : 'Wenn nur noch wenig Flüssigkeit da ist, beginnt das Salz zu spritzen. Schalte dann herunter oder aus – die Restwärme trocknet das Salz.',
-        () => 'Becherglas A antippen → Abdampfschale antippen (gießen). Heizplatte „hoch“. Zeitraffer 30×. Wenn nur noch ein Rest Flüssigkeit da ist: Heizplatte „aus“ und warten, bis die Kristalle trocken sind.'
+          : 'Wenn nur noch wenig Flüssigkeit da ist, beginnt das Salz zu spritzen. Schalte dann herunter oder aus – die Restwärme trocknet das Salz. Nach dem Abkühlen kannst du die Kristalle auf das Uhrglas überführen.',
+        () => 'Becherglas A antippen → Abdampfschale antippen (gießen). Heizplatte „hoch“. Zeitraffer 30×. Wenn nur noch ein Rest Flüssigkeit da ist: Heizplatte „aus“ und warten, bis die Kristalle trocken und abgekühlt sind. Dann Abdampfschale antippen → Uhrglas antippen.'
       ],
       solution: [
         'Kochsalzlösung in die Abdampfschale gießen und die Heizplatte einschalten.',
         'Die Lösung erwärmt sich, siedet schließlich; der Flüssigkeitsstand sinkt, am Rand bilden sich Kristalle.',
         'Kurz vor dem Trocknen die Heizplatte ausschalten; die Restwärme verdampft den Rest.',
-        'Ergebnis: weiße Kochsalzkristalle in der Schale. Das Wasser ist als Wasserdampf entwichen und wird hier nicht zurückgewonnen.'
+        'Ergebnis: weiße Kochsalzkristalle in der Schale. Das Wasser ist als (unsichtbarer) Wasserdampf entwichen und wird hier nicht zurückgewonnen; die sichtbare weiße Wolke sind kondensierte Wassertröpfchen.',
+        'Nach dem Abkühlen die Kristalle mit dem Spatel auf das Uhrglas überführen (Abdampfschale antippen, dann Uhrglas).'
       ]
     },
     4: {
       goal: 'Trennziel: Wasser und Öl im Scheidetrichter getrennt auffangen.',
-      problem: 'In Becherglas A sind Öl und Wasser. Schüttle beide im Scheidetrichter, beobachte, was dabei und danach passiert, und fange Wasser und Öl getrennt auf.',
-      material: 'Becherglas A mit 50 mL Wasser und 50 mL Speiseöl, Scheidetrichter mit Stopfen und Hahn, Stativ mit Ring, Bechergläser B und C',
-      cls: { q: 'Öl und Wasser direkt nach dem Schütteln:', hom: 'het', kind: 'emulsion' },
+      problem: 'In Becherglas A sind Öl und Wasser. Trenne sie mit dem Scheidetrichter und fange Wasser und Öl in getrennten Bechergläsern auf. Freiwilliger Zusatz: Verschließe den Scheidetrichter, nimm ihn aus dem Ring, schüttle ihn und beobachte, was danach passiert.',
+      material: 'Becherglas A mit 50 mL Wasser und 50 mL Speiseöl, Scheidetrichter mit Hahn, Stopfen, Stativ mit Ring, Bechergläser B und C',
+      cls: { q: 'Öl und Wasser bilden ein Gemisch aus zwei Flüssigkeiten. Fachbegriff für dieses Gemisch:', hom: 'het', kind: 'emulsion' },
       prin: ['misch', 'dichte'],
-      obsHint: 'Was siehst du beim Schütteln, beim Stehenlassen und beim Ablassen? (Tröpfchen, Trübung, Schichten, Grenzfläche …)',
-      explHint: 'Warum liegt das Wasser unten? Warum entstehen nach dem Schütteln wieder zwei Schichten?',
+      prinNeutral: { loes: 'Gemeint ist hier die Löslichkeit eines Feststoffs. Dass sich Öl und Wasser nicht ineinander lösen, beschreibt die Nichtmischbarkeit – dieses Kreuz passt genauer. Dein Kreuz wird nicht als Fehler gewertet.' },
+      obsHint: 'Beschreibe, was du beim Einfüllen, beim Stehenlassen und beim Ablassen beobachtest – und beim Schütteln, falls du es ausprobierst.',
+      explHint: 'Erkläre deine Beobachtungen.',
+      sample: 'Im Scheidetrichter bilden sich zwei klare Schichten: oben gelbes Öl, unten farbloses Wasser, dazwischen eine scharfe Grenzfläche. Beim Öffnen des Hahns läuft zuerst das Wasser aus, die Grenzfläche sinkt zum Hahn. Danach läuft das Öl in das andere Becherglas. Nach dem Schütteln ist das Gemisch trüb mit vielen gelben Tröpfchen; nach einiger Zeit entstehen wieder zwei Schichten.',
       tips: [
         () => 'Welche Flüssigkeit liegt unten – und wo hat der Scheidetrichter seinen Auslauf?',
-        (st, ev) => !ok(ev, 'shaken') ? 'Hänge den Scheidetrichter in den Ring, gieße das Gemisch hinein, setze den Stopfen auf und schüttle.'
-          : (st.objs.S.emul > 0.15 ? 'Warte, bis sich wieder zwei klare Schichten gebildet haben, bevor du den Hahn öffnest.'
-          : 'Nimm den Stopfen ab, stelle ein Becherglas unter den Hahn und lass die untere Schicht ab. Schließe den Hahn, wenn die Grenzfläche den Hahn erreicht – zuletzt auf „Tropfen“ stellen.'),
-        () => 'Scheidetrichter → Ring. A → Scheidetrichter (gießen). „Stopfen auf“, „Schütteln“. Warten (Zeitraffer), bis die Tröpfchen verschwunden sind. „Stopfen ab“. B → Platz unter dem Hahn. Hahn „offen“, kurz vor der Grenzfläche „Tropfen“, dann „zu“. B zurück, C unter den Hahn, Hahn öffnen: Öl läuft in C.'
+        (st, ev) => st.objs.S.at !== 'sepring' && M_liq(st.objs.S) < 1 ? 'Hänge den Scheidetrichter in den Ring und gieße das Gemisch hinein (Hahn geschlossen).'
+          : st.objs.S.emul > 0.15 ? 'Warte, bis sich wieder zwei klare Schichten gebildet haben, bevor du den Hahn öffnest.'
+          : st.objs.S.stopper ? 'Nimm vor dem Ablassen den Stopfen ab – sonst kann keine Luft nachströmen.'
+          : 'Stelle ein Becherglas unter den Hahn und lass die untere Schicht ab. Schließe den Hahn, wenn die Grenzfläche den Hahn erreicht – zuletzt auf „Tropfen“ stellen. Eine verunreinigte Fraktion kannst du zurückgießen und erneut trennen.',
+        () => 'Scheidetrichter → Ring. A → Scheidetrichter (gießen). Becherglas B → Platz unter dem Hahn. Hahn am Scheidetrichter antippen (Tropfen, nochmals: offen), kurz vor der Grenzfläche auf „Tropfen“, dann „zu“. B antippen und nochmals antippen (zurück), C unter den Hahn, Hahn öffnen: Öl läuft in C. Schütteln ist freiwillig: Stopfen auf, Hahn zu, Scheidetrichter → „in die Hand“, Schütteln, zurück in den Ring, warten, Stopfen ab.'
       ],
       solution: [
-        'Scheidetrichter in den Ring hängen, Hahn zu, Gemisch hineingießen.',
-        'Stopfen aufsetzen und schütteln: Öltröpfchen verteilen sich im Wasser – eine trübe Emulsion entsteht.',
-        'Stehen lassen: Die Tröpfchen steigen auf und vereinigen sich wieder; es bilden sich zwei Schichten, Öl oben.',
-        'Stopfen abnehmen, Becherglas B unter den Hahn, die untere Wasserschicht ablassen und an der Grenzfläche schließen.',
-        'Vorlage wechseln (Becherglas C) und das Öl ablassen. Ergebnis: Wasser in B, Öl in C.'
+        'Scheidetrichter in den Ring hängen, Hahn zu, Gemisch hineingießen. Öl und Wasser bilden zwei Schichten, Öl oben.',
+        'Becherglas B unter den Hahn stellen, die untere Wasserschicht ablassen und an der Grenzfläche schließen (zuletzt tropfenweise).',
+        'Vorlage wechseln (Becherglas C) und das Öl ablassen. Ergebnis: Wasser in B, Öl in C.',
+        'Freiwillig: Stopfen aufsetzen, Hahn schließen, Scheidetrichter aus dem Ring nehmen und schütteln – Öltröpfchen verteilen sich, eine trübe Emulsion entsteht. Wieder einhängen, stehen lassen, bis sich die Schichten neu gebildet haben, Stopfen abnehmen und wie oben trennen.'
       ]
     },
     5: {
@@ -139,8 +149,10 @@
       material: 'Porzellanschale mit 5 g Eisen, 10 g Sand, 5 g Kochsalz, Magnet in einer Kunststofftüte, Uhrglas, Spritzflasche, Becherglas A, Glasstab, Rundfilter, Trichter im Filtrierring mit Erlenmeyerkolben, Abdampfschale auf Heizplatte',
       cls: { q: 'Das Ausgangsgemisch aus Eisen, Sand und Kochsalz ist …', hom: 'het', kind: 'gemenge' },
       prin: ['magn', 'loes', 'korn', 'fluecht'],
-      obsHint: 'Notiere deine Schritte und was du jeweils siehst (am Magneten, beim Lösen, im Filter, beim Eindampfen).',
-      explHint: 'Welche Eigenschaft nutzt jeder Schritt? Warum ist die Reihenfolge sinnvoll?',
+      prinNeutral: { dichte: 'Absetzen kann in deiner Trennkette vorkommen, ist aber kein eigener Trennschritt für einen der drei Stoffe. Dein Kreuz ist nicht falsch, aber nicht nötig.' },
+      obsHint: 'Beschreibe deine Schritte und was du dabei jeweils beobachtest.',
+      explHint: 'Erkläre, welche Eigenschaft du bei jedem Schritt genutzt hast.',
+      sample: 'Am Magneten bleiben nur schwarze Eisenkörner hängen; sie lassen sich auf dem Uhrglas abstreifen. Nach Zugabe von Wasser und Umrühren sind die weißen Salzkörner nicht mehr zu sehen, der Sand bleibt am Boden. Beim Filtrieren bleibt nasser Sand im Papier, ein klares Filtrat läuft durch. Beim Eindampfen des Filtrats entstehen weiße Kristalle.',
       tips: [
         () => 'Welcher der drei Stoffe lässt sich ohne Wasser abtrennen? Welcher löst sich in Wasser, welcher nicht?',
         (st, ev) => !ok(ev, 'iron') ? 'Fang mit dem Eisen an: Magnet antippen, dann die Porzellanschale – danach das Eisen auf dem Uhrglas abstreifen. Wiederhole das, bis kaum noch Eisen übrig ist.'
@@ -159,6 +171,7 @@
     }
   };
   const ok = (ev, id) => !!(ev && ev.criteria.find((c) => c.id === id && c.ok));
+  const M_liq = (o) => o.c.water + o.c.oil;
 
   /** Prüft die Einordnung: { hom, kind } → je Feld richtig/falsch mit Rückmeldung. */
   function checkCls(n, ans) {
@@ -172,26 +185,28 @@
     return { hom: { ok: homOk, fb: fbHom }, kind: { ok: kindOk, fb: fbKind }, all: homOk && kindOk };
   }
   /** Trennprinzip (alles Zutreffende): genau die richtige Menge. */
+  /**
+   * Trennprinzip (alles Zutreffende): Alle unmittelbar genutzten Eigenschaften müssen angekreuzt sein.
+   * Fachlich vertretbare Zusatzkreuze (z. B. Unlöslichkeit als Voraussetzung) gelten nicht als Fehler,
+   * sondern werden erläutert; nur unpassende Eigenschaften sind falsch.
+   */
   function checkPrin(n, chosen) {
-    const want = EXP[n].prin;
+    const want = EXP[n].prin, neutral = EXP[n].prinNeutral || {};
     const set = new Set(chosen || []);
     const missing = want.filter((x) => !set.has(x));
-    const extra = [...set].filter((x) => !want.includes(x));
+    const wrong = [...set].filter((x) => !want.includes(x) && !neutral[x]);
+    const extraOk = [...set].filter((x) => neutral[x]);
     const items = {};
     for (const p of PRINCIPLES) {
       const sel = set.has(p.id), should = want.includes(p.id);
-      items[p.id] = sel === should ? (sel ? 'right' : null) : sel ? 'wrong' : 'missing';
+      items[p.id] = sel ? (should ? 'right' : neutral[p.id] ? 'neutral' : 'wrong') : should ? 'missing' : null;
     }
-    let fb = '';
-    if (!set.size) fb = 'Noch nichts angekreuzt.';
-    else if (!missing.length && !extra.length) fb = 'Richtig. ' + want.map((x) => PRINCIPLE_WHY[x]).join(' ');
-    else {
-      const bits = [];
-      if (extra.length) bits.push('Nicht zutreffend: ' + extra.map((x) => PRINCIPLE_WHY[x]).join(' '));
-      if (missing.length) bits.push(`Es fehlt noch ${missing.length === 1 ? 'eine Eigenschaft' : missing.length + ' Eigenschaften'}, die bei diesem Versuch genutzt wird.`);
-      fb = bits.join(' ');
-    }
-    return { ok: !missing.length && !extra.length && set.size > 0, items, fb };
+    const bits = [];
+    if (!set.size) return { ok: false, items, fb: 'Noch nichts angekreuzt.', notes: [] };
+    if (!missing.length && !wrong.length) bits.push('Richtig. ' + want.map((x) => PRINCIPLE_WHY[x]).join(' '));
+    if (wrong.length) bits.push('Nicht zutreffend: ' + wrong.map((x) => PRINCIPLE_WHY[x]).join(' '));
+    if (missing.length) bits.push(`Es fehlt noch ${missing.length === 1 ? 'eine Eigenschaft' : missing.length + ' Eigenschaften'}, die bei diesem Versuch unmittelbar zum Trennen genutzt wird.`);
+    return { ok: !missing.length && !wrong.length, items, fb: bits.join(' '), notes: extraOk.map((x) => neutral[x]) };
   }
 
   // ------------------------------------------------------------------ Kontrolle: Multiple Choice
@@ -337,20 +352,20 @@
         stoff: 'Das trübe Gemisch wird in Ruhe klar; der Sand sammelt sich als Bodensatz. Gießt man zu früh oder zu schnell, ist das abgegossene Wasser trüb.',
         teilchen: 'Sandkörner (jedes aus sehr vielen Teilchen) sinken zwischen den Wasserteilchen nach unten.',
         zustand: 'Sand fest, Wasser flüssig – kein Wechsel des Aggregatzustands.',
-        prinzip: 'Sand ist unlöslich und hat eine größere **Dichte** als Wasser.',
+        prinzip: 'Sand hat eine größere **Dichte** als Wasser und sinkt ab (Voraussetzung: Sand ist unlöslich).',
         result: 'Fast klares Wasser (Dekantat); nasser Sand bleibt zurück. Die Trennung ist nicht vollständig.' },
       { n: 2, title: 'Filtrieren', mix: 'Sand und Wasser – **Suspension** (heterogen)',
         stoff: 'Im Filterpapier bleibt Sand liegen, darunter tropft klare Flüssigkeit.',
         teilchen: 'Wasserteilchen passen durch die Poren des Papiers, die viel größeren Sandkörner nicht.',
         zustand: 'Sand fest, Wasser flüssig – kein Wechsel des Aggregatzustands.',
-        prinzip: '**Korngröße** im Vergleich zu den Filterporen (Trennkriterium); Sand ist unlöslich.',
+        prinzip: '**Korngröße** im Vergleich zu den Filterporen (Trennkriterium; Voraussetzung: Sand ist unlöslich).',
         result: 'Sand als **Rückstand**, klares Wasser als **Filtrat**. Gründlicher als Dekantieren.' },
       { n: 3, title: 'Eindampfen', mix: 'Kochsalz in Wasser – **Lösung** (homogen, klar)',
-        stoff: 'Die Lösung siedet, der Flüssigkeitsstand sinkt, am Rand und am Boden bilden sich weiße Kristalle.',
+        stoff: 'Die Lösung siedet, darüber steigt weißer Dampf auf, der Flüssigkeitsstand sinkt, am Rand und am Boden bilden sich weiße Kristalle.',
         teilchen: 'Wasserteilchen verlassen die Flüssigkeit. Die Na⁺- und Cl⁻-Teilchen bleiben zurück und ordnen sich zu Kristallen.',
         zustand: 'Wasser: flüssig → gasförmig. Salz: gelöst → fest (Kristalle). Das Salz schmilzt nicht und verdampft nicht.',
         prinzip: 'Unterschiedliche **Flüchtigkeit**: Wasser verdampft, Salz nicht.',
-        result: 'Festes Kochsalz; das Wasser entweicht als Wasserdampf und wird nicht aufgefangen.' },
+        result: 'Festes Kochsalz; das Wasser entweicht als Wasserdampf und wird nicht aufgefangen. Wasserdampf selbst ist unsichtbar – die sichtbare weiße Wolke besteht aus kondensierten Wassertröpfchen.' },
       { n: 4, title: 'Scheiden im Scheidetrichter', mix: 'Öl und Wasser – zwei Schichten (heterogen); geschüttelt eine **Emulsion**',
         stoff: 'Beim Schütteln wird das Gemisch trüb, in Ruhe bilden sich wieder zwei Schichten: Öl oben, Wasser unten.',
         teilchen: 'Öltröpfchen sind Ansammlungen vieler Ölteilchen; sie vereinigen sich wieder, Öl- und Wasserteilchen mischen sich nicht.',

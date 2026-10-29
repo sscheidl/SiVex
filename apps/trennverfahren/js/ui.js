@@ -110,9 +110,9 @@
     function select(id) {
       const o = st().objs[id];
       if (!o) return;
-      if (['dish', 'watch'].includes(o.type) || (o.type === 'bowl' && M.isEmpty(o.c))) {
+      if (o.type === 'watch' || (o.type === 'bowl' && M.isEmpty(o.c)) || (o.type === 'dish' && M.solids(o.c) < 0.05)) {
         ui.selected = null; if (o.c) ui.pFocus[ui.cur] = id;
-        showMsg(`${o.name}: ${M.describe(o).text}. ${o.type === 'bowl' ? '' : 'Gieße mit einem anderen Gefäß hinein.'}`);
+        showMsg(`${o.name}${o.paper ? ' mit Filterpapier' : ''}: ${M.describe(o).text}. ${o.type === 'bowl' || o.type === 'watch' ? '' : 'Gieße mit einem anderen Gefäß hinein.'}`);
         refreshDeck(); return;
       }
       ui.selected = id;
@@ -126,7 +126,11 @@
       const obj = s.objs[id];
       if (s.op && s.op.type === 'pour') { showMsg('Es wird gerade gegossen. Tippe zuerst „Gießen stoppen“.'); return; }
       if (busy()) { showMsg('Warte, bis der laufende Handgriff fertig ist.'); return; }
+      // Hahn direkt am Scheidetrichter: zu → Tropfen → offen → zu
+      if (id === 'cock') { const sp = s.objs.S; if (sp) act('setCock', (sp.cock + 1) % 3); return; }
       const sel = ui.selected ? s.objs[ui.selected] : null;
+      // Stopfen auf dem Scheidetrichter antippen: abnehmen und auf die Ablage legen
+      if (obj && obj.type === 'stopper' && s.objs[obj.at] && (!sel || sel.id === id)) { act('stopper', false); deselect(); return; }
       if (!sel) {
         if (!obj) { showMsg('Wähle zuerst ein Gerät oder Gefäß aus. Danach tippst du diesen Platz an.'); return; }
         select(id); return;
@@ -146,6 +150,9 @@
         case 'wash': { const r = act('wash', id); if (r.ok) deselect(); break; }
         case 'paper': { const r = act('insertPaper', id); if (r.ok) deselect(); break; }
         case 'magnet': act(s.objs.mag.c.iron > 0.005 ? 'magnetDrop' : 'magnet', id); break;
+        case 'stopper': if (obj.type === 'sep') { const r = act('stopper', true); if (r.ok) deselect(); } else select(id); break;
+        case 'funnel': if (obj.type === 'watch') { const r = act('transferPaper', sel.id, id); if (r.ok) deselect(); } else select(id); break;
+        case 'dish': if (obj.type === 'watch' || obj.type === 'beaker') { const r = act('scrape', sel.id, id); if (r.ok) deselect(); } else select(id); break;
         default:
           if (M.TYPES[sel.type].pour && obj.c) { const r = act('pour', sel.id, id); if (r.ok) deselect(); }
           else select(id);
@@ -161,16 +168,20 @@
         case 'rod': vessels.filter((o) => !['funnel', 'sep'].includes(o.type) && !M.isEmpty(o.c)).forEach((o) => out.push({ id: o.id, text: `in ${o.name} rühren` })); break;
         case 'wash': vessels.filter((o) => !['dish', 'watch'].includes(o.type) && (o.type !== 'funnel' || o.at === 'ring') && (o.type !== 'sep' || o.at === 'sepring')).forEach((o) => out.push({ id: o.id, text: `Wasser in ${label(o)}` })); break;
         case 'paper': vessels.filter((o) => o.type === 'funnel').forEach((o) => out.push({ id: o.id, text: 'in den Trichter legen' })); break;
+        case 'stopper': if (s.objs.S && !s.objs.S.stopper) out.push({ id: 'S', text: 'auf den Scheidetrichter setzen' }); break;
+        case 'dish': vessels.filter((o) => (o.type === 'watch' || o.type === 'beaker') && M.isEmpty(o.c) && !o.paper).forEach((o) => out.push({ id: o.id, text: `Kristalle ${o.type === 'watch' ? 'auf das Uhrglas' : 'in ' + o.name} überführen` })); break;
         case 'magnet':
           if (s.objs.mag.c.iron > 0.005) vessels.filter((o) => o.type === 'watch' || o.c.iron > 0.02).sort((a, b) => (a.type === 'watch' ? -1 : 0) - (b.type === 'watch' ? -1 : 0)).forEach((o) => out.push({ id: o.id, text: o.type === 'watch' ? 'Eisen auf dem Uhrglas abstreifen' : `Eisen zurück in ${label(o)}` }));
           else vessels.filter((o) => o.c.iron > 0.02).forEach((o) => out.push({ id: o.id, text: o.type === 'funnel' ? 'durch den Rückstand im Filter ziehen' : `durch ${o.name} ziehen` }));
           break;
         default:
-          if (M.TYPES[sel.type].pour && !M.isEmpty(sel.c)) vessels.filter((o) => !eng().canReceive(o, sel)).forEach((o) => out.push({ id: o.id, text: `in ${label(o)} gießen` }));
+          // alle Gefäße anbieten; ist ein Ziel gerade ungeeignet, erklärt die Meldung den Grund
+          if (M.TYPES[sel.type].pour && !M.isEmpty(sel.c)) vessels.filter((o) => o.type !== 'dish' || sel.type !== 'bowl').forEach((o) => out.push({ id: o.id, text: `in ${label(o)} gießen` }));
+          if (sel.type === 'funnel' && sel.paper) vessels.filter((o) => o.type === 'watch').forEach((o) => out.push({ id: o.id, text: 'Filterpapier mit Rückstand auf das Uhrglas legen' }));
           if (M.TYPES[sel.type].move) {
             for (const slot of eng().exp.slots) {
               if (M.objAt(s, slot.id) || !(slot.id === sel.home || (M.SLOT_ACCEPT[slot.kind] || []).includes(sel.type))) continue;
-              const name = slot.id === sel.home ? 'zurück an den Platz' : slot.kind === 'under' ? 'unter den Trichter stellen' : slot.kind === 'sepunder' ? 'unter den Hahn stellen' : slot.kind === 'ring' ? 'in den Filtrierring setzen' : slot.kind === 'sepring' ? 'in den Ring hängen' : 'auf die Heizplatte';
+              const name = slot.id === sel.home ? (sel.type === 'sep' ? 'auf die Ablage legen' : 'zurück an den Platz') : slot.kind === 'under' ? 'unter den Trichter stellen' : slot.kind === 'sepunder' ? 'unter den Hahn stellen' : slot.kind === 'ring' ? 'in den Filtrierring setzen' : slot.kind === 'sepring' ? 'in den Ring hängen' : slot.kind === 'hand' ? 'zum Schütteln in die Hand nehmen' : 'auf die Heizplatte';
               out.push({ id: slot.id, text: name });
             }
           }
@@ -233,11 +244,15 @@
         case 'sepring': return 'Ring am Stativ';
         case 'sepunder': return 'Platz unter dem Hahn';
         case 'plate': return 'Heizplatte';
+        case 'hand': return 'Scheidetrichter in die Hand nehmen (zum Schütteln)';
+        case 'shelf': return 'freier Platz auf der Ablage';
         default: return 'freier Platz';
       }
     }
     function describeObj(o) {
+      if (o.type === 'stopper') return st().objs[o.at] ? 'Stopfen (auf dem Scheidetrichter) – antippen zum Abnehmen' : 'Stopfen (auf der Ablage)';
       if (!o.c) return o.name;
+      if (o.type === 'watch' && o.paper) return `Uhrglas mit Filterpapier: ${M.describe(o).text}`;
       if (o.type === 'magnet') return o.c.iron > 0.005 ? `Magnet mit ${fmt(o.c.iron, 1)} g Eisen` : 'Magnet';
       const d = M.describe(o).text;
       const extra = o.type === 'funnel' ? (o.paper ? ' mit Filterpapier' : ' ohne Filterpapier') : o.type === 'sep' ? (o.stopper ? ', Stopfen auf' : '') + `, Hahn ${['zu', 'auf Tropfen', 'offen'][o.cock]}` : '';
@@ -262,12 +277,15 @@
         x = Math.max(0, Math.min(W - w, x)); y = Math.max(0, Math.min(H - h, y));
         Object.assign(el.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
         if (b.kind === 'obj') el.setAttribute('aria-label', describeObj(s.objs[b.id]));
+        else if (b.kind === 'part') el.setAttribute('aria-label', cockLabel());
         else el.setAttribute('aria-label', slotName(M.slotOf(s, b.id)));
       }
       updateHitStates();
       placeNames();
       layoutDirty = false;
     }
+    const COCK_TXT = ['zu', 'tropfenweise geöffnet', 'ganz geöffnet'];
+    function cockLabel() { const sp = st().objs.S; return sp ? `Hahn: ${COCK_TXT[sp.cock]} – antippen zum Umstellen (zu → Tropfen → offen)` : 'Hahn'; }
     function updateHitStates() {
       const s = st();
       const sel = ui.selected && s.objs[ui.selected];
@@ -297,20 +315,30 @@
         if (slot.kind === 'ring') { const f = o; items.push({ x: slot.x, tier: 1, text: f ? (f.paper ? 'Trichter mit Filterpapier' : 'Trichter (ohne Papier)') : 'Stativ mit Filtrierring', id: f && f.id }); continue; }
         if (slot.kind === 'sepring') { items.push({ x: slot.x, tier: 1, text: o ? 'Scheidetrichter im Ring' : 'Stativ mit Ring', id: o && o.id }); continue; }
         if (slot.kind === 'plate') { items.push({ x: slot.x, tier: 1, text: o ? `Heizplatte · ${o.name}` : 'Heizplatte', id: o && o.id }); continue; }
+        if (slot.kind === 'shelf') continue;
+        if (slot.kind === 'hand') { if (o) items.push({ x: slot.x, tier: 1, text: 'Scheidetrichter in der Hand', id: o.id }); continue; }
         const tier = slot.kind === 'front' ? 2 : 1;
         if (o) { items.push({ x: slot.x, tier, text: o.name, id: o.id }); seen.add(o.id); }
         else if (homeObj && homeObj.type === 'funnel') items.push({ x: slot.x, tier, text: 'Trichterhalter' });
         else if (homeObj && homeObj.type === 'sep') items.push({ x: slot.x, tier, text: 'Ablage' });
         else if (homeObj) items.push({ x: slot.x, tier, text: `(${homeObj.name})` });
       }
+      // Wandablage: ein gemeinsames Feld in der unteren Zeile
+      const shelf = ex.slots.filter((q) => q.kind === 'shelf');
+      if (shelf.length) {
+        const names = shelf.map((q) => { const o = M.objAt(s, q.id); return o ? o.name : null; }).filter(Boolean);
+        items.push({ x: shelf.reduce((a, q) => a + q.x, 0) / shelf.length, tier: 3, text: 'Ablage oben: ' + (names.length ? names.join(' · ') : 'leer') });
+      }
       const W = host.clientWidth;
       const html = items.map((it) => {
         const same = items.filter((q) => q.tier === it.tier && q !== it).map((q) => Math.abs(renderer.worldX(q.x) - renderer.worldX(it.x)));
-        const room = Math.min(220, same.length ? Math.min(...same) - 6 : 220);
+        const room = it.tier === 3 ? Math.min(W - 8, 520) : Math.min(220, same.length ? Math.min(...same) - 6 : 220);
         const x = Math.max(room / 2, Math.min(W - room / 2, renderer.worldX(it.x)));
         return `<span class="nm t${it.tier}${it.id && it.id === ui.selected ? ' sel' : ''}" style="left:${x.toFixed(0)}px;width:${Math.max(40, room).toFixed(0)}px">${hyph(esc(it.text))}</span>`;
       }).join('');
       if (host.dataset.html !== html) { host.innerHTML = html; host.dataset.html = html; }
+      const three = items.some((it) => it.tier === 3);
+      if (host.classList.contains('three') !== three) { host.classList.toggle('three', three); relayout(); }
     }
 
     // ------------------------------------------------------------------ Teilchenmodell
@@ -318,23 +346,25 @@
       const s = st();
       const f = ui.pFocus[ui.cur];
       if (f && s.objs[f] && s.objs[f].c) return f;
+      if (f && PV.REF[f] && ui.cur === 3) return f;
       return eng().exp.main;
     }
     function updatePview() {
       if (!ui.particles) return;
       const s = st();
       const id = focusId();
-      const o = s.objs[id];
+      const o = s.objs[id] || PV.REF[id];
       const sel = $('#pSelect');
       const opts = s.order.map((i) => s.objs[i]).filter((q) => q.c && q.type !== 'magnet');
+      if (ui.cur === 3) opts.push(...Object.values(PV.REF));
       const sig = opts.map((q) => q.id).join(',');
       if (sel.dataset.sig !== sig) { sel.innerHTML = opts.map((q) => `<option value="${q.id}">${esc(q.name)}</option>`).join(''); sel.dataset.sig = sig; }
       if (sel.value !== id && document.activeElement !== sel) sel.value = id;
       $('#pFocus').textContent = '– ' + o.name;
-      $('#pObs').textContent = (M.describe(o).text || '') + (o.type === 'funnel' ? (o.paper ? ' (mit Filterpapier)' : ' (ohne Filterpapier)') : '') + (o.temp > 30 ? ` · ${fmt(o.temp, 0)} °C` : '');
+      $('#pObs').textContent = o.ref ? o.obs : (M.describe(o).text || '') + (o.type === 'funnel' ? (o.paper ? ' (mit Filterpapier)' : ' (ohne Filterpapier)') : '') + (o.temp > 30 ? ` · ${fmt(o.temp, 0)} °C` : '');
       $('#pModel').textContent = PV.modelText(s, o);
       const c = o.c;
-      const L = [['water', 'Wasserteilchen', '']];
+      const L = c.water > 0.02 ? [['water', 'Wasserteilchen', '']] : [];
       if (c.saltD > 0.02 || c.saltS > 0.02) L.push(['na', 'Na⁺', ''], ['cl', 'Cl⁻', '']);
       if (c.oil > 0.05) L.push(['oil', 'Ölteilchen', 'sq']);
       if (M.sand(c) > 0.05) L.push(['sand', 'Sandkorn (sehr viele Teilchen)', 'gr']);
@@ -344,8 +374,7 @@
     }
 
     // ------------------------------------------------------------------ Bedienfeld
-    const hasObs = (n) => notes[n].obs.trim().length >= 3 || notes[n].snaps.some((x) => (x.obs || '').trim().length >= 3);
-    const complete = (n) => !!(notes[n].goalAt && hasObs(n) && T.checkCls(n, notes[n].cls).all && T.checkPrin(n, notes[n].prin).ok);
+    const complete = (n) => !!(notes[n].goalAt && T.checkCls(n, notes[n].cls).all && T.checkPrin(n, notes[n].prin).ok);
     const allDone = () => N.every(complete);
     function quizState() {
       const items = {};
@@ -393,25 +422,25 @@
       const pr = note.graded ? T.checkPrin(n, note.prin) : null;
       const miss = new Set(note.missing || []);
       h += `<div class="lk-card lk-form"><h2>Protokoll – Versuch ${n}</h2>`;
-      h += `<fieldset class="${miss.has('obs') ? 'missing' : ''}"><legend>1. Beobachtung (Stoffebene)</legend><p class="lbl">${esc(X.obsHint)} Schreibe nur, was du siehst.</p>
-        <textarea data-f="obs" data-key="obs" aria-label="Beobachtung" class="${miss.has('obs') ? 'missing' : ''}">${esc(note.obs)}</textarea>
-        <div class="lk-row"><button type="button" class="lk-btn" data-a="snap" data-key="snap">Als Zwischenstand speichern</button><span class="lk-muted" style="font-size:13px">mit Versuchszeit und Zustand</span></div>`;
-      if (note.snaps.length) h += `<ul class="snaps">${note.snaps.map((x) => `<li><span class="meta">${x.ansatz !== note.ansatz ? '<span class="old">früherer Ansatz · </span>' : ''}Ansatz ${x.ansatz} · ${core.fmtTime(x.t)} min · ${esc(x.state)}</span>${esc(x.obs || '–')}${x.expl ? `<br><i>Erklärung:</i> ${esc(x.expl)}` : ''}</li>`).join('')}</ul>`;
-      h += '</fieldset>';
+      h += `<p class="doc-note">1. und 2. sind deine eigene Dokumentation. Sie werden <b>nicht bewertet</b>; geprüft werden das Versuchsergebnis sowie 3. und 4.</p>`;
+      h += `<fieldset><legend>1. Beobachtung (Stoffebene)</legend><p class="lbl">${esc(X.obsHint)} Schreibe nur, was du siehst.</p>
+        <textarea data-f="obs" data-key="obs" aria-label="Beobachtung">${esc(note.obs)}</textarea></fieldset>`;
       h += `<fieldset><legend>2. Erklärung (Teilchenebene, Eigenschaften)</legend><p class="lbl">${esc(X.explHint)}</p><textarea data-f="expl" data-key="expl" aria-label="Erklärung">${esc(note.expl)}</textarea></fieldset>`;
+      h += `<div class="lk-row"><button type="button" class="lk-btn" data-a="snap" data-key="snap">Beobachtung und Erklärung als Zwischenstand speichern</button><span class="lk-muted" style="font-size:13px">mit Ansatz, Versuchszeit und Zustand</span></div>`;
+      if (note.snaps.length) h += `<ul class="snaps">${note.snaps.map((x) => `<li><span class="meta">${x.ansatz !== note.ansatz ? '<span class="old">früherer Ansatz · </span>' : ''}Ansatz ${x.ansatz} · ${core.fmtTime(x.t)} min · ${esc(x.state)}</span>${x.obs ? `<i>Beobachtung:</i> ${esc(x.obs)}` : ''}${x.expl ? `<br><i>Erklärung:</i> ${esc(x.expl)}` : ''}</li>`).join('')}</ul>`;
+      if (note.goalAt) h += `<div class="lk-row"><button type="button" class="lk-btn" data-a="sample" data-key="sample" aria-expanded="${!!note.sample}">Musterbeobachtung ${note.sample ? 'ausblenden' : 'zum Vergleich anzeigen'}</button></div>` + (note.sample ? `<div class="lk-note info"><b>Musterbeobachtung (zum Selbstvergleich)</b><p>${esc(X.sample)}</p></div>` : '');
       h += `<fieldset class="${miss.has('cls') ? 'missing' : ''}"><legend>3. Einordnung des Gemischs</legend><p class="lbl">${esc(X.cls.q)}</p><div class="row2">` +
         [['hom', 'homogen'], ['het', 'heterogen']].map(([v, t]) => `<label class="lk-opt ${cls && note.cls.hom === v ? (cls.hom.ok ? 'right' : 'wrong') : ''}"><input type="radio" name="hom" value="${v}" data-key="hom-${v}" ${note.cls.hom === v ? 'checked' : ''}>${t}${cls && note.cls.hom === v ? `<span class="lk-mark ${cls.hom.ok ? 'y' : 'n'}">${cls.hom.ok ? '✓' : '✗'}</span>` : ''}</label>`).join('') + '</div>' +
         (cls && !cls.hom.ok ? `<p class="lk-fb n">${esc(cls.hom.fb)}</p>` : '') +
         `<p class="lbl">Gemischart:</p><select data-f="kind" data-key="kind" aria-label="Gemischart" class="${cls && note.cls.kind ? (cls.kind.ok ? 'right' : 'wrong') : ''}"><option value="">– bitte wählen –</option>${T.KINDS.map((k) => `<option value="${k.id}" ${note.cls.kind === k.id ? 'selected' : ''}>${esc(k.label)}</option>`).join('')}</select>` +
         (cls && note.cls.kind ? `<p class="lk-fb ${cls.kind.ok ? 'y' : 'n'}">${cls.kind.ok ? '✓ ' : '✗ '}${esc(cls.kind.fb)}</p>` : '') + '</fieldset>';
       h += `<fieldset class="${miss.has('prin') ? 'missing' : ''}"><legend>4. Genutzte Eigenschaft (Trennprinzip)</legend><p class="lbl">Kreuze alles Zutreffende an (mehrere Antworten können richtig sein).</p>` +
-        T.PRINCIPLES.map((p) => { const m = pr ? pr.items[p.id] : null; return `<label class="lk-opt ${m === 'right' ? 'right' : m === 'wrong' ? 'wrong' : ''}"><input type="checkbox" name="prin" value="${p.id}" data-key="prin-${p.id}" ${note.prin.includes(p.id) ? 'checked' : ''}>${esc(p.label)}${m === 'right' ? '<span class="lk-mark y">✓</span>' : m === 'wrong' ? '<span class="lk-mark n">✗</span>' : ''}</label>`; }).join('') +
-        (pr ? `<p class="lk-fb ${pr.ok ? 'y' : 'n'}">${esc(pr.fb)}</p>` : '') + '</fieldset>';
+        T.PRINCIPLES.map((p) => { const m = pr ? pr.items[p.id] : null; return `<label class="lk-opt ${m === 'right' ? 'right' : m === 'wrong' ? 'wrong' : m === 'neutral' ? 'neutral' : ''}"><input type="checkbox" name="prin" value="${p.id}" data-key="prin-${p.id}" ${note.prin.includes(p.id) ? 'checked' : ''}>${esc(p.label)}${m === 'right' ? '<span class="lk-mark y">✓</span>' : m === 'wrong' ? '<span class="lk-mark n">✗</span>' : m === 'neutral' ? '<span class="lk-mark w" title="nicht nötig, aber nicht falsch">○</span>' : ''}</label>`; }).join('') +
+        (pr ? `<p class="lk-fb ${pr.ok ? 'y' : 'n'}">${esc(pr.fb)}</p>` + pr.notes.map((x) => `<p class="lk-fb w">○ ${esc(x)}</p>`).join('') : '') + '</fieldset>';
       h += '<div class="lk-row"><button type="button" class="lk-btn primary" data-a="grade" data-key="grade">Auswertung prüfen</button></div>';
       if (note.graded) {
         const parts = [];
         if (!note.goalAt) parts.push('das Trennziel im Versuch erreichen („Ergebnis prüfen“)');
-        if (!hasObs(n)) parts.push('eine eigene Beobachtung notieren');
         if (!(cls && cls.all)) parts.push('die Einordnung berichtigen');
         if (!(pr && pr.ok)) parts.push('die genutzte Eigenschaft berichtigen');
         h += parts.length ? `<div class="lk-note warn">Noch offen: ${parts.join(', ')}.</div>` : `<div class="lk-note ok"><b>Versuch ${n} ist abgeschlossen.</b> Deine Beobachtungen bleiben gespeichert; du kannst weiter beobachten und Zwischenstände ergänzen.</div>`;
@@ -553,17 +582,17 @@
         case 'solution': if (!note.solution) note.confirmSolution = true; break;
         case 'solYes': note.solution = true; note.confirmSolution = false; break;
         case 'solNo': note.confirmSolution = false; break;
+        case 'sample': note.sample = !note.sample; break;
         case 'snap': {
-          const text = note.obs.trim();
-          if (!text) { note.missing = ['obs']; showMsg('Schreibe zuerst auf, was du gerade beobachtest.', 'warn'); break; }
-          note.snaps.push({ t: +st().t.toFixed(1), ansatz: note.ansatz, state: snapState(), obs: text, expl: note.expl.trim() });
+          const text = note.obs.trim(), expl = note.expl.trim();
+          if (!text && !expl) { showMsg('Die beiden Felder sind noch leer – es gibt nichts zu speichern.', 'warn'); break; }
+          note.snaps.push({ t: +st().t.toFixed(1), ansatz: note.ansatz, state: snapState(), obs: text, expl });
           showMsg(`Zwischenstand gespeichert (Versuchszeit ${core.fmtTime(st().t)}). Der Versuch läuft weiter.`, 'ok');
           break;
         }
         case 'grade': {
           note.graded = true;
           const miss = [];
-          if (!hasObs(n)) miss.push('obs');
           if (!note.cls.hom || !note.cls.kind) miss.push('cls');
           if (!note.prin.length) miss.push('prin');
           note.missing = miss;

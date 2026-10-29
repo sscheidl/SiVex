@@ -16,17 +16,50 @@ test('Einordnung je Versuch: richtige Antwort wird erkannt, falsche mit Begründ
   assert.equal(T.checkCls(1, {}).hom.fb, 'Noch nicht gewählt.');
 });
 
-test('Trennprinzip: genau die genutzten Eigenschaften; Farbe nie; Korngröße als Trennkriterium beim Filtrieren', () => {
+test('Trennprinzip (TV05): unmittelbares Trennprinzip verlangt, Unlöslichkeit als Voraussetzung nicht als Fehler', () => {
+  // Sedimentieren: Dichte genügt; Löslichkeit ist erlaubt (Voraussetzung), aber nicht nötig
+  assert.ok(T.checkPrin(1, ['dichte']).ok);
+  const v1 = T.checkPrin(1, ['dichte', 'loes']);
+  assert.ok(v1.ok); assert.equal(v1.items.loes, 'neutral'); assert.match(v1.notes[0], /Voraussetzung/);
+  assert.equal(T.checkPrin(1, ['loes']).ok, false, 'Dichte fehlt');
+  // Filtrieren: Korngröße genügt
+  assert.ok(T.checkPrin(2, ['korn']).ok);
   assert.ok(T.checkPrin(2, ['korn', 'loes']).ok);
-  assert.equal(T.checkPrin(2, ['korn']).ok, false, 'unvollständig');
-  assert.equal(T.checkPrin(2, ['korn', 'loes', 'farbe']).ok, false, 'zu viel');
-  assert.ok(T.checkPrin(5, ['magn', 'loes', 'korn', 'fluecht']).ok);
-  assert.ok(T.checkPrin(4, ['misch', 'dichte']).ok);
+  assert.equal(T.checkPrin(2, ['korn', 'dichte']).ok, false, 'Dichte trennt beim Filtrieren nicht');
+  // Eindampfen
   assert.ok(T.checkPrin(3, ['fluecht']).ok);
-  for (const n of M.EXP_IDS) assert.ok(!T.EXP[n].prin.includes('farbe'));
+  // Scheiden: Nichtmischbarkeit und Dichte; Löslichkeitskreuz wird erläutert, nicht als falsch gewertet
+  assert.ok(T.checkPrin(4, ['misch', 'dichte']).ok);
+  const v4 = T.checkPrin(4, ['misch', 'dichte', 'loes']);
+  assert.ok(v4.ok); assert.match(v4.notes[0], /Nichtmischbarkeit/);
+  assert.equal(T.checkPrin(4, ['dichte']).ok, false);
+  // Trennkette
+  assert.ok(T.checkPrin(5, ['magn', 'loes', 'korn', 'fluecht']).ok);
+  assert.equal(T.checkPrin(5, ['magn', 'loes', 'korn']).ok, false);
+  // Farbe ist nie ein Trennprinzip
+  for (const n of M.EXP_IDS) { assert.ok(!T.EXP[n].prin.includes('farbe')); assert.equal(T.checkPrin(n, [...T.EXP[n].prin, 'farbe']).ok, false); }
   assert.match(T.PRINCIPLE_WHY.korn, /keine Kenneigenschaft/);
-  const r = T.checkPrin(1, ['dichte', 'farbe']);
-  assert.equal(r.items.farbe, 'wrong'); assert.equal(r.items.loes, 'missing'); assert.equal(r.items.dichte, 'right');
+  // Beschriftung: Dichte statt „schwerer“, Löslichkeit eindeutig auf Feststoffe bezogen
+  const lab = Object.fromEntries(T.PRINCIPLES.map((p) => [p.id, p.label]));
+  assert.match(lab.dichte, /geringeren Dichte liegt oben/); assert.match(lab.loes, /Feststoffs/); assert.match(lab.misch, /Nichtmischbarkeit/);
+});
+
+test('Texte (TV14): keine „schwerer“-Formulierung, Beobachtungsfragen ohne vorweggenommene Antworten, Dampf fachlich korrekt', () => {
+  const all = JSON.stringify({ P: T.PRINCIPLES, W: T.PRINCIPLE_WHY, E: Object.values(T.EXP).map((x) => [x.problem, x.goal, x.obsHint, x.explHint, x.sample, x.solution]), Q: T.QUIZ, N: T.NOTEBOOK });
+  assert.doesNotMatch(all, /schwerere?\b/i, 'Dichte nicht mit Masse verwechseln');
+  assert.doesNotMatch(all, /weißer Wasserdampf|Wasserdampf ist weiß/i);
+  for (const n of M.EXP_IDS) {
+    const h = T.EXP[n].obsHint;
+    assert.doesNotMatch(h, /\(/, `Versuch ${n}: keine Klammer-Aufzählung`);
+    assert.doesNotMatch(h, /Kristall|Dunst|Dampf|Trübung|trüb|Bodensatz|Tröpfchen|Schicht|Grenzfläche|Rückstand|klar/i, `Versuch ${n}: keine vorweggenommene Beobachtung`);
+    assert.ok(T.EXP[n].sample && T.EXP[n].sample.length > 80, `Versuch ${n}: Musterbeobachtung`);
+  }
+  assert.equal(T.EXP[3].obsHint, 'Beschreibe, was du während des Erwärmens und nach dem Abkühlen beobachtest.');
+  const nb3 = T.NOTEBOOK.cards[2];
+  assert.match(nb3.stoff + nb3.result, /Dampf/); assert.match(nb3.result, /unsichtbar/); assert.match(nb3.result, /kondensierten Wassertröpfchen/);
+  // Versuch 4: Schütteln ist freiwillig
+  assert.match(T.EXP[4].problem, /Freiwillig/);
+  assert.ok(T.EXP[4].solution.findIndex((x) => /Freiwillig/.test(x)) > 1, 'Schütteln erst als Zusatz nach dem Trennweg');
 });
 
 test('Kontrolle: 8–10 Aufgaben, alle vier Perspektiven, Angabe zur Mehrfachauswahl, jede falsche Option begründet', () => {

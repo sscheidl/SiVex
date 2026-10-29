@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-27T21:56:45.760Z",
+  "date": "2026-10-29T19:33:38.156Z",
   "browser": "msedge",
   "results": [
     {
@@ -7,28 +7,28 @@
       "title": "Pflichtablauf: fünf Versuche, Beobachtung, Kontrolle mit Korrektur, Hefteintrag (Maus, 1440×900)",
       "status": "PASS",
       "detail": "Kontrolle zuerst 5 falsche Optionen und 2 falsche Lücken markiert, danach korrigiert",
-      "seconds": 208
+      "seconds": 212
     },
     {
       "id": "E2",
       "title": "Touch (Tablet 1180×820, hasTouch): Versuche 1, 3 und 4 vollständig per Antippen",
       "status": "PASS",
       "detail": "alle Handlungen über tap()",
-      "seconds": 109
+      "seconds": 112
     },
     {
       "id": "E3",
       "title": "Tastatur: Geräte, Ziele, Gießen stoppen und Schalter ohne Maus",
       "status": "PASS",
       "detail": "gestoppt bei 6.0 mL",
-      "seconds": 8
+      "seconds": 7
     },
     {
       "id": "E4",
       "title": "Korrekturen: zu früh dekantiert, ohne Papier, ungelöstes Salz, verunreinigte Scheidefraktion, alternative Trennkette",
       "status": "PASS",
       "detail": "trüb 3.3 g → korrigiert; ohne Papier 19.9 g Sand im Kolben; ungelöst 3.3 g → 0.00 g; Öl im Wasser 10 mL → neu geschieden; alternative Reihenfolge erfolgreich",
-      "seconds": 230
+      "seconds": 231
     },
     {
       "id": "E5",
@@ -39,38 +39,74 @@
     },
     {
       "id": "E6-1024",
-      "title": "Layout 1024×768: alle Versuche, Schalter einzeln und kombiniert, lange Meldung",
+      "title": "Layout 1024×768 (TV01, TV15): alle Versuche, Schalter einzeln und kombiniert, Neustartbestätigung, lange Meldung",
       "status": "PASS",
-      "detail": "lange Meldung auf zwei Zeilen gekürzt, Volltext im title",
-      "seconds": 27
+      "detail": "Maßstab mit beiden Zusatzanzeigen: V1 0.89, V2 0.54, V3 0.80, V4 0.66, V5 0.59; Bestätigung und lange Meldung vollständig sichtbar",
+      "seconds": 28
     },
     {
       "id": "E6-1180",
-      "title": "Layout 1180×820: alle Versuche, Schalter einzeln und kombiniert, lange Meldung",
+      "title": "Layout 1180×820 (TV01, TV15): alle Versuche, Schalter einzeln und kombiniert, Neustartbestätigung, lange Meldung",
       "status": "PASS",
-      "detail": "lange Meldung auf zwei Zeilen gekürzt, Volltext im title",
-      "seconds": 27
+      "detail": "Maßstab mit beiden Zusatzanzeigen: V1 1.03, V2 0.62, V3 0.93, V4 0.76, V5 0.69; Bestätigung und lange Meldung vollständig sichtbar",
+      "seconds": 28
+    },
+    {
+      "id": "E6-1440",
+      "title": "Layout 1440×900 (TV01, TV15): alle Versuche, Schalter einzeln und kombiniert, Neustartbestätigung, lange Meldung",
+      "status": "PASS",
+      "detail": "Maßstab mit beiden Zusatzanzeigen: V1 1.33, V2 0.80, V3 1.20, V4 0.98, V5 0.88; Bestätigung und lange Meldung vollständig sichtbar",
+      "seconds": 28
     },
     {
       "id": "E6-1920",
-      "title": "Layout 1920×1080: alle Versuche, Schalter einzeln und kombiniert, lange Meldung",
+      "title": "Layout 1920×1080 (TV01, TV15): alle Versuche, Schalter einzeln und kombiniert, Neustartbestätigung, lange Meldung",
       "status": "PASS",
-      "detail": "lange Meldung vollständig",
-      "seconds": 27
+      "detail": "Maßstab mit beiden Zusatzanzeigen: V1 2.17, V2 1.31, V3 1.96, V4 1.44, V5 1.45; Bestätigung und lange Meldung vollständig sichtbar",
+      "seconds": 28
     },
     {
       "id": "E7",
       "title": "Animation: Gießen, Wellen, Sedimentation, Tropfen, Phasentrennung, Lösen, Kristallbildung als Bildfolgen",
       "status": "PASS",
-      "detail": "Sedimentation 17.3→1.9 g schwebend; Gießen A 100→82 mL, B 0→18 mL; Wellen 1.06→0.000; Filtrat 11.0→17.9 mL in 9 veränderten Bildern; Emulsion 1.00→0.32; Lösen 3.24→1.20 g fest; Eindampfen Wasser 21.7→0.0 mL, Kristalle 0.0→7.8 g",
-      "seconds": 104
+      "detail": "Nachlauf nach Korrektur des Testablaufs (Schütteln außerhalb des Rings): Sedimentation 17.3→1.9 g schwebend; Gießen A 99→81 mL, B 1→19 mL; Wellen 0.91→0.000; Filtrat 10.9→18.1 mL in 9 veränderten Bildern; Emulsion 0.99→0.29; Lösen 3.45→1.32 g fest; Eindampfen Wasser 21.6→0.0 mL, Kristalle 0.0→7.8 g",
+      "seconds": 107
     },
     {
       "id": "E8",
       "title": "Teilchenmodell: Gefäßbezug, Legende, Pause hält beide Darstellungen an, Umschalten ändert keine Mengen",
       "status": "PASS",
-      "detail": "Pause synchron; Filter, Emulsion, Lösung dargestellt",
-      "seconds": 50
+      "detail": "Nachlauf auf dem Endstand (Legende ohne Wasserteilchen beim festen Kochsalz): Pause synchron; Filter, Emulsion, Lösung dargestellt; Vergleich Wasser / festes NaCl / Kochsalzlösung",
+      "seconds": 55
+    },
+    {
+      "id": "E9",
+      "title": "Strahl, Tropfen und Spritzflasche (TV02–TV04): Treffpunkt im Gefäß, kein Durchdringen, kein Phantom-Verschütten, Bildfolgen",
+      "status": "PASS",
+      "detail": "V1 zügig leer 5 Bilder; V1 vorsichtig halbvoll 5 Bilder; Trichter 6 Bilder; Spritzflasche leeres-becherglas Strahl in 3 Bildern; Spritzflasche sandiges-becherglas Strahl in 3 Bildern; Spritzflasche filter Strahl in 3 Bildern; Uhrglas: Stopp bei voll; Schale und Scheidetrichter: Strahl im Gefäß, Tropfen in B",
+      "seconds": 55
+    },
+    {
+      "id": "E10",
+      "title": "Scheidetrichter (TV07–TV09): optional schütteln außerhalb des Rings, Stopfen als Objekt, Hahn direkt, Rückgießen und erneute Trennung",
+      "status": "PASS",
+      "detail": "Öl im Wasser 10 mL → zurückgegossen → Wasser in C, Öl in A; Ablauf mit Schütteln außerhalb des Rings erfolgreich",
+      "seconds": 139
+    },
+    {
+      "id": "E11",
+      "title": "Protokoll (TV12, TV13): Speichern nach beiden Feldern, beide Texte im Zwischenstand, Freitext unbewertet, Musterbeobachtung",
+      "status": "PASS",
+      "detail": "Freitext unbewertet, Zwischenstand mit beiden Texten",
+      "seconds": 28
+    },
+    {
+      "id": "E12",
+      "title": "Pause, Zeitraffer und Doppelklick während Handgriffen (TV18)",
+      "status": "PASS",
+      "detail": "ein Transfer, 1× während des Gießens, Pause synchron",
+      "seconds": 6
     }
-  ]
+  ],
+  "note": "E7/E8 im Gesamtlauf mit veraltetem Testablauf (Schütteln im Ring, seit 0.2.0 bewusst abgewiesen) gescheitert; mit korrigiertem Ablauf einzeln nachgelaufen (2026-10-29T19:36:40.519Z). E8 zusätzlich auf dem Endstand nach der Legendenkorrektur wiederholt (2026-10-29T19:42:31.206Z)."
 }
