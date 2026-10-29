@@ -1,19 +1,22 @@
 /*
  * Pufferfish – Lerninhalte und Bewertung (ohne DOM, in Node testbar)
  *
- * Protokoll je Versuch (Vorhersage → Beobachtung → Deutung → Erklärung),
- * Herleitung der Henderson-Hasselbalch-Gleichung als Trainer, sechs
- * Rechenaufgaben mit getrennter Fehlerdiagnose, Anwendungen, Hefteintrag.
- * Geschlossene Formate werden bewertet; eigene Formulierungen (Freitext)
- * werden nur gespeichert, nie per Wortsuche als richtig/falsch eingestuft.
+ * Protokoll je Versuch (Beobachtung → Deutung → Erklärung; keine verpflichtende
+ * Vermutung), Herleitung der Henderson-Hasselbalch-Gleichung als Trainer, sechs
+ * Rechenaufgaben mit getrennter Fehlerdiagnose, Herstellungsrechnung und
+ * Auswertung für Versuch 3, Anwendungen, Hefteintrag.
+ * Geschlossene Formate werden bewertet (nach Antwort-ID, unabhängig von der
+ * Bildschirmposition); eigene Formulierungen (Freitext) werden nur gespeichert,
+ * nie per Wortsuche als richtig/falsch eingestuft.
  */
 (function (root, factory) {
   const isNode = typeof module === 'object' && module.exports;
   const core = isNode ? require('../../../shared/labkit/js/core.js') : root.LK.core;
-  const api = factory(core);
+  const chem = isNode ? require('./chem.js') : root.PF.chem;
+  const api = factory(core, chem);
   if (isNode) module.exports = api;
   else (root.PF = root.PF || {}).learn = api;
-})(typeof self !== 'undefined' ? self : this, function (core) {
+})(typeof self !== 'undefined' ? self : this, function (core, C) {
   'use strict';
   const fmt = core.fmt;
 
@@ -38,34 +41,27 @@
   const has = (s, exp, reagent) => !!(s && s[exp] && s[exp][reagent]);
   const need = (exp, reagent, text) => (s) => has(s, exp, reagent) ? true : text;
 
+  const FREE_NOTE = 'Wird nicht bewertet und nicht geprüft; deine Antwort erscheint im Journal.';
+
   const PROTOCOLS = {
     e1: {
-      intro: 'Zwei gleich große Proben: Wasser und eine vorbereitete Modelllösung („Wunderwasser“). Beide enthalten Universalindikator. Untersuche, wie sie auf Salzsäure und auf Natronlauge reagieren. Was muss das Wunderwasser enthalten?',
-      material: 'je 30,0 mL Probe · HCl und NaOH, je c = 0,100 mol/L · Tropfpipette (1 Tropfen ≙ 0,050 mL, vereinbarte Simulationsgröße) · Messpipette',
-      predict: {
-        id: 'p1', text: 'Vermutung vor dem ersten Tropfen: Ein Tropfen Salzsäure verändert den pH-Wert …',
-        options: [
-          { v: 'gleich', t: 'in beiden Proben gleich stark.' },
-          { v: 'wasser', t: 'im Wasser stärker als im Wunderwasser.' },
-          { v: 'wunder', t: 'im Wunderwasser stärker als im Wasser.' },
-          { v: 'keine', t: 'in keiner der beiden Proben merklich.' }
-        ]
-      },
+      intro: 'Zwei gleich große Proben: Wasser und eine Pufferlösung. Beide enthalten Universalindikator. Wähle Salzsäure oder Natronlauge und gib nacheinander dieselbe Menge in beide Gläser. Vergleiche die pH-Änderungen im Glas, in der Tabelle und – wenn du magst – in der pH-Kurve. Danach wertest du aus.',
+      material: 'je 30,0 mL Wasser bzw. Pufferlösung · HCl und NaOH, je c = 0,100 mol/L · Tropfpipette (1 Tropfen ≙ 0,050 mL, vereinbarte Simulationsgröße) · Messpipette',
       questions: [
         {
           id: 'o1', step: 'Beobachtung', type: 'multi', text: 'Was hast du beobachtet? Kreuze alles Zutreffende an.',
           options: [
             { v: 'a', t: 'Schon ein Tropfen HCl senkt den pH-Wert des Wassers um mehrere Einheiten.', ok: true, needs: need('e1', 'HCl', 'Führe zuerst die Säurereihe durch.') },
-            { v: 'b', t: 'Im Wunderwasser ändert sich der pH-Wert bei einem Tropfen HCl um weniger als 0,1.', ok: true, needs: need('e1', 'HCl', 'Führe zuerst die Säurereihe durch.') },
-            { v: 'c', t: 'Auch bei Natronlauge ändert sich der pH-Wert des Wunderwassers zunächst nur wenig.', ok: true, needs: need('e1', 'NaOH', 'Führe dazu auch die Laugenreihe durch.') },
-            { v: 'd', t: 'Der pH-Wert des Wunderwassers bleibt bei jeder Zugabemenge exakt gleich.', ok: false, fb: 'Schau genau hin: Auch im Wunderwasser ändert sich der pH-Wert – nur viel weniger, und bei großen Zugaben zunehmend stärker.' },
+            { v: 'b', t: 'In der Pufferlösung ändert sich der pH-Wert bei einem Tropfen HCl um weniger als 0,1.', ok: true, needs: need('e1', 'HCl', 'Führe zuerst die Säurereihe durch.') },
+            { v: 'c', t: 'Auch bei Natronlauge ändert sich der pH-Wert der Pufferlösung zunächst nur wenig.', ok: true, needs: need('e1', 'NaOH', 'Führe dazu auch die Laugenreihe durch.') },
+            { v: 'd', t: 'Der pH-Wert der Pufferlösung bleibt bei jeder Zugabemenge exakt gleich.', ok: false, fb: 'Schau genau hin: Auch in der Pufferlösung ändert sich der pH-Wert – nur viel weniger, und bei großen Zugaben zunehmend stärker.' },
             { v: 'e', t: 'Wasser reagiert auf Natronlauge kaum.', ok: false, fb: 'Ein Tropfen NaOH hebt den pH-Wert des Wassers um mehrere Einheiten.' }
           ],
-          hints: ['Vergleiche in der Kurve die beiden Proben bei gleicher Zugabe.', 'Lies die ΔpH-Werte in der Tabelle unter dem Diagramm ab – nach einem Tropfen und nach größeren Zugaben.', 'Richtig sind die Aussagen über die starke Änderung im Wasser und die geringe (aber vorhandene) Änderung im Wunderwasser – für Säure und für Lauge.'],
-          solution: 'Zutreffend: a, b, c. Im Wasser genügt ein Tropfen für eine Änderung um mehrere pH-Einheiten. Im Wunderwasser bleibt die Änderung bei Säure und Lauge zunächst klein, ist aber nie null und wird bei großen Zugaben stärker.'
+          hints: ['Vergleiche in der Tabelle oder in der pH-Kurve die beiden Proben bei gleicher Zugabe.', 'Lies die ΔpH-Werte im Glas oder in der Ergebnistabelle ab – nach einem Tropfen und nach größeren Zugaben.', 'Richtig sind die Aussagen über die starke Änderung im Wasser und die geringe (aber vorhandene) Änderung in der Pufferlösung – für Säure und für Lauge.'],
+          solution: 'Zutreffend: a, b, c. Im Wasser genügt ein Tropfen für eine Änderung um mehrere pH-Einheiten. In der Pufferlösung bleibt die Änderung bei Säure und Lauge zunächst klein, ist aber nie null und wird bei großen Zugaben stärker.'
         },
         {
-          id: 'd1', step: 'Deutung', type: 'single', text: 'Das Wunderwasser mildert saure UND basische Zugaben ab. Was muss es enthalten?',
+          id: 'd1', step: 'Deutung', type: 'single', text: 'Die Pufferlösung mildert saure UND basische Zugaben ab. Was muss sie enthalten?',
           options: [
             { v: 'a', t: 'Eine starke Säure, die zugegebene OH⁻-Ionen neutralisiert.', ok: false, fb: 'Eine starke Säure könnte OH⁻ umsetzen – aber dann wäre die Probe stark sauer, und zugegebene Säure würde nicht abgemildert.' },
             { v: 'b', t: 'Teilchen, die Protonen von H₃O⁺ aufnehmen, und Teilchen, die Protonen an OH⁻ abgeben – eine schwache Säure und ihre korrespondierende Base.', ok: true },
@@ -75,20 +71,19 @@
           hints: ['Was passiert mit zugegebenem H₃O⁺, wenn es auf ein Teilchen trifft, das ein Proton aufnehmen kann?', 'Für Säure braucht man einen Protonenempfänger, für Lauge einen Protonenspender.', 'Gesucht ist ein Säure-Base-Paar: schwache Säure HA und korrespondierende Base A⁻ nebeneinander.'],
           solution: 'b: Eine schwache Säure und ihre korrespondierende Base. Die Base nimmt Protonen von H₃O⁺ auf, die Säure gibt Protonen an OH⁻ ab.'
         },
-        { id: 'f1', step: 'Deutung', type: 'free', text: 'In eigenen Worten (wird nicht bewertet, erscheint im Journal):' },
         {
-          id: 'x1', step: 'Erklärung (Teilchenebene)', type: 'single', reveal: true, text: 'Welche Reaktion läuft im Phosphatpuffer bei Zugabe von Salzsäure ab?',
+          id: 'x1', step: 'Erklärung (Teilchenebene)', type: 'single', text: 'Die Pufferlösung ist ein Phosphatpuffer: c(H₂PO₄⁻) = c(HPO₄²⁻) = 0,050 mol/L. Welche Reaktion läuft bei Zugabe von Salzsäure ab?',
           options: [
             { v: 'a', t: 'HPO₄²⁻ + H₃O⁺ → H₂PO₄⁻ + H₂O', ok: true },
             { v: 'b', t: 'H₂PO₄⁻ + H₃O⁺ → HPO₄²⁻ + H₂O', ok: false, fb: 'Prüfe die Ladungen und Protonen: Nimmt ein Teilchen ein Proton auf, wird es um eine negative Ladung „ärmer“.' },
             { v: 'c', t: 'H₃O⁺ + Cl⁻ → HCl + H₂O', ok: false, fb: 'Cl⁻ ist eine äußerst schwache Base und nimmt praktisch kein Proton auf.' },
             { v: 'd', t: 'HPO₄²⁻ + H₃O⁺ → HPO₄²⁻ (H₃O⁺ wird gespeichert)', ok: false, fb: 'Teilchen werden nicht gespeichert; ein Proton wird übertragen.' }
           ],
-          hints: ['Beobachte die Zeitlupe in der Teilchenansicht des Puffers.', 'Die basische Form nimmt das Proton auf.', 'HPO₄²⁻ + H₃O⁺ → H₂PO₄⁻ + H₂O'],
+          hints: ['Vergleiche im Teilchenmodell die Symbole der Pufferlösung vor und nach der Zugabe von HCl.', 'Die basische Form nimmt das Proton auf.', 'HPO₄²⁻ + H₃O⁺ → H₂PO₄⁻ + H₂O'],
           solution: 'a: HPO₄²⁻ + H₃O⁺ → H₂PO₄⁻ + H₂O. Bei Natronlauge: H₂PO₄⁻ + OH⁻ → HPO₄²⁻ + H₂O.'
         },
         {
-          id: 'x2', step: 'Erklärung (Teilchenebene)', type: 'single', reveal: true, text: 'Und bei Zugabe von Natronlauge?',
+          id: 'x2', step: 'Erklärung (Teilchenebene)', type: 'single', text: 'Und bei Zugabe von Natronlauge?',
           options: [
             { v: 'a', t: 'H₂PO₄⁻ + OH⁻ → HPO₄²⁻ + H₂O', ok: true },
             { v: 'b', t: 'HPO₄²⁻ + OH⁻ → H₂PO₄⁻ + H₂O', ok: false, fb: 'OH⁻ nimmt ein Proton auf – das muss von der sauren Form kommen.' },
@@ -97,18 +92,13 @@
           ],
           hints: ['Wer gibt im Puffer ein Proton ab?', 'Die saure Form des Paars reagiert mit OH⁻.', 'H₂PO₄⁻ + OH⁻ → HPO₄²⁻ + H₂O'],
           solution: 'a: H₂PO₄⁻ + OH⁻ → HPO₄²⁻ + H₂O.'
-        }
+        },
+        { id: 'f1', step: 'Erklärung in eigenen Worten', type: 'free', text: 'Erkläre in 1–3 Sätzen, warum sich der pH-Wert der Pufferlösung nach Zugabe von HCl weniger stark ändert als bei Wasser.', expect: '1–3 Sätze; nenne, welche Teilchen der Pufferlösung mit H₃O⁺ reagieren.', note: FREE_NOTE }
       ]
     },
     e2: {
-      intro: 'Drei Proben mit derselben Gesamtmenge des Acetatsystems, aber unterschiedlicher Zusammensetzung. Welche Probe mildert Säure, welche Lauge besonders gut ab – und warum? Zur Erinnerung: Bei der Halbtitration einer schwachen Säure liegen Säure und korrespondierende Base nebeneinander vor – so ein Gemisch steht hier in Glas C.',
+      intro: 'Drei Proben mit derselben Gesamtmenge des Acetatsystems, aber unterschiedlicher Zusammensetzung: Essigsäure, Natriumacetat und ein Gemisch. Wähle Salzsäure oder Natronlauge, dosiere in alle drei Gläser und vergleiche. Zur Erinnerung: Bei der Halbtitration einer schwachen Säure liegen Säure und korrespondierende Base nebeneinander vor – so ein Gemisch steht hier in Glas C.',
       material: 'je 30,0 mL: Essigsäure 0,100 mol/L · Natriumacetat 0,100 mol/L · Gemisch je 0,050 mol/L · HCl und NaOH, je 0,100 mol/L',
-      predict: {
-        id: 'p2', text: 'Vermutung: Welche Probe mildert Säure UND Lauge ab?',
-        options: [
-          { v: 'hac', t: 'die Essigsäure' }, { v: 'naac', t: 'die Natriumacetat-Lösung' }, { v: 'mix', t: 'das Gemisch' }, { v: 'none', t: 'keine der drei' }
-        ]
-      },
       questions: [
         {
           id: 'o2', step: 'Beobachtung', type: 'multi', text: 'Was zeigen deine Messungen? Kreuze alles Zutreffende an.',
@@ -133,7 +123,6 @@
           hints: ['Welche Teilchen braucht man für Säure, welche für Lauge?', 'Die Gesamtmenge ist gleich – nur die Zusammensetzung unterscheidet sich.', 'Beide Partner (HA und A⁻) müssen in nennenswerter Menge vorhanden sein.'],
           solution: 'b: Beide Partner liegen in nennenswerter Menge vor; die Säure setzt OH⁻ um, die Base H₃O⁺.'
         },
-        { id: 'f2', step: 'Deutung', type: 'free', text: 'In eigenen Worten (wird nicht bewertet):' },
         {
           id: 'x3', step: 'Erklärung (Teilchenebene)', type: 'single', text: 'Welche Gleichung beschreibt die Säurezugabe zum Gemisch?',
           options: [
@@ -142,63 +131,74 @@
             { v: 'c', t: 'CH₃COO + H₃O⁺ → CH₃COOH + H₂O⁺', ok: false, fb: 'Acetat ist ein Anion (CH₃COO⁻); Wasser entsteht ungeladen.' },
             { v: 'd', t: 'H₃O⁺ + OH⁻ → 2 H₂O', ok: false, fb: 'Diese Neutralisation läuft ab, wenn H₃O⁺ und OH⁻ zusammentreffen – im Puffer ist der Partner von H₃O⁺ aber vor allem CH₃COO⁻.' }
           ],
-          hints: ['Beobachte die Zeitlupe in der Teilchenansicht des Gemischs.', 'A⁻ nimmt das Proton auf.', 'CH₃COO⁻ + H₃O⁺ → CH₃COOH + H₂O'],
+          hints: ['Vergleiche im Teilchenmodell die Symbole im Gemisch vor und nach der Zugabe von HCl.', 'A⁻ nimmt das Proton auf.', 'CH₃COO⁻ + H₃O⁺ → CH₃COOH + H₂O'],
           solution: 'a: CH₃COO⁻ + H₃O⁺ → CH₃COOH + H₂O; bei Lauge: CH₃COOH + OH⁻ → CH₃COO⁻ + H₂O.'
-        }
+        },
+        {
+          id: 'x4', step: 'Erklärung (Teilchenebene)', type: 'single', text: 'Und welche Gleichung beschreibt die Laugenzugabe zum Gemisch?',
+          options: [
+            { v: 'a', t: 'CH₃COOH + OH⁻ → CH₃COO⁻ + H₂O', ok: true },
+            { v: 'b', t: 'CH₃COO⁻ + OH⁻ → CH₃COOH + H₂O', ok: false, fb: 'OH⁻ nimmt ein Proton auf – das muss von der Säure CH₃COOH kommen, nicht vom Anion.' },
+            { v: 'c', t: 'Na⁺ + OH⁻ → NaOH', ok: false, fb: 'Natrium-Ionen sind nur Gegenionen; sie reagieren hier nicht.' },
+            { v: 'd', t: 'CH₃COOH + OH⁻ → CH₃COOH (OH⁻ wird gespeichert)', ok: false, fb: 'Teilchen werden nicht gespeichert; ein Proton wird übertragen.' }
+          ],
+          hints: ['Wer im Gemisch kann ein Proton abgeben?', 'Die saure Form des Paars reagiert mit OH⁻.', 'CH₃COOH + OH⁻ → CH₃COO⁻ + H₂O'],
+          solution: 'a: CH₃COOH + OH⁻ → CH₃COO⁻ + H₂O.'
+        },
+        { id: 'f2', step: 'Erklärung in eigenen Worten', type: 'free', text: 'Erkläre in 1–3 Sätzen, wie CH₃COOH und CH₃COO⁻ im Gemisch zusammenwirken, wenn HCl bzw. NaOH zugegeben wird.', expect: '1–3 Sätze; nenne für Säure und für Lauge, welcher Partner reagiert und was entsteht.', note: FREE_NOTE }
       ]
     },
     e3: {
-      intro: 'Drei Acetatpuffer mit gleicher Gesamtmenge (je 3,0 mmol), aber unterschiedlichem Verhältnis HA : A⁻. Vergleiche Anfangs-pH und Reserve. Dosiere auch über die Reserve hinaus. Über „Ansatz ändern“ an einem Glas legst du einen neuen Ansatz an.',
-      material: 'je 30,0 mL Acetatpuffer (gesamt 0,100 mol/L) · HCl und NaOH, je 0,100 mol/L · Messpipette für größere Zugaben',
+      intro: 'Stelle eine Pufferlösung mit vorgegebenem pH-Wert her: Ziel-pH und Puffersystem wählen → Mischungsverhältnis und Volumina selbst berechnen → die beiden Stammlösungen dosieren → pH-Wert mit der pH-Messelektrode überprüfen.',
+      material: 'Stammlösungen des gewählten Systems, je c = 0,100 mol/L · Gesamtvolumen 30,0 mL · Messpipette (bis 10 mL) · pH-Messelektrode · 25 °C, ideales Modell',
       questions: [
         {
-          id: 'q31', step: 'Beobachtung', type: 'single', text: 'Welcher Ansatz startet beim niedrigsten pH-Wert?',
-          options: [{ v: 'a', t: 'HA : A⁻ = 10 : 1', ok: true }, { v: 'b', t: 'HA : A⁻ = 1 : 1', ok: false, fb: 'Mehr Säureanteil bedeutet niedrigeren pH.' }, { v: 'c', t: 'HA : A⁻ = 1 : 10', ok: false, fb: 'Dieser Ansatz enthält überwiegend die Base.' }],
-          hints: ['Lies die Startwerte in der Tabelle ab.', 'Je größer der Säureanteil, desto …', '10 : 1 (viel HA) startet am niedrigsten.'], solution: 'HA : A⁻ = 10 : 1 (etwa pH 3,76).'
-        },
-        {
-          id: 'q32', step: 'Deutung', type: 'single', text: 'Welcher Ansatz hält am meisten weitere Salzsäure aus, bevor er seinen Bereich verlässt?',
-          options: [{ v: 'a', t: 'HA : A⁻ = 10 : 1', ok: false, fb: 'Hier ist nur wenig A⁻ vorhanden (etwa 0,27 mmol).' }, { v: 'b', t: 'HA : A⁻ = 1 : 1', ok: false, fb: 'Mittelgroße Reserve gegen Säure – am besten ausgewogen in beide Richtungen.' }, { v: 'c', t: 'HA : A⁻ = 1 : 10', ok: true }],
-          hints: ['Welches Teilchen setzt H₃O⁺ um?', 'Die Reserve gegen Säure hängt von n(A⁻) ab.', 'Am meisten A⁻ hat der Ansatz 1 : 10.'], solution: '1 : 10, denn er enthält am meisten CH₃COO⁻ (etwa 2,7 mmol).'
-        },
-        {
-          id: 'q33', step: 'Beobachtung', type: 'multi', text: 'Weiterdosieren über die Reserve: Was trifft zu?',
+          id: 'q31', step: 'Auswahl des Systems', type: 'single', text: 'Nach welchem Kriterium wählt man das Puffersystem für einen Ziel-pH?',
           options: [
-            { v: 'a', t: 'Die pH-Änderung je Zugabe wird mit fortschreitender Umwandlung allmählich größer.', ok: true, needs: need('e3', 'HCl', 'Dosiere in der Säurereihe weiter (Messpipette).') },
-            { v: 'b', t: 'Der pH-Wert bleibt exakt konstant, bis der Puffer plötzlich erschöpft ist.', ok: false, fb: 'Es gibt keinen Sprung von „unverändert“ zu „erschöpft“ – die Änderung beginnt sofort und nimmt zu.' },
-            { v: 'c', t: 'Ist das A⁻ verbraucht, bestimmt überschüssige Salzsäure den pH-Wert.', ok: true, needs: need('e3', 'HCl', 'Dosiere in der Säurereihe weiter (Messpipette).') },
-            { v: 'd', t: 'Nach der Erschöpfung steigt der pH-Wert wieder an.', ok: false, fb: 'Weitere Säure senkt den pH-Wert weiter.' }
+            { v: 'a', t: 'Der pKₛ-Wert des Paars liegt nahe am Ziel-pH (Faustregel: Ziel-pH ≈ pKₛ ± 1).', ok: true },
+            { v: 'b', t: 'Man nimmt das System mit dem größten pKₛ-Wert, weil es am stärksten puffert.', ok: false, fb: 'Der pKₛ-Wert muss zum Ziel-pH passen, nicht möglichst groß sein.' },
+            { v: 'c', t: 'Jedes Paar puffert bei jedem pH-Wert gleich gut.', ok: false, fb: 'Außerhalb von etwa pKₛ ± 1 ist ein Partner zu knapp – das Paar puffert dort kaum noch.' },
+            { v: 'd', t: 'Man nimmt das System mit der höchsten Stammlösungskonzentration.', ok: false, fb: 'Die Konzentration bestimmt die Kapazität, nicht den pH-Bereich.' }
           ],
-          hints: ['Vergleiche die Abstände der Messpunkte in der Kurve.', 'Achte auf den 10 : 1-Ansatz: Er verlässt seinen Bereich zuerst.', 'Zutreffend sind a und c.'], solution: 'Zutreffend: a, c.'
-        }
-      ]
-    },
-    e4: {
-      intro: 'Gleiches Verhältnis (1 : 1), aber andere Mengen bzw. Volumina: ein Puffer mit 0,10 mol/L, einer mit 0,010 mol/L (zehnfach verdünnt hergestellt) und ein Puffer, der mit Wasser auf 300 mL aufgefüllt wurde.',
-      material: '30 mL Puffer 0,10 mol/L · 30 mL Puffer 0,010 mol/L · 30 mL Puffer 0,10 mol/L + 270 mL Wasser (400-mL-Becherglas)',
-      questions: [
-        {
-          id: 'q41', step: 'Beobachtung', type: 'single', text: 'Wie unterscheiden sich die Anfangs-pH-Werte?',
-          options: [{ v: 'a', t: 'Sie sind annähernd gleich.', ok: true }, { v: 'b', t: 'Der verdünnte Puffer liegt eine pH-Einheit höher.', ok: false, fb: 'Das Verhältnis A⁻ : HA ist gleich – damit auch der pH-Wert (annähernd).' }, { v: 'c', t: 'Der verdünnte Puffer ist neutral.', ok: false, fb: 'Verdünnen ändert das Verhältnis nicht.' }],
-          hints: ['Lies die Startwerte ab.', 'Was bestimmt nach Henderson-Hasselbalch den pH-Wert?', 'Annähernd gleich: gleiches Verhältnis.'], solution: 'Annähernd gleich (≈ 4,75), weil das Verhältnis gleich ist.'
+          hints: ['Bei welchem Verhältnis n(A⁻) : n(HA) ist die Pufferwirkung gut?', 'Faustregel: Verhältnis zwischen 1 : 10 und 10 : 1.', 'Dann liegt der pH-Wert im Bereich pKₛ ± 1.'],
+          solution: 'a: Der pKₛ-Wert muss in der Nähe des Ziel-pH liegen (Näherung pKₛ ± 1), damit beide Partner in nennenswerter Menge vorliegen.'
         },
         {
-          id: 'q42', step: 'Beobachtung', type: 'single', text: 'Welcher Puffer ändert seinen pH-Wert bei 1,0 mL HCl am stärksten?',
-          options: [{ v: 'a', t: 'Puffer 0,10 mol/L (30 mL)', ok: false, fb: 'Er enthält zehnmal so viel A⁻ wie der verdünnt hergestellte.' }, { v: 'b', t: 'Puffer 0,010 mol/L (30 mL)', ok: true }, { v: 'c', t: 'aufgefüllter Puffer (300 mL)', ok: false, fb: 'Er enthält dieselben Stoffmengen wie der unverdünnte Puffer – seine Reserve ist gleich groß.' }],
-          hints: ['Dosiere 1,0 mL HCl in alle drei Gläser.', 'Entscheidend ist die Stoffmenge an A⁻ im Glas.', 'Der Puffer mit 0,010 mol/L enthält nur 0,15 mmol A⁻.'], solution: 'Der Puffer 0,010 mol/L (30 mL), er enthält nur ein Zehntel der Stoffmengen.'
-        },
-        {
-          id: 'q43', step: 'Deutung', type: 'single', text: 'Der aufgefüllte Puffer (300 mL) im Vergleich zum unverdünnten (30 mL):',
+          id: 'q32', step: 'Auswertung', type: 'single', text: 'Du gibst von der Base-Lösung mehr zu, als du berechnet hast (Säure-Lösung wie berechnet). Wie ändert sich der pH-Wert?',
           options: [
-            { v: 'a', t: 'Seine Gesamtreserve gegen Säure ist zehnmal kleiner.', ok: false, fb: 'Beim Auffüllen bleiben die Stoffmengen erhalten – die Gesamtreserve ist gleich.' },
-            { v: 'b', t: 'Seine Gesamtreserve ist gleich groß, aber je Liter Lösung ist sie zehnmal kleiner.', ok: true },
-            { v: 'c', t: 'Er puffert gar nicht mehr.', ok: false, fb: 'Er enthält weiterhin beide Partner in gleichem Verhältnis.' }
+            { v: 'a', t: 'Er wird höher, weil n(A⁻)/n(HA) größer wird.', ok: true },
+            { v: 'b', t: 'Er wird niedriger, weil mehr Base mehr H₃O⁺ erzeugt.', ok: false, fb: 'Mehr Base bedeutet mehr A⁻ und damit ein größeres Verhältnis n(A⁻)/n(HA) – der pH-Wert steigt.' },
+            { v: 'c', t: 'Er bleibt gleich, weil das Gesamtvolumen gleich bleibt.', ok: false, fb: 'Nicht das Volumen, sondern das Verhältnis der Stoffmengen bestimmt den pH-Wert.' }
           ],
-          hints: ['Was ändert sich beim Auffüllen: n oder c?', 'n bleibt, V wird zehnmal größer.', 'Gleiche Stoffmenge → gleiche Gesamtreserve; Kapazität pro Liter kleiner.'], solution: 'b: Gleiche Stoffmengen, also gleiche Gesamtreserve für dieselbe Zugabe; bezogen auf das Volumen ist die Kapazität zehnmal kleiner.'
-        }
+          hints: ['Setze in pH = pKₛ + lg[n(A⁻)/n(HA)] ein.', 'Mehr A⁻ vergrößert den Quotienten.', 'Ein größerer Quotient hat einen größeren Logarithmus.'],
+          solution: 'a: n(A⁻) steigt, der Quotient und lg wachsen – der pH-Wert wird höher.'
+        },
+        { id: 'f3', step: 'Auswertung in eigenen Worten', type: 'free', text: 'Vergleiche in 1–3 Sätzen deinen gemessenen pH-Wert mit dem Ziel-pH und nenne eine mögliche Ursache für eine Abweichung.', expect: '1–3 Sätze; nenne Zahlenwerte (Messwert, Ziel-pH) und eine Ursache (z. B. Volumen, Verhältnis, Modellgrenze).', note: FREE_NOTE }
       ]
     }
   };
+
+
+  // ------------------------------------------------------------ Stabile Mischung der Antworten
+  function hash32(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function mulberry32(a) {
+    return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  /** Gemischte Reihenfolge der Antwort-IDs; hängt nur von Sitzungs-Seed und Frage ab (Fisher-Yates). */
+  function shuffled(seed, key, ids) {
+    const rnd = mulberry32(hash32(String(seed) + '|' + key));
+    const a = ids.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  /** Gespeicherte Reihenfolge je Frage: einmal erzeugt, danach unverändert (auch nach Neuladen). */
+  function orderFor(store, seed, key, ids) {
+    const have = store[key];
+    if (Array.isArray(have) && have.length === ids.length && ids.every((i) => have.includes(i))) return have;
+    const o = shuffled(seed, key, ids);
+    store[key] = o;
+    return o;
+  }
 
   /**
    * Bewertet eine Frage. ans: Wert (single), Array (multi). s: Evidenz.
@@ -402,6 +402,103 @@
     return gradeField(f, val);
   }
 
+
+  // ------------------------------------------------------------ Versuch 3: Herstellungsrechnung
+  /** Standardisierte Übungsaufgaben (je ein System); der Ziel-pH liegt im Bereich pKₛ ± 1. */
+  const MIX_TARGETS = [{ id: 't1', pH: 5.05 }, { id: 't2', pH: 6.90 }, { id: 't3', pH: 9.55 }];
+  const PH_MIN = 3.5, PH_MAX = 10.5;
+
+  const SYS_ORDER = C.SYSTEM_IDS;
+  const rangeText = (id) => `${fmt(C.SYSTEMS[id].pKa - 1, 2)} – ${fmt(C.SYSTEMS[id].pKa + 1, 2)}`;
+
+  /** Prüft Ziel-pH und gewähltes System; Text für die Lernenden. */
+  function targetMessage(sys, pH) {
+    if (!Number.isFinite(pH) || pH < PH_MIN || pH > PH_MAX) return { ok: false, code: 'invalid', text: `Gib den Ziel-pH als Zahl zwischen ${fmt(PH_MIN, 1)} und ${fmt(PH_MAX, 1)} ein (z. B. 5,05).` };
+    const fits = C.suitableSystems(pH);
+    if (sys && !C.SYSTEMS[sys]) return { ok: false, code: 'invalid', text: 'Unbekanntes Puffersystem.' };
+    if (!fits.length) {
+      return { ok: false, code: 'none', text: `Für pH ${fmt(pH, 2)} passt keines der drei Systeme (Faustregel pKₛ ± 1): Acetat ${rangeText('ac')}, Phosphat ${rangeText('ph')}, Ammonium/Ammoniak ${rangeText('am')}. Wähle einen Ziel-pH in einem dieser Bereiche.` };
+    }
+    if (!sys) return { ok: true, code: 'pick', text: 'Wähle jetzt das Puffersystem, dessen pKₛ-Wert zum Ziel-pH passt.' };
+    const a = C.assessTarget(sys, pH), S = C.SYSTEMS[sys];
+    if (!a.ok) {
+      return { ok: false, code: 'range', text: `${S.name} (pKₛ = ${fmt(S.pKa, 2)}) puffert nur etwa im Bereich ${rangeText(sys)} (Faustregel pKₛ ± 1). pH ${fmt(pH, 2)} liegt ${a.d > 0 ? 'darüber' : 'darunter'}: Dort ist ${a.d > 0 ? 'die Säure HA zu knapp' : 'die Base A⁻ zu knapp'} (Verhältnis außerhalb 1 : 10 … 10 : 1). Wähle ein anderes System.` };
+    }
+    if (a.code === 'edge') return { ok: true, code: 'edge', text: `Passt, liegt aber am Rand des Bereichs pKₛ ± 1 (Verhältnis ${fmt(Math.pow(10, a.d), 2)} : 1). Dort ist die Pufferwirkung schwächer; pKₛ ± 1 ist nur eine Näherung.` };
+    return { ok: true, code: 'ok', text: `${S.name} passt: pKₛ = ${fmt(S.pKa, 2)}, Ziel-pH liegt im Bereich ${rangeText(sys)} (Näherung pKₛ ± 1).` };
+  }
+
+  /** Eintrag der Lernenden prüfen. e = { r, vb, va } als Text; plan aus C.planMix. */
+  function gradeMixCalc(plan, e) {
+    const R = plan.ratio, lgR = plan.pH - plan.pKa;
+    const res = {};
+    // Verhältnis n(A⁻)/n(HA)
+    const sr = String(e.r == null ? '' : e.r).trim();
+    if (!sr) res.r = { ok: false, empty: true, fb: 'Noch keine Eingabe.' };
+    else {
+      const v = num(sr);
+      if (!Number.isFinite(v)) res.r = { ok: false, kind: 'format', fb: 'Bitte eine Zahl eingeben (Dezimalkomma erlaubt).' };
+      else if (within(v, R, 0.03, 0.05)) res.r = { ok: true };
+      else if (within(v, 1 / R, 0.03)) res.r = { ok: false, kind: 'quotient', fb: 'Falscher Quotient: Gefragt ist n(A⁻)/n(HA) – die Base steht im Zähler.' };
+      else if (within(v, lgR, 0.03, 0.02)) res.r = { ok: false, kind: 'log', fb: `${fmt(lgR, 2)} ist lg des Verhältnisses (pH − pKₛ). Das Verhältnis selbst ist 10^${fmt(lgR, 2)}.` };
+      else if (within(v, plan.pH / plan.pKa, 0.01)) res.r = { ok: false, kind: 'concept', fb: 'pH-Werte werden nicht dividiert; stelle pH = pKₛ + lg[n(A⁻)/n(HA)] nach dem Verhältnis um.' };
+      else res.r = { ok: false, kind: 'calc', fb: 'Rechne 10^(pH − pKₛ), mit pKₛ des gewählten Systems.' };
+    }
+    // Volumina (Base-Lösung, Säure-Lösung)
+    const vol = (txt, ref, other, nameRef, nameOther) => {
+      const t = String(txt == null ? '' : txt).trim();
+      if (!t) return { ok: false, empty: true, fb: 'Noch keine Eingabe.' };
+      const v = num(t);
+      if (!Number.isFinite(v)) return { ok: false, kind: 'format', fb: 'Bitte eine Zahl eingeben (Dezimalkomma erlaubt).' };
+      if (within(v, ref, 0, 0.3)) return { ok: true };
+      if (within(v, other, 0, 0.3)) return { ok: false, kind: 'swap', fb: `Das wäre das Volumen der ${nameOther}-Lösung – Säure und Base vertauscht? Bei n(A⁻)/n(HA) = ${fmt(plan.ratio, 2)} wird von der ${plan.ratio > 1 ? 'Base' : 'Säure'}-Lösung mehr gebraucht.` };
+      if (v < 0 || v > plan.Vtot + 1e-9) return { ok: false, kind: 'range', fb: `Das Volumen muss zwischen 0 und ${fmt(plan.Vtot, 1)} mL liegen.` };
+      return { ok: false, kind: 'calc', fb: `Aus V(Base) + V(Säure) = ${fmt(plan.Vtot, 1)} mL und V(Base)/V(Säure) = n(A⁻)/n(HA) folgt das Volumen (bei gleicher Konzentration c).` };
+    };
+    res.vb = vol(e.vb, plan.VBase, plan.VAcid, 'Base', 'Säure');
+    res.va = vol(e.va, plan.VAcid, plan.VBase, 'Säure', 'Base');
+    // Summe
+    const vb = num(e.vb), va = num(e.va);
+    if (res.vb.ok !== undefined && Number.isFinite(vb) && Number.isFinite(va) && Math.abs(vb + va - plan.Vtot) > 0.6) {
+      res.sum = { ok: false, kind: 'sum', fb: `V(Base) + V(Säure) = ${fmt(vb + va, 1)} mL – gefordert sind ${fmt(plan.Vtot, 1)} mL Gesamtvolumen.` };
+    } else res.sum = { ok: true };
+    res.ok = !!(res.r.ok && res.vb.ok && res.va.ok && res.sum.ok);
+    res.empty = !!(res.r.empty || res.vb.empty || res.va.empty);
+    return res;
+  }
+
+  /**
+   * Auswertung einer Messung gegen den Ziel-pH. Nennt die konkrete Ursache einer Abweichung
+   * (Volumina, Verhältnis, Rechenfehler) – der Messwert selbst wird nie angepasst.
+   */
+  function analyzeOutcome(e) {
+    const S = C.SYSTEMS[e.system];
+    const plan = C.planMix(e.system, e.target);
+    const dev = e.pH - e.target;
+    const band = Math.abs(dev) <= 0.05 ? 'good' : Math.abs(dev) <= 0.2 ? 'near' : 'off';
+    const causes = [];
+    if (e.ratio == null) {
+      causes.push('Im Becherglas fehlt ein Partner des Paars (n(HA) = 0 oder n(A⁻) = 0): Das ist kein Puffer, die Henderson-Hasselbalch-Gleichung ist nicht anwendbar.');
+    } else {
+      const dA = e.vAcid - plan.VAcid, dB = e.vBase - plan.VBase;
+      if (Math.abs(dA) > 0.3 || Math.abs(dB) > 0.3) {
+        causes.push(`Zugegeben wurden V(Base) = ${fmt(e.vBase, 1)} mL und V(Säure) = ${fmt(e.vAcid, 1)} mL statt ${fmt(plan.VBase, 1)} mL und ${fmt(plan.VAcid, 1)} mL. Das ergibt n(A⁻)/n(HA) = ${fmt(e.ratio, 2)} statt ${fmt(plan.ratio, 2)} und nach der Gleichung pH ≈ ${fmt(e.hh, 2)}.`);
+      }
+      if (Math.abs(e.V - plan.Vtot) > 0.5) causes.push(`Das Gesamtvolumen beträgt ${fmt(e.V, 1)} mL statt ${fmt(plan.Vtot, 1)} mL. Für das Verhältnis zählt nur das Verhältnis der Stoffmengen; Konzentration und Kapazität ändern sich.`);
+      if (e.calc && e.calc.res && !e.calc.res.ok) {
+        const bad = ['r', 'vb', 'va', 'sum'].filter((k) => e.calc.res[k] && !e.calc.res[k].ok && !e.calc.res[k].empty);
+        if (bad.length) causes.push('Schon deine Rechnung war nicht vollständig richtig: ' + bad.map((k) => e.calc.res[k].fb).join(' '));
+      }
+      if (!causes.length && band !== 'good') causes.push(`Volumina und Verhältnis stimmen mit der Rechnung überein. Die Abweichung von ${fmt(Math.abs(dev), 2)} stammt aus der Näherung der Gleichung (Gleichgewichtsmodell mit Wasser-Autoprotolyse).`);
+    }
+    const summary = band === 'good'
+      ? `Der Messwert pH ${fmt(e.pH, 2)} liegt innerhalb von 0,05 um den Ziel-pH ${fmt(e.target, 2)}.`
+      : band === 'near'
+        ? `Der Messwert pH ${fmt(e.pH, 2)} weicht um ${fmt(Math.abs(dev), 2)} vom Ziel-pH ${fmt(e.target, 2)} ab.`
+        : `Der Messwert pH ${fmt(e.pH, 2)} weicht deutlich (${fmt(Math.abs(dev), 2)}) vom Ziel-pH ${fmt(e.target, 2)} ab.`;
+    return { plan, dev, band, causes, summary, system: S.name };
+  }
+
   // ------------------------------------------------------------ Anwendungen
   const APPLICATIONS = [
     {
@@ -449,10 +546,11 @@
       'Der pH-Wert ändert sich dabei wenig – aber nie gar nicht.',
       { eq: '<b>Henderson-Hasselbalch:</b> pH = pKₛ + lg [c(A⁻) / c(HA)]' },
       '<b>Pufferbereich</b> (Faustregel): pH ≈ pKₛ ± 1, also c(A⁻) : c(HA) zwischen 1 : 10 und 10 : 1. Bei 1 : 1 gilt pH = pKₛ.',
+      '<b>Puffer herstellen:</b> Paar mit pKₛ nahe am Ziel-pH wählen, n(A⁻)/n(HA) = 10^(pH − pKₛ) berechnen, mit n = c · V die Volumina bestimmen, mischen, messen.',
       '<b>Pufferkapazität:</b> Stoffmenge an Säure oder Base, die ein Puffer umsetzen kann. Sie wächst mit den Stoffmengen der Partner – gleicher pH bedeutet nicht gleiche Kapazität.',
       'Beispiele: Blut (CO₂*/HCO₃⁻), Phosphatpuffer im Labor, Kalibrierpuffer.'
     ]
   };
 
-  return { num, within, PROTOCOLS, gradeQuestion, THEORY, gradeField, TASKS, UNITS, gradeTaskField, APPLICATIONS, NOTEBOOK };
+  return { num, within, shuffled, orderFor, MIX_TARGETS, targetMessage, gradeMixCalc, analyzeOutcome, PROTOCOLS, gradeQuestion, THEORY, gradeField, TASKS, UNITS, gradeTaskField, APPLICATIONS, NOTEBOOK };
 });

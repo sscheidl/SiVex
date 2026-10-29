@@ -5,12 +5,17 @@
  * und Mischschlieren nach TitraLab 3 (titration/js/view/lab-renderer.js:
  * _drawDrop, _liquidPath, _drawFlask, _drawPlumes, Wellengleichung in _update),
  * angepasst an zylindrische Bechergläser und den hellen SiVex-Laborhintergrund.
- * Der Renderer liest nur den Modellzustand (engine.state) und verändert ihn nie.
+ * Der Renderer liest nur den Modellzustand (engine.state) und verändert ihn nie;
+ * er meldet lediglich die sichtbare Weltbreite zurück, damit sich die Gläser
+ * über die ganze Bühne verteilen. Texte, die gelesen werden müssen (Probennamen,
+ * pH-Anzeigen, Flaschen, „pH-Messelektrode“), liegen als HTML über der Bühne
+ * (siehe ui.js), damit sie auch auf kleinen Bildschirmen scharf bleiben.
  */
 (function (root) {
   'use strict';
   const C = root.PF.chem, G = root.PF.geometry;
   const WAVE_N = 34;
+  const STRIP = 58; // Bildschirmpixel unter der Tischkante für Beschriftungen
   const FONT = '"Segoe UI", system-ui, -apple-system, Arial, sans-serif';
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -32,11 +37,17 @@
       const w = Math.max(1, r.width), h = Math.max(1, r.height);
       if (w === this.view.w && h === this.view.h && dpr === this.view.dpr) return false;
       this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
-      const scale = Math.min(w / G.W, h / G.H);
-      Object.assign(this.view, { w, h, dpr, scale, ox: (w - G.W * scale) / 2, oy: (h - G.H * scale) / 2 });
+      // Maßstab nach der Höhe über der Tischkante; unter der Tischkante bleibt immer ein Streifen
+      // (STRIP px) für die Anzeigen der Proben und die Flaschenschalter. Reicht die Breite nicht, gilt
+      // der Maßstab nach der Breite. Überschüssige Breite dehnt die Welt aus (Gläser verteilen sich).
+      const scale = Math.min(w / G.W, Math.max(0.2, h - STRIP) / G.BENCH);
+      Object.assign(this.view, { w, h, dpr, scale, ox: 0, oy: h - STRIP - G.BENCH * scale, worldW: w / scale });
+      this.eng.setWorldWidth(w / scale);
       return true;
     }
     toScreen(x, y) { const v = this.view; return { x: v.ox + x * v.scale, y: v.oy + y * v.scale }; }
+    /** Bildschirmpixel → Welteinheiten (für lesbare Schriftgrößen und Linienbreiten). */
+    px(n) { return n / this.view.scale; }
 
     beakerFx(i) {
       if (!this.fx[i]) this.fx[i] = { h: new Float32Array(WAVE_N), v: new Float32Array(WAVE_N), rings: [], plumes: [], color: null, stirA: 0 };
@@ -51,7 +62,7 @@
       const f = this.beakerFx(e.beaker);
       const surf = G.surfaceY(g, b.comp.V);
       const x = G.tipOver(g, this.eng.state.tool).x;
-      if (this.opts.indicator) {
+      if (this.opts.indicator && s.kind !== 'mix') {
         const last = f.plumes[f.plumes.length - 1];
         if (e.stream && last && last.stream && this.time - last.born < 0.4) last.vol += e.vol; // Strahl: eine wachsende Schliere
         else f.plumes.push({ x0: x, age: 0, born: this.time, vol: e.vol, share: 0.004, phase: Math.random() * 6.28, drift: Math.random() - 0.5, stream: e.stream });
@@ -97,7 +108,7 @@
 
     /** Farbe [r,g,b,a] einer Lösung mit Indikator (schematisch) bzw. ohne. */
     liquidColor(pHv, k) {
-      if (!this.opts.indicator) return [214, 230, 244, 0.42];
+      if (!this.opts.indicator || pHv == null) return [214, 230, 244, 0.42];
       const c = C.indicatorRGB(pHv);
       const s = clamp(k, 0, 1);
       return [lerp(225, c[0], 0.35 + 0.6 * s), lerp(235, c[1], 0.35 + 0.6 * s), lerp(245, c[2], 0.35 + 0.6 * s), 0.5 + 0.38 * s];
@@ -115,7 +126,7 @@
       const s = this.eng.current(), geo = this.eng.geometry();
       this.drawBottles(ctx, s);
       this.drawRack(ctx);
-      s.beakers.forEach((b, i) => { this.drawRef(ctx, b, geo[i]); this.drawBeaker(ctx, b, geo[i], i); });
+      s.beakers.forEach((b, i) => { if (s.kind !== 'mix') this.drawRef(ctx, b, geo[i]); this.drawBeaker(ctx, b, geo[i], i, s); });
       this.drawDrops(ctx, geo, s);
       this.drawPipettes(ctx, s);
     }
@@ -151,37 +162,42 @@
     }
 
     drawBottles(ctx, s) {
-      const B = G.BOTTLE;
-      for (const key of ['HCl', 'NaOH']) {
-        const x = G.BOTTLES[key].x, base = G.BENCH, top = base - B.h;
-        const active = s.reagent === key;
+      const B = G.BOTTLE, REG = root.PF.engine.REAGENTS;
+      let keys = this.eng.bottleKeys();
+      const generic = !keys.length;
+      if (generic) keys = ['acid', 'base'];
+      const active = generic ? null : this.eng.activeReagent(s);
+      keys.forEach((key, i) => {
+        const x = G.BOTTLE_X[i], base = G.BENCH, top = base - B.h;
+        const reg = REG[key], tone = reg ? reg.tone : key;
+        const on = key === active;
         this.shadow(ctx, x, base + 2, B.w * 0.7, 6, 0.28);
-        // Flaschenkörper (Klarglas) mit farbloser Maßlösung
+        // Flaschenkörper (Klarglas) mit farbloser Lösung
         ctx.save();
         rr(ctx, x - B.w / 2, top + 22, B.w, B.h - 22, 9);
         ctx.fillStyle = 'rgba(220,234,246,0.55)'; ctx.fill();
         ctx.save(); ctx.clip();
         ctx.fillStyle = 'rgba(200,222,242,0.55)'; ctx.fillRect(x - B.w / 2, top + 48, B.w, B.h);
         ctx.restore();
-        ctx.strokeStyle = active ? 'rgba(11,114,133,0.95)' : 'rgba(90,115,140,0.7)'; ctx.lineWidth = active ? 2.4 : 1.4; ctx.stroke();
+        ctx.strokeStyle = on ? '#17212c' : 'rgba(90,115,140,0.7)'; ctx.lineWidth = on ? this.px(3) : this.px(1.4); ctx.stroke();
         // Hals und Kappe
         ctx.fillStyle = 'rgba(220,234,246,0.7)'; ctx.fillRect(x - B.neck, top + 6, 2 * B.neck, 18);
-        ctx.strokeStyle = 'rgba(90,115,140,0.7)'; ctx.lineWidth = 1.2; ctx.strokeRect(x - B.neck, top + 6, 2 * B.neck, 18);
+        ctx.strokeStyle = on ? '#17212c' : 'rgba(90,115,140,0.7)'; ctx.lineWidth = this.px(on ? 2 : 1.2); ctx.strokeRect(x - B.neck, top + 6, 2 * B.neck, 18);
         // Etikett
         ctx.fillStyle = '#fff'; rr(ctx, x - B.w / 2 + 5, top + 58, B.w - 10, 34, 3); ctx.fill();
-        ctx.strokeStyle = key === 'HCl' ? '#c92a2a' : '#1c7ed6'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#17212c'; ctx.font = '700 13px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(key, x, top + 70);
-        ctx.font = '600 9px ' + FONT; ctx.fillText('0,100 M', x, top + 84);
+        ctx.strokeStyle = tone === 'acid' ? '#c92a2a' : '#1c7ed6'; ctx.lineWidth = this.px(2); ctx.stroke();
+        const label = key === 'HCl' ? 'HCl' : key === 'NaOH' ? 'NaOH' : tone === 'acid' ? 'Säure' : 'Base';
+        ctx.fillStyle = '#17212c'; ctx.font = '700 ' + Math.min(this.px(11.5), label.length > 4 ? 13 : 16) + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(label, x, top + 75);
         // Glanz
         ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(x - B.w / 2 + 5, top + 28, 3, B.h - 40);
         ctx.restore();
-      }
+      });
     }
 
     drawRack(ctx) {
       // kleiner Pipettenständer
-      const x0 = 180, x1 = 246, y = G.BENCH - 30;
+      const x0 = 244, x1 = 326, y = G.BENCH - 30;
       this.shadow(ctx, (x0 + x1) / 2, G.BENCH + 2, 44, 5, 0.25);
       ctx.fillStyle = '#8a98a8'; rr(ctx, x0, G.BENCH - 8, x1 - x0, 8, 3); ctx.fill();
       ctx.fillStyle = '#9aa8b7'; ctx.fillRect(x0 + 4, y - 4, 4, 26); ctx.fillRect(x1 - 8, y - 4, 4, 26);
@@ -208,7 +224,7 @@
       ctx.restore();
       // Wiederholte Vorderseite des Ständers
       ctx.fillStyle = 'rgba(167,179,191,0.95)'; rr(ctx, x - 20, G.BENCH - 18, 40, 18, 4); ctx.fill();
-      ctx.fillStyle = '#17212c'; ctx.font = '700 13px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#17212c'; ctx.font = '700 ' + this.px(12) + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('Ref.', x, G.BENCH - 9);
     }
 
@@ -242,12 +258,13 @@
       ctx.closePath();
     }
 
-    drawBeaker(ctx, b, g, i) {
+    drawBeaker(ctx, b, g, i, s) {
       const f = this.beakerFx(i);
+      const mixing = s.kind === 'mix';
       const T = G.TYPES[b.type];
       const m = this.eng.meter(b);
-      const k = b.comp0.V0 / b.comp.V; // Indikator verdünnt sich mit der Zugabe
-      const target = this.liquidColor(m.pH, k);
+      const k = b.comp.V > 0 ? b.comp0.V0 / b.comp.V : 1; // Indikator verdünnt sich mit der Zugabe
+      const target = this.liquidColor(mixing ? null : m.pH, k); // Versuch 3: farblos, der Messwert kommt erst von der Elektrode
       if (!f.color) f.color = target.slice();
       for (let j = 0; j < 4; j++) f.color[j] = lerp(f.color[j], target[j], 0.25);
       const col = f.color;
@@ -276,7 +293,7 @@
       side.addColorStop(0, 'rgba(30,50,70,0.18)'); side.addColorStop(0.28, 'rgba(30,50,70,0)'); side.addColorStop(0.72, 'rgba(30,50,70,0)'); side.addColorStop(1, 'rgba(30,50,70,0.2)');
       ctx.fillStyle = side; ctx.fill();
       // Schlieren
-      ctx.save(); this.liquidPath(ctx, g, surf, f); ctx.clip(); this.drawPlumes(ctx, b, g, surf, f, col, k, stirring); ctx.restore();
+      if (!mixing) { ctx.save(); this.liquidPath(ctx, g, surf, f); ctx.clip(); this.drawPlumes(ctx, b, g, surf, f, col, k, stirring); ctx.restore(); }
       // Oberfläche und Ringwellen
       const ry = Math.min(5, g.half * 0.07);
       ctx.fillStyle = rgba([lerp(col[0], 255, 0.4), lerp(col[1], 255, 0.4), lerp(col[2], 255, 0.4)], 0.35);
@@ -308,34 +325,37 @@
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       ctx.fillRect(g.x + g.half - 10, g.top + 14, 2, g.bottom - g.top - 40);
       // Skala (Näherungsmarken) aus der Geometrie
-      ctx.strokeStyle = 'rgba(60,85,110,0.6)'; ctx.fillStyle = 'rgba(60,85,110,0.75)'; ctx.lineWidth = 1;
-      ctx.font = '600 10px ' + FONT; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.strokeStyle = 'rgba(60,85,110,0.6)'; ctx.fillStyle = 'rgba(40,60,80,0.85)'; ctx.lineWidth = this.px(1);
+      ctx.font = '600 ' + this.px(11) + 'px ' + FONT; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       for (const ml of T.marks) {
         const y = G.surfaceY(g, ml);
         ctx.beginPath(); ctx.moveTo(g.x - g.half + 14, y); ctx.lineTo(g.x - g.half + 28, y); ctx.stroke();
         ctx.fillText(String(ml), g.x - g.half + 31, y);
       }
-      ctx.font = '600 9px ' + FONT; ctx.fillText(T.label, g.x - g.half + 14, g.bottom - 14);
+      ctx.font = '600 ' + this.px(10.5) + 'px ' + FONT; ctx.fillText(T.label, g.x - g.half + 14, g.bottom - 16);
       // Spritzer
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
       for (const p of this.splashes) { ctx.beginPath(); ctx.arc(p.x, p.y, 1.4, 0, 6.283); ctx.fill(); }
     }
 
+    /** pH-Messelektrode: Schaft mit Glaskugel; die Beschriftung „pH-Messelektrode“ liegt als HTML daneben. */
+    electrodeX(g) { return g.x + g.half * 0.5; }
     drawElectrode(ctx, g, surf, behind) {
-      const x = g.x + g.half * 0.48, y1 = g.bottom - 22, y0 = g.top - 70;
+      const x = this.electrodeX(g), y1 = g.bottom - 24, y0 = g.top - 78;
       if (behind) {
         // eingetauchter Teil mit Glaskugel
-        ctx.fillStyle = 'rgba(205,220,232,0.85)'; ctx.fillRect(x - 5, Math.max(surf, y0), 10, y1 - Math.max(surf, y0));
-        ctx.beginPath(); ctx.arc(x, y1, 7, 0, 6.283); ctx.fillStyle = 'rgba(214,228,240,0.95)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(90,115,140,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+        const ytop = Math.max(surf, y0);
+        ctx.fillStyle = 'rgba(205,220,232,0.9)'; ctx.fillRect(x - 6, ytop, 12, y1 - ytop);
+        ctx.beginPath(); ctx.arc(x, y1, 9, 0, 6.283); ctx.fillStyle = 'rgba(214,228,240,0.97)'; ctx.fill();
+        ctx.strokeStyle = 'rgba(90,115,140,0.7)'; ctx.lineWidth = this.px(1.1); ctx.stroke();
         return;
       }
       const top = Math.min(surf, y1);
-      const sh = ctx.createLinearGradient(x - 6, 0, x + 6, 0);
+      const sh = ctx.createLinearGradient(x - 7, 0, x + 7, 0);
       sh.addColorStop(0, '#2f3a46'); sh.addColorStop(0.45, '#6b7886'); sh.addColorStop(1, '#2a333d');
-      ctx.fillStyle = sh; ctx.fillRect(x - 6, y0, 12, Math.max(0, g.top + 6 - y0));
-      ctx.fillStyle = 'rgba(205,220,232,0.9)'; ctx.fillRect(x - 5, g.top + 6, 10, Math.max(0, top - g.top - 6));
-      ctx.strokeStyle = '#3a4757'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y0); ctx.quadraticCurveTo(x + 10, y0 - 40, x + 30, y0 - 60); ctx.stroke();
+      ctx.fillStyle = sh; ctx.fillRect(x - 7, y0, 14, Math.max(0, g.top + 6 - y0));
+      ctx.fillStyle = 'rgba(205,220,232,0.92)'; ctx.fillRect(x - 6, g.top + 6, 12, Math.max(0, top - g.top - 6));
+      ctx.strokeStyle = '#3a4757'; ctx.lineWidth = this.px(2); ctx.beginPath(); ctx.moveTo(x, y0); ctx.quadraticCurveTo(x + 8, y0 - 26, x + 30, y0 - 34); ctx.stroke();
     }
 
     drawRod(ctx, g, surf, f, stirring) {
@@ -357,7 +377,7 @@
       for (const p of f.plumes) {
         // lokaler pH: Zugabe vermischt mit „mixed“ mL der umgebenden Lösung
         const share = p.share;
-        const local = { V: p.vol + share * b.comp.V, Na: share * b.comp.Na, Cl: share * b.comp.Cl, Ac: share * b.comp.Ac, P: share * b.comp.P };
+        const local = { V: p.vol + share * b.comp.V, Na: share * b.comp.Na, Cl: share * b.comp.Cl, Ac: share * b.comp.Ac, P: share * b.comp.P, N: share * b.comp.N };
         if (s.reagent === 'HCl') local.Cl += 0.1 * p.vol; else local.Na += 0.1 * p.vol;
         const c = this.liquidColor(C.pH(local), k);
         const diff = (Math.abs(c[0] - bulk[0]) + Math.abs(c[1] - bulk[1]) + Math.abs(c[2] - bulk[2])) / 255;
@@ -448,10 +468,10 @@
           ctx.save(); ctx.clip(); ctx.fillStyle = 'rgba(170,205,240,0.8)'; ctx.fillRect(x - 5, lvl, 10, tipY - lvl); ctx.restore();
         }
         ctx.strokeStyle = active ? 'rgba(11,114,133,0.95)' : 'rgba(80,110,140,0.75)'; ctx.lineWidth = active ? 1.6 : 1.1; ctx.stroke();
-        // Graduierung 0…5 mL
-        ctx.strokeStyle = 'rgba(40,60,80,0.7)'; ctx.lineWidth = 0.8;
-        for (let i = 0; i <= 50; i++) {
-          const y = grad0 - (i / 50) * (grad0 - grad1), wl = i % 10 === 0 ? 5 : i % 5 === 0 ? 3.5 : 2;
+        // Graduierung 0…10 mL (Striche alle 0,5 mL, lange Striche je 1 mL)
+        ctx.strokeStyle = 'rgba(40,60,80,0.7)'; ctx.lineWidth = 0.9;
+        for (let i = 0; i <= 20; i++) {
+          const y = grad0 - (i / 20) * (grad0 - grad1), wl = i % 2 === 0 ? 5 : 3;
           ctx.beginPath(); ctx.moveTo(x - 3.6, y); ctx.lineTo(x - 3.6 + wl, y); ctx.stroke();
         }
         // Pipettierhilfe

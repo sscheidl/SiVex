@@ -1,8 +1,8 @@
 {
   "name": "sivex-pufferfish",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Pufferfish – Warum bleibt der pH fast gleich? Pufferlabor mit Teilchenebene und pH-Zugabekurve (statische Webanwendung, SiVex)",
+  "description": "Pufferfish – Warum bleibt der pH fast gleich? Pufferlabor mit Teilchenmodell, pH-Kurve und gezielter Pufferherstellung (statische Webanwendung, SiVex)",
   "scripts": {
     "start": "node scripts/serve.mjs . 8080",
     "build": "node scripts/build.mjs",

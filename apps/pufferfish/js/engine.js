@@ -2,13 +2,18 @@
  * Pufferfish – zentraler Versuchszustand (ohne DOM, in Node testbar)
  *
  * Ein Zustand führt Mengen, Volumina, Messreihen und den Dosiervorgang.
- * Renderer, Teilchenansicht, Kurve und Journal lesen nur daraus.
+ * Renderer, Teilchenansicht, Kurve, Verhältnisdiagramm und Journal lesen nur daraus.
  *
- * Ablauf einer Zugabe: Pipette holt Maßlösung aus der Flasche → fährt über
- * das Glas → Tropfen bzw. Strahl fällt → erst beim Auftreffen ändert sich die
+ * Ablauf einer Zugabe: Pipette holt die gewählte Lösung aus der Flasche → fährt
+ * über das Glas → Tropfen bzw. Strahl fällt → erst beim Auftreffen ändert sich die
  * Zusammensetzung (Modell) → Mischphase („mischt …“) → stabiler Messwert wird
- * als Kurvenpunkt protokolliert. Während eine Zugabe läuft, werden weitere
- * Dosierbefehle abgewiesen; so entsteht weder doppelte noch verlorene Dosierung.
+ * als Kurvenpunkt protokolliert (Versuche 1 und 2). Während eine Zugabe läuft,
+ * werden weitere Dosierbefehle abgewiesen; so entsteht weder doppelte noch
+ * verlorene Dosierung.
+ *
+ * Versuch 3 (Puffer herstellen): ein Becherglas, in das die beiden Stammlösungen
+ * des gewählten Puffersystems dosiert werden. Der pH-Wert wird erst auf Befehl
+ * „Mischen und pH messen“ aus dem Modell bestimmt – nicht angepasst, nicht vorab.
  */
 (function (root, factory) {
   const isNode = typeof module === 'object' && module.exports;
@@ -21,85 +26,115 @@
   'use strict';
 
   // ------------------------------------------------------------ Proben und Versuche
-  const r = (ha, a) => C.acetate(30, 0.1 * ha / (ha + a), 0.1 * a / (ha + a));
   const SAMPLES = {
     water: { name: 'Wasser', detail: '30 mL, CO₂-freies Modellwasser', make: () => C.water(30) },
-    wunder: { name: 'Wunderwasser', hidden: true, revealed: 'Phosphatpuffer', detail: '30 mL vorbereitete Modelllösung', detailRevealed: '30 mL, c(H₂PO₄⁻) = c(HPO₄²⁻) = 0,050 mol/L', make: () => C.phosphate(30, 0.05, 0.05) },
+    puffer: { name: 'Pufferlösung', detail: '30 mL Modelllösung', make: () => C.phosphate(30, 0.05, 0.05) },
     hac: { name: 'Essigsäure', detail: '30 mL, c = 0,100 mol/L', make: () => C.acetate(30, 0.1, 0) },
     naac: { name: 'Natriumacetat', detail: '30 mL, c = 0,100 mol/L', make: () => C.acetate(30, 0, 0.1) },
-    mix: { name: 'Gemisch 1 : 1', detail: '30 mL, je 0,050 mol/L CH₃COOH und CH₃COO⁻', make: () => r(1, 1) },
-    r10_1: { name: 'HA : A⁻ = 10 : 1', detail: '30 mL, Acetatsystem gesamt 0,100 mol/L', make: () => r(10, 1) },
-    r3_1: { name: 'HA : A⁻ = 3 : 1', detail: '30 mL, Acetatsystem gesamt 0,100 mol/L', make: () => r(3, 1) },
-    r1_1: { name: 'HA : A⁻ = 1 : 1', detail: '30 mL, Acetatsystem gesamt 0,100 mol/L', make: () => r(1, 1) },
-    r1_3: { name: 'HA : A⁻ = 1 : 3', detail: '30 mL, Acetatsystem gesamt 0,100 mol/L', make: () => r(1, 3) },
-    r1_10: { name: 'HA : A⁻ = 1 : 10', detail: '30 mL, Acetatsystem gesamt 0,100 mol/L', make: () => r(1, 10) },
-    c100: { name: 'Puffer 0,10 mol/L', detail: '30 mL, 1 : 1, je 0,050 mol/L', make: () => r(1, 1) },
-    c010: { name: 'Puffer 0,010 mol/L', detail: '30 mL, 1 : 1, je 0,0050 mol/L (zehnfach verdünnt hergestellt)', make: () => C.acetate(30, 0.005, 0.005) },
-    fill300: { name: 'Puffer aufgefüllt', detail: '30 mL Puffer 0,10 mol/L + 270 mL Wasser', type: 'b400', make: () => { const c = C.add(r(1, 1), 'water', 270); c.V0 = 300; return c; } }
+    mix: { name: 'Gemisch 1 : 1', detail: '30 mL, je 0,050 mol/L CH₃COOH und CH₃COO⁻', make: () => C.acetate(30, 0.05, 0.05) },
+    batch: { name: 'Pufferlösung (hergestellt)', detail: 'Mischung der beiden Stammlösungen', make: () => C.comp(0) }
   };
-  const RATIO_KEYS = ['r10_1', 'r3_1', 'r1_1', 'r1_3', 'r1_10'];
-
-  const EXPERIMENTS = [
-    { id: 'e1', n: 1, title: 'Wasser oder Wunderwasser?', short: 'Wunderwasser', beakers: ['water', 'wunder'] },
-    { id: 'e2', n: 2, title: 'Warum braucht es beide Partner?', short: 'Beide Partner', beakers: ['hac', 'naac', 'mix'] },
-    { id: 'e3', n: 3, title: 'Verhältnis und Reserve', short: 'Verhältnis', beakers: ['r10_1', 'r1_1', 'r1_10'], ratio: true },
-    { id: 'e4', n: 4, title: 'Verdünnung', short: 'Verdünnung', beakers: ['c100', 'c010', 'fill300'] }
-  ];
-  const expById = (id) => EXPERIMENTS.find((e) => e.id === id);
 
   const DOSES = {
     d1: { tool: 'dropper', drops: 1, vol: C.DROP_ML, label: '1 Tropfen' },
     d5: { tool: 'dropper', drops: 5, vol: 5 * C.DROP_ML, label: '5 Tropfen' },
     m05: { tool: 'measure', vol: 0.5, label: '0,5 mL' },
     m1: { tool: 'measure', vol: 1.0, label: '1,0 mL' },
-    m5: { tool: 'measure', vol: 5.0, label: '5,0 mL' }
+    m5: { tool: 'measure', vol: 5.0, label: '5,0 mL' },
+    m10: { tool: 'measure', vol: 10.0, label: '10,0 mL' }
   };
+  const EXPERIMENTS = [
+    { id: 'e1', n: 1, title: 'Wasser und Pufferlösung', short: 'Wasser & Pufferlösung', beakers: ['water', 'puffer'], tools: ['dropper', 'measure'], doses: ['d1', 'd5', 'm05', 'm1', 'm5'], defaultKind: 'd1' },
+    { id: 'e2', n: 2, title: 'Säure, Base und Gemisch', short: 'Säure, Base, Gemisch', beakers: ['hac', 'naac', 'mix'], tools: ['dropper', 'measure'], doses: ['d1', 'd5', 'm05', 'm1', 'm5'], defaultKind: 'd1' },
+    { id: 'e3', n: 3, title: 'Puffer gezielt herstellen', short: 'Puffer herstellen', beakers: ['batch'], mixing: true, tools: ['measure'], doses: ['m05', 'm1', 'm5', 'm10'], defaultKind: 'm5' }
+  ];
+  const expById = (id) => EXPERIMENTS.find((e) => e.id === id);
+
   const REAGENTS = {
-    HCl: { formula: 'HCl', name: 'Salzsäure', label: 'HCl (c = 0,100 mol/L)', ion: 'H₃O⁺' },
-    NaOH: { formula: 'NaOH', name: 'Natronlauge', label: 'NaOH (c = 0,100 mol/L)', ion: 'OH⁻' }
+    HCl: { formula: 'HCl', name: 'Salzsäure', label: 'HCl (c = 0,100 mol/L)', ion: 'H₃O⁺', tone: 'acid' },
+    NaOH: { formula: 'NaOH', name: 'Natronlauge', label: 'NaOH (c = 0,100 mol/L)', ion: 'OH⁻', tone: 'base' }
   };
+  for (const id of C.SYSTEM_IDS) {
+    const S = C.SYSTEMS[id];
+    REAGENTS[S.acid.stock] = { formula: S.acid.stockFormula, name: S.acid.name, label: `${S.acid.name} (c = 0,100 mol/L)`, ion: S.acid.formula, tone: 'acid', stock: true };
+    REAGENTS[S.base.stock] = { formula: S.base.stockFormula, name: S.base.name, label: `${S.base.name} (c = 0,100 mol/L)`, ion: S.base.formula, tone: 'base', stock: true };
+  }
+  /** Flaschen der aktuellen Reihe (Reihenfolge = Flaschenplatz von links). */
+  function bottleKeys(s) {
+    if (s && s.kind === 'mix') return s.system ? [C.SYSTEMS[s.system].acid.stock, C.SYSTEMS[s.system].base.stock] : [];
+    return ['HCl', 'NaOH'];
+  }
 
   // Zeiten bei 1× (Sekunden) – didaktisch verlangsamt, keine gemessenen Geschwindigkeiten
   const GRAV = 2600; // Welteinheiten/s² (verlangsamter Fall)
   const MOVE_SPEED = 1500;
   const TAU_STILL = 1.6, TAU_STIR = 0.3, STIR_TIME = 2.6, SETTLED = 0.95;
-  const EVENT_DUR = 4.6;
+  const MEASURE_TIME = 3.0;
   const FLOW = 2.5; // mL/s aus der Messpipette
 
   function create() {
     let uid = 1;
     const st = {
-      time: 0, exp: 'e1', slot: 'HCl', tool: 'dropper', showEvents: true,
-      series: {}, active: {}, archive: [],
+      time: 0, exp: 'e1', slot: 'HCl', tool: 'dropper', kind: 'd1', system: null, target: null, worldW: G.W,
+      series: {}, active: {}, archive: [], history: [],
       pipette: { tool: 'dropper', x: G.PIPETTES.dropper.rest.x, y: G.PIPETTES.dropper.rest.y, content: 0, squeeze: 0, flowing: false },
       op: null, drops: [], streams: [], fx: [], log: []
     };
+    const isMix = (id) => !!expById(id || st.exp).mixing;
 
     // ---------------------------------------------------------- Messreihen
     function makeBeaker(key, comp) {
       const s = SAMPLES[key];
       const c = comp ? C.copy(comp) : s.make();
-      const pH = C.pH(c);
-      return { key, type: s.type || 'b100', comp0: C.copy(c), comp: c, added: 0, records: [{ v: 0, pH }], pending: [], shown: { comp: C.copy(c), pH }, event: null, extra: 0, stirUntil: -1, lastLand: -1 };
+      const mixing = key === 'batch';
+      const pH = c.V > 0 ? C.pH(c) : null;
+      return {
+        key, type: 'b100', comp0: C.copy(c), comp: c, added: 0, records: pH == null ? [] : [{ v: 0, pH }], pending: [],
+        shown: { comp: C.copy(c), pH }, extra: 0, stirUntil: -1, lastLand: -1,
+        vols: {}, meas: mixing ? null : undefined
+      };
     }
     function makeSeries(expId, reagent, kind, from, comps) {
       const e = expById(expId);
       const keys = from ? from.beakers.map((b) => b.key) : e.beakers;
       return {
-        id: 's' + uid++, exp: expId, reagent, kind, created: Date.now(),
+        id: 's' + uid++, exp: expId, reagent, kind, created: Date.now(), system: null,
         from: from ? { id: from.id, reagent: from.reagent, added: from.beakers.map((b) => b.added) } : null,
         beakers: keys.map((k, i) => makeBeaker(k, comps ? comps[i] : null))
       };
     }
-    function slots(expId) { return (st.active[expId] = st.active[expId] || { HCl: null, NaOH: null, cont: null }); }
+    function makeMixSeries() {
+      const s = makeSeries('e3', null, 'mix');
+      s.system = st.system;
+      return s;
+    }
+    function slots(expId) { return (st.active[expId] = st.active[expId] || { HCl: null, NaOH: null, cont: null, mix: null }); }
     function reagentOf(slot, expId) {
       if (slot !== 'cont') return slot;
       const s = st.series[slots(expId).cont];
       return s ? s.reagent : 'NaOH';
     }
+    /** Gewählte Lösung der Reihe s (bei Versuch 3: die gerade gewählte Stammlösung). */
+    function activeReagent(s) { return s.kind === 'mix' ? st.slot : s.reagent; }
+    function normalizeSlot() {
+      if (isMix()) {
+        const keys = bottleKeys({ kind: 'mix', system: st.system });
+        if (!keys.includes(st.slot)) st.slot = keys[0] || null;
+      } else if (!['HCl', 'NaOH', 'cont'].includes(st.slot)) st.slot = 'HCl';
+      if (st.slot === 'cont' && !slots(st.exp).cont) st.slot = 'HCl';
+    }
     function current() {
+      normalizeSlot();
       const a = slots(st.exp);
-      if (st.slot === 'cont' && !a.cont) st.slot = 'HCl';
+      if (isMix()) {
+        let s = a.mix && st.series[a.mix];
+        if (!s || s.system !== st.system) {
+          if (s) archiveRuns(s, [0], 'neu angesetzt');
+          if (s) delete st.series[s.id];
+          s = makeMixSeries(); st.series[s.id] = s; a.mix = s.id;
+        }
+        return s;
+      }
       let id = a[st.slot];
       if (!id || !st.series[id]) {
         const s = makeSeries(st.exp, st.slot, 'fresh');
@@ -109,6 +144,7 @@
     }
     const used = (s) => s.beakers.some((b) => b.added > 0);
     function archiveRuns(s, idxs, why) {
+      if (s.kind === 'mix') return null; // Messungen stehen in st.history
       const runs = idxs.map((i) => s.beakers[i]).filter((b) => b.records.length > 1)
         .map((b) => ({ key: b.key, records: b.records.map((p) => ({ v: p.v, pH: p.pH })) }));
       if (!runs.length) return null;
@@ -118,31 +154,53 @@
     }
 
     // ---------------------------------------------------------- Abfragen
-    const busy = () => !!st.op || st.drops.length > 0 || st.streams.length > 0;
-    const geometry = () => G.layout(current().beakers.map((b) => b.type));
+    const measuring = () => Object.values(st.series).some((s) => s.kind === 'mix' && s.beakers.some((b) => b.meas && !b.meas.done));
+    const busy = () => !!st.op || st.drops.length > 0 || st.streams.length > 0 || measuring();
+    const geometry = () => G.layout(current().beakers.map((b) => b.type), st.worldW);
+    /** Welt-Breite des sichtbaren Ausschnitts (vom Renderer gemeldet; rein geometrisch). */
+    function setWorldWidth(w) { st.worldW = Math.max(G.W, Math.round(w || G.W)); }
 
-    /** Anzeigewert des pH-Meters: stabil oder während der Mischung gleitend. */
+    /** Anzeigewert des pH-Meters: stabil oder während der Mischung gleitend. Versuch 3: nur nach Messung. */
     function meter(b) {
-      if (!b.pending.length) return { pH: b.shown.pH, mixing: false };
+      if (b.key === 'batch') {
+        if (b.meas && b.meas.done) return { pH: b.meas.pH, mixing: false, measured: true };
+        if (b.meas) return { pH: null, mixing: true, measured: false };
+        return { pH: null, mixing: false, measured: false };
+      }
+      if (!b.pending.length) return { pH: b.shown.pH, mixing: false, measured: true };
       const last = b.pending[b.pending.length - 1];
       const p = Math.min(0.97, last.P);
-      return { pH: b.shown.pH + (last.pH - b.shown.pH) * p, mixing: true };
+      return { pH: b.shown.pH + (last.pH - b.shown.pH) * p, mixing: true, measured: true };
     }
 
     // ---------------------------------------------------------- Befehle
     function refuse(reason, text) { return { ok: false, reason, text }; }
+    const BUSY = 'Warte, bis die laufende Zugabe beendet ist.';
 
     function selectExperiment(id) {
-      if (busy()) return refuse('busy', 'Warte, bis die laufende Zugabe beendet ist.');
-      if (!expById(id)) return refuse('unknown', 'Unbekannter Versuch.');
+      if (busy()) return refuse('busy', BUSY);
+      const e = expById(id);
+      if (!e) return refuse('unknown', 'Unbekannter Versuch.');
       st.exp = id;
-      if (st.slot === 'cont' && !slots(id).cont) st.slot = 'HCl';
+      normalizeSlot();
+      if (!e.tools.includes(st.tool)) {
+        st.tool = e.tools[0];
+        const rest = G.PIPETTES[st.tool].rest;
+        Object.assign(st.pipette, { tool: st.tool, x: rest.x, y: rest.y, content: 0 });
+        st.kind = e.defaultKind;
+      } else if (!e.doses.includes(st.kind)) st.kind = e.doses.find((k) => DOSES[k].tool === st.tool) || e.defaultKind;
       current();
       return { ok: true };
     }
+    /** Lösung wählen: HCl/NaOH/Gegenprobe (Versuche 1, 2) bzw. Stammlösung (Versuch 3). */
     function selectSlot(slot) {
-      if (busy()) return refuse('busy', 'Warte, bis die laufende Zugabe beendet ist.');
+      if (busy()) return refuse('busy', BUSY);
+      if (isMix()) {
+        if (!bottleKeys({ kind: 'mix', system: st.system }).includes(slot)) return refuse('none', 'Wähle zuerst ein Puffersystem.');
+        st.slot = slot; return { ok: true };
+      }
       if (slot === 'cont' && !slots(st.exp).cont) return refuse('none', 'Es gibt noch keine Gegenprobe.');
+      if (!['HCl', 'NaOH', 'cont'].includes(slot)) return refuse('unknown', 'Unbekannte Lösung.');
       st.slot = slot;
       current();
       return { ok: true };
@@ -150,9 +208,43 @@
     function setTool(tool) {
       if (busy()) return refuse('busy', 'Die Pipette ist gerade in Gebrauch.');
       if (!G.PIPETTES[tool]) return refuse('unknown', 'Unbekannte Pipette.');
+      const e = expById(st.exp);
+      if (!e.tools.includes(tool)) return refuse('tool', 'Diese Pipette wird in diesem Versuch nicht benötigt.');
       st.tool = tool;
+      if (DOSES[st.kind].tool !== tool || !e.doses.includes(st.kind)) st.kind = e.doses.find((k) => DOSES[k].tool === tool) || st.kind;
       const rest = G.PIPETTES[tool].rest;
       Object.assign(st.pipette, { tool, x: rest.x, y: rest.y, content: 0 });
+      return { ok: true };
+    }
+    /** Zugabemenge wählen; wechselt bei Bedarf die Pipette. */
+    function setKind(kind) {
+      if (busy()) return refuse('busy', 'Die Pipette ist gerade in Gebrauch.');
+      const d = DOSES[kind];
+      if (!d || !expById(st.exp).doses.includes(kind)) return refuse('unknown', 'Diese Zugabemenge gibt es hier nicht.');
+      if (d.tool !== st.tool) { const r = setTool(d.tool); if (!r.ok) return r; }
+      st.kind = kind;
+      return { ok: true };
+    }
+    /** Puffersystem und Ziel-pH für Versuch 3 festlegen (neues, leeres Becherglas). */
+    function selectSystem(sys, target) {
+      if (busy()) return refuse('busy', BUSY);
+      if (sys != null && !C.SYSTEMS[sys]) return refuse('unknown', 'Unbekanntes Puffersystem.');
+      st.target = Number.isFinite(target) ? target : st.target;
+      if (sys !== st.system) {
+        st.system = sys;
+        const a = slots('e3');
+        if (a.mix && st.series[a.mix]) { delete st.series[a.mix]; a.mix = null; }
+        st.slot = sys ? C.SYSTEMS[sys].acid.stock : null;
+      }
+      if (isMix()) current();
+      return { ok: true };
+    }
+    /** Neues, leeres Becherglas für Versuch 3 (Messungen bleiben in der Liste). */
+    function newBatch() {
+      if (busy()) return refuse('busy', BUSY);
+      const a = slots('e3');
+      if (a.mix && st.series[a.mix]) { delete st.series[a.mix]; a.mix = null; }
+      if (isMix()) current();
       return { ok: true };
     }
 
@@ -172,8 +264,11 @@
       const d = DOSES[kind];
       if (!d) return refuse('unknown', 'Unbekannte Dosierung.');
       if (busy()) return refuse('busy', 'Die Pipette ist noch unterwegs – warte, bis die Zugabe beendet ist.');
+      if (!expById(st.exp).doses.includes(kind)) return refuse('unknown', 'Diese Zugabemenge gibt es hier nicht.');
       if (d.tool !== st.tool) return refuse('tool', `Für „${d.label}“ zuerst die ${d.tool === 'dropper' ? 'Tropfpipette' : 'Messpipette'} wählen.`);
       const s = current();
+      if (s.kind === 'mix' && !st.system) return refuse('system', 'Wähle zuerst ein Puffersystem.');
+      const reagent = activeReagent(s);
       const idx = (targets && targets.length ? targets : s.beakers.map((_, i) => i)).filter((i) => s.beakers[i]);
       if (!idx.length) return refuse('target', 'Kein Glas gewählt.');
       for (const i of idx) {
@@ -182,12 +277,12 @@
       }
       const geo = geometry();
       const P = G.PIPETTES[st.tool];
-      const bottle = G.BOTTLES[s.reagent];
+      const bx = G.BOTTLE_X[Math.max(0, bottleKeys(s).indexOf(reagent))];
       const segs = [];
       const fill = (amount) => {
-        segs.push({ type: 'goto', points: [{ x: bottle.x, y: G.TRAVEL[st.tool] }, { x: bottle.x, y: G.BOTTLE.dipY }] });
+        segs.push({ type: 'goto', points: [{ x: bx, y: G.TRAVEL[st.tool] }, { x: bx, y: G.BOTTLE.dipY }] });
         segs.push({ type: 'fill', dur: 0.4, amount });
-        segs.push({ type: 'goto', points: [{ x: bottle.x, y: G.TRAVEL[st.tool] }] });
+        segs.push({ type: 'goto', points: [{ x: bx, y: G.TRAVEL[st.tool] }] });
       };
       const opId = 'o' + uid++;
       if (st.tool === 'dropper') fill(d.vol * idx.length);
@@ -207,8 +302,8 @@
         segs.push({ type: 'goto', points: [{ x: tip.x, y: G.TRAVEL[st.tool] }] });
       }
       segs.push({ type: 'goto', points: [{ x: P.rest.x, y: G.TRAVEL[st.tool] }, P.rest] });
-      st.op = { id: opId, kind, series: s.id, reagent: s.reagent, targets: idx, segs, i: 0, t: 0, cur: null };
-      st.log.push({ t: st.time, kind, targets: idx.slice(), series: s.id });
+      st.op = { id: opId, kind, series: s.id, reagent, targets: idx, segs, i: 0, t: 0, cur: null };
+      st.log.push({ t: st.time, kind, reagent, targets: idx.slice(), series: s.id });
       return { ok: true, id: opId };
     }
 
@@ -220,7 +315,8 @@
     }
 
     function newSeries() {
-      if (busy()) return refuse('busy', 'Warte, bis die laufende Zugabe beendet ist.');
+      if (busy()) return refuse('busy', BUSY);
+      if (isMix()) return refuse('mix', 'In diesem Versuch setzt „Neu ansetzen“ ein leeres Becherglas auf.');
       const s = current();
       if (!used(s)) return refuse('fresh', 'Die Ansätze sind noch unbehandelt – eine neue Messreihe ist nicht nötig.');
       archiveRuns(s, s.beakers.map((_, i) => i), 'neue Messreihe');
@@ -231,20 +327,20 @@
       return { ok: true };
     }
 
-    function freshSample(i, key) {
-      if (busy()) return refuse('busy', 'Warte, bis die laufende Zugabe beendet ist.');
+    function freshSample(i) {
+      if (busy()) return refuse('busy', BUSY);
       const s = current();
+      if (s.kind === 'mix') return refuse('mix', 'Nutze „Neu ansetzen“.');
       if (!s.beakers[i]) return refuse('target', 'Kein Glas.');
       if (s.kind === 'cont') return refuse('cont', 'In einer Gegenprobe gibt es keine frischen Einzelproben. Beginne eine neue Messreihe.');
-      const k = key || s.beakers[i].key;
-      if (!SAMPLES[k]) return refuse('unknown', 'Unbekannte Probe.');
-      archiveRuns(s, [i], key && key !== s.beakers[i].key ? 'Ansatz geändert' : 'frische Probe');
-      s.beakers[i] = makeBeaker(k);
+      archiveRuns(s, [i], 'frische Probe');
+      s.beakers[i] = makeBeaker(s.beakers[i].key);
       return { ok: true };
     }
 
     function continueWithOther() {
-      if (busy()) return refuse('busy', 'Warte, bis die laufende Zugabe beendet ist.');
+      if (busy()) return refuse('busy', BUSY);
+      if (isMix()) return refuse('mix', 'Eine Gegenprobe gibt es nur in den Versuchen 1 und 2.');
       const s = current();
       if (s.kind === 'cont') return refuse('cont', 'Diese Reihe ist bereits eine Gegenprobe.');
       if (!used(s)) return refuse('fresh', 'Gib zuerst etwas Maßlösung zu – sonst wäre es eine frische Reihe.');
@@ -256,10 +352,45 @@
       return { ok: true };
     }
 
+    /**
+     * Versuch 3: Mischen und pH messen. Der Messwert entsteht erst nach der Mischzeit aus
+     * dem Modell (Ladungsbilanz) – er wird weder vorab angezeigt noch an den Sollwert angepasst.
+     * snapshot: Rechnung der Lernenden (wird nur im Messprotokoll mitgeführt).
+     */
+    function measure(snapshot) {
+      if (busy()) return refuse('busy', BUSY);
+      if (!isMix()) return refuse('exp', 'Gemessen wird in Versuch 3.');
+      const s = current(), b = s.beakers[0];
+      if (!st.system) return refuse('system', 'Wähle zuerst ein Puffersystem.');
+      if (!(b.comp.V > 0)) return refuse('empty', 'Das Becherglas ist noch leer – dosiere zuerst die Stammlösungen.');
+      if (b.meas && b.meas.done) return refuse('measured', 'Dieses Becherglas ist schon gemessen. Gib weiter zu oder setze mit „Neu ansetzen“ neu an.');
+      b.stirUntil = st.time + MEASURE_TIME;
+      b.meas = { t0: st.time, ready: st.time + MEASURE_TIME, done: false, snapshot: snapshot || null };
+      return { ok: true };
+    }
+    function finishMeasure(s, b) {
+      const S = C.SYSTEMS[s.system];
+      const pH = C.pH(b.comp);
+      const pair = C.pairAmounts(s.system, b.comp);
+      const ratio = pair.acid > 0 && pair.base > 0 ? pair.base / pair.acid : null;
+      const e = {
+        id: 'm' + uid++, at: Date.now(), system: s.system, target: st.target,
+        vAcid: b.vols[S.acid.stock] || 0, vBase: b.vols[S.base.stock] || 0, V: b.comp.V,
+        nAcid: pair.acid, nBase: pair.base, ratio, pH,
+        hh: C.hh(S.pKa, pair.base, pair.acid), calc: b.meas.snapshot
+      };
+      b.meas.done = true; b.meas.pH = pH; b.meas.entry = e.id;
+      st.history.push(e);
+      st.fx.push({ type: 'measured', entry: e });
+    }
+
     function resetAll() {
-      st.series = {}; st.active = {}; st.archive = [];
+      st.series = {}; st.active = {}; st.archive = []; st.history = [];
+      st.system = null; st.target = null;
       st.op = null; st.drops = []; st.streams = []; st.fx = [];
-      setTool(st.tool);
+      st.exp = 'e1'; st.slot = 'HCl';
+      st.tool = 'dropper'; st.kind = 'd1';
+      Object.assign(st.pipette, { tool: 'dropper', x: G.PIPETTES.dropper.rest.x, y: G.PIPETTES.dropper.rest.y, content: 0, squeeze: 0, flowing: false });
       current();
       return { ok: true };
     }
@@ -270,20 +401,17 @@
       const s = seriesById(sid);
       if (!s) return;
       const b = s.beakers[i];
-      if (opts.first) {
-        // Zeitlupe zeigt die erste Zugabe; weitere während der Sequenz werden nur gezählt
-        if (b.event && st.time <= b.event.t0 + EVENT_DUR) b.extra++;
-        else if (st.showEvents) { b.event = { id: doseId, t0: st.time, dur: EVENT_DUR, an: C.doseAnalysis(b.comp, s.reagent, opts.full), reagent: s.reagent, label: opts.label }; b.extra = 0; }
-      }
-      b.comp = C.add(b.comp, s.reagent, vol);
+      b.comp = C.add(b.comp, opts.reagent, vol);
       b.added += vol;
+      b.vols[opts.reagent] = (b.vols[opts.reagent] || 0) + vol;
       b.lastLand = st.time;
-      if (opts.complete) {
+      if (s.kind === 'mix') {
+        b.meas = null; // Zusammensetzung geändert: bisheriger Messwert gilt nicht mehr
+      } else if (opts.complete) {
         const pH = C.pH(b.comp);
-        const waitEvent = b.event && b.event.id === doseId ? b.event.t0 + EVENT_DUR : 0;
-        b.pending.push({ v: b.added, pH, comp: C.copy(b.comp), P: 0, waitEvent });
+        b.pending.push({ v: b.added, pH, comp: C.copy(b.comp), P: 0 });
       }
-      st.fx.push({ type: 'land', series: sid, beaker: i, vol, stream: !!opts.stream, t: st.time });
+      st.fx.push({ type: 'land', series: sid, beaker: i, vol, stream: !!opts.stream, reagent: opts.reagent, t: st.time });
     }
 
     // ---------------------------------------------------------- Zeitschritt
@@ -317,7 +445,7 @@
             const geo = geometry();
             const b = seriesById(op.series).beakers[seg.beaker];
             const fall = Math.max(10, G.surfaceY(geo[seg.beaker], b.comp.V) - p.y);
-            st.streams.push({ series: op.series, beaker: seg.beaker, dose: seg.dose, label: seg.label, total: seg.vol, emitted: 0, arrived: 0, lag: Math.sqrt(2 * fall / GRAV), queue: [], x: p.x, y0: p.y, open: true });
+            st.streams.push({ series: op.series, beaker: seg.beaker, dose: seg.dose, label: seg.label, reagent: op.reagent, total: seg.vol, emitted: 0, arrived: 0, lag: Math.sqrt(2 * fall / GRAV), queue: [], x: p.x, y0: p.y, open: true });
           }
           const sm = st.streams[st.streams.length - 1];
           const target = seg.vol * Math.min(1, u);
@@ -330,7 +458,7 @@
           if (seg.type === 'squeeze') {
             p.squeeze = 0;
             p.content = Math.max(0, p.content - seg.vol);
-            st.drops.push({ series: op.series, beaker: seg.beaker, vol: seg.vol, dose: seg.dose, first: seg.first, last: seg.last, full: seg.vol, label: seg.label, x: p.x, y: p.y + 2, v: 0 });
+            st.drops.push({ series: op.series, beaker: seg.beaker, vol: seg.vol, dose: seg.dose, first: seg.first, last: seg.last, full: seg.vol, reagent: op.reagent, label: seg.label, x: p.x, y: p.y + 2, v: 0 });
           }
           if (seg.type === 'stream') p.flowing = false;
           op.cur = null; op.i++;
@@ -352,7 +480,7 @@
           if (!s) return false;
           d.v += GRAV * h; d.y += d.v * h;
           const surf = G.surfaceY(geo[d.beaker], s.beakers[d.beaker].comp.V);
-          if (d.y >= surf) { land(d.series, d.beaker, d.vol, d.dose, { first: d.first, complete: true, full: d.full, label: d.label }); return false; }
+          if (d.y >= surf) { land(d.series, d.beaker, d.vol, d.dose, { first: d.first, complete: true, full: d.full, label: d.label, reagent: d.reagent }); return false; }
           return true;
         });
         // Strahl der Messpipette
@@ -362,46 +490,50 @@
             const first = sm.arrived === 0;
             sm.arrived += q.dv;
             const complete = !sm.open && !sm.queue.length && sm.arrived >= sm.total - 1e-9;
-            land(sm.series, sm.beaker, q.dv, sm.dose, { first, complete, full: sm.total, stream: true, label: sm.label });
+            land(sm.series, sm.beaker, q.dv, sm.dose, { first, complete, full: sm.total, stream: true, label: sm.label, reagent: sm.reagent });
           }
           return sm.open || sm.queue.length > 0;
         });
-        // Mischen und Protokollieren (nur in der sichtbaren Reihe tickt die Zeit nicht anders als in anderen)
+        // Mischen und Protokollieren (Versuche 1, 2) bzw. Messung (Versuch 3)
         for (const id in st.series) {
-          for (const b of st.series[id].beakers) {
+          const s = st.series[id];
+          for (const b of s.beakers) {
             const tau = b.stirUntil > st.time ? TAU_STIR : TAU_STILL;
             for (const p of b.pending) p.P += (1 - p.P) * Math.min(1, h / tau);
-            while (b.pending.length && b.pending[0].P >= SETTLED && st.time >= b.pending[0].waitEvent) {
+            while (b.pending.length && b.pending[0].P >= SETTLED) {
               const p = b.pending.shift();
               b.records.push({ v: p.v, pH: p.pH });
               b.shown = { comp: p.comp, pH: p.pH };
               st.fx.push({ type: 'commit', series: id, key: b.key });
             }
+            if (s.kind === 'mix' && b.meas && !b.meas.done && st.time >= b.meas.ready) finishMeasure(s, b);
           }
         }
       }
     }
 
-    /** Effekte für den Renderer abholen (Auftreffen, Protokollierung). */
+    /** Effekte für den Renderer abholen (Auftreffen, Protokollierung, Messung). */
     function drainFx() { const f = st.fx; st.fx = []; return f; }
 
-    // ---------------------------------------------------------- Speichern
+    // ---------------------------------------------------------- Speichern (Stand 0.2.0, Version 2)
     function serialize() {
       const plainBeaker = (b) => {
         // noch nicht protokollierte Werte sind Modellwerte: beim Speichern übernehmen
         const recs = b.records.concat(b.pending.map((p) => ({ v: p.v, pH: p.pH })));
-        return { key: b.key, comp0: b.comp0, comp: b.comp, added: b.added, records: recs };
+        const o = { key: b.key, comp0: b.comp0, comp: b.comp, added: b.added, records: recs, vols: b.vols };
+        if (b.meas && b.meas.done) o.meas = { pH: b.meas.pH, entry: b.meas.entry };
+        return o;
       };
       const series = {};
       for (const id in st.series) {
         const s = st.series[id];
-        series[id] = { id: s.id, exp: s.exp, reagent: s.reagent, kind: s.kind, created: s.created, from: s.from, beakers: s.beakers.map(plainBeaker) };
+        series[id] = { id: s.id, exp: s.exp, reagent: s.reagent, kind: s.kind, system: s.system, created: s.created, from: s.from, beakers: s.beakers.map(plainBeaker) };
       }
-      return { v: 1, uid, exp: st.exp, slot: st.slot, tool: st.tool, showEvents: st.showEvents, series, active: st.active, archive: st.archive };
+      return { v: 2, uid, exp: st.exp, slot: st.slot, tool: st.tool, kind: st.kind, system: st.system, target: st.target, series, active: st.active, archive: st.archive, history: st.history };
     }
 
     function restore(o) {
-      if (!o || o.v !== 1) return false;
+      if (!o || o.v !== 2) return false;
       try {
         const series = {};
         for (const id in o.series) {
@@ -411,8 +543,9 @@
             beakers: s.beakers.map((b) => {
               if (!SAMPLES[b.key]) throw new Error('Probe');
               const nb = makeBeaker(b.key, b.comp0);
-              nb.comp = Object.assign({}, b.comp); nb.added = b.added; nb.records = b.records.slice();
-              nb.shown = { comp: C.copy(nb.comp), pH: C.pH(nb.comp) };
+              nb.comp = Object.assign({}, b.comp); nb.added = b.added; nb.records = b.records.slice(); nb.vols = Object.assign({}, b.vols);
+              nb.shown = nb.comp.V > 0 ? { comp: C.copy(nb.comp), pH: C.pH(nb.comp) } : { comp: C.copy(nb.comp), pH: null };
+              if (b.meas && Number.isFinite(b.meas.pH)) nb.meas = { done: true, pH: b.meas.pH, entry: b.meas.entry, t0: 0, ready: 0, snapshot: null };
               return nb;
             })
           });
@@ -420,12 +553,20 @@
         st.series = series;
         st.active = o.active || {};
         st.archive = Array.isArray(o.archive) ? o.archive : [];
+        st.history = Array.isArray(o.history) ? o.history : [];
+        st.system = C.SYSTEMS[o.system] ? o.system : null;
+        st.target = Number.isFinite(o.target) ? o.target : null;
         st.exp = expById(o.exp) ? o.exp : 'e1';
-        st.slot = ['HCl', 'NaOH', 'cont'].includes(o.slot) ? o.slot : 'HCl';
-        st.showEvents = o.showEvents !== false;
+        st.slot = typeof o.slot === 'string' ? o.slot : 'HCl';
         uid = Math.max(uid, Number(o.uid) || 1);
         st.op = null; st.drops = []; st.streams = []; st.fx = [];
-        setTool(o.tool === 'measure' ? 'measure' : 'dropper');
+        st.tool = o.tool === 'measure' ? 'measure' : 'dropper';
+        st.kind = DOSES[o.kind] && DOSES[o.kind].tool === st.tool ? o.kind : (st.tool === 'measure' ? 'm1' : 'd1');
+        const e = expById(st.exp);
+        if (!e.tools.includes(st.tool)) { st.tool = e.tools[0]; st.kind = e.defaultKind; }
+        if (!e.doses.includes(st.kind)) st.kind = e.doses.find((k) => DOSES[k].tool === st.tool) || e.defaultKind;
+        const rest = G.PIPETTES[st.tool].rest;
+        Object.assign(st.pipette, { tool: st.tool, x: rest.x, y: rest.y, content: 0, squeeze: 0, flowing: false });
         current();
         return true;
       } catch (e) {
@@ -436,11 +577,11 @@
 
     current();
     return {
-      state: st, current, slots, reagentOf, busy, geometry, meter, used,
-      selectExperiment, selectSlot, setTool, dose, stir, newSeries, freshSample, continueWithOther, resetAll,
-      step, drainFx, serialize, restore, EVENT_DUR
+      state: st, current, slots, reagentOf, activeReagent, bottleKeys: () => bottleKeys(current()), busy, geometry, setWorldWidth, meter, used,
+      selectExperiment, selectSlot, setTool, setKind, selectSystem, newBatch, dose, stir, newSeries, freshSample, continueWithOther, measure, resetAll,
+      step, drainFx, serialize, restore
     };
   }
 
-  return { create, SAMPLES, EXPERIMENTS, RATIO_KEYS, DOSES, REAGENTS, expById, EVENT_DUR, TAU_STILL, TAU_STIR };
+  return { create, SAMPLES, EXPERIMENTS, DOSES, REAGENTS, expById, bottleKeys, TAU_STILL, TAU_STIR, MEASURE_TIME };
 });
