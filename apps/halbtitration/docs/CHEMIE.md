@@ -1,6 +1,6 @@
 # Fachmodell, Quellen und Näherungsgrenzen
 
-Stand 0.1.0 (27.10.2026). Zielgruppe: Gymnasium Bayern, Q13 Chemie, erhöhtes Anforderungsniveau, Lernbereich 3 „Säure-Base-Gleichgewichte – Quantitative Analytik und deren Anwendung“ ([LehrplanPLUS](https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/13/chemie/erhoeht)).
+Stand 0.2.0 (29.10.2026). Gegenüber 0.1.0 unverändert: Solver, Konstanten, Mengen, Indikatormodell und Messsimulation. Geändert: Lernweg, Speziesdarstellung (Abschnitt 5) und Auswertungslogik (Abschnitt 8). Zielgruppe: Gymnasium Bayern, Q13 Chemie, erhöhtes Anforderungsniveau, Lernbereich 3 „Säure-Base-Gleichgewichte – Quantitative Analytik und deren Anwendung“ ([LehrplanPLUS](https://www.lehrplanplus.bayern.de/fachlehrplan/gymnasium/13/chemie/erhoeht)).
 
 ## 1. Versuche und Mengen
 
@@ -15,7 +15,7 @@ Alle Proben: 20,00 mL (Vollpipette), anschließend 30 mL destilliertes Wasser. O
 
 Alle Standardversuche lassen sich mit einer Bürettenfüllung abschließen. Der Erstdurchgang braucht höchstens etwa 28 mL, die Halbtitration höchstens 18 mL. Zwischen zwei Proben kann nachgefüllt werden.
 
-Die Ausgangskonzentrationen stehen in der Planung. Die gesuchten pK-Werte erscheinen erst nach der Abgabe des eigenen Ergebnisses.
+Die Ausgangskonzentrationen stehen im Auftrag. Die gesuchten pK-Werte erscheinen erst nach der Abgabe des eigenen Ergebnisses oder nach einer bewusst angeforderten Musterlösung.
 
 ## 2. Gleichgewichtsmodell (`js/model/chemistry.js`)
 
@@ -97,7 +97,7 @@ Die Modellreferenz (numerischer Solver) wird nach der Freigabe zusätzlich angez
 - **Stufenbezogene Volumina:** V(HÄP,1) = V(ÄP,1)/2 und V(HÄP,2) = [V(ÄP,1) + V(ÄP,2)]/2. Die Eingabe V(ÄP,2)/2 wird gezielt erkannt und erklärt.
 - **Phosphorsäure:** Im Modell wirken alle drei Gleichgewichte. Um V = 30 mL gibt es keinen ausgeprägten dritten Sprung; ein Unit-Test prüft das.
 - **Glycin:** Der zweite Äquivalenzpunkt (24 mL, pH ≈ 11) zeigt keinen belastbaren Sprung. Die SuS können V(ÄP,2) = 2 · V(ÄP,1) aus der definierten Ausgangszusammensetzung ableiten. Die Rechenbasis ist dann als „abgeleitet“ gekennzeichnet.
-- **Speziesanzeige im Labor:** Hervorgehoben werden die nach der Stöchiometrie überwiegenden Formen. Gleichgewichtsanteile erscheinen nicht, weil sie den HÄP verraten würden. Ein Hinweis stellt klar, dass auch Nachbarformen vorliegen.
+- **Speziesdarstellung (ab 0.2.0):** In der Vertiefung steht die Reaktionsfolge (z. B. H₃PO₄ → H₂PO₄⁻ → HPO₄²⁻ → PO₄³⁻) ausdrücklich als *schematische Reihenfolge ohne Mengenangabe*. Die frühere Aussage, Nachbarformen lägen „in geringen Anteilen“ vor, war falsch: Am Start berechnet der Solver bereits 44,4 % H₂PO₄⁻ bzw. 34,8 % Zwitterion. Die tatsächlichen Gleichgewichtsanteile erscheinen erst nach der eigenen Abgabe oder einer angeforderten Musterlösung. Sie kommen direkt aus dem Solver (`Chemistry.state(…).alpha`) für den aktuellen Kolbeninhalt. Vorher würden gleiche Anteile den HÄP verraten.
 
 ## 6. Indikatoren
 
@@ -130,19 +130,27 @@ Begründung der Grenzen: Die Ablesung von 0,02 mL bei etwa 20 mL entspricht 0,1 
 | Glycin, ÄP 1 | Methylrot, Bromthymolblau | – | übrige |
 | Glycin, ÄP 2 | – | – | alle; nur pH-metrisch auswertbar |
 
-In der Planung prüft die App nur die Stimmigkeit der Wahl mit der eigenen Erwartung am ÄP. Die quantitative Bewertung erscheint nach dem Erstdurchgang an der eigenen Kurve, sobald V(ÄP) richtig berechnet ist. Schlechte Eignung ist ein zulässiges Ergebnis: Die pK-Bestimmung erfolgt immer pH-metrisch.
+Ab 0.2.0 ist der Indikator eine freiwillige zusätzliche Beobachtung; der Kernweg ist pH-metrisch. Die Tabelle aller Indikatoren mit Volumenfehler steht in der Vertiefung. Sie erscheint, wenn V(ÄP) zur Kontrolle richtig berechnet ist, oder nach der Abgabe. Schlechte Eignung ist ein zulässiges Ergebnis.
 
 ## 7. Messsimulation (`js/experiment/lab.js`)
 
 - Tropfen zu 0,05 mL, Fließrate 0,01 bis 1,0 mL/s. Das Volumen kommt erst beim Aufprall in die Lösung. Die Bilanz dispensed = delivered + hängender Tropfen + fallende Tropfen gilt in jedem Zeitschritt.
-- Bürettenstand = Anfangsstand + abgegebenes Volumen. Nachfüllen ändert nur den Stand, nie das abgegebene Volumen.
+- Bürettenstand = Anfangsstand + abgegebenes Volumen. Nachfüllen ändert nur den Stand, nie das abgegebene Volumen. Ab 0.2.0 gibt es je Maßlösung eine Bürette für alle Proben; Anfangsstand und Stand werden digital übernommen.
 - **Durchmischung:** Frisch angekommene Maßlösung bleibt zunächst unvermischt. Der Rest zerfällt exponentiell, mit Rührer in τ = 1 s, ohne Rührer in τ = 45 s. Die Elektrode sieht nur den vermischten Teil.
 - **Elektrode:** Ansprechzeit τ = 2,2 s, Anzeige auf 0,01 gerundet. „Stabil“ meldet das Gerät nach 2 s, in denen die Drift unter 0,004 pH/s bleibt – wie ein reales pH-Meter, also ohne Kenntnis des Modells.
 - **Messstatus:** Mit protokolliert werden stabil, Zugabe abgeschlossen und durchmischt. Ein Wert gilt als durchmischt, wenn der unvermischte Rest den pH um weniger als 0,003 verschiebt.
 - Kein Zufallsrauschen. Fehler entstehen nur durch Handlungen: Volumen nicht getroffen, zu frühe Übernahme, kein Rühren, Ablesefehler an der Bürette.
-- Kalibrierung mit zwei Puffern ist eine Gerätevorbereitung (Handlung mit 3 s Dauer). Ein Kalibrierfehler wird nicht simuliert.
+- Die Kalibrierung mit zwei Puffern ist eine Gerätevorbereitung (2 × 3 s). Ab 0.2.0 gilt sie für alle Versuche, ein pH-Meter. Ein Kalibrierfehler wird nicht simuliert.
 
-## 8. Fehlerbetrachtung nach der Freigabe
+## 8. Auswertungslogik (ab 0.2.0)
+
+- **Äquivalenzpunkt aus der eigenen Kurve** (`Evaluation.checkEqMarker`): Geprüft wird gegen die eigenen Messpunkte, nicht gegen den Modellwert. Der Marker muss in einem Abschnitt liegen, dessen Steigung ΔpH/ΔV ein lokales Maximum ist und mindestens dreimal so groß wie der Median (mindestens 0,4 mL⁻¹). Liegen die Messpunkte im Sprung mehr als 0,5 mL auseinander, gibt es einen Hinweis. Ohne deutlichen Sprung (Glycin, ÄP 2) lautet die Rückmeldung „kein deutlicher Sprung“, und V(ÄP,2) darf als 2 · V(ÄP,1) abgeleitet werden. Das stöchiometrische V(ÄP) dient nur der Kontrolle.
+- **Gemessener pH am HÄP** (`checkMeasuredPH`): Der Wert muss einem protokollierten Punkt der gewählten Halbtitrationsreihe entsprechen. Ohne eigenes Zielvolumen lautet die Rückmeldung nur „vorhanden, Zuordnung zum HÄP offen“ (Befund C des Reviews). Mit Zielvolumen werden Volumenabweichung und Messstatus (stabil, durchmischt) getrennt ausgewiesen.
+- **Abgabe** (`evidence`): Nötig sind ein eigenes Zielvolumen, eine Halbtitrationsreihe mit Messpunkten und ein pH-Wert, der zu einem dieser Punkte gehört (Befund B). Ungenaue Dosierung, frühe Ablesung, fehlendes Rühren und falsche Rechnungen blockieren nicht, werden aber gekennzeichnet. Die Abgabe ist eine unveränderliche Momentaufnahme. „Lösung anzeigen“ ist davon getrennt und wird als „Musterlösung angesehen“ gespeichert.
+- **Prüfstatus** (Befund A): Jede Prüfung speichert eine Signatur ihrer Grundlagen: Eingabe, Rechenbasis, Marker sowie ausgewählte Messreihe mit Messpunkten. Weicht die aktuelle Signatur ab, erscheint „Geändert – erneut prüfen“. Abhängigkeiten: ÄP-Marker → V(HÄP) → pH(HÄP) → pK → ΔpK.
+
+## 9. Fehlerbetrachtung nach der Freigabe
+
 
 Die Abweichung pK(exp.) − pK(Lit.) wird zerlegt in:
 
@@ -153,7 +161,11 @@ Die Abweichung pK(exp.) − pK(Lit.) wird zerlegt in:
 
 Rechenfehler werden getrennt über die Feldprüfung gemeldet. Eine korrekte Rechnung mit ungenauem eigenen Messwert gilt als rechnerisch richtig.
 
-## 9. Grenzen
+## 9a. Vergleich mit Pufferfish
+
+Pufferfish rechnet mit gerundeten Schulwerten (pKₛ(CH₃COOH) = 4,75, pKₛ(NH₄⁺) = 9,25, H₃PO₄ 2,15 / 7,20 / 12,35, nach OpenStax bzw. Auftrag). Das Halbtitrationslabor nutzt durchgängig den Datensatz Martell & Smith (I = 0): 4,757 → 4,76 und 9,244 → 9,24. Die Werte unterscheiden sich um höchstens 0,01 und liegen innerhalb der Rundung. Bei der Phosphorsäure gibt es keinen Unterschied. Beide Apps bleiben bei ihrem jeweils konsistenten Datensatz; eine gemeinsame Chemiebibliothek ist nicht vorgesehen.
+
+## 10. Grenzen
 
 - **Aktivitäten:** Das Modell rechnet ideal mit den thermodynamischen Konstanten (I = 0). Reale Messungen bei I ≈ 0,05–0,1 mol/L liefern merklich kleinere scheinbare pKₛ-Werte; beim Glycin liegt pKₛ2 dann etwa bei 9,6. In der Simulation hat diese Ursache keine Wirkung. Die Fehlerbetrachtung kennzeichnet sie als „im realen Labor relevant“.
 - **Feste Bedingungen:** Keine Temperaturabhängigkeit, kein CO₂-Eintrag, keine Elektrodenfehler wie Alkalifehler, Drift oder Kalibrierfehler.

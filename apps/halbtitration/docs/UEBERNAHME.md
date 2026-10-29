@@ -13,9 +13,10 @@ Die Dateien wurden am 27.10.2026 aus diesem Archiv (Pfad `titration/…`) gelese
 | `js/experiment/lab.js` | Bürettenteil aus `titration/js/experiment/experiment.js` (Hahn, Einzelzugaben, Tropfenbildung, Fallzeit, Volumenbuchhaltung) | neu: Probenvorbereitung, Bürettenstand mit Nachfüllen, Durchmischung, Elektrode mit Ansprechzeit und Stabilitätskriterium, Kalibrierung, Speichern/Wiederherstellen |
 | `js/model/indicators.js` | `titration/js/model/indicators.js` | Methylrot und Thymolphthalein ergänzt; Endpunkt-pH je Indikator |
 | `js/model/chemistry.js` | Ansatz „Ladungsbilanz, Bisektion in lg c(H₃O⁺)“ aus `titration/js/model/chemistry.js` | neu geschrieben: allgemeines mehrstufiges System mit Gegenionen statt fester Einzelfälle |
-| Trennlinie in `js/ui/app.js` | `setPanelWidth`/`bindSplitter` aus `titration/js/ui/app.js` | für zwei Ansichten verallgemeinert |
-| `css/app.css` | Farben und Kopfzeile nach `apps/redoxlabor/css/app.css`; `.splitter` nach TitraLab 3 | eigenes Layout |
-| `scripts/build.mjs`, `package.mjs`, `serve.mjs`, `js/scorm.js` | `apps/redoxlabor/scripts/…`, `apps/redoxlabor/js/scorm.js` | Namen, Pfade und Manifest angepasst |
+| `css/app.css` | ergänzt `labkit.css` (ab 0.2.0; 0.1.0 hatte eine eigene Hülle nach dem Redoxlabor) | Bühne, Dosierleiste, Schritte, Ergebnisse |
+| `scripts/package.mjs` | `apps/redoxlabor/scripts/package.mjs` | Namen, Pfade und Manifest angepasst |
+| `scripts/build.mjs`, `scripts/serve.mjs` (ab 0.2.0) | `apps/pufferfish/scripts/…` | kopieren bzw. bilden `shared/labkit/` als `labkit/` ab |
+| App-Hülle (ab 0.2.0) | `shared/labkit` 0.1.1: `css/labkit.css`, `js/splitter.js`, `js/scorm.js`, `js/core.js` | unverändert genutzt; app-eigene Ergänzungen nur in `css/app.css` und `js/ui/` |
 
 Nicht übernommen:
 

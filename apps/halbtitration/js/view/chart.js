@@ -314,8 +314,8 @@
         ctx.fillStyle = COLORS.target;
         ctx.font = '700 11px ' + FONT;
         ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('Ziel ' + fmt(this.target, 2) + ' mL', x + 4, a.y0 + 2);
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('Ziel ' + fmt(this.target, 2) + ' mL', x + 4, a.y1 - 18);
       }
 
       // Marker der Lernenden
@@ -390,7 +390,7 @@
         ctx.font = '600 13px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('Noch keine Messwerte – die Kurve entsteht aus deinen übernommenen Messpunkten.', (a.x0 + a.x1) / 2, (a.y0 + a.y1) / 2);
+        ctx.fillText('Noch keine Messwerte', (a.x0 + a.x1) / 2, (a.y0 + a.y1) / 2);
       }
     }
 

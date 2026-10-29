@@ -493,9 +493,13 @@
 
     restore(s) {
       if (!s) return;
-      this.burette = Object.assign({ rinsed: false, filled: false, bubble: false, reading: null }, s.burette || {});
-      if (this.burette.reading !== null && s.readingOffset) this.burette.reading += s.readingOffset;
-      this.calibration = s.calibration >= 2 ? 2 : s.calibration === 1 ? 1 : 0;
+      // Bürette und Kalibrierung können geteilte Objekte sein (eine Bürette je Maßlösung,
+      // ein pH-Meter für alle Versuche); sie werden nur gesetzt, wenn der Stand sie enthält.
+      if (s.burette) {
+        this.burette = Object.assign({ rinsed: false, filled: false, bubble: false, reading: null }, s.burette);
+        if (this.burette.reading !== null && s.readingOffset) this.burette.reading += s.readingOffset;
+      }
+      if (s.calibration !== undefined) this.calibration = s.calibration >= 2 ? 2 : s.calibration === 1 ? 1 : 0;
       this.stirrer = !!s.stirrer;
       if (Number.isFinite(s.flowRate)) this.flowRate = s.flowRate;
       this.sample = Number(s.sample) || 0;
