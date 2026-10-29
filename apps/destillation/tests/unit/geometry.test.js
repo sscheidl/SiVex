@@ -105,3 +105,80 @@ test('G-03 Füllstände aus dem Volumen: monoton, Kolben 100 mL unter dem Hals, 
   for (let v = 0; v <= 100; v += 5) { const l = G.receiverLevel(g, v); assert.ok(l.y < prev || v === 0); prev = l.y; }
   assert.ok(G.receiverVolumeAt(g, g.receiver.h - 34) > 100, 'Skala bis 100 mL passt in den Kegel');
 });
+
+test('G-04 Ausgießen: Strahl beginnt an der Ausgusskante, die sich mit der Neigung bewegt, und trifft in den Trichter', () => {
+  const g = G.build({ station: true });
+  const b = g.pour, GRAV = 2600;
+  let prev = null;
+  for (const frac of [1, 0.75, 0.5, 0.25, 0.05]) {
+    const a = G.pourTilt(b, frac);
+    const s = G.pourStream(g, a, -40, GRAV);
+    const spout = G.pourSpout(b, a);
+    assert.ok(G.dist(s.pts[0], spout) < 1e-9, 'Strahl beginnt genau an der Ausgusskante');
+    // Ausguss = tiefster Punkt der Öffnung: die gegenüberliegende Ecke liegt höher
+    const other = { x: b.pivot.x + b.w * Math.cos(a) + b.top * Math.sin(a), y: b.pivot.y - b.w * Math.sin(a) + b.top * Math.cos(a) };
+    assert.ok(spout.y > other.y, `Ausguss ist die untere Ecke der Öffnung (Anteil ${frac})`);
+    assert.ok(s.inFunnel, `Strahl trifft die Trichteröffnung (Anteil ${frac})`);
+    const end = s.pts[s.pts.length - 1];
+    assert.ok(Math.abs(end.y - g.funnel.throat) < 1e-9 && Math.abs(end.x - g.funnel.x) <= g.funnel.stemHW + 1e-9, 'Strahl endet im Trichterhals');
+    for (let i = 1; i < s.pts.length; i++) assert.ok(s.pts[i].y >= s.pts[i - 1].y - 1e-9, 'Strahl fällt nur nach unten');
+    if (prev) assert.ok(G.dist(prev, spout) > 1, 'Ausgusskante wandert beim weiteren Kippen');
+    prev = spout;
+  }
+});
+
+test('G-04 Ausgießen: waagrechter Spiegel, Menge im Glas = nicht Ausgegossenes, Ausfluss erst ab ausreichender Neigung', () => {
+  const g = G.build({ station: true });
+  const b = g.pour, full = (b.w - 2 * b.wall) * b.fill;
+  const a0 = G.pourTilt(b, 1);
+  assert.ok(a0 > 0.2 && a0 < 0.6, 'volles Glas läuft erst bei deutlicher Neigung über: ' + a0);
+  assert.ok(G.pourCapacity(b, a0 * 0.8) > full, 'bei kleinerer Neigung fließt noch nichts aus');
+  let prevA = 0;
+  for (let frac = 1; frac >= 0.02; frac -= 0.07) {
+    const a = G.pourTilt(b, frac);
+    assert.ok(a >= prevA - 1e-9, 'je leerer, desto stärker geneigt');
+    prevA = a;
+    const liq = G.pourLiquid(b, a, frac);
+    assert.ok(Math.abs(liq.area - frac * full) / full < 1e-3, `Inhalt passt zum Rest (${frac.toFixed(2)})`);
+    // Spiegel waagrecht: die beiden höchsten Eckpunkte liegen in der Welt gleich hoch
+    const ys = liq.poly.map((p) => b.pivot.y - p.x * Math.sin(a) + p.y * Math.cos(a)).sort((u, v) => u - v);
+    assert.ok(Math.abs(ys[0] - ys[1]) < 1e-6, 'Spiegel waagrecht');
+    // Spiegel steht an der Ausgusskante (innen)
+    const lipY = b.pivot.y - b.wall * Math.sin(a) + b.top * Math.cos(a);
+    assert.ok(Math.abs(ys[0] - lipY) < 0.05, 'Spiegel erreicht die Ausgusskante, solange ausgegossen wird');
+  }
+  assert.equal(G.pourLiquid(b, 1.2, 0).poly.length, 0, 'leeres Glas zeigt keinen Inhalt');
+});
+
+test('G-05 Tropfen in die Vorlage: Öffnung führt zum Spiegel, Wand und Boden sind undurchlässig – auch in bewegter Lage', () => {
+  const g = G.build({ station: true });
+  const R = g.receiver, tip = g.adapter.tip;
+  const poses = [R, Object.assign({}, R, { base: R.base - 40, rim: R.rim - 40 }), Object.assign({}, R, { x: R.x + 30 }), Object.assign({}, R, { x: R.x - 60, base: R.base - 25, rim: R.rim - 25 })];
+  for (const r of poses) {
+    for (const V of [0, 0.5, 20, 60, 100, 115]) {
+      for (let x = r.x - 50; x <= r.x + 50; x += 2.5) {
+        for (const y0 of [tip.y, r.rim - 30]) {
+          const h = G.erlenStop(r, V, x, y0);
+          if (Math.abs(x - r.x) <= r.baseHW && y0 < r.base) {
+            assert.ok(h, 'über dem Kolben fällt kein Tropfen vorbei');
+            assert.ok(h.y <= r.base - G.DIM.glass + 1e-9, `nie durch den Boden (V=${V}, x=${x - r.x})`);
+            if (h.into === 'liquid') assert.ok(Math.abs(h.y - Math.max(y0, G.receiverLevel({ receiver: r }, V).y)) < 1e-9, 'endet am Spiegel');
+          } else assert.equal(h, null, 'neben dem Kolben fällt er vorbei');
+        }
+      }
+    }
+  }
+  // Fehlerbild vorher: Ziel aus der Ruhelage, Kolben aber angehoben → Tropfen liefen unter dem Boden weiter
+  const lifted = poses[1];
+  const h = G.erlenStop(lifted, 0, tip.x, tip.y - 50);
+  assert.ok(h.y < lifted.base && h.y < R.base - G.DIM.glass - 30, 'angehobene Vorlage fängt den Tropfen an ihrem eigenen Boden');
+});
+
+test('G-03 Vorlage bis zum Rand: Spiegel steigt im Hals weiter, 120 mL erreichen den Rand', () => {
+  const g = G.build({ station: true });
+  const M = require('../../js/model.js');
+  let prev = Infinity;
+  for (let v = 0; v <= M.RECV_ML; v += 5) { const l = G.receiverLevel(g, v); assert.ok(l.y < prev || v === 0, `steigt bei ${v} mL`); prev = l.y; }
+  const top = G.receiverLevel(g, M.RECV_ML);
+  assert.ok(Math.abs(top.y - g.receiver.rim) < 1, 'RECV_ML entspricht dem Inhalt bis zum Rand: ' + (top.y - g.receiver.rim));
+});

@@ -120,6 +120,12 @@
     g.mantle.knob = P(g.mantle.outer * 0.62, g.mantle.base - 16);
     g.jack = { x: 0, w: D.jackW, top: g.mantle.base, h: -g.mantle.base };
 
+    // Einfüllen: Trichter im Aufsatz, Becherglas mit dem Gemisch (eigenes Koordinatensystem,
+    // x 0…w, Öffnung bei y = top, Außenboden bei y = top + h; Ausguss ist die Ecke (0, top))
+    const fy = g.head.y1 - 6;
+    g.funnel = { x: 0, top: fy - 46, hw: 34, throat: fy, stemHW: 5, stemEnd: g.arm.o.y + 30 };
+    g.pour = { pivot: P(46, fy - 70), w: 46, h: 60, top: -50, wall: 2, fill: 50 };
+
     // Stativ mit Doppelmuffe; der Arm hält den Kolbenhals von hinten
     const rodX = -112;
     g.stand1 = { rodX, base: { x0: -150, x1: -28, h: 12 }, top: g.neck.y1 - 30, clamps: [{ y: g.neck.y1 + 16, x1: -D.neckHW - 1, hw: D.neckHW }] };
@@ -291,7 +297,7 @@
     const half = Math.sqrt(Math.max(0, R * R - (y - g.flask.c.y) * (y - g.flask.c.y)));
     return { y, half, h: hgt };
   }
-  /** Erlenmeyerkolben 100 mL: Spiegel aus dem Volumen (Kegelstumpf). */
+  /** Erlenmeyerkolben 100 mL: Spiegel aus dem Volumen (Kegelstumpf, darüber der zylindrische Hals bis zum Rand). */
   function receiverLevel(g, V) {
     const r = g.receiver;
     const gl = DIM.glass;
@@ -300,7 +306,10 @@
     const volTo = (hh) => { const rr = r0 + (r1 - r0) * (hh / H); return (Math.PI * hh * (r0 * r0 + r0 * rr + rr * rr)) / 3 / 1000; };
     let lo = 0, hi = H;
     const v = Math.max(0, V);
-    if (volTo(H) <= v) return { y: r.base - gl - H, half: r1, h: H, full: true };
+    if (volTo(H) <= v) {
+      const hh = Math.min(r.h - gl, H + ((v - volTo(H)) * 1000) / (Math.PI * r1 * r1));
+      return { y: r.base - gl - hh, half: r1, h: hh, full: true };
+    }
     for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (volTo(m) < v) lo = m; else hi = m; }
     const hh = (lo + hi) / 2;
     return { y: r.base - gl - hh, half: r0 + (r1 - r0) * (hh / H) + 2, h: hh };
@@ -312,5 +321,93 @@
     return (Math.PI * hh * (r0 * r0 + r0 * rr + rr * rr)) / 3 / 1000;
   }
 
-  return { DIM, build, connections, checks, fit, toScreen, toWorld, bezierPoint, cubic, flaskLevel, receiverLevel, receiverVolumeAt, dist };
+  /**
+   * Wo ein senkrecht fallender Tropfen (Spalte x, ab Höhe y0) am Erlenmeyerkolben r in seiner
+   * gezeichneten Lage aufhört: durch die Öffnung bis zum Spiegel bzw. Innenboden, sonst auf der
+   * Außenwand; null = fällt am Kolben vorbei. Wand und Boden sind undurchlässig.
+   */
+  function erlenStop(r, V, x, y0) {
+    const gl = DIM.glass, dx = Math.abs(x - r.x);
+    const coneTop = r.base - (r.h - 34);
+    const outerHW = (y) => (y <= coneTop ? r.neckHW : r.neckHW + ((r.baseHW - r.neckHW) * (y - coneTop)) / (r.base - coneTop));
+    const inside = y0 < r.base - gl && (y0 < r.rim ? dx < r.neckHW - gl : dx < outerHW(y0) - gl);
+    if (inside) {
+      const lev = V > 0.005 ? receiverLevel({ receiver: r }, V) : null;
+      return { y: Math.max(y0, lev ? lev.y : r.base - gl), into: lev ? 'liquid' : 'bottom' };
+    }
+    if (dx <= r.baseHW && y0 < r.base) {
+      const yHit = dx <= r.neckHW ? r.rim : coneTop + ((dx - r.neckHW) / (r.baseHW - r.neckHW)) * (r.base - coneTop);
+      return { y: Math.max(y0, yHit), into: 'glass' };
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------------ Ausgießen aus dem Becherglas
+  // Gezeichnet mit translate(pivot) und rotate(−a): a > 0 neigt die Öffnung zum Trichter.
+  const pourToWorld = (b, a, p) => P(b.pivot.x + p.x * Math.cos(a) + p.y * Math.sin(a), b.pivot.y - p.x * Math.sin(a) + p.y * Math.cos(a));
+  const pourDown = (a) => P(-Math.sin(a), Math.cos(a)); // Lot nach unten im Glas-Koordinatensystem
+  /** Teil des Vielecks mit p·d ≥ c */
+  function clipHalf(poly, d, c) {
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length];
+      const fa = a.x * d.x + a.y * d.y - c, fb = b.x * d.x + b.y * d.y - c;
+      if (fa >= 0) out.push(a);
+      if ((fa >= 0) !== (fb >= 0)) { const t = fa / (fa - fb); out.push(P(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)); }
+    }
+    return out;
+  }
+  const polyArea = (poly) => { let s = 0; for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length]; s += a.x * b.y - b.x * a.y; } return Math.abs(s) / 2; };
+  const pourInside = (b) => [P(b.wall, b.top), P(b.w - b.wall, b.top), P(b.w - b.wall, b.top + b.h - b.wall), P(b.wall, b.top + b.h - b.wall)];
+  const pourFull = (b) => (b.w - 2 * b.wall) * b.fill;
+  /** Was das um a geneigte Becherglas höchstens hält: waagrechter Spiegel durch die Ausgusskante. */
+  function pourCapacity(b, a) {
+    const d = pourDown(a), lip = P(b.wall, b.top);
+    return polyArea(clipHalf(pourInside(b), d, lip.x * d.x + lip.y * d.y));
+  }
+  /** Flüssigkeit im geneigten Glas (Anteil frac der Füllung): Vieleck mit waagrechtem Spiegel, höchstens bis zur Ausgusskante. */
+  function pourLiquid(b, a, frac) {
+    const inside = pourInside(b), d = pourDown(a);
+    const want = Math.min(Math.max(0, frac) * pourFull(b), pourCapacity(b, a));
+    if (want <= 1e-6) return { poly: [], area: 0 };
+    const proj = inside.map((p) => p.x * d.x + p.y * d.y);
+    let lo = Math.min(...proj), hi = Math.max(...proj);
+    for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (polyArea(clipHalf(inside, d, m)) > want) lo = m; else hi = m; }
+    const poly = clipHalf(inside, d, lo);
+    return { poly, area: polyArea(poly) };
+  }
+  /** Neigung, bei der der Spiegel gerade die Ausgusskante erreicht: erst ab hier fließt etwas aus. */
+  function pourTilt(b, frac) {
+    const want = Math.max(0, frac) * pourFull(b);
+    if (pourCapacity(b, 0) <= want) return 0;
+    let lo = 0, hi = Math.PI / 2;
+    for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (pourCapacity(b, m) > want) lo = m; else hi = m; }
+    return (lo + hi) / 2;
+  }
+  /** Ausgusskante in Weltkoordinaten (bewegt sich mit Lage und Neigung). */
+  const pourSpout = (b, a) => pourToWorld(b, a, P(0, b.top));
+  /**
+   * Strahl von der Ausgusskante: Wurfparabel (waagrecht vx, Schwerkraft grav) bis zur Trichterwand
+   * bzw. zum Trichterhals, dann an der Wand entlang in den Hals.
+   */
+  function pourStream(g, a, vx, grav) {
+    const f = g.funnel, s = pourSpout(g.pour, a);
+    const hwAt = (y) => f.hw - ((f.hw - f.stemHW) * (y - f.top)) / (f.throat - f.top);
+    const pts = [s];
+    let entry = null;
+    for (let i = 1; i < 500; i++) {
+      const t = i * 0.004, p = P(s.x + vx * t, s.y + 0.5 * grav * t * t);
+      if (p.y >= f.top && !entry) entry = P(s.x + vx * Math.sqrt((2 * Math.max(0, f.top - s.y)) / grav), f.top);
+      if (p.y >= f.throat) { pts.push(P(p.x, f.throat)); break; }
+      if (p.y >= f.top && Math.abs(p.x - f.x) >= hwAt(p.y)) {
+        const side = Math.sign(p.x - f.x) || 1;
+        pts.push(P(f.x + side * hwAt(p.y), p.y), P(f.x + side * f.stemHW, f.throat));
+        break;
+      }
+      pts.push(p);
+    }
+    return { pts, spout: s, entry, inFunnel: !!entry && Math.abs(entry.x - f.x) < f.hw };
+  }
+
+  return { DIM, build, connections, checks, fit, toScreen, toWorld, bezierPoint, cubic, flaskLevel, receiverLevel, receiverVolumeAt, erlenStop, pourCapacity, pourLiquid, pourTilt, pourSpout, pourStream, dist };
 });

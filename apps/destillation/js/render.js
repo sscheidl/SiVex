@@ -704,7 +704,6 @@
           ctx.beginPath(); ctx.ellipse(r.x, lev.y, rx, rx * 0.1 + 0.6, 0, 0, Math.PI * 2); ctx.stroke();
         }
         ctx.restore();
-        if (o.surface) o.surface(lev.y, lev.half);
       }
       erlenPath(r, 0); ctx.strokeStyle = C.glassEdge; ctx.lineWidth = px(1.4); ctx.stroke();
       ctx.strokeStyle = 'rgba(235,245,255,0.9)'; ctx.lineWidth = px(1.8);
@@ -765,16 +764,15 @@
       let r = pose.r;
       if (vis.swap) r = Object.assign({}, r, { x: lerp(R0.x + 90, R0.x, sw) });
       vis.recvDrawn = r;
-      let surf = null;
-      drawErlenmeyer(r, M.vol(rc.c), { scale: true, rings: pose.home ? vis.rings : [], wave: pose.home ? vis.wave : 0, surface: (y, half) => { surf = { y, half }; } });
+      drawErlenmeyer(r, M.vol(rc.c), { scale: true, rings: pose.home ? vis.rings : [], wave: pose.home ? vis.wave : 0 });
       // Füllmenge steht in der Bedienleiste (Befund 3), nicht mehr auf dem Laborboy
       if (!rc.present && !pose.moving) text('Keine Vorlage unter dem Vorstoß', rj.x, rj.top - 30, { size: 11, color: '#7a4004', bg: 'rgba(253,241,220,0.95)', border: '#ecc98d' });
-      return pose.home ? surf : null;
+      return { r, home: pose.home };
     }
     function scaledErlen(r, f, x, base) {
       return { x, base, h: r.h * f, rim: base - r.h * f, baseHW: r.baseHW * f, neckHW: r.neckHW * f };
     }
-    function drawDrops(st, dtVis, surf) {
+    function drawDrops(st, dtVis, recv) {
       const a = geo.adapter;
       const tipY = a.tip.y + 6;
       const list = st.drops.list;
@@ -786,7 +784,11 @@
       vis.lastRealDrops = vis.lastRealDrops.filter((t) => now - t < 1);
       for (let i = 0; i < fresh.length; i++) vis.lastRealDrops.push(now);
       const realRate = vis.lastRealDrops.length;
-      const target = surf ? surf.y : st.receiver.present ? geo.receiver.base - D.glass : geo.receiver.jack.top - 1;
+      // Auftreffpunkt an der Vorlage in ihrer gezeichneten Lage (auch während sie bewegt wird):
+      // durch die Öffnung bis zum Spiegel bzw. Boden, sonst auf das Glas oder den Laborboy
+      const hit = G.erlenStop(recv.r, M.vol(st.receiver.c), a.tip.x, tipY);
+      const target = hit ? hit.y : geo.receiver.jack.top - 1;
+      const surf = hit && hit.into === 'liquid' && recv.home;
       const stream = realRate > 7 && !reduce;
       if (stream) {
         // im Zeitraffer: zusammenhängender Strahl, nach unten dünner (TitraLab 3)
@@ -910,20 +912,29 @@
       if (!(st.op && st.op.type === 'fill')) return;
       const g = geo, u = clamp(st.op.t / st.op.dur, 0, 1);
       // Trichter im Aufsatz
-      const fy = g.head.y1 - 6;
+      const f = g.funnel, b = g.pour;
       ctx.fillStyle = 'rgba(214,230,246,0.6)'; ctx.strokeStyle = C.glassEdge; ctx.lineWidth = px(1.2);
-      ctx.beginPath(); ctx.moveTo(-34, fy - 46); ctx.lineTo(34, fy - 46); ctx.lineTo(5, fy); ctx.lineTo(5, g.arm.o.y + 30); ctx.lineTo(-5, g.arm.o.y + 30); ctx.lineTo(-5, fy); ctx.closePath(); ctx.fill(); ctx.stroke();
-      // Becherglas mit dem Gemisch, wird geneigt
-      const tilt = clamp((u - 0.05) / 0.2, 0, 1) * (u < 0.88 ? 1 : 1 - (u - 0.88) / 0.12);
-      ctx.save(); ctx.translate(46, fy - 70); ctx.rotate(-tilt * 1.05);
-      ctx.fillStyle = 'rgba(214,230,246,0.6)'; ctx.fillRect(0, -50, 46, 60); ctx.strokeRect(0, -50, 46, 60);
-      const left = 1 - clamp((u - 0.25) / 0.6, 0, 1);
-      ctx.fillStyle = rgba(C.liquid, 0.65); ctx.fillRect(2, 8 - 50 * left, 42, 50 * left);
+      ctx.beginPath(); ctx.moveTo(f.x - f.hw, f.top); ctx.lineTo(f.x + f.hw, f.top); ctx.lineTo(f.x + f.stemHW, f.throat); ctx.lineTo(f.x + f.stemHW, f.stemEnd); ctx.lineTo(f.x - f.stemHW, f.stemEnd); ctx.lineTo(f.x - f.stemHW, f.throat); ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Becherglas mit dem Gemisch: Inhalt aus dem Modell (ausgegossene Menge), Neigung so,
+      // dass der waagrechte Spiegel gerade an der Ausgusskante steht – erst dann fließt es aus.
+      const left = clamp(1 - st.op.done / M.FILL_VOLUME, 0, 1);
+      const flowing = left > 1e-4 && left < 1 - 1e-4;
+      let a;
+      if (left >= 1 - 1e-4) a = G.pourTilt(b, 1) * easeInOut(clamp((u - 0.05) / 0.2, 0, 1));
+      else if (flowing) a = G.pourTilt(b, left);
+      else a = (Math.PI / 2) * (u < 0.88 ? 1 : 1 - easeInOut((u - 0.88) / 0.12));
+      ctx.save(); ctx.translate(b.pivot.x, b.pivot.y); ctx.rotate(-a);
+      ctx.fillStyle = 'rgba(214,230,246,0.6)'; ctx.fillRect(0, b.top, b.w, b.h); ctx.strokeRect(0, b.top, b.w, b.h);
+      const liq = G.pourLiquid(b, a, left);
+      if (liq.poly.length > 2) { ctx.fillStyle = rgba(C.liquid, 0.65); ctx.beginPath(); liq.poly.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.fill(); }
       ctx.restore();
-      if (u > 0.22 && u < 0.86) {
-        ctx.strokeStyle = rgba(C.liquid, 0.85); ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(40, fy - 98); ctx.quadraticCurveTo(14, fy - 80, 6, fy - 40); ctx.stroke();
-        ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(0, g.arm.o.y + 30); ctx.lineTo(0, G.flaskLevel(g, M.vol(st.flask.c)).y); ctx.stroke();
+      if (flowing) {
+        // Strahl ab der Ausgusskante als Wurfparabel in den Trichter, dann durch den Hals bis zum Spiegel im Kolben
+        const s = G.pourStream(g, a, -40, GRAVITY);
+        ctx.strokeStyle = rgba(C.liquid, 0.85); ctx.lineWidth = 3; ctx.lineCap = 'round';
+        ctx.beginPath(); s.pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.stroke();
+        ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(f.x, f.throat); ctx.lineTo(f.x, G.flaskLevel(g, M.vol(st.flask.c)).y); ctx.stroke();
+        ctx.lineCap = 'butt';
       }
     }
 

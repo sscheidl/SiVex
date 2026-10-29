@@ -1,6 +1,6 @@
 # Destillation – Fachmodell, Modellgrenzen, Quellen
 
-Version 0.3.0 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
+Version 0.3.1 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
 
 ## 1. Stoffgemische
 

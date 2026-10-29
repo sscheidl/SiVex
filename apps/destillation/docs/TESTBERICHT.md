@@ -1,6 +1,6 @@
-# Destillation 0.3.0 – Testbericht
+# Destillation 0.3.1 – Testbericht
 
-**Stand:** 25.10.2026 · **Prüfgegenstand:** statischer Build `dist/destillation/` und die daraus gepackten Dateien `release/destillation-0.3.0-web.zip` und `release/destillation-0.3.0-scorm12.zip` (byte-identisch mit dem getesteten Build geprüft, PKG-1) · **Baukasten:** `shared/labkit` 0.1.1 (in 0.3.0 unverändert)
+**Stand:** 29.10.2026 (0.3.1, Korrektur Ausgießen/Vorlage; alle Tests neu gelaufen) · **Prüfgegenstand:** statischer Build `dist/destillation/` und die daraus gepackten Dateien `release/destillation-0.3.1-web.zip` und `release/destillation-0.3.1-scorm12.zip` (byte-identisch mit dem getesteten Build geprüft, PKG-1) · **Baukasten:** `shared/labkit` 0.1.1 (in 0.3.0 unverändert)
 
 **Prüfumgebung:** Windows 11 Pro · Node.js 24.22.1 · Playwright 1.56.1 · Microsoft Edge 156.0.4314.42 (Chromium) headless über `channel: 'msedge'` · Desktop 1440×900, Tablet-Viewports 1180×820, 1024×768 und 768×1024 (hoch) mit Touch-Emulation (`hasTouch`), schmal 820×1100
 
@@ -8,14 +8,27 @@
 
 | Testart | Befehl | Ergebnis |
 | --- | --- | --- |
-| Unit- und Regressionstests: Fachmodell, Geometrie, Aufgaben, Baukasten | `npm test` | **54 / 54 bestanden (Modell 34, Geometrie 8, Aufgaben 7, Labkit 5)** – die 8 neuen Befund-Tests schlagen am Stand 0.2.0 fehl |
-| Build- und Paketprüfung | `npm run package` | **Build OK: 13 Dateien, 259,7 KiB, Labkit 0.1.1 – keine externen Ressourcen, keine absoluten Pfade, kein Netzwerkzugriff; Web-ZIP 82,3 KiB, SCORM-ZIP 82,6 KiB; zweimal gepackt → identische Prüfsummen** |
+| Unit- und Regressionstests: Fachmodell, Geometrie, Aufgaben, Baukasten | `npm test` | **59 / 59 bestanden (Modell 35, Geometrie 12, Aufgaben 7, Labkit 5)** – darin 5 neue Tests der Korrektur 0.3.1; die 8 Befund-Tests von 0.3.0 schlagen am Stand 0.2.0 fehl |
+| Build- und Paketprüfung | `npm run package` | **Build OK: 13 Dateien, 265,1 KiB, Labkit 0.1.1 – keine externen Ressourcen, keine absoluten Pfade, kein Netzwerkzugriff; Web-ZIP 84,5 KiB, SCORM-ZIP 84,8 KiB; zweimal gepackt → identische Prüfsummen** |
 | Browser-End-to-End mit echter Bedienung | `npm run test:e2e` | **17 / 17 Szenarien bestanden** ([results.json](../tests/e2e/results.json)) |
 | SCORM-Paket im Mock-LMS (eingebettet + neues Fenster), Web-ZIP per `file://` | `npm run test:scorm` | **16 / 16 Prüfungen bestanden** ([scorm-results.json](../tests/e2e/scorm-results.json)) |
 
 **Gesamtstatus der Entwicklungsabnahme: PASS.** Alle entwicklerseitig prüfbaren Pflichtkriterien (Abschnitt 9 des Auftrags) sind erfüllt und belegt. Nicht blockierend und **nicht getestet**: echte Schul-iPads, mebis-Kursimport und Unterricht (Abschnitt 10 des Auftrags: Aufgabe der Lehrkraft). Der Status in `sivex.json` bleibt `prototype`.
 
 Die Browsertests bedienen ausschließlich die gerenderte Oberfläche: Klicks und Tipps auf die Trefferflächen der Laborbühne, die Handlungsleiste, die Schalter für Heizung und Kühlwasser, das Bedienfeld, Tastatur sowie Ziehen an der Trennlinie (Maus und Touch über CDP). Der Modellzustand wird nur gelesen, um Beobachtungen zu belegen, nie gesetzt (`tests/e2e/lib.mjs`). Abgelesene Temperaturen stammen aus der Anzeige (Textspiegel `#readout`), nicht aus dem Modell.
+
+## Korrektur 0.3.1 – Ausgießen und Vorlage
+
+Korrekturauftrag „Flüssigkeitsanimation und Gefäßkollisionen“ (Bugfix, keine Erweiterung). Beide Fehler wurden zuerst am Stand 0.3.0 nachgestellt: Einzelbilder des Einfüllens mit angehaltenem Modell und gezielt vorgerückter Zeit, Tropfen beim Zurückstellen der Vorlage. Danach wurden sie in der DOM-freien Geometrie behoben und mit Unit-Tests abgesichert.
+
+| Fehler | Ursache | Behebung (geänderte Funktionen) | Nachweis |
+| --- | --- | --- | --- |
+| Strahl beginnt in der Mitte des Becherglases | `drawFilling` zeichnete den Strahl mit festen Koordinaten (Start `(40, fy − 98)`), unabhängig von Lage und Neigung des Glases. Umgerechnet lag dieser Punkt im Inneren des Glases. Der Inhalt war ein Rechteck, das mit dem Glas mitkippte, und die Neigung folgte einem festen Zeitplan statt der Füllmenge | `geometry.js`: Becherglas und Trichter als Maße (`g.pour`, `g.funnel`). Neu: `pourSpout` (Ausgusskante aus Lage und Neigung), `pourCapacity`/`pourTilt` (Neigung, bei der der waagrechte Spiegel die Kante erreicht), `pourLiquid` (Inhalt mit waagrechtem Spiegel, Fläche = nicht Ausgegossenes), `pourStream` (Wurfparabel bis Trichterwand bzw. -hals). `render.js` `drawFilling` nutzt nur noch diese Funktionen; Menge im Glas = `FILL_VOLUME − op.done` aus dem Modell | Unit `G-04 …` (2 Tests: Strahlbeginn = Ausgusskante, Kante wandert, Treffer im Trichter, Spiegel waagrecht, Menge = Rest, Ausfluss erst ab ≈ 21° Neigung); `60-ausgiessen-strahl-an-der-ausgusskante.png`, `61-ausgiessen-glas-fast-leer.png` |
+| Tropfen laufen durch den Boden des Erlenmeyerkolbens | `drawDrops` berechnete das Ziel aus der Ruhelage der Vorlage (`geo.receiver.base`), gezeichnet wurde sie aber in ihrer aktuellen Lage. Beim Zurückstellen wird sie bis zu 40 mm angehoben und seitlich bewegt (beim Wechsel im Expertenmodus verschoben) – die Tropfen fielen bis zum Boden der Ruhelage, also durch den Boden der gezeichneten Vorlage. Über 108 mL blieb der gezeichnete Spiegel am Kegelende stehen | `geometry.js`: neu `erlenStop(r, V, x, y0)` – Ende eines fallenden Tropfens an der Vorlage in ihrer gezeichneten Lage (durch die Öffnung bis zum Spiegel bzw. Innenboden, sonst auf der Außenwand, daneben vorbei). `receiverLevel` füllt über dem Kegel den Hals bis zum Rand. `render.js`: `drawReceiver` gibt die gezeichnete Lage zurück, `drawDrops` (Einzeltropfen und Strahl im Zeitraffer) nutzt `erlenStop`. `model.js`: `RECV_ML = 120` (bis zum Rand); weitere Tropfen laufen über die Öffnung ab und werden als „Tisch“ verbucht | Unit `G-05 …` (Raster über x, Füllstand und vier Lagen: nie unter dem Innenboden, Ende am Spiegel, daneben vorbei; angehobene Vorlage fängt am eigenen Boden), `G-03 Vorlage bis zum Rand …`, `M-04 Volle Vorlage läuft über die Öffnung über …` (Bilanz geschlossen) |
+
+**Andere Gefäße geprüft:** Pipette (Probe aus der abgenommenen Vorlage: Spitze am Spiegel der gezeichneten Vorlage; Tropfen in die Schale enden an ihrem Inhalt), Siedesteine (fallen durch den Aufsatz bis zum Kolbenboden), Strahl aus dem Trichterhals (endet am Spiegel im Rundkolben, der aus dem Modellvolumen berechnet wird, auch beim Neubefüllen mit Rest im Kolben), abgestellte Fraktionen (kein Umfüllen). Dort lag kein Fehler vor, daher keine Änderung.
+
+**Unverändert:** Apparatur, Bedienoberfläche, Abläufe und Fachmodell. Einzige Modelländerung ist die Überlaufgrenze der Vorlage. Sie greift erst ab 120 mL in einer Vorlage, also nur, wenn nach dem Neubefüllen ohne Vorlagenwechsel weiterdestilliert wird.
 
 ## Änderungen in 0.3.0 – Befunde, Ursachen, Nachweise
 
@@ -133,7 +146,7 @@ Gefunden durch Browserdurchläufe und Sichtprüfung, behoben und erneut geprüft
 | T-03 | PASS | 72 Screenshots aus echten Zwischenzuständen inkl. verstelltem Splitter und vier Ansichten; Bildfolgen-Vergleiche in E01/E11/E16, Pixelzählung der Teilchenfarben in E14; neue und geänderte Bilder angesehen (siehe Sichtprüfung). |
 | T-04 | PASS | Build-Prüfung (keine externen Verweise/Netz-APIs); E2E-Gesamtlauf 312 Anfragen, alle lokal; WEB-2 und SCORM-*-5 ohne externe Anfragen und Konsolenfehler. |
 | T-05 | PASS | `npm run test:scorm` 16 / 16 Prüfungen bestanden: Manifest, Dateiliste, relative Verweise, byte-identisch mit Build, eingebettet und neues Fenster (Aufgabe 1 über die Oberfläche belegt, LMSInitialize/LMSFinish je einmal, keine Werte), Web-ZIP per `file://` (`50-scorm-*`, `51-web-zip-file.png`). |
-| T-06 | PASS | README, CHANGELOG, `sivex.json` (0.3.0, Labkit 0.1.1, prototype), CHEMIE.md (Entscheidung Stopfen), BEDIENUNG.md, dieser Bericht, Übersichtszeilen in `README.md`/`docs/ARCHITECTURE.md`, Pakete mit `SHA256SUMS.txt` (zweimal gebaut, identisch); PR gegen `main`, kein Merge ohne Freigabe. |
+| T-06 | PASS | README, CHANGELOG, `sivex.json` (0.3.1, Labkit 0.1.1, prototype), CHEMIE.md (Entscheidung Stopfen), BEDIENUNG.md, dieser Bericht, Übersichtszeilen in `README.md`/`docs/ARCHITECTURE.md`, Pakete mit `SHA256SUMS.txt` (zweimal gebaut, identisch); PR gegen `main`, kein Merge ohne Freigabe. |
 
 
 ### Browser-Szenarien
@@ -229,6 +242,8 @@ Alle Bilder in [`docs/screenshots/`](screenshots/) stammen aus den Browsertests 
 | `50-scorm-iframe.png` | SCORM im Mock-LMS iframe |
 | `50-scorm-popup.png` | SCORM im Mock-LMS popup |
 | `51-web-zip-file.png` | Web-ZIP per file:// |
+| `60-ausgiessen-strahl-an-der-ausgusskante.png` | 0.3.1: Einfüllen kurz nach Beginn – Strahl ab der Ausgusskante, Spiegel im Glas waagrecht (Einzelbild bei angehaltenem Modell, 2×) |
+| `61-ausgiessen-glas-fast-leer.png` | 0.3.1: Glas fast leer und stärker geneigt, Ausgusskante mitgewandert (Einzelbild bei angehaltenem Modell, 2×) |
 
 ### Sichtprüfung
 
@@ -247,4 +262,4 @@ Die Bilder wurden einzeln angesehen. Befunde der letzten Prüfung:
 - **Safari/WebKit und Firefox** wurden nicht automatisiert geprüft (installiert ist nur Edge). Die App nutzt nur Standard-Canvas-2D, Pointer Events und CSS Grid wie TitraLab 3 und Redoxlabor.
 - **Idealisierte Trennung:** fachlich bewusst (Auftrag); die Grenze ist in App und CHEMIE.md benannt.
 - **Zeitmaßstab:** Durchflussstufen (1/4/10 mL/s) und Heizleistungen sind didaktisch gewählt, keine Messwerte einer bestimmten Apparatur.
-- **Labkit:** 0.3.0 ändert `shared/labkit` nicht (0.1.1 wie die Papierchromatographie); die Chromatographie bleibt unberührt.
+- **Labkit:** 0.3.0 und 0.3.1 ändern `shared/labkit` nicht (0.1.1 wie die Papierchromatographie); die Chromatographie bleibt unberührt.

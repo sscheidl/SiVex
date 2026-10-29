@@ -72,6 +72,7 @@
   const CARRY = 0.0004;      // mL/(s·W) mitgerissene Flüssigkeit bei heftigem Sieden
   const FILL_VOLUME = 100;   // mL je Befüllung
   const REFILL_BELOW = 15;   // mL: darunter gilt der Kolben als leer und darf neu befüllt werden
+  const RECV_ML = 120;       // mL: Erlenmeyerkolben bis zum Rand; was darüber hinaus tropft, läuft außen ab (Tisch)
   const STONES_MAX_T = 50;   // °C Flüssigkeitstemperatur, bis zu der Siedesteine zugegeben werden dürfen
   const SAMPLE_ML = 1;       // mL Probe für die Brennprobe
   const BURN_RATE = 0.08;    // mL/s Ethanol, die in der Porzellanschale verbrennen
@@ -693,7 +694,7 @@
       let guard = 0;
       while (vol(st.tip) >= DROP_VOL - 1e-12 && guard++ < 50) {
         const d = take(st.tip, DROP_VOL);
-        recordDrop(st.receiver.present ? 'receiver' : 'table', d);
+        recordDrop(st.receiver.present && vol(st.receiver.c) + DROP_VOL <= RECV_ML + 1e-9 ? 'receiver' : 'table', d);
       }
 
       // --- Warnung: der leichter siedende Stoff ist fast übergegangen, der nächste kündigt sich an
@@ -836,7 +837,7 @@
 
   return {
     SUBSTANCES, KEYS, MIXES, MIX_ORDER, HEAT, FLOW, THERMO, THERMO_ORDER, SAFETY, OPS,
-    ROOM, T_TAP, K_SHARP, FLASK_ML, FILL_VOLUME, REFILL_BELOW, STONES_MAX_T, DROP_VOL, SUPERHEAT, VIOLENT_W, SWAP_FILL, SAMPLE_ML, BURN_LIMITS, MAX_FRACTIONS,
+    ROOM, T_TAP, K_SHARP, FLASK_ML, FILL_VOLUME, REFILL_BELOW, RECV_ML, STONES_MAX_T, DROP_VOL, SUPERHEAT, VIOLENT_W, SWAP_FILL, SAMPLE_ML, BURN_LIMITS, MAX_FRACTIONS,
     ESC_WARN, ESC_STOP_FLAM, ESC_STOP_ALL,
     zero, vol, share, take, moleFractions, boilingPoint, vaporFractions, mainComponent, burnResult, heatCap,
     initialState, newReceiver, createEngine, snapshot, median
