@@ -1,7 +1,7 @@
 {
-  "date": "2026-10-27T22:10:08.051Z",
-  "package": "pufferfish-0.1.0-scorm12.zip",
-  "web": "pufferfish-0.1.0-web.zip",
+  "date": "2026-10-29T16:36:52.046Z",
+  "package": "pufferfish-0.2.0-scorm12.zip",
+  "web": "pufferfish-0.2.0-web.zip",
   "passed": 17,
   "total": 17,
   "results": [
@@ -13,17 +13,17 @@
     {
       "id": "SCORM-2",
       "status": "PASS",
-      "detail": "Manifest listet alle 16 Dateien des Pakets (inkl. labkit/)"
+      "detail": "Manifest listet alle 17 Dateien des Pakets (inkl. labkit/)"
     },
     {
       "id": "SCORM-3",
       "status": "PASS",
-      "detail": "alle 14 Verweise relativ und im Paket vorhanden, keine externen Ressourcen"
+      "detail": "alle 15 Verweise relativ und im Paket vorhanden, keine externen Ressourcen"
     },
     {
       "id": "WEB-1",
       "status": "PASS",
-      "detail": "Web-ZIP enthält dieselben 16 Laufzeitdateien im Ordner pufferfish/"
+      "detail": "Web-ZIP enthält dieselben 17 Laufzeitdateien im Ordner pufferfish/"
     },
     {
       "id": "PKG-1",
@@ -38,7 +38,7 @@
     {
       "id": "SCORM-iframe-2",
       "status": "PASS",
-      "detail": "eingebettet: Versuch über die Oberfläche bedient, Messwerte korrekt"
+      "detail": "eingebettet: Versuche 1 und 3 über die Oberfläche bedient, Messwerte korrekt"
     },
     {
       "id": "SCORM-iframe-4",
@@ -58,7 +58,7 @@
     {
       "id": "SCORM-popup-2",
       "status": "PASS",
-      "detail": "neues Fenster: Versuch über die Oberfläche bedient, Messwerte korrekt"
+      "detail": "neues Fenster: Versuche 1 und 3 über die Oberfläche bedient, Messwerte korrekt"
     },
     {
       "id": "SCORM-popup-3",
@@ -88,7 +88,7 @@
     {
       "id": "HTTP-404",
       "status": "PASS",
-      "detail": "alle Ressourcen aus den entpackten Paketen geladen (45 Anfragen)"
+      "detail": "alle Ressourcen aus den entpackten Paketen geladen (48 Anfragen)"
     }
   ]
 }

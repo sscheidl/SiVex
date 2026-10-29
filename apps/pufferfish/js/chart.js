@@ -39,7 +39,9 @@
       return true;
     }
     /**
-     * d: { curves: [{label, records, style}], compare: [{label, records}], xLabel, zoom, band: {pKa, label} | null }
+     * d: { curves: [{label, records, style}], compare: [{label, records}], xLabel, zoom, band: {pKa, label} | null,
+     *      x: {min, max} (feste x-Achse, z. B. lg-Verhältnis), y: {min, max},
+     *      guides: [{y, label, color}] (waagerechte Hilfslinien), lines: [{x0, y0, x1, y1, label, color}] }
      */
     draw(d) {
       this.resize();
@@ -47,10 +49,12 @@
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
       const all = d.curves.concat(d.compare).flatMap((c) => c.records);
-      let xmax = Math.max(0.25, ...all.map((p) => p.v));
-      const xs = niceStep(xmax, 5); xmax = Math.ceil(xmax / xs - 1e-9) * xs;
+      let xmin = 0, xmax = Math.max(0.25, ...all.map((p) => p.v));
+      let xs = niceStep(xmax, 5); xmax = Math.ceil(xmax / xs - 1e-9) * xs;
+      if (d.x) { xmin = d.x.min; xmax = d.x.max; xs = niceStep(xmax - xmin, 6); }
       let y0 = 0, y1 = 14;
-      if (d.zoom && all.length) {
+      if (d.y) { y0 = d.y.min; y1 = d.y.max; }
+      else if (d.zoom && all.length) {
         const ys = all.map((p) => p.pH).concat(d.band ? [d.band.pKa] : []);
         const lo = Math.min(...ys), hi = Math.max(...ys);
         const pad = Math.max(0.05, (hi - lo) * 0.12);
@@ -59,9 +63,9 @@
       }
       const ys = niceStep(y1 - y0, H < 200 ? 4 : 7);
       const L = 40, R = 10, T = 10, B = 32;
-      const X = (v) => L + (v / xmax) * (W - L - R);
+      const X = (v) => L + ((v - xmin) / (xmax - xmin)) * (W - L - R);
       const Y = (p) => T + (1 - (p - y0) / (y1 - y0)) * (H - T - B);
-      this.map = { X, Y, xmax, y0, y1 };
+      this.map = { X, Y, xmin, xmax, y0, y1 };
       // Raster
       ctx.font = `500 11px ${FONT}`; ctx.fillStyle = '#5c6b7a'; ctx.strokeStyle = '#e3e9ef'; ctx.lineWidth = 1;
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -69,7 +73,7 @@
       for (let p = Math.ceil(y0 / ys) * ys; p <= y1 + 1e-9; p += ys) { ctx.beginPath(); ctx.moveTo(L, Y(p)); ctx.lineTo(W - R, Y(p)); ctx.stroke(); ctx.fillText(fmt(p, yd), L - 5, Y(p)); }
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       const xd = xs < 0.1 ? 2 : xs < 1 ? 1 : 0;
-      for (let v = 0; v <= xmax + 1e-9; v += xs) { ctx.beginPath(); ctx.moveTo(X(v), T); ctx.lineTo(X(v), H - B); ctx.stroke(); ctx.fillText(fmt(v, xd), X(v), H - B + 4); }
+      for (let v = Math.ceil(xmin / xs - 1e-9) * xs; v <= xmax + 1e-9; v += xs) { ctx.beginPath(); ctx.moveTo(X(v), T); ctx.lineTo(X(v), H - B); ctx.stroke(); ctx.fillText(fmt(Math.abs(v) < 1e-9 ? 0 : v, xd), X(v), H - B + 4); }
       ctx.strokeStyle = '#8796a5'; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, H - B); ctx.lineTo(W - R, H - B); ctx.stroke();
       ctx.fillStyle = '#3d4b5a'; ctx.font = `600 11.5px ${FONT}`;
       ctx.fillText(d.xLabel, (L + W - R) / 2, H - 14);
@@ -83,6 +87,18 @@
         ctx.fillStyle = '#0b7285'; ctx.font = `600 11px ${FONT}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
         ctx.fillText(d.band.label, W - R - 4, Y(d.band.pKa) - 2);
       }
+      // Hilfslinien und Geraden (Ziel-pH, Henderson-Hasselbalch ideal)
+      for (const g of d.guides || []) {
+        ctx.strokeStyle = g.color || '#c92a2a'; ctx.lineWidth = 1.2; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(L, Y(g.y)); ctx.lineTo(W - R, Y(g.y)); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = g.color || '#c92a2a'; ctx.font = `600 11px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+        ctx.fillText(g.label, L + 6, Y(g.y) - 2);
+      }
+      for (const g of d.lines || []) {
+        ctx.strokeStyle = g.color || '#8a96a3'; ctx.lineWidth = 1.2; ctx.setLineDash([2, 4]);
+        ctx.beginPath(); ctx.moveTo(X(g.x0), Y(g.y0)); ctx.lineTo(X(g.x1), Y(g.y1)); ctx.stroke(); ctx.setLineDash([]);
+        if (g.label) { ctx.fillStyle = g.color || '#5c6b7a'; ctx.font = `500 11px ${FONT}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText(g.label, W - R - 4, Y(g.y1) + 16); }
+      }
       // Vergleichsreihen (blass, hohl)
       for (const c of d.compare) this.curve(ctx, c.records, X, Y, { color: '#8a96a3', marker: c.style.marker, dash: [3, 3] }, false, 0.8);
       d.curves.forEach((c) => this.curve(ctx, c.records, X, Y, c.style, true, 1.6));
@@ -91,10 +107,10 @@
     curve(ctx, recs, X, Y, st, fill, lw) {
       if (!recs.length) return;
       ctx.strokeStyle = st.color; ctx.fillStyle = st.color; ctx.lineWidth = lw * 0.75; ctx.setLineDash(st.dash);
-      ctx.beginPath(); recs.forEach((p, i) => (i ? ctx.lineTo(X(p.v), Y(p.pH)) : ctx.moveTo(X(p.v), Y(p.pH)))); ctx.stroke();
+      if (!st.markersOnly) { ctx.beginPath(); recs.forEach((p, i) => (i ? ctx.lineTo(X(p.v), Y(p.pH)) : ctx.moveTo(X(p.v), Y(p.pH)))); ctx.stroke(); }
       ctx.setLineDash([]); ctx.lineWidth = 1.2;
       const many = recs.length > 60;
-      recs.forEach((p, i) => { if (!many || i % 2 === 0 || i === recs.length - 1) { ctx.fillStyle = fill ? st.color : '#fff'; marker(ctx, st.marker, X(p.v), Y(p.pH), many ? 2.4 : 3.4, true); } });
+      recs.forEach((p, i) => { if (!many || i % 2 === 0 || i === recs.length - 1) { ctx.fillStyle = fill ? st.color : '#fff'; marker(ctx, st.marker, X(p.v), Y(p.pH), st.markersOnly ? 5 : many ? 2.4 : 3.4, true); } });
     }
   }
 

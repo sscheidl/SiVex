@@ -91,15 +91,30 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(PORT, r));
 const browser = await launch();
 
-/** Kurzer Versuch über die Oberfläche: Vermutung festhalten, ein Tropfen in beide Gläser, Messpunkte prüfen. */
+/** Kurzer Versuch über die Oberfläche (ohne Vermutung): HCl wählen, ein Tropfen in beide Gläser, Messpunkte prüfen; Versuch 3 öffnen und messen. */
 async function operate(frame) {
   await frame.waitForFunction(() => window.PF && window.PF.app);
-  await frame.locator('#predictForm [value="wasser"]').check();
-  await frame.locator('#predictForm button[type=submit]').click();
-  await frame.locator('#doses [data-dose="d1"]').click();
+  await frame.locator('#doseBar [data-reagent="HCl"]').click();
+  await frame.locator('#btnGo').click();
   await frame.waitForFunction(() => { const A = window.PF.app; return !A.eng.busy() && A.eng.current().beakers.every((b) => b.records.length === 2 && !b.pending.length); }, null, { timeout: 30000 });
   const ph = await frame.evaluate(() => window.PF.app.eng.current().beakers.map((b) => b.records[1].pH));
-  return Math.abs(ph[0] - 3.779) < 0.002 && Math.abs(ph[1] - 7.197) < 0.002;
+  const ok1 = Math.abs(ph[0] - 3.779) < 0.002 && Math.abs(ph[1] - 7.197) < 0.002;
+  // Versuch 3 (Pufferherstellung) im Paket: Ziel, System, Rechnung, 10 + 20 mL, Messung
+  await frame.locator('#expChips [data-exp="e3"]').click();
+  await frame.locator('[data-force="mix"]').click();
+  await frame.locator('[data-mixtarget="5.05"]').click();
+  await frame.locator('input[data-mixsystem="ac"]').check();
+  await frame.locator('[data-mixf="r"]').fill('2'); await frame.locator('[data-mixf="vb"]').fill('20'); await frame.locator('[data-mixf="va"]').fill('10');
+  await frame.locator('[data-mixaction="check"]').click();
+  await frame.locator('#doseBar [data-kind="m10"]').click();
+  const idle = () => frame.waitForFunction(() => !window.PF.app.eng.busy(), null, { timeout: 60000 });
+  await frame.locator('#doseBar [data-reagent="HAc"]').click(); await frame.locator('#btnGo').click(); await idle();
+  await frame.locator('#doseBar [data-reagent="NaAc"]').click(); await frame.locator('#btnGo').click(); await idle();
+  await frame.locator('#btnGo').click(); await idle();
+  await frame.locator('#btnMeasure').click(); await idle();
+  const m = await frame.evaluate(() => { const A = window.PF.app, b = A.eng.current().beakers[0]; return { V: b.comp.V, pH: A.eng.meter(b).pH }; });
+  await frame.locator('#expChips [data-exp="e1"]').click();
+  return ok1 && Math.abs(m.V - 30) < 1e-9 && Math.abs(m.pH - 5.05) < 0.05;
 }
 const watch = (pg, errors, external, allowFile) => { pg.on('pageerror', (e) => errors.push(e.message)); pg.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); }); pg.on('request', (r) => { const u = r.url(); if (!u.startsWith(`http://localhost:${PORT}/`) && !u.startsWith('data:') && !u.startsWith('blob:') && !(allowFile && u.startsWith('file:'))) external.push(u); }); };
 
@@ -127,7 +142,7 @@ for (const mode of ['iframe', 'popup']) {
   if (mode === 'popup') { await win.close(); await sleep(400); finalCalls = await page.evaluate(() => window.calls.slice()); }
   const label = mode === 'iframe' ? 'eingebettet' : 'neues Fenster';
   check(`SCORM-${mode}-1`, callsBefore.filter((c) => c[0] === 'LMSInitialize').length === 1, `${label}: LMSInitialize genau einmal`);
-  check(`SCORM-${mode}-2`, okRun, `${label}: Versuch über die Oberfläche bedient, Messwerte korrekt`);
+  check(`SCORM-${mode}-2`, okRun, `${label}: Versuche 1 und 3 über die Oberfläche bedient, Messwerte korrekt`);
   if (finalCalls) check(`SCORM-${mode}-3`, finalCalls.filter((c) => c[0] === 'LMSFinish').length === 1, 'neues Fenster: LMSFinish beim Schließen genau einmal');
   check(`SCORM-${mode}-4`, !callsBefore.some((c) => /LMS(Set|Get)Value|LMSCommit/.test(c[0])), 'keine Werte gelesen oder geschrieben (keine Noten, Antworten, Personendaten)');
   check(`SCORM-${mode}-5`, !errors.length && !external.length, `keine Konsolenfehler, keine externen Anfragen${errors.length ? ': ' + errors.join('; ') : ''}${external.length ? ': ' + external.join(', ') : ''}`);

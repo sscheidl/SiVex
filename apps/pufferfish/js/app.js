@@ -5,6 +5,7 @@
   'use strict';
   const { engine: E, chem: C, learn: L } = root.PF;
   const $ = (s) => document.querySelector(s);
+  const de = (v, d) => root.LK.core.fmt(v, d);
 
   const eng = E.create();
   const lab = new root.PF.LabRenderer($('#lab'), eng);
@@ -17,7 +18,6 @@
   function applySettings() {
     lab.opts.indicator = ui.indicator;
     lab.opts.reduceMotion = ui.reduceMotion;
-    eng.state.showEvents = ui.events;
     document.body.classList.toggle('reduce-motion', ui.reduceMotion);
     $('#btnMotion').setAttribute('aria-pressed', String(ui.reduceMotion));
   }
@@ -59,72 +59,131 @@
   });
   root.LK.splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex.pufferfish.panel', minStage: 560 });
 
-  // ------------------------------------------------------------ Labor-Leisten
+  // ------------------------------------------------------------ Labor: Versuch, Lösung, Pipette, Menge, Ziel
+  function afterLabChange(full) { U.refreshLab(full); U.save(); }
+
   $('#expChips').addEventListener('click', (e) => {
     const b = e.target.closest('[data-exp]'); if (!b) return;
     const r = eng.selectExperiment(b.dataset.exp);
-    if (r.ok) { lab.resetFx(); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text);
+    if (r.ok) {
+      lab.resetFx(); ui.tab = 'task'; U.refreshLab(true); U.renderPanel(); U.save();
+      if (b.dataset.exp === 'e3' && !U.mixOpen()) U.toast('Versuch 3 baut auf der Herleitung auf – siehe Bedienfeld → Aufgabe.');
+    } else U.toast(r.text);
   });
-  $('#slots').addEventListener('click', (e) => { const b = e.target.closest('[data-slot]'); if (!b) return; const r = eng.selectSlot(b.dataset.slot); if (r.ok) U.refreshLab(true); else U.toast(r.text); U.save(); });
-  $('#btnNewSeries').addEventListener('click', () => { const r = eng.newSeries(); if (r.ok) { U.toast('Reihe gespeichert – frische Ansätze stehen bereit.'); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
-  $('#btnCont').addEventListener('click', () => { const r = eng.continueWithOther(); if (r.ok) { U.toast(`Gegenprobe: dieselben, bereits behandelten Ansätze erhalten jetzt ${eng.current().reagent}.`); U.refreshLab(true); U.save(); } else U.toast(r.text); });
+
+  /** Lösung wählen – Flasche im Labor und Schalter in der Dosierleiste führen hierher (ein Zustand). */
+  function selectReagent(key) {
+    const before = eng.state.slot;
+    const r = eng.selectSlot(key);
+    if (!r.ok) { U.toast(r.text); return; }
+    if (key !== before && !isMixExp()) {
+      const s = eng.current();
+      if (!eng.used(s) && key !== 'cont') U.toast(`${key === 'HCl' ? 'Säurereihe' : 'Laugenreihe'} mit ${key}: frische Ansätze. Bereits gespeicherte Messreihen bleiben erhalten.`);
+    }
+    afterLabChange(true);
+  }
+  const isMixExp = () => E.expById(eng.state.exp).mixing;
+
+  $('#tags').addEventListener('click', (e) => { const b = e.target.closest('[data-bottle]'); if (b) selectReagent(b.dataset.bottle); });
+
+  function doDose() {
+    if (ui.speed === 0) { U.toast('Die Zeit ist angehalten. Wähle ¼× oder 1×, um zu dosieren.'); return; }
+    if (eng.busy()) { U.toast('Die Pipette ist noch unterwegs – warte, bis die Zugabe beendet ist.'); return; }
+    const block = U.dosingBlock();
+    if (block) { U.toast(block); if (isMixExp()) { ui.tab = 'task'; $('#main').classList.remove('panel-hidden'); U.renderPanel(); } return; }
+    const r = eng.dose(eng.state.kind, isMixExp() || ui.target === 'all' ? null : [Number(ui.target)]);
+    if (!r.ok) U.toast(r.text); else U.renderBars();
+  }
+  function doMeasure() {
+    if (ui.speed === 0) { U.toast('Die Zeit ist angehalten. Wähle ¼× oder 1×, um zu messen.'); return; }
+    if (eng.busy()) { U.toast('Warte, bis die laufende Zugabe oder Messung beendet ist.'); return; }
+    const block = U.dosingBlock();
+    if (block) { U.toast(block); return; }
+    const m = ui.mix;
+    const r = eng.measure({ r: m.entries.r, vb: m.entries.vb, va: m.entries.va, res: m.res ? { ok: m.res.ok, r: pickRes(m.res.r), vb: pickRes(m.res.vb), va: pickRes(m.res.va), sum: pickRes(m.res.sum) } : null });
+    if (!r.ok) U.toast(r.text); else { U.toast('Mischen und messen …'); U.renderBars(); }
+  }
+  const pickRes = (x) => (x ? { ok: x.ok, empty: !!x.empty, kind: x.kind || null, fb: x.fb || '' } : null);
 
   $('#deck').addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.reagent) { selectReagent(t.dataset.reagent); return; }
+    if (t.dataset.tool) { const r = eng.setTool(t.dataset.tool); if (!r.ok) U.toast(r.text); else afterLabChange(false); return; }
+    if (t.dataset.kind) { const r = eng.setKind(t.dataset.kind); if (!r.ok) U.toast(r.text); else afterLabChange(false); return; }
     if (t.dataset.target) { ui.target = t.dataset.target; U.renderBars(); U.updateTags(); U.save(); return; }
     if (t.dataset.speed != null) { ui.speed = Number(t.dataset.speed); U.renderBars(); U.save(); return; }
     if (t.id === 'btnStep') { if (ui.speed === 0) eng.step(0.2); return; }
-    if (t.id === 'btnStir') { eng.stir(ui.target === 'all' ? null : [Number(ui.target)]); U.toast('Umrühren: Die Lösung wird mit dem Glasstab durchmischt.'); return; }
-    if (t.dataset.dose) {
-      if (ui.speed === 0) { U.toast('Die Zeit ist angehalten. Wähle ¼× oder 1×, um zu dosieren.'); return; }
-      if (eng.busy()) { U.toast('Die Pipette ist noch unterwegs – warte, bis die Zugabe beendet ist.'); return; }
-      const P = L.PROTOCOLS[eng.state.exp];
-      if (P.predict && !ui.predict[eng.state.exp] && !ui.predictSkip[eng.state.exp]) {
-        ui.tab = 'task'; $('#main').classList.remove('panel-hidden'); U.renderPanel();
-        U.toast('Halte zuerst deine Vermutung fest (Bedienfeld → Aufgabe) – oder wähle „ohne Vermutung weiter“.');
-        return;
-      }
-      const tool = E.DOSES[t.dataset.dose].tool;
-      if (tool !== eng.state.tool) { const rt = eng.setTool(tool); if (!rt.ok) { U.toast(rt.text); return; } }
-      const r = eng.dose(t.dataset.dose, ui.target === 'all' ? null : [Number(ui.target)]);
-      if (!r.ok) U.toast(r.text); else U.renderBars();
-    }
+    if (t.id === 'btnStir') { eng.stir(isMixExp() || ui.target === 'all' ? null : [Number(ui.target)]); U.toast('Umrühren: Die Lösung wird mit dem Glasstab durchmischt.'); return; }
+    if (t.id === 'btnGo') { doDose(); return; }
+    if (t.id === 'btnMeasure') { doMeasure(); return; }
   });
+  $('#btnNewSeries').addEventListener('click', () => { const r = eng.newSeries(); if (r.ok) { U.toast('Reihe gespeichert – frische Ansätze stehen bereit.'); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
+  $('#btnCont').addEventListener('click', () => { const r = eng.continueWithOther(); if (r.ok) { U.toast(`Gegenprobe: dieselben, bereits behandelten Ansätze erhalten jetzt ${eng.current().reagent}.`); U.refreshLab(true); U.save(); } else U.toast(r.text); });
+  $('#btnBatch').addEventListener('click', () => { const r = eng.newBatch(); if (r.ok) { U.toast('Leeres Becherglas aufgestellt. Frühere Messungen stehen unter „Ergebnisse“.'); lab.resetFx(); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
   $('#chkIndicator').addEventListener('change', (e) => { ui.indicator = e.target.checked; applySettings(); U.save(); });
-  $('#chkEvents').addEventListener('change', (e) => { ui.events = e.target.checked; applySettings(); U.save(); });
   $('#chkZoom').addEventListener('change', (e) => { ui.zoom = e.target.checked; U.save(); });
   $('#chkPka').addEventListener('change', (e) => { ui.pka = e.target.checked; U.save(); });
   $('#cmpSelect').addEventListener('change', (e) => { ui.compare = e.target.value; U.save(); });
-  $('#pviews').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-fresh]'); if (!b) return;
-    const r = eng.freshSample(Number(b.dataset.fresh));
-    if (r.ok) { U.toast('Frische Probe aufgestellt; die alte Messung ist unter „Ergebnisse“ gespeichert.'); U.refreshLab(false); U.save(); } else U.toast(r.text);
-  });
-  $('#pviews').addEventListener('change', (e) => {
-    const s = e.target.closest('[data-ratio]'); if (!s || !s.value) return;
-    const r = eng.freshSample(Number(s.dataset.ratio), s.value);
-    if (r.ok) { U.toast('Neuer Ansatz angelegt.'); U.refreshLab(false); U.save(); } else U.toast(r.text);
+
+  // Zusatzansicht: Teilchenmodell / Mischungsverhältnis ↔ pH-Kurve (gleicher Platz, kein Datenverlust)
+  $('#viewToggle').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-view]'); if (!b) return;
+    ui.view[eng.state.exp] = b.dataset.view;
+    U.renderExtra(); U.save();
+    if (b.dataset.view === 'curve') U.updateChart(chart, true);
   });
 
   // ------------------------------------------------------------ Bedienfeld
   document.querySelector('.lk-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; ui.tab = b.dataset.tab; ui.confirmSol = null; U.renderPanel(); U.save(); });
   const pb = $('#panelBody');
+
+  function mixReset(keepTarget) {
+    const m = ui.mix;
+    if (!keepTarget) m.target = null;
+    m.system = null; m.pick = null; m.msg = null;
+    m.entries = { r: '', vb: '', va: '' }; m.res = null; m.checked = false; m.tip = 0; m.sol = false;
+  }
+  function setTarget(pH) {
+    if (eng.busy()) { U.toast('Warte, bis die laufende Zugabe oder Messung beendet ist.'); return; }
+    const msg = L.targetMessage(null, pH);
+    if (!msg.ok) { ui.mix.customMsg = msg.text; U.toast(msg.text); U.renderPanel(); U.save(); return; } // bisheriges Ziel bleibt
+    const r = eng.selectSystem(null, pH);
+    if (!r.ok) { U.toast(r.text); return; }
+    mixReset(false); ui.mix.target = pH; ui.mix.customMsg = null;
+    lab.resetFx(); U.refreshLab(true); U.renderPanel(); U.save();
+  }
+  function setSystem(id) {
+    const m = ui.mix;
+    if (eng.busy()) { U.toast('Warte, bis die laufende Zugabe oder Messung beendet ist.'); U.renderPanel(); return; }
+    const msg = L.targetMessage(id, m.target);
+    const r = eng.selectSystem(msg.ok ? id : null, m.target);
+    if (!r.ok) { U.toast(r.text); U.renderPanel(); return; }
+    m.pick = id; m.msg = msg;
+    m.entries = { r: '', vb: '', va: '' }; m.res = null; m.checked = false; m.tip = 0; m.sol = false;
+    m.system = msg.ok ? id : null;
+    lab.resetFx(); U.refreshLab(true); U.renderPanel(); U.save();
+  }
+  function mixCheck() {
+    const m = ui.mix;
+    const plan = C.planMix(m.system, m.target);
+    const res = L.gradeMixCalc(plan, m.entries);
+    if (res.empty) { U.toast('Fülle alle drei Felder aus, dann prüfe die Rechnung.'); m.res = res; U.renderPanel(); return; }
+    m.res = res; m.checked = true;
+    U.toast(res.ok ? 'Rechnung richtig – jetzt herstellen.' : 'Rechnung geprüft – Rückmeldung unter den Feldern. Du kannst trotzdem herstellen und messen.');
+    U.refreshLab(false); U.renderPanel(); U.save();
+  }
+
   pb.addEventListener('submit', (e) => {
     e.preventDefault();
     const x = eng.state.exp;
-    if (e.target.id === 'predictForm') {
-      const v = new FormData(e.target).get('predict');
-      if (!v) { U.toast('Wähle zuerst eine Vermutung.'); return; }
-      ui.predict[x] = { v, at: Date.now() };
-      U.toast('Vermutung festgehalten. Jetzt selbst dosieren!');
-    } else if (e.target.id === 'protoForm') {
+    if (e.target.id === 'protoForm') {
       ui.checked[x] = true; ui.confirmSol = null;
       const res = U.gradeAll(x);
       const ok = Object.values(res).every((r) => r.status === 'right');
       if (!ok) ui.fails[x] = (ui.fails[x] || 0) + 1;
-      if (x === 'e1' && res.d1 && res.d1.status !== 'empty' && !ui.revealed) { ui.revealed = true; U.refreshLab(true); U.toast('Auflösung: Das Wunderwasser ist eine Phosphatpufferlösung. Die Teilchenansicht ist freigeschaltet.'); }
+      if (x === 'e1' && res.d1 && res.d1.status !== 'empty') U.toast('Deutung abgegeben – die Herleitung ist jetzt freigeschaltet (Reiter „2 Herleitung“).');
     }
-    U.renderPanel(); U.renderSteps(); U.save();
+    U.renderPanel(); U.renderSteps(); U.renderBars(); U.save();
   });
   pb.addEventListener('change', (e) => {
     const x = eng.state.exp, t = e.target;
@@ -133,20 +192,48 @@
       const a = (ui.answers[x] = ui.answers[x] || {});
       if (q.type === 'multi') a[q.id] = [...pb.querySelectorAll(`[data-q="${q.id}"]:checked`)].map((i) => i.value);
       else a[q.id] = t.value;
-      U.save();
-    }
+      U.renderSteps(); U.save();
+    } else if (t.dataset.mixsystem) setSystem(t.dataset.mixsystem);
   });
-  pb.addEventListener('input', (e) => { const t = e.target; if (t.dataset.free) { const x = eng.state.exp; (ui.answers[x] = ui.answers[x] || {})[t.dataset.free] = t.value; U.save(); } });
+  pb.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.dataset.free) { const x = eng.state.exp; (ui.answers[x] = ui.answers[x] || {})[t.dataset.free] = t.value; U.save(); }
+    else if (t.dataset.mixf) { ui.mix.entries[t.dataset.mixf] = t.value; ui.mix.res = null; U.save(); } // geänderte Eingabe: altes Prüfergebnis gilt nicht mehr
+    else if (t.dataset.mixcustom != null) { ui.mix.custom = t.value; }
+  });
+  pb.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.dataset && e.target.dataset.mixcustom != null) { e.preventDefault(); setTarget(L.num(ui.mix.custom)); }
+  });
   pb.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
     const x = eng.state.exp;
     if (t.dataset.go) { U.setPage(t.dataset.go); return; }
+    if (t.dataset.force) { ui.forced[t.dataset.force] = true; afterLabChange(true); U.renderSteps(); U.renderPanel(); return; }
     if (t.dataset.cmp) { ui.compare = ui.compare === t.dataset.cmp ? '' : t.dataset.cmp; U.renderBars(); U.renderPanel(); U.save(); return; }
+    if (t.dataset.fresh != null) {
+      const r = eng.freshSample(Number(t.dataset.fresh));
+      if (r.ok) { U.toast('Frische Probe aufgestellt; die alte Messung ist unter „Ergebnisse“ gespeichert.'); U.refreshLab(false); U.renderPanel(); U.save(); } else U.toast(r.text);
+      return;
+    }
+    if (t.dataset.mixtarget) { setTarget(Number(t.dataset.mixtarget)); return; }
+    if (t.dataset.mixaction) {
+      const m = ui.mix;
+      switch (t.dataset.mixaction) {
+        case 'custom': setTarget(L.num(m.custom)); return;
+        case 'check': mixCheck(); return;
+        case 'tip': m.tip = Math.min(3, (m.tip || 0) + 1); break;
+        case 'sol': if (m.checked) m.sol = true; else ui.confirmSol = 'mix'; break;
+        case 'solYes': m.sol = true; ui.confirmSol = null; break;
+        case 'solNo': ui.confirmSol = null; break;
+        default: return;
+      }
+      U.renderPanel(); U.save(); return;
+    }
     switch (t.id) {
-      case 'btnSkipPredict': ui.predictSkip[x] = true; break;
+      case 'btnMeasurePanel': doMeasure(); return;
       case 'btnTip': {
         const res = U.gradeAll(x);
-        const q = L.PROTOCOLS[x].questions.find((k) => k.type !== 'free' && (!k.reveal || ui.revealed) && res[k.id] && res[k.id].status !== 'right');
+        const q = L.PROTOCOLS[x].questions.find((k) => k.type !== 'free' && res[k.id] && res[k.id].status !== 'right');
         if (!q) { U.toast('Alles richtig – kein Tipp nötig.'); return; }
         const tp = (ui.tips[x] = ui.tips[x] || {});
         tp[q.id] = Math.min(3, (tp[q.id] || 0) + 1);
@@ -172,7 +259,8 @@
       case 'btnResetNo': ui.confirmSol = null; break;
       case 'btnResetYes': {
         eng.resetAll(); lab.resetFx();
-        Object.assign(ui, { predict: {}, predictSkip: {}, answers: {}, checked: {}, fails: {}, tips: {}, sol: {}, confirmSol: null, revealed: false, theory: {}, tasks: {}, apps: {}, forced: {}, compare: '', pka: false });
+        Object.assign(ui, { answers: {}, checked: {}, fails: {}, tips: {}, sol: {}, confirmSol: null, theory: {}, tasks: {}, apps: {}, forced: {}, compare: '', pka: false, order: {}, view: { e1: 'main', e2: 'main', e3: 'main' }, seed: Math.floor(Math.random() * 4294967295) + 1 });
+        mixReset(false);
         U.refreshLab(true); U.renderSteps(); U.toast('Alles zurückgesetzt.');
         break;
       }
@@ -182,7 +270,6 @@
   });
   function showSol(x) {
     ui.sol[x] = true; ui.confirmSol = null; ui.checked[x] = true;
-    if (x === 'e1' && !ui.revealed) { ui.revealed = true; U.refreshLab(true); }
     U.renderSteps();
   }
 
@@ -191,7 +278,7 @@
   pg.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
     if (t.dataset.go) { U.setPage(t.dataset.go); return; }
-    if (t.dataset.force) { ui.forced[t.dataset.force] = true; if (t.dataset.force === 'theory') ui.revealed = true; U.refreshLab(true); U.setPage(ui.page); return; }
+    if (t.dataset.force) { ui.forced[t.dataset.force] = true; U.refreshLab(true); U.setPage(ui.page); return; }
     const id = t.dataset.id;
     if (t.dataset.th) {
       const step = L.THEORY.find((s) => s.id === id), st = (ui.theory[id] = ui.theory[id] || { vals: {} });
@@ -199,7 +286,7 @@
         st.res = {}; let ok = true;
         for (const f of step.fields) { const r = L.gradeField(f, (st.vals || {})[f.id]); st.res[f.id] = r; if (!r.ok) ok = false; }
         st.ok = ok; if (!ok) st.fails = (st.fails || 0) + 1;
-        if (ok && U.theoryDone()) U.toast('Herleitung abgeschlossen: pKₛ-Bereich und formale Stoffmengen sind im Labor freigeschaltet.');
+        if (ok && U.theoryDone()) U.toast('Herleitung abgeschlossen: Versuch 3 (Puffer herstellen) ist freigeschaltet, pKₛ-Bereich und formale Stoffmengen sind im Labor verfügbar.');
       } else if (t.dataset.th === 'tip') st.tip = Math.min(3, (st.tip || 0) + 1);
       else if (t.dataset.th === 'sol') st.sol = true;
       afterPage(); return;
@@ -253,13 +340,18 @@
 
   let last = performance.now(), wasBusy = false;
   function loop(now) {
+    try { frame(now); } catch (e) { if (root.console) root.console.error(e); } // ein Fehler in einem Bild darf die Zeitschleife nicht beenden
+    root.requestAnimationFrame(loop);
+  }
+  function frame(now) {
     const real = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
     const dt = real * ui.speed;
     eng.step(dt);
-    let committed = false;
+    let committed = false, measured = null;
     for (const f of eng.drainFx()) {
       if (f.type === 'land') { lab.onLand(f, eng.geometry(), eng.current()); nod(); }
       else if (f.type === 'commit') committed = true;
+      else if (f.type === 'measured') measured = f.entry;
     }
     if (ui.page === 'lab') {
       lab.frame(dt);
@@ -270,11 +362,14 @@
     }
     const b = eng.busy();
     if (b !== wasBusy) { wasBusy = b; U.renderBars(); }
+    if (measured) {
+      U.toast(`pH-Messelektrode: pH ${de(measured.pH, 2)} gemessen.`);
+      U.renderPanel(); U.save();
+    }
     if (committed) { U.save(); if (ui.tab === 'results' || ui.tab === 'journal') U.renderPanel(); }
-    root.requestAnimationFrame(loop);
   }
   root.requestAnimationFrame(loop);
-  root.addEventListener('pagehide', () => { try { root.localStorage.setItem('sivex.pufferfish.v1', JSON.stringify({ v: 1, ui: Object.assign({}, ui, { confirmSol: null }), engine: eng.serialize() })); } catch (e) { /* ohne Speicher */ } });
+  root.addEventListener('pagehide', () => U.saveNow());
 
   root.PF.app = { eng, lab, chart, U, ui, puff };
 })(typeof self !== 'undefined' ? self : this);

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Pufferfish – SiVex</title>
-  <meta name="description" content="Pufferfish – Warum bleibt der pH fast gleich? Virtuelles Labor zu Puffern, Henderson-Hasselbalch, Pufferbereich und Pufferkapazität (Chemie Q13, erhöhtes Anforderungsniveau).">
+  <meta name="description" content="Pufferfish – Warum bleibt der pH fast gleich? Virtuelles Labor zu Puffern: Pufferwirkung untersuchen, Henderson-Hasselbalch herleiten, Puffer berechnen, herstellen und messen (Chemie Q13, erhöhtes Anforderungsniveau).">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='33' r='20' fill='%23f2c14e' stroke='%23b07d12' stroke-width='3'/%3E%3Ccircle cx='40' cy='27' r='6' fill='%23fff'/%3E%3Ccircle cx='41' cy='27' r='3' fill='%23132a3a'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="labkit/css/labkit.css">
   <link rel="stylesheet" href="css/app.css">
@@ -57,62 +57,64 @@
       <section class="lk-stage" id="stage" aria-label="Labor">
         <div class="actionbar">
           <div class="expchips" id="expChips" role="group" aria-label="Versuch wählen"></div>
-          <div class="seriesbar">
-            <div class="lk-seg light" id="slots" role="group" aria-label="Messreihe">
-              <button type="button" data-slot="HCl">Säure <small>HCl</small></button>
-              <button type="button" data-slot="NaOH">Lauge <small>NaOH</small></button>
-              <button type="button" data-slot="cont" hidden>Gegenprobe</button>
-            </div>
+          <div class="seriesbar" id="seriesBar">
             <button type="button" class="lk-btn small" id="btnNewSeries" title="Aktuelle Reihe speichern und frische Ansätze aufstellen">Neue Reihe</button>
-            <button type="button" class="lk-btn small" id="btnCont" title="Dieselben (bereits behandelten) Ansätze mit dem anderen Reagenz weiterbehandeln">Gegenprobe</button>
+            <button type="button" class="lk-btn small" id="btnCont" title="Dieselben (bereits behandelten) Ansätze mit der anderen Lösung weiterbehandeln">Gegenprobe</button>
+            <button type="button" class="lk-btn small" id="btnBatch" title="Leeres Becherglas aufstellen (bisherige Messungen bleiben gespeichert)" hidden>Neu ansetzen</button>
           </div>
         </div>
+        <div class="formulabar" id="formulaBar" role="note" aria-label="Henderson-Hasselbalch-Gleichung" hidden></div>
         <div class="labgrid" id="labgrid">
           <div class="labarea">
             <div class="canvas-wrap" id="canvasWrap">
-              <canvas id="lab" role="img" aria-label="Laborbank mit Bechergläsern, Referenzproben, Pipetten und den Maßlösungen HCl und NaOH"></canvas>
+              <canvas id="lab" role="img" aria-label="Laborbank mit Bechergläsern, Pipetten, Lösungsflaschen und pH-Messelektroden"></canvas>
               <div class="tags" id="tags"></div>
+              <p class="seriesnote" id="seriesNote"></p>
               <div class="msgband"><div class="toast" id="toast" role="status" aria-live="polite"></div></div>
             </div>
           </div>
-          <div class="deck" id="deck" role="group" aria-label="Dosieren">
-            <div class="deck-row">
-              <div class="grp doses" id="doses" role="group" aria-label="Pipette und Zugabe"></div>
-            </div>
-            <div class="deck-row">
-              <div class="grp" id="targets" role="group" aria-label="Ziel"></div>
+          <div class="deck" id="deck" role="group" aria-label="Dosierleiste">
+            <div class="deck-row dosebar" id="doseBar"></div>
+            <p class="deck-hint" id="deckHint" role="status"></p>
+            <div class="deck-row util">
               <button type="button" class="lk-btn small stir" id="btnStir">Umrühren</button>
               <div class="grp" role="group" aria-label="Zeit">
                 <div class="lk-seg light" id="speed">
                   <button type="button" data-speed="0" aria-label="Pause" title="Pause">❚❚</button>
-                  <button type="button" data-speed="0.25" aria-label="Zeitlupe, viertel Geschwindigkeit" title="Zeitlupe">¼×</button>
+                  <button type="button" data-speed="0.25" aria-label="langsam, viertel Geschwindigkeit" title="Langsam (¼×)">¼×</button>
                   <button type="button" data-speed="1" aria-label="normale Geschwindigkeit">1×</button>
                 </div>
                 <button type="button" class="lk-btn small" id="btnStep" title="Im Pausenmodus einen kleinen Zeitschritt weiter">Schritt ▸</button>
               </div>
-            </div>
-            <div class="deck-row">
-              <label class="chk"><input type="checkbox" id="chkIndicator" checked> Indikatorfarbe</label>
-              <label class="chk"><input type="checkbox" id="chkEvents" checked> Reaktion in Zeitlupe</label>
-              <div class="uiscale" aria-label="Universalindikator, schematische Farbskala"><span>Universalindikator<br>(schematisch)</span><div class="uibar" id="uiBar"></div></div>
+              <label class="chk" id="indWrap"><input type="checkbox" id="chkIndicator" checked> Indikatorfarbe</label>
+              <div class="uiscale" id="uiScale" aria-label="Universalindikator, schematische Farbskala"><span>Universalindikator<br>(schematisch)</span><div class="uibar" id="uiBar"></div></div>
             </div>
           </div>
-          <div class="partcol" id="partcol" aria-label="Teilchenebene">
-            <div class="plegend" id="plegend"></div>
-            <p class="seriesnote" id="seriesNote"></p>
-            <div class="pviews" id="pviews"></div>
-          </div>
-          <div class="chartbox">
-            <div class="charthead">
-              <h2 id="chartTitle">pH gegen zugegebenes Volumen</h2>
-              <div class="chartctl">
+          <div class="extra" id="extra">
+            <div class="extra-head">
+              <div class="viewtoggle" id="viewToggle" role="group" aria-label="Zusatzansicht wählen">
+                <button type="button" data-view="main" aria-pressed="true">Teilchenmodell</button>
+                <button type="button" data-view="curve" aria-pressed="false">pH-Kurve</button>
+              </div>
+              <h2 id="extraTitle" class="extra-title"></h2>
+              <p id="extraNote" class="extra-note"></p>
+              <div class="chartctl" id="chartCtl" hidden>
                 <label class="chk"><input type="checkbox" id="chkZoom"> Ausschnitt</label>
                 <label class="chk" id="pkaWrap"><input type="checkbox" id="chkPka"> pKₛ ± 1</label>
                 <select id="cmpSelect" aria-label="Frühere Messreihe zum Vergleich einblenden"></select>
               </div>
             </div>
-            <div class="chartwrap"><canvas id="chart" role="img" aria-label="Diagramm: pH gegen zugegebenes Volumen"></canvas></div>
-            <div class="chartlegend" id="chartLegend"></div>
+            <div class="extra-body">
+              <div class="partview" id="partview">
+                <div class="plegend" id="plegend"></div>
+                <div class="pviews" id="pviews"></div>
+              </div>
+              <div class="mixview" id="mixview" hidden></div>
+              <div class="chartbox" id="chartbox" hidden>
+                <div class="chartwrap"><canvas id="chart" role="img" aria-label="Diagramm: pH gegen zugegebenes Volumen"></canvas></div>
+                <div class="chartlegend" id="chartLegend"></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -139,6 +141,7 @@
   <script src="js/learn.js"></script>
   <script src="js/render-lab.js"></script>
   <script src="js/render-particles.js"></script>
+  <script src="js/render-mix.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>

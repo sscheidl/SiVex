@@ -1,121 +1,194 @@
 {
-  "date": "2026-10-27T22:09:30.309Z",
-  "browser": "msedge 156.0.4314.50",
-  "root": "dist\\pufferfish",
+  "date": "2026-10-29T16:34:19.061Z",
+  "browser": "chromium 153.0.8010.12",
+  "root": "dist/pufferfish",
   "results": [
     {
       "id": "E01",
+      "p": "Logo",
       "title": "Logo: Begrüßung pumpt sich auf, erneut per Klick/Tastatur, keine Layoutsprünge; reduzierte Bewegung",
       "status": "PASS",
-      "detail": "Skalierung 1.30, Logo-Box unverändert 46×46",
-      "ms": 6562
+      "detail": "Skalierung 1.36, Logo-Box unverändert 46×46",
+      "ms": 6236
     },
     {
       "id": "E02",
-      "title": "Versuch 1: Vermutung vor dem Dosieren, ein Tropfen nacheinander in beide Gläser, Tropfenweg → Ankunft → Mischen → Messpunkt",
+      "p": "P01,P02,P03",
+      "title": "Frische Sitzung: drei Versuche, „Wasser“ und „Pufferlösung“ von Beginn an, keine Vermutung nötig, sofort dosierbar; Versuch 4 / „Wunderwasser“ nirgends",
       "status": "PASS",
-      "detail": "Wasser 3.779, Phosphat 7.197 nach 0,05 mL HCl",
-      "ms": 31671
+      "detail": "drei Versuche; keine Treffer für Verdünnung/Wunderwasser/Vermutung/Zeitlupe in Oberfläche und ausgelieferten Dateien",
+      "ms": 4812
     },
     {
       "id": "E03",
-      "title": "Laugenreihe mit frischen Ansätzen, Säurereihe bleibt gespeichert, Gegenprobe ausdrücklich gekennzeichnet (H₃O⁺ + OH⁻)",
+      "p": "P05",
+      "title": "Flasche und Umschalter wählen synchron HCl/NaOH (Maus, Touch, Tastatur); Dosierleiste 1 Lösung → 2 Pipette → 3 Menge → 4 Ziel/Zugabe; nur Gewähltes dunkel",
       "status": "PASS",
-      "detail": "Gegenprobe startet bei pH 3.78",
-      "ms": 25609
+      "detail": "Flasche ↔ Schalter synchron; Reihenfolge 1–5; ausgewählt dunkel (Leuchtdichte < 0,2), sonst hell (> 0,85)",
+      "ms": 4850
     },
     {
       "id": "E04",
-      "title": "Protokoll Versuch 1 → Auflösung Phosphat; Zeitlupe beider Protonenübertragungen mit Zwischenzuständen und Bestandsänderung",
+      "p": "P05,P14",
+      "title": "Laugenreihe mit frischen Ansätzen, Säurereihe bleibt gespeichert, Gegenprobe ausdrücklich gekennzeichnet (H₃O⁺ + OH⁻); nichts wird unbemerkt überschrieben",
       "status": "PASS",
-      "detail": "HPO₄²⁻-Symbole 12 → 16 nach 5 mL NaOH; Balken „H₂PO₄⁻ HPO₄²⁻“",
-      "ms": 54162
+      "detail": "Gegenprobe startet bei pH 3.78, endet bei 7.00",
+      "ms": 9654
     },
     {
       "id": "E05",
-      "title": "Versuch 2: Essigsäure, Natriumacetat, Gemisch – Säure- und Laugenreihe, gleiche Zugaben, passende Reaktionswege",
+      "p": "P07,P14",
+      "title": "Versuch 1: Tropfen → Ankunft → Mischen → Messpunkt; einziges Teilchenmodell mit Legende (ohne Zeitlupe), Bestand folgt dem Modell",
       "status": "PASS",
-      "detail": "Start 2.88 / 8.88 / 4.75",
-      "ms": 34505
+      "detail": "Wasser 3.779, Pufferlösung 7.197 nach 0,05 mL HCl; Symbole {\"HPO4\":10,\"H2PO4\":5,\"OH\":1}",
+      "ms": 14315
     },
     {
       "id": "E06",
-      "title": "Versuch 3: Weiterdosieren über die Reserve (kein NaN, kein Überlaufen), Ansatz ändern legt neuen Ansatz an, Kurve gezoomt",
+      "p": "P02,P07,P14",
+      "title": "Versuch 2: Essigsäure, Natriumacetat und Gemisch ohne Vorabantwort – Säure- und Laugenreihe, Modellwerte, Teilchenmodell mit CH₃COOH/CH₃COO⁻",
       "status": "PASS",
-      "detail": "13 Zugaben bis zum vollen Glas; 10:1 endet bei pH 1.18",
-      "ms": 231896
+      "detail": "Start 2.88 / 8.88 / 4.75",
+      "ms": 12064
     },
     {
       "id": "E07",
-      "title": "Versuch 4: gleiche Zugabe, zehnfach verdünnt hergestellt vs. aufgefüllt (400-mL-Glas)",
+      "p": "P06",
+      "title": "pH-Kurve beim Start verborgen; Umschalter ersetzt die Zusatzansicht am selben Platz; dosieren → wechseln → dosieren → zurück: alle Messpunkte vorhanden",
       "status": "PASS",
-      "detail": "ΔpH: 0.058 / 0.676 / 0.058",
-      "ms": 13837
+      "detail": "8 Messpunkte nach Wechseln, 8/8 im Bild",
+      "ms": 11870
     },
     {
       "id": "E08",
-      "title": "Doppelklick/Schnellbedienung ohne Doppeldosierung; Pause friert Tropfen ein; Schritt; Wechsel während Zugabe abgewiesen",
+      "p": "P04",
+      "title": "Labor dominiert: Becherglas ≥ 25 % höher als in 0.1.0 (1440×900), pH-Messelektrode beschriftet, pH-Anzeige dem Glas zugeordnet, nichts verdeckt",
       "status": "PASS",
-      "detail": "eine Dosierung trotz Doppelklick + Klick",
-      "ms": 9908
+      "detail": "Becherglas 179.0 px (0.1.0: 126.27 px, +42 %), Laborbild 1058×362",
+      "ms": 590
     },
     {
       "id": "E09",
-      "title": "Neuladen: Messreihen, Antworten, Auflösung und Einstellungen bleiben erhalten",
+      "p": "P08,P09",
+      "title": "Protokoll Versuch 1/2: Leitfragen statt Freitext-Allgemeinplatz, Antworten stabil gemischt (Rerender, Neuladen, mehrere Sitzungen), Bewertung nach Antwort-ID",
       "status": "PASS",
-      "detail": "Zustand nach Neuladen identisch",
-      "ms": 10404
+      "detail": "Reihenfolge stabil (Rerender/Neuladen); 12 Sitzungen: 19 % richtig an erster Stelle (Erwartung ≈ 29 %)",
+      "ms": 12175
     },
     {
       "id": "E10",
-      "title": "Herleitung: gesperrt vor der Deutung, Fehler mit Rückmeldung, Tipps, alle Schritte, danach pKₛ ± 1 im Diagramm",
+      "p": "P14,P08",
+      "title": "Herleitung (nach der Deutung freigeschaltet, ohne alle Rechenaufgaben vor Versuch 3) und sechs Rechenaufgaben mit getrennter Fehlerdiagnose; Antwortlisten gemischt",
       "status": "PASS",
-      "detail": "Schritte 1–7 geprüft",
-      "ms": 3564
+      "detail": "Schritte 1–7 und Aufgaben 1–6 geprüft; Versuch 3 schon nach der Herleitung offen",
+      "ms": 3382
     },
     {
       "id": "E11",
-      "title": "Sechs Rechenaufgaben: Dezimalkomma, Einheiten, falscher Quotient, Stöchiometriefehler, Lösung erst nach Rückfrage",
+      "p": "P10,P05",
+      "title": "Versuch 3 beginnt mit Systemwahl und Rechnung: Sperre bis zur Herleitung, ungeeignete Systeme/Ziel-pH zurückgewiesen, Stammlösungen statt HCl/NaOH, Dosieren erst nach der Rechnung, Formel immer sichtbar",
       "status": "PASS",
-      "detail": "Fehlerarten getrennt erkannt; alle sechs Aufgaben gelöst",
-      "ms": 3931
+      "detail": "Sperre, Zurückweisungen (Acetat/Ammonium für 6,90; 5,95; 12), Rechnung vor Dosierung, Formel in jeder Phase sichtbar",
+      "ms": 1909
     },
     {
       "id": "E12",
-      "title": "Anwendungen (vier Fälle), Journal ohne vorzeitige Lösungen, Export und Hefteintrag",
+      "p": "P10,P11,P12,P13",
+      "title": "Versuch 3 für pH 5,05 / 6,90 / 9,55: berechnen, dosieren (Diagramm aus echten Stoffmengen), erst dann messen; Ziel erreicht; falsches Verhältnis verändert den Messwert; Formel in Diagramm und Kurve sichtbar",
       "status": "PASS",
-      "detail": "Hefteintrag 126 Wörter",
-      "ms": 10667
+      "detail": "ac: Ziel 5.05 → gemessen 5.051; ph: Ziel 6.9 → gemessen 6.899; am: Ziel 9.55 → gemessen 9.550",
+      "ms": 30276
     },
     {
       "id": "E13",
-      "title": "Tablet quer 1180×820 (Emulation, Touch): kein Querscrollen, Labor und Teilchenansicht gleichzeitig sichtbar, Touchziele",
+      "p": "P09,P14",
+      "title": "Anwendungen (vier Fälle), Journal mit Leitfrage ohne vorzeitige Lösungen, Export und Hefteintrag",
       "status": "PASS",
-      "detail": "Emulation (kein echtes iPad)",
-      "ms": 10253
+      "detail": "Hefteintrag 152 Wörter",
+      "ms": 4092
     },
     {
       "id": "E14",
-      "title": "Tablet quer 1024×768 (Emulation, Touch): kein Querscrollen, Labor und Teilchenansicht gleichzeitig sichtbar, Touchziele",
+      "p": "P14",
+      "title": "Neuladen: Messreihen, Antworten, Auswahl, Ansicht und Versuch 3 bleiben erhalten; Daten von 0.1.0 werden weder gelesen noch verändert",
       "status": "PASS",
-      "detail": "Emulation (kein echtes iPad)",
-      "ms": 10837
+      "detail": "v2 gespeichert; v1 unverändert und ignoriert",
+      "ms": 8318
     },
     {
       "id": "E15",
-      "title": "Tastaturbedienung (Tab/Enter dosiert) und verschiebbare Trennlinie (Pfeiltasten, Doppelklick)",
+      "p": "P14",
+      "title": "Doppelklick/Schnellbedienung ohne Doppeldosierung; Pause friert Tropfen ein; Schritt; Wechsel während Zugabe abgewiesen",
+      "status": "PASS",
+      "detail": "eine Dosierung trotz Doppelklick + Klick; Strahl und Füllstand ändern sich",
+      "ms": 8603
+    },
+    {
+      "id": "E16",
+      "p": "P15",
+      "title": "Anzeige und Bedienung bei 1440×900: kein Querscrollen, nichts überdeckt, Laborbild und Zusatzansicht nutzbar, Versuch 1 und 3",
+      "status": "PASS",
+      "detail": "Labor 1058×362, Becherglas 179 px (Maßstab 0.61)",
+      "ms": 10392
+    },
+    {
+      "id": "E17",
+      "p": "P15",
+      "title": "Anzeige und Bedienung bei 1180×820 (Touch-Emulation): kein Querscrollen, nichts überdeckt, Laborbild und Zusatzansicht nutzbar, Versuch 1 und 3",
+      "status": "PASS",
+      "detail": "Labor 844×326, Becherglas 158 px (Maßstab 0.54), Emulation (kein echtes iPad)",
+      "ms": 9553
+    },
+    {
+      "id": "E18",
+      "p": "P15",
+      "title": "Anzeige und Bedienung bei 1024×768 (Touch-Emulation): kein Querscrollen, nichts überdeckt, Laborbild und Zusatzansicht nutzbar, Versuch 1 und 3",
+      "status": "PASS",
+      "detail": "Labor 688×298, Becherglas 141 px (Maßstab 0.48), Emulation (kein echtes iPad)",
+      "ms": 9444
+    },
+    {
+      "id": "E19",
+      "p": "P15",
+      "title": "Anzeige und Bedienung bei 768×1024 (Touch-Emulation): kein Querscrollen, nichts überdeckt, Laborbild und Zusatzansicht nutzbar, Versuch 1 und 3",
+      "status": "PASS",
+      "detail": "Labor 746×378, Becherglas 188 px (Maßstab 0.64), Emulation (kein echtes iPad)",
+      "ms": 9784
+    },
+    {
+      "id": "E20",
+      "p": "P05,P14",
+      "title": "Tastaturbedienung (Tab/Enter wählt und dosiert) und verschiebbare Trennlinie (Pfeiltasten, Doppelklick)",
       "status": "PASS",
       "detail": "Bedienfeld 345.59375 → 370 → 345.59375 px",
-      "ms": 9260
+      "ms": 4715
+    },
+    {
+      "id": "E22",
+      "p": "P05,P14",
+      "title": "Versuch 3: Ziel/System-Wechsel während Zugabe und Messung wird abgewiesen (kein Einfrieren, kein Zustandsunterschied); Eingabeänderung verwirft das Prüfergebnis; Gegenprobe: Flaschen und Umschalter zeigen denselben Zustand",
+      "status": "PASS",
+      "detail": "kein Einfrieren, kein Zustandsunterschied",
+      "ms": 7173
+    },
+    {
+      "id": "E21",
+      "p": "P14,P15",
+      "title": "Zufallsbedienung (gesetzter Seed, Versuche 1–3, Reiter, Seiten, Zurücksetzen): keine Seiten- oder Konsolenfehler",
+      "status": "PASS",
+      "detail": "Seed 21: 77 Klicks, 9 s Modellzeit, keine Fehler; Seed 22: 104 Klicks, 45 s Modellzeit, keine Fehler",
+      "ms": 50318
     },
     {
       "id": "NET",
+      "p": "P16",
       "title": "Keine externen Anfragen",
       "status": "PASS",
-      "detail": "255 Anfragen, alle lokal"
+      "detail": "640 Anfragen, alle lokal"
     },
     {
       "id": "CON",
+      "p": "P15",
       "title": "Keine Konsolen- oder Seitenfehler",
       "status": "PASS",
       "detail": "keine"
