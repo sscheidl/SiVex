@@ -1,0 +1,21 @@
+{
+  "id": "chemie/aggregatzustaende",
+  "title": "Aggregatzustände und Teilchenmodell",
+  "description": "Wasser, Iod, Eisen und Kochsalz bei frei wählbarer Temperatur: fest, flüssig und gasförmig auf der Stoffebene (Glasgefäß bzw. Tiegel) und auf der Teilchenebene (eine gemeinsame Teilchen-Engine); Schmelz- und Siedetemperatur als Kenneigenschaften, die sechs Phasenübergänge, Sublimation und Resublimation von Iod an einer kalten Oberfläche; Lückentext, Ankreuzaufgaben, Zuordnung und Hefteintrag.",
+  "subject": "Chemie",
+  "topics": [
+    "Aggregatzustände",
+    "Teilchenmodell",
+    "Schmelztemperatur und Siedetemperatur",
+    "Phasenübergänge",
+    "Sublimation und Resublimation"
+  ],
+  "grades": [
+    8,
+    9
+  ],
+  "version": "0.1.0",
+  "labkit": "0.1.1",
+  "status": "prototype",
+  "entry": "index.html"
+}
