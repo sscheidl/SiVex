@@ -1,4 +1,4 @@
-# Pufferfish 0.2.0 – Testbericht
+# Pufferfish 0.2.1 – Testbericht
 
 Stand 29.10.2026 · Labkit 0.1.1 · Status **prototype** (Entwicklungsstand, **nicht** für den Unterricht freigegeben)
 
@@ -20,6 +20,36 @@ Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = gepr
 **Keine Freigabeempfehlung.** Die Entwicklerprüfungen bestätigen P01–P16, ersetzen aber weder die Prüfung auf einem echten iPad noch den mebis-Import noch die fachlich-didaktische Durchsicht. Der Stand bleibt `prototype`; `ready`, „unterrichtsfreigegeben“ und ein Merge nach `main` sind durch diese Tests nicht legitimiert.
 
 Prüfumgebung: Node 22.22.0, Playwright 1.63.0 mit **Chromium 153.0.8010.12** (headless, Linux); keine Prüfung mit Edge, Safari oder Firefox.
+
+## Nachtrag 0.2.1 (29.10.2026)
+
+Prüfumgebung dieses Nachtrags: Windows 11, Node 24.22.1, Playwright 1.56.1 mit **Microsoft Edge 156.0.4314.50** (headless). Die Abschnitte ab „0.“ beschreiben die Prüfung von 0.2.0 (Chromium unter Linux).
+
+| Bereich | Ergebnis | Nachweis |
+| --- | --- | --- |
+| Unit-Tests (inkl. Labkit) | PASS 66/66 | `npm test` (neu: Rühren an/aus beschleunigt die Mischung, Messwert unverändert) |
+| Browserprüfung Edge, 1440×900 und Touch-Emulation 1180×820, 1024×768, 768×1024 | PASS 25/25 | `tests/e2e/results.json` |
+| Pakete frisch entpackt: SCORM 1.2 im Mock-LMS (eingebettet, neues Fenster), Web-ZIP per HTTP und file:// | PASS 17/17 | `tests/e2e/scorm-results.json` |
+| Echtes iPad, mebis-Import, fachliche Freigabe | **HOLD – unverified** | nicht durchgeführt |
+
+Geprüfte Änderungen (neues Szenario **E23**, angepasst E03, E06, E08, E11, E13, E16–E19, E21):
+
+- **Zugesetzte Gesamtmenge (nur Versuch 1):** Start „HCl 0,00 mL / NaOH 0,00 mL“ je Glas; zählt während der Zugabe mit; nach 1,0 mL in beide Gläser „HCl 1,00 mL“; Laugenreihe zeigt ihre eigene (frische) Menge, zurück zur Säurereihe bleibt die Menge erhalten; „Neue Reihe“ setzt auf 0,00 mL; Versuch 2 und 3 ohne Anzeige; Anzeige überdeckt bei keiner geprüften Bildschirmgröße andere Beschriftungen.
+- **Flaschen und Pipetten antippen:** Flaschen sind Klickflächen ohne Zusatzbeschriftung (Maus, Touch, Tastatur, synchron mit der Leiste); Pipette im Ständer wählt den Pipettentyp; die Klickflächen überlappen sich nicht (E16–E19).
+- **Rühren:** Schalter an/aus (`aria-pressed`); Rührfisch dreht sich sichtbar (Bildänderung), Mischung schneller, Messwerte identisch (Unit-Test).
+- **Teilchenmodell:** Legende HAc/Ac⁻ mit Namen und H₂O; in der Pufferlösung entsteht bei HCl-Zugabe sichtbar H₂O, im Wasser nicht (dort 7 freie H₃O⁺-Symbole nach 2 mL).
+- **Versuch 3 ohne Sperre:** sofort zugänglich, Rechnen vor dem Herstellen bleibt (E11).
+
+Befunde während der Prüfung (behoben und gezielt nachgeprüft):
+
+| Befund | Ursache | Behebung |
+| --- | --- | --- |
+| E02: unzulässiger Begriff in ausgelieferter Datei | Code-Kommentar nannte die ¼×-Stufe „Zeitlupe“ | Kommentar umformuliert |
+| E13 hing (Journal-Export) | mit der Playwright-Uhr löst Edge unter Windows keinen Download aus (Testumgebung; die App exportiert normal) | E13 läuft mit echter Uhr |
+| E17/E18: Klickflächen überlappten bei 1180/1024 px | Mindestbreite der Pipetten-Klickflächen zu groß | Breite auf die Mitte zwischen Nachbarn begrenzt |
+| Glasname bei 1024 px zu stark gekürzt | Platz für die Mengenanzeige | Platz zwischen Schild und Anzeige neu aufgeteilt; „Pufferlösung“ bei 1024 px leicht gekürzt, vollständig in der Teilchenkarte |
+
+Pakete: `release/pufferfish-0.2.1-web.zip` (SHA-256 `0757a564b54875e311a74cf7906f3f73a8221f9d01b76dda7eab37127c4a08cc`), `release/pufferfish-0.2.1-scorm12.zip` (SHA-256 `63754fbc2a83b15362cb08eded8d5c33d70e8dce609802b0fd4beb35547fa64d`). Screenshot der Neuerungen: `docs/screenshots/14-versuch1-menge-ruehrfisch.png`.
 
 ## 0. Ausgangslage 0.1.0 (vor der Umsetzung)
 

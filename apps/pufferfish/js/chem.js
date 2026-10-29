@@ -190,8 +190,8 @@
    * und nach der Zugabe (Protonenbilanz):
    *   Säure:  n = Δ(gebundene H⁺ im schwachen System) − Δn(OH⁻) + Δn(H₃O⁺)
    *   Base:   n = −Δ(gebundene H⁺) − Δn(H₃O⁺) + Δn(OH⁻)
-   * Ergebnis: Anteile und der überwiegende Weg (Modellfunktion für Erklärungen; die Oberfläche
-   * zeigt keine Reaktionsanimation mehr).
+   * Ergebnis: Anteile und der überwiegende Weg. Das Teilchenmodell (Versuche 1/2) zeigt danach,
+   * ob die Zugabe mit dem Puffer zu H₂O reagiert oder frei bleibt.
    */
   function doseAnalysis(before, reagent, mL) {
     const n = C_REAGENT * mL;

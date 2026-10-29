@@ -336,3 +336,17 @@ test('Versuch 3: Systemwechsel während der Messung wird abgewiesen, Zustand ble
   runUntilIdle(eng);
   assert.equal(eng.state.history[0].system, 'ac');
 });
+
+test('0.2.1: Rühren an/aus beschleunigt die Mischung, ändert aber keinen Messwert', () => {
+  const a = E.create(), b = E.create();
+  b.setStir(true);
+  assert.equal(b.state.stirOn, true);
+  assert.equal(b.stirring(b.current().beakers[0]), true);
+  for (const e of [a, b]) e.dose('d1');
+  const until = (e) => { let t = 0; while (t < 60 && (e.busy() || e.current().beakers.some((x) => x.pending.length))) { e.step(0.05); t += 0.05; } return t; };
+  const ta = until(a), tb = until(b);
+  assert.ok(tb < ta, `mit Rühren schneller protokolliert (${tb.toFixed(2)} s < ${ta.toFixed(2)} s)`);
+  assert.equal(a.current().beakers[0].records[1].pH, b.current().beakers[0].records[1].pH);
+  b.setStir(false);
+  assert.equal(b.stirring(b.current().beakers[0]), false);
+});

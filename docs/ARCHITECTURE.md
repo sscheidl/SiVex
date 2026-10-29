@@ -11,7 +11,7 @@ apps/
   chromatographie/    # Papierchromatographie 0.2.0 (prototype) auf Basis des Labkits
   destillation/       # Destillation 0.3.0 (prototype) auf Basis des Labkits
   halbtitration/      # Halbtitrationslabor 0.1.0 (prototype), Laboraufbau aus TitraLab 3
-  pufferfish/         # Pufferfish 0.2.0 (prototype) – Puffer untersuchen, herleiten, berechnen und herstellen; Henderson-Hasselbalch
+  pufferfish/         # Pufferfish 0.2.1 (prototype) – Puffer untersuchen, herleiten, berechnen und herstellen; Henderson-Hasselbalch
   ester-gleichgewicht/
   _template/
 shared/

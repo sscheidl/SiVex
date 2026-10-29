@@ -26,8 +26,8 @@
   const BOTTLE_X = [62, 192];
   const BOTTLE = { w: 58, h: 128, neck: 14, mouthY: BENCH - 144, dipY: BENCH - 100 };
   const PIPETTES = {
-    dropper: { len: 150, rest: { x: 268, y: BENCH - 30 }, capacity: 1.5 },
-    measure: { len: 190, rest: { x: 302, y: BENCH - 30 }, capacity: 10.0 }
+    dropper: { len: 150, rest: { x: 262, y: BENCH - 30 }, capacity: 1.5 },
+    measure: { len: 190, rest: { x: 312, y: BENCH - 30 }, capacity: 10.0 }
   };
   const X0 = 346;
 

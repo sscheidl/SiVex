@@ -1,15 +1,15 @@
 # Pufferfish – Bedienhinweise
 
-Stand 0.2.0
+Stand 0.2.1
 
 ## Aufbau des Bildschirms
 
 | Bereich | Inhalt |
 | --- | --- |
 | Kopfzeile | Logo (antippen: der Pufferfisch pumpt sich auf), Lernweg **1 Labor · 2 Herleitung · 3 Rechnen · 4 Anwendungen**, Hefteintrag, „Weniger Bewegung“, Bedienfeld ein/aus |
-| Versuchswahl | **1 Wasser & Pufferlösung · 2 Säure, Base, Gemisch · 3 Puffer herstellen** (Versuch 3 baut auf der Herleitung auf); rechts „Neue Reihe“ und „Gegenprobe“ (Versuche 1, 2) bzw. „Neu ansetzen“ (Versuch 3) |
+| Versuchswahl | **1 Wasser & Pufferlösung · 2 Säure, Base, Gemisch · 3 Puffer herstellen** (alle drei frei zugänglich); rechts „Neue Reihe“ und „Gegenprobe“ (Versuche 1, 2) bzw. „Neu ansetzen“ (Versuch 3) |
 | Laborbild (oben, groß) | Bechergläser mit **pH-Messelektrode** (jeweils beschriftet), Referenzproben („Ref.“, unbehandelt), Lösungsflaschen, Tropf- und Messpipette; unter jedem Glas ein Anzeigeschild mit Probenname und pH-Wert („…“ = mischt, „✓“ = stabil) |
-| Dosierleiste | **1 Lösung** (HCl / NaOH, in Versuch 3 die beiden Stammlösungen) → **2 Pipette** (Tropf-/Messpipette) → **3 Menge** → **4 Ziel** (Alle = Vergleichsmodus, oder ein Glas) → **5 Zugabe** („▶ Zugeben“); daneben Umrühren, Zeit (Pause, ¼×, 1×, Schritt) und Indikatorfarbe samt Farbskala |
+| Dosierleiste | **1 Lösung** (HCl / NaOH, in Versuch 3 die beiden Stammlösungen) → **2 Pipette** (Tropf-/Messpipette) → **3 Menge** → **4 Ziel** (Alle = Vergleichsmodus, oder ein Glas) → **5 Zugabe** („▶ Zugeben“); daneben **Rühren** an/aus (Rührfische), Zeit (Pause, ¼×, 1×, Schritt) und Indikatorfarbe samt Farbskala |
 | Zusatzansicht (unten) | Umschalter **Teilchenmodell \| pH-Kurve** (Versuch 3: **Mischungsverhältnis \| pH-Kurve**); beim Start ist das Teilchenmodell bzw. Verhältnisdiagramm gewählt, die pH-Kurve erscheint erst auf Wunsch am selben Platz |
 | Bedienfeld (rechts) | Aufgabe (Protokoll mit Prüfen/Tipp/Lösung; in Versuch 3 Ziel, System, Rechnung, Herstellen, Messen), Ergebnisse (alle Reihen, „Proben erneuern“), Journal (Drucken, Export, Zurücksetzen), Hefteintrag |
 
@@ -17,9 +17,10 @@ Die Trennlinie zwischen Bühne und Bedienfeld lässt sich mit Maus, Finger oder 
 
 ## Dosieren (Versuche 1 und 2)
 
-1. **Lösung wählen:** die **HCl-** oder **NaOH-Flasche** im Laborbild antippen *oder* den Schalter „1 Lösung“ in der Dosierleiste nutzen – beide wirken auf denselben Zustand und zeigen dieselbe Lösung (dunkel, mit Häkchen).
-2. **Pipette** und **Menge** wählen (Tropfpipette: 1 oder 5 Tropfen à 0,050 mL; Messpipette: 0,5 / 1,0 / 5,0 mL). Die Wahl einer Menge der anderen Pipette wechselt die Pipette mit.
+1. **Lösung wählen:** die **HCl-** oder **NaOH-Flasche** im Laborbild antippen (ohne Zusatzbeschriftung, die Auswahl wird an der Flasche hervorgehoben) *oder* den Schalter „1 Lösung“ in der Dosierleiste nutzen – beide wirken auf denselben Zustand und zeigen dieselbe Lösung (dunkel, mit Häkchen).
+2. **Pipette** (im Ständer antippen oder Schalter „2 Pipette“) und **Menge** wählen (Tropfpipette: 1 oder 5 Tropfen à 0,050 mL; Messpipette: 0,5 / 1,0 / 5,0 mL). Die Wahl einer Menge der anderen Pipette wechselt die Pipette mit.
 3. **Ziel** wählen und **„Zugeben“** drücken. Im Vergleichsmodus wandert die Pipette nacheinander über alle Gläser. Erst wenn der Tropfen auftrifft, ändert sich die Probe; nach dem Mischen erscheint der Messpunkt.
+4. **Zugesetzte Menge (nur Versuch 1):** Rechts neben jedem Glasschild steht „zugesetzt – HCl … mL / NaOH … mL“. Die Anzeige zählt während der Zugabe mit, gehört zur jeweiligen Messreihe (der Wechsel HCl ↔ NaOH zeigt die andere Reihe) und steht nach „Neue Reihe“ wieder auf 0,00 mL. In der Gegenprobe zählt die Vorbehandlung mit.
 
 Nur ausgewählte Schaltflächen sind dunkel (mit Häkchen); alle anderen sind hell. Während einer laufenden Zugabe sind die Auswahlfelder gesperrt (abgeblendet, gestrichelt); sie unterscheiden sich damit von „nicht ausgewählt“.
 
@@ -29,7 +30,7 @@ Fragen zu Beobachtung, Deutung und Erklärung stehen im Bedienfeld → Aufgabe; 
 
 ## Versuch 3 – Puffer gezielt herstellen
 
-Voraussetzung: Herleitung abgeschlossen (oder „Trotzdem öffnen“). Die **Henderson-Hasselbalch-Gleichung** steht über dem Laborbild und bleibt in beiden Zusatzansichten sichtbar.
+Keine Voraussetzung – Versuch 3 lässt sich auch in einer Einzelstunde direkt bearbeiten; die Herleitung ist empfohlen. Die Reihenfolge bleibt: erst selbst rechnen, dann herstellen, dann messen. Die **Henderson-Hasselbalch-Gleichung** steht über dem Laborbild und bleibt in beiden Zusatzansichten sichtbar.
 
 1. **Ziel-pH festlegen:** pH 5,05 · 6,90 · 9,55 oder ein eigener Wert (Dezimalkomma).
 2. **Puffersystem wählen:** Acetat (pKₛ 4,75), Phosphat (7,20), Ammonium/Ammoniak (9,25). Die Faustregel pKₛ ± 1 ist eine Näherung; ungeeignete Systeme und Ziel-pH-Werte außerhalb aller Bereiche werden mit Begründung zurückgewiesen.

@@ -307,6 +307,10 @@
       return { ok: true, id: opId };
     }
 
+    /** Rühren an/aus: Rührfische in allen Gläsern drehen dauerhaft (schnellere Durchmischung). */
+    function setStir(on) { st.stirOn = !!on; return { ok: true }; }
+    const stirring = (b) => st.stirOn || b.stirUntil > st.time;
+
     function stir(targets) {
       const s = current();
       const idx = targets && targets.length ? targets : s.beakers.map((_, i) => i);
@@ -498,7 +502,7 @@
         for (const id in st.series) {
           const s = st.series[id];
           for (const b of s.beakers) {
-            const tau = b.stirUntil > st.time ? TAU_STIR : TAU_STILL;
+            const tau = stirring(b) ? TAU_STIR : TAU_STILL;
             for (const p of b.pending) p.P += (1 - p.P) * Math.min(1, h / tau);
             while (b.pending.length && b.pending[0].P >= SETTLED) {
               const p = b.pending.shift();
@@ -578,7 +582,7 @@
     current();
     return {
       state: st, current, slots, reagentOf, activeReagent, bottleKeys: () => bottleKeys(current()), busy, geometry, setWorldWidth, meter, used,
-      selectExperiment, selectSlot, setTool, setKind, selectSystem, newBatch, dose, stir, newSeries, freshSample, continueWithOther, measure, resetAll,
+      selectExperiment, selectSlot, setTool, setKind, selectSystem, newBatch, dose, stir, setStir, stirring, newSeries, freshSample, continueWithOther, measure, resetAll,
       step, drainFx, serialize, restore
     };
   }

@@ -14,3 +14,5 @@
 Neu entwickelt: chemisches Modell (`js/chem.js`, 0.2.0 mit Ammonium/Ammoniak und Herstellungsplan), Zustandsablauf mit Dosierwarteschlange, Mischphase und Versuch 3 (`js/engine.js`), schematisches Teilchenmodell (`js/render-particles.js`; die Zeitlupe von 0.1.0 entfällt), Mischungsverhältnis-Diagramm (`js/render-mix.js`), Lerninhalte und Bewertung mit gemischter Antwortreihenfolge (`js/learn.js`), Oberfläche (`js/ui.js`, `js/app.js`), Pufferfish-Logo (SVG/CSS in `index.html`/`css/app.css`).
 
 Abweichung von `shared/labkit/DESIGN.md` („keine Maskottchen“): Das animierte Pufferfisch-Logo ist ausdrücklicher Auftrag. Es ist rein dekorativ, zeigt keine Messgröße und lässt sich abschalten. Pufferfish ist keine Trenn-App; der Baukasten wird nur genutzt, nicht verändert.
+
+0.2.1: Rührfisch nach TitraLab 3, `titration/js/view/lab-renderer.js` (`_drawStirBar`: Projektion des rotierenden Stabs), ohne Magnetrührer.

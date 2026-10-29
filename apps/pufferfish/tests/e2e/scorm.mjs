@@ -101,7 +101,6 @@ async function operate(frame) {
   const ok1 = Math.abs(ph[0] - 3.779) < 0.002 && Math.abs(ph[1] - 7.197) < 0.002;
   // Versuch 3 (Pufferherstellung) im Paket: Ziel, System, Rechnung, 10 + 20 mL, Messung
   await frame.locator('#expChips [data-exp="e3"]').click();
-  await frame.locator('[data-force="mix"]').click();
   await frame.locator('[data-mixtarget="5.05"]').click();
   await frame.locator('input[data-mixsystem="ac"]').check();
   await frame.locator('[data-mixf="r"]').fill('2'); await frame.locator('[data-mixf="vb"]').fill('20'); await frame.locator('[data-mixf="va"]').fill('10');
