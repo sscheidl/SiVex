@@ -27,8 +27,8 @@ node tests/e2e/scorm.mjs  # 16 Paketprüfungen auf den ausgelieferten ZIP-Dateie
 Prüfsummen der ausgelieferten Pakete (SHA-256):
 
 ```text
-1d4b24548ebb5c0a90c5a066bab81fe9673fd004645198239d23411710c70873  trennverfahren-0.2.0-web.zip
-09e6352fc6cf49e397d4a5ddcab939ecce019ccfce8aafb2d36571e86fc9b973  trennverfahren-0.2.0-scorm12.zip
+5e20d701251011639a06a737e7905e6f2b41b6ab9cbea772ecc3bd7a7f19f11c  trennverfahren-0.2.0-web.zip
+55ccb9eefd134a65fb7d8e253b4218510b24ee37cfa0f23c68f4d42bc6be586c  trennverfahren-0.2.0-scorm12.zip
 ```
 
 Ergebnisse maschinenlesbar: [`tests/e2e/results.json`](../tests/e2e/results.json) (Nachläufe vermerkt), [`tests/e2e/scorm-results.json`](../tests/e2e/scorm-results.json).
