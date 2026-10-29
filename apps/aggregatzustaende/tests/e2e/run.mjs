@@ -244,7 +244,9 @@ await scenario('E07', 'Stoffwechsel mitten im Übergang: sauberer Startzustand, 
   assert(st.sub === 'iron' && st.Tset === 1400 && st.shares.s === 1 && st.counts.S === 48, 'Eisen fest bei 1400 °C');
   assert(fx.puffs === 0 && fx.bubbles === 0, `keine Wölkchen/Blasen vom Wasser (${JSON.stringify(fx)})`);
   const sl = await page.evaluate(() => { const e = document.querySelector('#temp'); return [e.min, e.max, e.value]; });
-  assert(sl.join() === '1400,3000,1400', 'Reglerbereich des Eisens: ' + sl.join());
+  assert(sl.join() === '0,1000,0' && (await page.locator('#temp').getAttribute('aria-valuetext')) === '1400 °C', 'Regler am Anfang des Eisenbereichs: ' + sl.join());
+  const tp = await page.evaluate(() => [...document.querySelectorAll('#ticks .tick')].map((t) => t.style.left).join(' | '));
+  assert(/0.25000/.test(tp) && /0.75000/.test(tp), 'gestauchte Skala: Übergänge bei 25 % und 75 % des Reglers: ' + tp);
   const ticks = (await page.locator('#ticks').innerText()).replace(/\s+/g, ' ');
   assert(/1538 °C/.test(ticks) && /2862 °C/.test(ticks), 'Markierungen 1538/2862 °C');
   for (const id of ['salt', 'iodine', 'water']) {
@@ -268,6 +270,8 @@ await scenario('E08', 'Iod: Sublimation unter 114 °C, kalte Oberfläche mit Res
   assert(st.shares.s > 0.8 && st.shares.g > 0.08 && st.shares.l === 0, `festes Iod mit Dampf (${JSON.stringify(st.shares)})`);
   assert(st.counts.G >= 4, `Gasteilchen auf der Teilchenebene (${st.counts.G})`);
   const puffs = await S(page, (A) => A.matterR.puffs.length);
+  const escaped = await S(page, (A) => A.matterR.puffs.filter((p) => p.age > 0.5 && p.y < A.matterR.glassUnder(p.x) - 1).length);
+  assert(escaped === 0, `geschlossenes Gefäß: kein Dampf über dem Uhrglas (${escaped})`);
   assert(puffs > 3, 'violette Wölkchen');
   await shot(page, '60-iod-sublimation', { x: 0, y: 52, width: 1040, height: 848 });
   await click(page, '#btnCold');
@@ -356,7 +360,9 @@ await scenario('E10', 'Fenstergrößen Desktop/Tablet/Handy: keine Überdeckung,
         assert(!ov.length, `${w}×${h} ${id}/${lv}: ${ov.join('; ')}`);
       }
     }
-    await level(o.page, 'matter');
+    await click(o.page, '#btnScheme');
+    for (const lv of ['particles', 'matter']) { await level(o.page, lv); const ov = await overlaps(o.page); assert(!ov.length, `${w}×${h} mit Schema/${lv}: ${ov.join('; ')}`); }
+    await click(o.page, '#btnScheme');
     const m = await o.page.evaluate(() => {
       const r = (s) => document.querySelector(s).getBoundingClientRect();
       const small = [...document.querySelectorAll('.ctrlbar button, .lk-tabs button, .stepchips button')].filter((b) => b.offsetParent).map((b) => b.getBoundingClientRect()).filter((x) => x.height < 43.5 || x.width < 43.5).length;
@@ -506,6 +512,57 @@ await scenario('E14', 'Tastatur und Beschriftung: alle Bedienelemente erreichbar
   await done();
   assert(!errors.length, errors.join(' | '));
   return order.slice(0, 8).join(' → ');
+});
+
+// =========================================================== E15 Schema der Phasenübergänge
+await scenario('E15', 'Schema neben dem Bild: zuschaltbar, keine Überdeckung, Zustände färben sich, laufender Übergang hervorgehoben (beide Richtungen, Gleichgewicht, Iod)', async () => {
+  const { page, errors, done } = await open();
+  const cw0 = await page.locator('#canvasWrap').evaluate((e) => e.getBoundingClientRect().width);
+  assert(await page.locator('#scheme').isHidden(), 'Schema anfangs ausgeblendet');
+  await click(page, '#btnScheme');
+  assert(await page.locator('#scheme').isVisible() && (await page.locator('#btnScheme').getAttribute('aria-pressed')) === 'true', 'Schema eingeblendet');
+  const cw1 = await page.locator('#canvasWrap').evaluate((e) => e.getBoundingClientRect().width);
+  assert(cw1 < cw0 - 150, `Bild macht Platz (${cw0} → ${cw1})`);
+  let ov = await overlaps(page);
+  assert(!ov.length, ov.join('; '));
+  const cls = (t) => page.locator(`#scheme .arr[data-t="${t}"]`).getAttribute('class');
+  await setTempKeys(page, -10); await settled(page);
+  await setTempKeys(page, 10);
+  await page.waitForFunction(() => window.AZ.app.model.process() === 'melting', null, { polling: 10, timeout: 3000 });
+  await page.waitForFunction(() => document.querySelector('#scheme .arr[data-t="sl"]').classList.contains('on'), null, { polling: 20, timeout: 2000 });
+  assert(/Schmelzen/.test(await page.locator('#schemeNow').innerText()), 'Text: Schmelzen');
+  await shot(page, '64-schema-schmelzen', { x: 0, y: 52, width: 1040, height: 848 });
+  await settled(page); await sleep(400);
+  assert(!/on|eq/.test(await cls('sl')), 'nach dem Schmelzen kein laufender Übergang');
+  const fill = await page.locator('#scheme .box[data-s="L"] .fill').getAttribute('opacity');
+  assert(Number(fill) > 0.9 && /main/.test(await page.locator('#scheme .box[data-s="L"]').getAttribute('class')), `flüssig hervorgehoben (${fill})`);
+  await setTempKeys(page, -5);
+  await page.waitForFunction(() => document.querySelector('#scheme .arr[data-t="ls"]').classList.contains('on'), null, { polling: 20, timeout: 3000 });
+  await setTempKeys(page, 100); await settled(page); await sleep(300);
+  assert(/eq/.test(await cls('lg')) && /eq/.test(await cls('gl')), 'an der Siedetemperatur beide Richtungen');
+  await shot(page, '65-schema-siedetemperatur', { x: 0, y: 52, width: 1040, height: 848 });
+  await substance(page, 'iodine');
+  await setTempKeys(page, 95); await settled(page);
+  await page.waitForFunction(() => document.querySelector('#scheme .arr[data-t="sg"]').classList.contains('on'), null, { polling: 20, timeout: 4000 });
+  await click(page, '#btnCold');
+  await page.waitForFunction(() => document.querySelector('#scheme .arr[data-t="gs"]').classList.contains('on'), null, { polling: 20, timeout: 4000 });
+  await sleep(2500);
+  await shot(page, '66-schema-iod-kalte-oberflaeche', { x: 0, y: 52, width: 1040, height: 848 });
+  await page.reload(); await page.waitForFunction(() => window.AZ && window.AZ.app);
+  assert(await page.locator('#scheme').isVisible(), 'Schema bleibt nach Neuladen eingeblendet');
+  for (const [w, h] of [[1024, 768], [820, 1180]]) {
+    await page.setViewportSize({ width: w, height: h }); await sleep(300);
+    ov = await overlaps(page);
+    assert(!ov.length, `${w}×${h}: ${ov.join('; ')}`);
+    const sw = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
+    assert(sw, `${w}×${h}: kein waagrechtes Scrollen`);
+  }
+  await shot(page, '72-schema-820x1180');
+  await click(page, '#btnScheme');
+  assert(await page.locator('#scheme').isHidden(), 'wieder ausblendbar');
+  await done();
+  assert(!errors.length, errors.join(' | '));
+  return `Bildbreite ${cw0} → ${cw1} px`;
 });
 
 await browser.close();

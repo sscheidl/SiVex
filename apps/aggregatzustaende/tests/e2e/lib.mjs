@@ -58,12 +58,12 @@ export async function setTempKeys(page, T) {
   while (cur !== T) { await page.keyboard.press(T > cur ? 'ArrowRight' : 'ArrowLeft'); cur += T > cur ? 1 : -1; }
   await sleep(30);
 }
-/** Temperatur per Maus auf der Reglerschiene anklicken (Position aus dem Wert berechnet). */
+/** Temperatur per Maus auf der Reglerschiene anklicken (Position aus der Reglerskala berechnet). */
 export async function setTempMouse(page, T) {
   const box = await page.locator('#temp').boundingBox();
-  const s = await S(page, (A) => ({ min: A.model.substance.min, max: A.model.substance.max }));
+  const p = await S(page, (A, t) => window.AZ.substances.tempToPos(A.model.substance, t), T);
   const thumb = 44;
-  const x = box.x + thumb / 2 + ((T - s.min) / (s.max - s.min)) * (box.width - thumb);
+  const x = box.x + thumb / 2 + p * (box.width - thumb);
   await page.mouse.click(x, box.y + box.height / 2);
   await sleep(40);
 }

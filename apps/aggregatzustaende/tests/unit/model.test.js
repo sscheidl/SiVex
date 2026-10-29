@@ -198,3 +198,22 @@ test('Wiederherstellen nach Neuladen: Stoff, Temperatur und kalte Oberfläche', 
   m.restore({ sub: 'unbekannt', Tset: 5 });
   assert.equal(m.state.sub, 'iodine', 'ungültige Daten werden ignoriert');
 });
+
+test('Reglerskala: bei Eisen und Kochsalz gestaucht, Übergänge exakt erreichbar, Hin- und Rückweg stimmen', () => {
+  for (const id of S.ORDER) {
+    const s = S.SUBSTANCES[id];
+    for (const T of [s.min, s.mp, s.bp, s.max]) {
+      const pos = Math.round(S.tempToPos(s, T) * 1000) / 1000;
+      assert.equal(S.posToTemp(s, pos), T, `${id}: ${T} °C über die Reglerposition ${pos}`);
+    }
+    let prev = -Infinity;
+    for (let p = 0; p <= 1000; p++) { const T = S.posToTemp(s, p / 1000); assert.ok(T >= prev, `${id}: Skala steigt monoton`); prev = T; }
+  }
+  for (const id of ['iron', 'salt']) {
+    const s = S.SUBSTANCES[id];
+    near(S.tempToPos(s, s.mp), 0.25, 1e-9, `${id}: Schmelztemperatur bei 25 % des Reglers`);
+    near(S.tempToPos(s, s.bp), 0.75, 1e-9, `${id}: Siedetemperatur bei 75 % des Reglers`);
+  }
+  const w = S.SUBSTANCES.water;
+  near(S.tempToPos(w, 50), 80 / 160, 1e-9, 'Wasser: lineare Skala');
+});

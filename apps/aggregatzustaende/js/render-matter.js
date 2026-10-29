@@ -1,9 +1,10 @@
 /*
  * Aggregatzustände – Stoffebene (Canvas 2D, HiDPI)
  *
- * Ein großes Gefäß in der Bildmitte: Becherglas (Wasser, Iod) bzw. weiter
- * Keramiktiegel (Eisen, Kochsalz – Glas würde bei diesen Temperaturen
- * schmelzen). Glas, Flüssigkeit, Meniskus und Oberflächenwellen nach
+ * Geschlossene Gefäße in der Bildmitte: Becherglas mit aufgelegtem Uhrglas
+ * (Wasser, Iod) bzw. Keramiktiegel in einem Ofen, im Schnitt gezeichnet
+ * (Eisen, Kochsalz – Glas würde bei diesen Temperaturen schmelzen). Die
+ * Heizstäbe glühen je nach Temperatur. Glas, Flüssigkeit, Meniskus und Oberflächenwellen nach
  * TitraLab 3 (titration/js/view/lab-renderer.js; Wellengleichung wie in
  * apps/pufferfish/js/render-lab.js). Gas wird als weiche, aufsteigende
  * Wölkchen sichtbar gemacht – bewusst vereinfacht, die Kennzeichnung steht
@@ -29,6 +30,10 @@
   const CX = 500, RIM_Y = 360, RIM_RX = 300, RIM_RY = 86, IN_RX = 282, IN_RY = 79, PERSP = IN_RY / IN_RX;
   const BASE_Y = 516, BASE_RX = 214, BASE_RY = 58, CFLOOR = 452, FLOOR_RX = 228, CFULL = 398;
   const WAVE_N = 42;
+  // Ofen (Weltkoordinaten): Gehäuse und Kammer; der Tiegel wird verkleinert in die Kammer gestellt
+  const OX0 = 140, OX1 = 860, OY0 = 92, OFX0 = 206, OFX1 = 794, OFY0 = 156, OFY1 = 532;
+  const CK = 0.72, CTX = 500 * (1 - CK), CTY = 526 - 574 * CK;   // Tiegel → Welt: x' = CTX + CK·x, y' = CTY + CK·y
+  const cmap = (x, y) => ({ x: CTX + CK * x, y: CTY + CK * y });
 
   /** Glühfarbe nach Temperatur (schematisch, nach der Farbe glühender Körper). */
   const GLOW = [[600, [110, 25, 8]], [900, [190, 60, 20]], [1200, [240, 100, 30]], [1500, [255, 150, 52]], [2000, [255, 205, 112]], [2900, [255, 244, 214]]];
@@ -157,9 +162,17 @@
       }
       const y = this.crucibleLevel(sh);
       const rx = this.crucibleRx(y) * 0.8;
-      return { x0: CX - rx, x1: CX + rx, y: y - 4 };
+      const a = cmap(CX - rx, y - 4), b = cmap(CX + rx, y - 4);
+      return { x0: a.x, x1: b.x, y: a.y };
     }
-    /** Unterseite des Uhrglases (kalte Oberfläche) bei x. */
+    /** Innenraum des geschlossenen Gefäßes (Becherglas unter dem Uhrglas bzw. Ofenkammer) als Pfad. */
+    interiorPath(ctx, beaker) {
+      ctx.beginPath();
+      if (!beaker) { ctx.rect(OFX0, OFY0, OFX1 - OFX0, OFY1 - OFY0); return; }
+      for (let i = 0; i <= 24; i++) { const x = BX - BIH + (i / 24) * 2 * BIH; ctx[i ? 'lineTo' : 'moveTo'](x, this.glassUnder(x)); }
+      ctx.lineTo(BX + BIH, BFLOOR); ctx.lineTo(BX - BIH, BFLOOR); ctx.closePath();
+    }
+    /** Unterseite des Uhrglases (Deckel, bei Iod zugleich die kalte Oberfläche) bei x. */
     glassUnder(x) { const dx = (x - BX) / 206; return BTOP - 3 + 24 * (1 - dx * dx); }
 
     // ------------------------------------------------------------ Effekte fortschreiben
@@ -194,7 +207,6 @@
       const maxPuffs = beaker ? 56 : 50;
       const want = gasVis > 0.004 ? Math.round(maxPuffs * Math.min(1, gasVis < 0.3 ? 0.06 + gasVis * 2.2 : 0.35 + gasVis * 0.65)) : 0;
       const live = this.puffs.filter((p) => !p.dying).length;
-      const cold = sub.coldSurface && st.coldVis > 0.4;
       const src = this.sourceTop(sh, sub);
       const condensed = sh.s + sh.l;
       if (live < want) {
@@ -204,7 +216,7 @@
           let x, y, vy;
           if (condensed > 0.04) { x = lerp(src.x0, src.x1, R()); y = src.y - 4; vy = -(34 + 30 * R()); }
           else if (beaker) { x = BX + (R() - 0.5) * 2 * (BIH - 30); y = lerp(BTOP + 40, BFLOOR - 30, R()); vy = -(12 + 16 * R()); }
-          else { x = CX + (R() - 0.5) * 2 * (IN_RX - 70); y = lerp(RIM_Y - 70, CFLOOR - 10, R()); vy = -(14 + 16 * R()); }
+          else { x = lerp(OFX0 + 50, OFX1 - 50, R()); y = lerp(OFY0 + 50, OFY1 - 60, R()); vy = -(12 + 14 * R()); }
           this.puffs.push({ x, y, vx: (R() - 0.5) * 14, vy, r0: 22 + 12 * R(), age: 0, life: (beaker ? 5 : 3.8) + 2 * R(), seed: R() * 100, k: Math.floor(R() * 3), dying: false });
         }
       } else this.spawnAcc = 0;
@@ -220,14 +232,12 @@
         p.y += p.vy * dt;
         if (condensing && p.dying) p.vy += 30 * dt;                       // beim Kondensieren sinken die letzten Wölkchen ab
         const r = p.r0 + 46 * Math.min(1, p.age / 3);
-        if (beaker) {
-          if (p.x < BX - BIH + r * 0.4 && p.y > BTOP) p.vx += 30 * dt;
-          if (p.x > BX + BIH - r * 0.4 && p.y > BTOP) p.vx -= 30 * dt;
-        }
-        if (cold && Math.abs(p.x - BX) < 205) {
-          const yu = this.glassUnder(p.x) + r * 0.3;
-          if (p.y < yu) { p.y = yu; p.vy = Math.max(0, p.vy * -0.1); p.vx += Math.sign(p.x - BX || 1) * 16 * dt; if (!p.dying) p.life = Math.max(p.life, p.age + 1.2); }
-        }
+        // geschlossenes Gefäß: Wände und Deckel bzw. Ofendecke halten das Gas zurück
+        const xl = beaker ? BX - BIH : OFX0, xr = beaker ? BX + BIH : OFX1;
+        if (p.x < xl + r * 0.45) { p.x = Math.max(p.x, xl + r * 0.2); p.vx = Math.abs(p.vx) * 0.5 + 20 * dt; }
+        if (p.x > xr - r * 0.45) { p.x = Math.min(p.x, xr - r * 0.2); p.vx = -Math.abs(p.vx) * 0.5 - 20 * dt; }
+        const ceil = (beaker ? this.glassUnder(p.x) : OFY0) + r * 0.35;
+        if (p.y < ceil) { p.y = ceil; p.vy = Math.max(0, p.vy * -0.1); p.vx += Math.sign(p.x - BX || 1) * 16 * dt; if (!p.dying) p.life = Math.max(p.life, p.age + 1.2); }
         return p.age < p.life && p.y > -60;
       });
 
@@ -254,7 +264,12 @@
       // Kondenströpfchen an der Innenwand des Becherglases
       if (beaker && condensing && sh.g > 0.03) {
         this.dropAcc += dt * 9;
-        while (this.dropAcc >= 1) { this.dropAcc -= 1; const left = R() < 0.5; this.drops.push({ x: left ? BX - BIH + 3 : BX + BIH - 3, y: lerp(BTOP + 30, surf - 20, R()), r: 0.6, vy: 0, age: 0 }); }
+        while (this.dropAcc >= 1) {
+          this.dropAcc -= 1;
+          const k = R();
+          if (k < 0.4) { const x = BX + (R() - 0.5) * 2 * (BIH - 20); this.drops.push({ x, y: this.glassUnder(x) + 2, r: 0.6, vy: 0, age: 0 }); } // unter dem Deckel
+          else this.drops.push({ x: k < 0.7 ? BX - BIH + 3 : BX + BIH - 3, y: lerp(BTOP + 30, surf - 20, R()), r: 0.6, vy: 0, age: 0 });
+        }
       }
       this.drops = this.drops.filter((d) => {
         d.age += dt;
@@ -397,7 +412,7 @@
       // Skalenstriche ohne Zahlen
       ctx.strokeStyle = 'rgba(60,85,110,0.55)'; ctx.lineWidth = 1;
       for (let i = 1; i <= 6; i++) { const y = BFLOOR - i * 46; ctx.beginPath(); ctx.moveTo(BX - BIH + 22, y); ctx.lineTo(BX - BIH + (i % 2 ? 34 : 46), y); ctx.stroke(); }
-      if (sub.coldSurface && (st.coldVis > 0.01 || st.c > 0.001)) this.drawColdGlass(ctx, st);
+      this.drawLid(ctx, st);
     }
 
     drawIce(ctx, ice, sh, st) {
@@ -456,9 +471,9 @@
       ctx.restore();
     }
 
-    drawColdGlass(ctx, st) {
-      const a = Math.max(st.coldVis, st.c > 0.001 ? 0.35 : 0);
-      ctx.save(); ctx.globalAlpha = a;
+    /** Uhrglas als Deckel (immer); bei Iod mit Eis als kalte Oberfläche und Kristallen an der Unterseite. */
+    drawLid(ctx, st) {
+      ctx.save();
       const span = 206;
       // Iodkristalle an der Unterseite (Resublimation)
       const n = Math.round((st.c / 0.3) * this.crystals.length * 1.0);
@@ -476,14 +491,18 @@
         ctx.strokeStyle = 'rgba(160,110,200,0.6)'; ctx.lineWidth = 0.6; ctx.stroke();
         ctx.restore();
       }
-      // Uhrglas mit Eis und kaltem Wasser
+      // Uhrglas
       ctx.beginPath();
       for (let i = 0; i <= 40; i++) { const x = BX - span + (i / 40) * 2 * span; const y = this.glassUnder(x) - 4.5; ctx[i ? 'lineTo' : 'moveTo'](x, y); }
       for (let i = 40; i >= 0; i--) { const x = BX - span + (i / 40) * 2 * span; ctx.lineTo(x, this.glassUnder(x)); }
       ctx.closePath();
       ctx.fillStyle = 'rgba(214,232,246,0.55)'; ctx.fill();
       ctx.strokeStyle = 'rgba(70,100,130,0.75)'; ctx.lineWidth = 1.2; ctx.stroke();
-      // kaltes Wasser in der Mulde
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.beginPath(); ctx.ellipse(BX - 110, this.glassUnder(BX - 110) - 3, 46, 1.4, 0.06, 0, TAU); ctx.fill();
+      // kalte Oberfläche: Eis und kaltes Wasser in der Mulde
+      ctx.globalAlpha = st.coldVis;
+      if (st.coldVis <= 0.01) { ctx.restore(); return; }
       ctx.beginPath();
       for (let i = 0; i <= 30; i++) { const x = BX - 120 + (i / 30) * 240; ctx[i ? 'lineTo' : 'moveTo'](x, this.glassUnder(x) - 5); }
       ctx.lineTo(BX + 120, BTOP + 4); ctx.lineTo(BX - 120, BTOP + 4); ctx.closePath();
@@ -503,13 +522,72 @@
     }
 
     // ------------------------------------------------------------ Tiegel
+    /** Ofen im Schnitt: Gehäuse, Kammer aus Schamottesteinen, Heizstäbe (Farbe nach Temperatur). */
+    drawFurnace(ctx, T) {
+      const heat = clamp((T - 450) / 1500, 0, 1);
+      const glow = glowColor(T + 60);
+      this.shadow(ctx, 500, BENCH + 2, 400, 16, 0.4);
+      // Kammer-Rückwand
+      const wallC = mix([88, 72, 62], glow, heat * 0.5);
+      const back = ctx.createLinearGradient(0, OFY0, 0, OFY1);
+      back.addColorStop(0, rgba(mix(wallC, [30, 24, 20], 0.35), 1)); back.addColorStop(1, rgba(wallC, 1));
+      ctx.fillStyle = back; ctx.fillRect(OFX0, OFY0, OFX1 - OFX0, OFY1 - OFY0);
+      ctx.strokeStyle = rgba(mix(wallC, [20, 15, 12], 0.5), 0.7); ctx.lineWidth = 1.2;
+      for (let y = OFY0 + 30, row = 0; y < OFY1; y += 30, row++) {
+        ctx.beginPath(); ctx.moveTo(OFX0, y); ctx.lineTo(OFX1, y); ctx.stroke();
+        for (let x = OFX0 + (row % 2 ? 40 : 0); x < OFX1; x += 80) { ctx.beginPath(); ctx.moveTo(x, y - 30); ctx.lineTo(x, y); ctx.stroke(); }
+      }
+      // Heizstäbe an beiden Seitenwänden: Wendeln, die mit der Temperatur heller glühen
+      const coil = mix([70, 58, 52], glow, clamp((T - 450) / 700, 0, 1));
+      for (const x of [OFX0 + 18, OFX0 + 44, OFX1 - 44, OFX1 - 18]) {
+        if (heat > 0.05) {
+          const g = ctx.createLinearGradient(x - 26, 0, x + 26, 0);
+          g.addColorStop(0, rgba(glow, 0)); g.addColorStop(0.5, rgba(glow, 0.35 * heat)); g.addColorStop(1, rgba(glow, 0));
+          ctx.fillStyle = g; ctx.fillRect(x - 26, OFY0 + 20, 52, OFY1 - OFY0 - 50);
+        }
+        ctx.strokeStyle = rgba(mix(coil, [20, 18, 16], 0.35), 1); ctx.lineWidth = 6; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x, OFY0 + 26); ctx.lineTo(x, OFY1 - 34); ctx.stroke();
+        ctx.strokeStyle = rgba(coil, 1); ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        for (let y = OFY0 + 30; y <= OFY1 - 38; y += 3) ctx[y === OFY0 + 30 ? 'moveTo' : 'lineTo'](x + 7 * Math.sin((y - OFY0) * 0.42), y);
+        ctx.stroke();
+      }
+      ctx.lineCap = 'butt';
+      // Sockel aus Schamottestein unter dem Tiegel
+      ctx.fillStyle = rgba(mix([196, 170, 138], glow, heat * 0.3), 1);
+      ctx.fillRect(500 - 150, 518, 300, OFY1 - 518);
+      ctx.fillStyle = rgba(mix([214, 190, 158], glow, heat * 0.3), 1);
+      ctx.fillRect(500 - 150, 514, 300, 6);
+    }
+    /** Schnittfläche des Ofengehäuses (vor der Kammer gezeichnet: Wand, Decke, Boden). */
+    drawFurnaceCut(ctx) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(OX0, OY0, OX1 - OX0, BENCH - OY0); ctx.rect(OFX0, OFY0, OFX1 - OFX0, OFY1 - OFY0);
+      ctx.fillStyle = '#d6c2a4'; ctx.fill('evenodd');
+      ctx.clip('evenodd');
+      ctx.strokeStyle = 'rgba(120,96,70,0.35)'; ctx.lineWidth = 1;
+      for (let k = -600; k < 900; k += 14) { ctx.beginPath(); ctx.moveTo(OX0 + k, OY0); ctx.lineTo(OX0 + k + 470, BENCH); ctx.stroke(); }
+      ctx.restore();
+      // Blechmantel außen
+      ctx.strokeStyle = '#59626d'; ctx.lineWidth = 10;
+      ctx.strokeRect(OX0 + 5, OY0 + 5, OX1 - OX0 - 10, BENCH - OY0 - 5);
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(OX0 + 1, OY0 + 1, OX1 - OX0 - 2, BENCH - OY0 - 1);
+      ctx.strokeStyle = 'rgba(90,70,50,0.6)'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(OFX0, OFY0, OFX1 - OFX0, OFY1 - OFY0);
+    }
     drawCrucible(ctx, sub, sh) {
       const st = this.model.state;
       const T = st.Tview;
       const heat = clamp((T - 550) / 2000, 0, 1);
       const glow = glowColor(T);
       const iron = sub.id === 'iron';
-      this.shadow(ctx, CX, BASE_Y + BASE_RY - 4, BASE_RX * 1.35, 26, 0.42);
+      this.drawFurnace(ctx, T);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(OFX0, OFY0, OFX1 - OFX0, OFY1 - OFY0); ctx.clip();
+      ctx.save();
+      ctx.translate(CTX, CTY); ctx.scale(CK, CK);
+      this.shadow(ctx, CX, BASE_Y + BASE_RY - 4, BASE_RX * 1.2, 22, 0.4);
       // Inneres: Rückwand im Schatten, Boden heller (sichtbar durch die Öffnung)
       ctx.save();
       ctx.beginPath(); ctx.ellipse(CX, RIM_Y, IN_RX, IN_RY, 0, 0, TAU); ctx.clip();
@@ -607,50 +685,52 @@
         ctx.fillStyle = gg; ctx.fillRect(CX - 480, RIM_Y - 460, 960, 920);
         ctx.restore();
       }
+      ctx.restore();
+      ctx.restore();
+      this.drawFurnaceCut(ctx);
     }
 
-    /** Barren: Abmessungen (Weltmaße, Tiefe in Bildschirmhöhe umgerechnet). */
+    /** Eisenquader (Weltmaße im Tiegel; Tiefe schräg nach hinten oben). */
     ingotBox(s) {
       const k = Math.cbrt(s);
-      const w = 300 * (0.3 + 0.7 * k), dy = 150 * (0.4 + 0.6 * k) * PERSP, h = 118 * Math.pow(k, 0.9);
-      return { w, dy, h, front: CFLOOR + dy / 2, r: Math.min(h / 2, dy / 2, 3 + 22 * (1 - s)) };
+      const w = 232 * (0.3 + 0.7 * k), h = 88 * Math.pow(k, 0.9), d = 118 * (0.4 + 0.6 * k);
+      return { w, h, dx: d * 0.36, dy: -d * 0.27, front: CFLOOR + 18, r: Math.min(h / 2, 1 + 16 * (1 - s)) };
     }
     /** Bildschirmhöhe, oberhalb derer der Feststoff aus der Schmelze ragt (Vorderseite). */
     waterline(ys, sh) {
-      if (this.model.substance.solid === 'ingot') return ys + this.ingotBox(sh.s).dy / 2;
+      if (this.model.substance.solid === 'ingot') return ys + 18;
       return ys + 6;
     }
     drawIngot(ctx, sh, T, glow) {
       const b = this.ingotBox(sh.s);
       const melting = sh.l > 0.01;
       const hot = clamp(0.1 + 0.28 * (T - 1400) / 138, 0.1, 0.42);
-      const x0 = CX - b.w / 2, top = b.front - b.h, back = top - b.dy;
+      const x0 = CX - (b.w + b.dx) / 2, top = b.front - b.h;
+      const r = b.r;
       ctx.save();
       ctx.lineJoin = 'round';
-      // Oberseite (Trapez in Perspektive)
-      ctx.beginPath();
-      ctx.moveTo(x0 + b.r, top); ctx.lineTo(x0 + b.w - b.r, top);
-      ctx.quadraticCurveTo(x0 + b.w, top, x0 + b.w - b.w * 0.03, top - b.r * 0.6);
-      ctx.lineTo(CX + b.w * 0.46, back);
-      ctx.lineTo(CX - b.w * 0.46, back);
-      ctx.lineTo(x0 + b.w * 0.03, top - b.r * 0.6);
-      ctx.quadraticCurveTo(x0, top, x0 + b.r, top);
-      ctx.closePath();
-      const tg = ctx.createLinearGradient(x0, back, x0 + b.w, top);
-      tg.addColorStop(0, '#b8c0c9'); tg.addColorStop(0.38, '#f3f6f9'); tg.addColorStop(0.55, '#c6cdd5'); tg.addColorStop(1, '#949da7');
-      ctx.fillStyle = tg; ctx.fill();
-      ctx.fillStyle = rgba(glow, hot * 0.8); ctx.fill();
-      ctx.strokeStyle = melting ? rgba(mix(glow, [255, 255, 255], 0.55), 0.95) : 'rgba(55,60,70,0.55)'; ctx.lineWidth = melting ? 2.4 : 1.1; ctx.stroke();
-      // Vorderseite
-      rr(ctx, x0, top, b.w, b.h, b.r);
+      const face = (pts, fill, glowA) => {
+        ctx.beginPath(); pts.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](x, y)); ctx.closePath();
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.fillStyle = rgba(glow, glowA); ctx.fill();
+        ctx.strokeStyle = melting ? rgba(mix(glow, [255, 255, 255], 0.55), 0.95) : 'rgba(45,50,58,0.7)';
+        ctx.lineWidth = melting ? 2 + r * 0.25 : 1.2; ctx.stroke();
+      };
+      // rechte Seite (im Schatten), Oberseite (hell), Vorderseite
+      const side = ctx.createLinearGradient(x0 + b.w, 0, x0 + b.w + b.dx, 0);
+      side.addColorStop(0, '#5d6670'); side.addColorStop(1, '#46505a');
+      face([[x0 + b.w, top], [x0 + b.w + b.dx, top + b.dy], [x0 + b.w + b.dx, b.front + b.dy], [x0 + b.w, b.front]], side, hot * 0.9);
+      const tg = ctx.createLinearGradient(x0, top + b.dy, x0 + b.w, top);
+      tg.addColorStop(0, '#c3cad2'); tg.addColorStop(0.42, '#f4f7fa'); tg.addColorStop(0.6, '#cfd6dd'); tg.addColorStop(1, '#a3acb6');
+      face([[x0, top], [x0 + b.w, top], [x0 + b.w + b.dx, top + b.dy], [x0 + b.dx, top + b.dy]], tg, hot * 0.75);
       const fg = ctx.createLinearGradient(0, top, 0, b.front);
-      fg.addColorStop(0, '#8f98a3'); fg.addColorStop(0.55, '#6b747f'); fg.addColorStop(1, '#4f5761');
-      ctx.fillStyle = fg; ctx.fill();
-      ctx.fillStyle = rgba(glow, hot); ctx.fill();
-      ctx.stroke();
-      // metallischer Glanzstreifen
-      ctx.fillStyle = 'rgba(255,255,255,0.28)';
-      ctx.fillRect(x0 + b.w * 0.1, top + b.h * 0.18, b.w * 0.5, Math.max(1.5, b.h * 0.05));
+      fg.addColorStop(0, '#a4adb7'); fg.addColorStop(0.55, '#7e8892'); fg.addColorStop(1, '#5f6872');
+      face([[x0, top], [x0 + b.w, top], [x0 + b.w, b.front], [x0, b.front]], fg, hot);
+      // gebürsteter Metallglanz
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillRect(x0 + b.w * 0.08, top + b.h * 0.2, b.w * 0.55, Math.max(1.5, b.h * 0.05));
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(x0 + b.w * 0.08, top + b.h * 0.42, b.w * 0.4, Math.max(1, b.h * 0.03));
       ctx.restore();
     }
 
@@ -660,9 +740,21 @@
       const tint = clamp((T - 700) / 900, 0, 1) * 0.2;
       const alpha = clamp(s * 25, 0, 1);
       ctx.save(); ctx.globalAlpha = alpha;
+      // weiße Salzkruste auf dem Tiegelboden, darauf die Kristallwürfel
+      const crx = FLOOR_RX * 0.94 * (0.45 + 0.55 * Math.sqrt(s)), cry = crx * PERSP, ct = 14 * (0.35 + 0.65 * s);
+      const ccy = CFLOOR + 6;
+      ctx.fillStyle = rgba(mix([214, 220, 228], glow, tint), 1);
+      ctx.beginPath(); ctx.ellipse(CX, ccy, crx, cry, 0, 0, Math.PI); ctx.lineTo(CX - crx, ccy - ct); ctx.ellipse(CX, ccy - ct, crx, cry, 0, Math.PI, 0, true); ctx.closePath(); ctx.fill();
+      const top = ctx.createRadialGradient(CX - crx * 0.3, ccy - ct - cry * 0.3, 10, CX, ccy - ct, crx);
+      top.addColorStop(0, rgba(mix([255, 255, 255], glow, tint * 0.6), 1)); top.addColorStop(1, rgba(mix([226, 232, 238], glow, tint), 1));
+      ctx.fillStyle = top; ctx.beginPath(); ctx.ellipse(CX, ccy - ct, crx, cry, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = 'rgba(150,165,180,0.35)';
+      for (let i = 0; i < 70; i++) { const a = i * 2.39996, q = Math.sqrt((i + 0.5) / 70); ctx.fillRect(CX + Math.cos(a) * crx * q * 0.95, ccy - ct + Math.sin(a) * cry * q * 0.95, 2.2, 1.4); }
+      ctx.strokeStyle = 'rgba(150,165,180,0.6)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(CX, ccy - ct, crx, cry, 0, 0, TAU); ctx.stroke();
       for (const c of this.cubes) {
         const a = c.size * k;
-        const x = CX + c.u * hw, y = CFLOOR + c.w * hw * PERSP - c.v * ph;
+        const x = CX + c.u * hw * 0.92, y = ccy - ct + c.w * crx * PERSP * 0.8 - c.v * ph + 4;
         const sh0 = 0.9 + c.shade * 0.1;
         const front = mix([232 * sh0, 237 * sh0, 242 * sh0], glow, tint), top = mix([255, 255, 255], glow, tint * 0.7), side = mix([190 * sh0, 201 * sh0, 212 * sh0], glow, tint);
         const dx = a * 0.34, dy = a * 0.3;
@@ -684,10 +776,13 @@
     drawPuffs(ctx, sub) {
       const rgb = sub.look.gas;
       const white = rgb[0] > 240 && rgb[1] > 240;
+      const beakerV = sub.vessel === 'beaker';
+      ctx.save();
+      this.interiorPath(ctx, beakerV); ctx.clip();
       // gleichmäßiger Dunst: Das Gas füllt den Raum (Stärke folgt dem Gasanteil)
       if (this.haze > 0.01) {
         const beaker = sub.vessel === 'beaker';
-        const cx = beaker ? BX : CX, cy = beaker ? 330 : RIM_Y - 90, rx = beaker ? 250 : 340, ry = beaker ? 270 : 210;
+        const cx = beaker ? BX : 500, cy = beaker ? 350 : 320, rx = beaker ? 260 : 360, ry = beaker ? 260 : 220;
         ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ry / rx);
         const g = ctx.createRadialGradient(0, 0, rx * 0.1, 0, 0, rx);
         const k = this.haze * (white ? 0.34 : 0.42);
@@ -695,7 +790,7 @@
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, rx, 0, TAU); ctx.fill();
         ctx.restore();
       }
-      if (!this.puffs.length) return;
+      if (!this.puffs.length) { ctx.restore(); return; }
       const sp = this.sprite(rgb), halo = this.sprites[rgb.join(',') + 'h'];
       for (const p of this.puffs) {
         const r = p.r0 + 46 * Math.min(1, p.age / 3);
@@ -707,6 +802,7 @@
         ctx.drawImage(sp[p.k], p.x - r, p.y - r, 2 * r, 2 * r);
       }
       ctx.globalAlpha = 1;
+      ctx.restore();
     }
   }
 

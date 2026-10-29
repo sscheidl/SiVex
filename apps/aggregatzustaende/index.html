@@ -36,16 +36,20 @@
             <button type="button" data-level="particles" aria-pressed="false">Teilchenebene</button>
           </div>
           <button type="button" class="lk-btn small cold" id="btnCold" aria-pressed="false" hidden>Kalte Oberfläche einblenden</button>
+          <button type="button" class="lk-btn small schemebtn" id="btnScheme" aria-pressed="false" aria-controls="scheme">Schema</button>
         </div>
-        <div class="canvas-wrap" id="canvasWrap">
-          <canvas id="matter" role="img" aria-label="Stoffebene"></canvas>
-          <canvas id="particles" role="img" aria-label="Teilchenebene" hidden></canvas>
+        <div class="viewrow" id="viewrow">
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="matter" role="img" aria-label="Stoffebene"></canvas>
+            <canvas id="particles" role="img" aria-label="Teilchenebene" hidden></canvas>
+          </div>
+          <aside class="scheme" id="scheme" aria-label="Schema der Phasenübergänge" hidden></aside>
         </div>
         <div class="infobar" id="infobar"></div>
         <div class="tempbar" id="tempbar">
           <label class="tlabel" for="temp">Temperatur <output id="tempOut" for="temp" aria-live="off">20 °C</output></label>
           <div class="slider">
-            <input type="range" id="temp" min="-30" max="130" step="1" value="20" aria-valuetext="20 °C">
+            <input type="range" id="temp" min="0" max="1000" step="1" value="313" aria-valuetext="20 °C">
             <div class="ticks" id="ticks" aria-hidden="true"></div>
           </div>
         </div>
