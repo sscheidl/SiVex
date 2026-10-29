@@ -1,8 +1,10 @@
-# Aggregatzustände 0.2.0 – Testbericht
+# Aggregatzustände 0.2.1 – Testbericht
 
 Stand 29.10.2026 · Labkit 0.1.1 (unverändert) · Status **prototype**
 
-0.2.0 setzt die Rückmeldung der Lehrkraft zu 0.1.0 um: geschlossenes System (Becherglas mit Uhrglas, Ofen im Schnitt mit glühenden Heizstäben), Eisenquader, Salzkruste, Legende der Teilchenebene, gestauchte Reglerskala bei Eisen und Kochsalz, zuschaltbares Schema der Phasenübergänge. Alle Prüfungen wurden für 0.2.0 vollständig wiederholt.
+0.2.1: Schema teilt sich den Bildbereich mit dem Versuch (größer), Gefäß füllt seinen Bildausschnitt, größere Schrift in der ganzen App. Alle Prüfungen wurden für 0.2.1 vollständig wiederholt.
+
+0.2.0 setzte die Rückmeldung der Lehrkraft zu 0.1.0 um: geschlossenes System (Becherglas mit Uhrglas, Ofen im Schnitt mit glühenden Heizstäben), Eisenquader, Salzkruste, Legende der Teilchenebene, gestauchte Reglerskala bei Eisen und Kochsalz, zuschaltbares Schema der Phasenübergänge. Diese Prüfungen galten für 0.2.0.
 
 Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = geprüft, Nachweis dokumentiert · **HOLD – unverified** = Prüfung nicht möglich bzw. nicht durchgeführt.
 
@@ -54,7 +56,7 @@ Edge 156.0.4314.50 über Playwright 1.56.1, gegen den gebauten Stand `dist/aggre
 | ID | Prüfung | Ergebnis |
 | --- | --- | --- |
 | E01 | Start: Wasser, Stoffebene, 20 °C, flüssig; Markierungen „Schmelztemperatur 0 °C“ und „Siedetemperatur 100 °C“; Kennzeichnung der Gasphase; keine kalte Oberfläche; kein Text oder Bedienelement über dem Bild | PASS |
-| E02 | Regler: Mausklick setzt Wert und Anzeige sofort, Bild folgt in 768 ms; Pfeile ±1, Bild ↓ −10, Ende/Pos1; `aria-valuetext` mit Einheit; Antippen der Schiene (Touch-Emulation 1180×820), Regler 44 px hoch | PASS |
+| E02 | Regler: Mausklick setzt Wert und Anzeige sofort, Bild folgt in 791 ms; Pfeile ±1, Bild ↓ −10, Ende/Pos1; `aria-valuetext` mit Einheit; Antippen der Schiene (Touch-Emulation 1180×820), Regler 44 px hoch | PASS |
 | E03 | Alle vier Stoffe per Tastatur auf 1 °C unter/genau an/1 °C über Schmelz- und Siedetemperatur: erwarteter Zustand, 48 Teilchen, Bildbeschreibung mit Temperatur; 24 Bilder (je Stoff fest/flüssig/gasförmig auf beiden Ebenen) | PASS |
 | E04 | Zwischenbilder: Wasser schmilzt (Mischung), verdampft (Siedeblasen), kondensiert (Tropfen an Deckel und Glaswand), erstarrt; Teilchenebene beim Schmelzen | PASS |
 | E05 | Ebenenwechsel mitten im Verdampfen: gleiche Temperatur und Laufnummer, Übergang läuft weiter (p 1,21 → 1,39), Bild vollständig für die gewählte Ebene, Hinweisleiste passend | PASS |
@@ -67,14 +69,14 @@ Edge 156.0.4314.50 über Playwright 1.56.1, gegen den gebauten Stand `dist/aggre
 | E12 | Aufgaben über die Oberfläche: 8 richtig/1 falsch markiert mit konkretem Hinweis; Tipp erst nach zwei Fehlversuchen angeboten (nicht eingeblendet), drei Stufen, keine vierte; Lösung mit Rückfrage; eigene Antworten bleiben erhalten; Schritt 2 „4 von 5“ mit Hinweis auf die Symbolgröße; Antworten nach Neuladen erhalten; Schritt 3 vollständig | PASS |
 | E13 | Hefteintrag über die Kopfzeile ohne gelöste Aufgaben, alle Fachbegriffe; Druck erzeugt Arbeitsblatt, Druckansicht zeigt nur das Blatt (905 px ≈ eine A4-Seite); Ergebnisse vermerken beobachtete Zustände und die Sublimation | PASS |
 | E14 | Tab-Reihenfolge erreicht Stoffwahl, Ebenen, Regler, Trennlinie; Enter wählt den Stoff; Fokusrahmen sichtbar; Zustand als Text für Bildschirmleser; Auswahl über `aria-pressed` | PASS |
-| E15 | Schema neben dem Bild: anfangs aus, zuschaltbar (Bild 1006 → 746 px breit, keine Überdeckung); Schmelzen und Erstarren hervorgehoben, danach kein laufender Übergang, Kasten „flüssig“ gefärbt und umrandet; an der Siedetemperatur beide Richtungen; Iod: Sublimieren, mit kalter Oberfläche Resublimieren; bleibt nach Neuladen eingeblendet; 1024×768 und 820×1180 ohne Überdeckung und ohne waagrechtes Scrollen | PASS |
+| E15 | Schema im Bildbereich: anfangs aus, zuschaltbar (Versuch 1006 → 604 px breit, keine Überdeckung); Schmelzen und Erstarren hervorgehoben, danach kein laufender Übergang, Kasten „flüssig“ gefärbt und umrandet; an der Siedetemperatur beide Richtungen; Iod: Sublimieren, mit kalter Oberfläche Resublimieren; bleibt nach Neuladen eingeblendet; 1024×768 und 820×1180 ohne Überdeckung und ohne waagrechtes Scrollen | PASS |
 | NET | 364 Anfragen, alle lokal | PASS |
 
 Hinweis: E10 nutzt **Emulation** im Desktop-Edge; das ersetzt keinen Test auf dem iPad.
 
 ## 3. Pakete (`npm run package`, `npm run test:scorm`)
 
-`release/aggregatzustaende-0.2.0-scorm12.zip` (58,9 KiB, 15 Dateien + `imsmanifest.xml`) und `release/aggregatzustaende-0.2.0-web.zip` (58,7 KiB), Prüfsummen in `release/SHA256SUMS.txt`. Ergebnis: **17/17 PASS** – Manifest SCORM 1.2 mit allen Dateien, nur relative Verweise; im Mock-LMS eingebettet und als neues Fenster: genau ein `LMSInitialize`, beim Schließen genau ein `LMSFinish`, keine `LMSGetValue`/`LMSSetValue`/`LMSCommit`; Iod gewählt, per Tastatur auf 95 °C, Teilchenebene, Antwort geprüft; Web-ZIP frisch entpackt per HTTP und `file://` bedienbar; keine Konsolenfehler, keine externen Anfragen.
+`release/aggregatzustaende-0.2.1-scorm12.zip` (59,4 KiB, 15 Dateien + `imsmanifest.xml`) und `release/aggregatzustaende-0.2.1-web.zip` (59,3 KiB), Prüfsummen in `release/SHA256SUMS.txt`. Ergebnis: **17/17 PASS** – Manifest SCORM 1.2 mit allen Dateien, nur relative Verweise; im Mock-LMS eingebettet und als neues Fenster: genau ein `LMSInitialize`, beim Schließen genau ein `LMSFinish`, keine `LMSGetValue`/`LMSSetValue`/`LMSCommit`; Iod gewählt, per Tastatur auf 95 °C, Teilchenebene, Antwort geprüft; Web-ZIP frisch entpackt per HTTP und `file://` bedienbar; keine Konsolenfehler, keine externen Anfragen.
 
 ## 4. Visuelle Kontrolle
 

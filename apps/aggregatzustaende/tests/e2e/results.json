@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-29T20:57:01.570Z",
+  "date": "2026-10-29T22:08:39.455Z",
   "browser": "msedge",
   "passed": 16,
   "total": 16,
@@ -9,105 +9,105 @@
       "title": "Start: Wasser, Stoffebene, 20 °C; Regler, Markierungen, Hinweisleiste; nichts überdeckt das Bild",
       "status": "PASS",
       "detail": "Startzustand korrekt, keine Überdeckung",
-      "ms": 1018
+      "ms": 981
     },
     {
       "id": "E02",
       "title": "Temperaturregler: Anzeige sofort, Bild folgt in ≈ 0,5–1 s; Maus, Tastatur (Pfeile, Bild ↑/↓, Pos1/Ende) und Touch",
       "status": "PASS",
-      "detail": "Verzögerung der Darstellung 768 ms, Touch 110 °C",
-      "ms": 1651
+      "detail": "Verzögerung der Darstellung 791 ms, Touch 111 °C",
+      "ms": 1598
     },
     {
       "id": "E03",
       "title": "Alle vier Stoffe unterhalb, an und oberhalb beider Übergangstemperaturen (Tastatur), Bilder je Zustand",
       "status": "PASS",
       "detail": "4 Stoffe × 6 Temperaturen, 24 Bilder",
-      "ms": 66961
+      "ms": 67036
     },
     {
       "id": "E04",
       "title": "Übergänge als tatsächliche Zwischenbilder in beide Richtungen (Schmelzen, Verdampfen, Kondensieren, Erstarren)",
       "status": "PASS",
-      "detail": "Blasen 12, Tropfen 4",
-      "ms": 9983
+      "detail": "Blasen 10, Tropfen 4",
+      "ms": 10017
     },
     {
       "id": "E05",
       "title": "Stoff- und Teilchenebene synchron: Wechsel mitten im Übergang setzt nichts zurück",
       "status": "PASS",
       "detail": "p 1.21 → 1.40",
-      "ms": 1300
+      "ms": 1313
     },
     {
       "id": "E06",
       "title": "Rasches Hin- und Herziehen: keine hängenden Animationen, keine verschwundenen Teilchen, flüssige Bildrate",
       "status": "PASS",
       "detail": "Stoff- und Teilchenebene",
-      "ms": 11160
+      "ms": 11106
     },
     {
       "id": "E07",
       "title": "Stoffwechsel mitten im Übergang: sauberer Startzustand, nichts wandert mit; Bereich und Markierungen wechseln",
       "status": "PASS",
       "detail": "Wasser → Eisen → Kochsalz → Iod → Wasser",
-      "ms": 1329
+      "ms": 1347
     },
     {
       "id": "E08",
       "title": "Iod: Sublimation unter 114 °C, kalte Oberfläche mit Resublimation, flüssiges Iod zwischen 114 und 184 °C",
       "status": "PASS",
       "detail": "Wölkchen 17, Teilchen an der Oberfläche 8",
-      "ms": 14742
+      "ms": 14841
     },
     {
       "id": "E09",
       "title": "Trennlinie: Maus, Touch, Tastatur, Doppelklick; Mindestbreiten; Bild passt sich an",
       "status": "PASS",
       "detail": "Maus 400→567, Touch 330.390625→450",
-      "ms": 1228
+      "ms": 1207
     },
     {
       "id": "E10",
       "title": "Fenstergrößen Desktop/Tablet/Handy: keine Überdeckung, kein waagrechtes Scrollen, Regler und Auswahl erreichbar, Touchziele ≥ 44 px",
       "status": "PASS",
       "detail": "1920×1080, 1440×900, 1280×800, 1180×820, 1024×768, 820×1180, 768×1024, 390×844",
-      "ms": 11541
+      "ms": 11716
     },
     {
       "id": "E11",
       "title": "Animation sichtbar bei gleichbleibender Temperatur (Flüssigkeit, Gas, Feststoff-Schwingung), Teilchen bewegen sich",
       "status": "PASS",
       "detail": "Stoff- und Teilchenebene animiert",
-      "ms": 11081
+      "ms": 11185
     },
     {
       "id": "E12",
       "title": "Aufgaben: Rückmeldung je Feld, Tipp nach zwei Fehlversuchen angeboten, drei Stufen, Lösung mit Rückfrage, Antworten bleiben erhalten",
       "status": "PASS",
       "detail": "Schritte 1–3 über die Oberfläche",
-      "ms": 2524
+      "ms": 2570
     },
     {
       "id": "E13",
       "title": "Ergebnisse zeigen eigene Beobachtungen; Hefteintrag ohne gelöste Aufgaben erreichbar; Arbeitsblatt druckbar",
       "status": "PASS",
       "detail": "Arbeitsblatt 905 px hoch",
-      "ms": 7310
+      "ms": 7324
     },
     {
       "id": "E14",
       "title": "Tastatur und Beschriftung: alle Bedienelemente erreichbar, Fokus sichtbar, Zustand als Text für Bildschirmleser",
       "status": "PASS",
       "detail": "btnNotebook → btnPanel → water → iodine → iron → salt → matter → particles",
-      "ms": 1697
+      "ms": 1685
     },
     {
       "id": "E15",
       "title": "Schema neben dem Bild: zuschaltbar, keine Überdeckung, Zustände färben sich, laufender Übergang hervorgehoben (beide Richtungen, Gleichgewicht, Iod)",
       "status": "PASS",
-      "detail": "Bildbreite 1006 → 746 px",
-      "ms": 10664
+      "detail": "Bildbreite 1006 → 603.59375 px",
+      "ms": 10769
     },
     {
       "id": "NET",

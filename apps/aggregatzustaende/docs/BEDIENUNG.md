@@ -6,7 +6,7 @@
 | --- | --- |
 | Kopfzeile | App-Name, **Hefteintrag** (springt direkt zum Hefteintrag), **Bedienfeld** (ein-/ausblenden) |
 | Leiste über dem Bild | Stoffwahl **Wasser · Iod · Eisen · Kochsalz**, Ansicht **Stoffebene · Teilchenebene**, nur bei Iod: **Kalte Oberfläche einblenden**, **Schema** (Phasenübergänge neben dem Bild ein-/ausblenden) |
-| Bild | eine große Darstellung – entweder Stoffebene oder Teilchenebene; nichts liegt darüber. Mit eingeblendetem Schema steht rechts daneben das Schema der Phasenübergänge |
+| Bild | eine große Darstellung – entweder Stoffebene oder Teilchenebene; nichts liegt darüber. Mit eingeblendetem Schema teilen sich Versuch und Schema den Bildbereich |
 | Leiste unter dem Bild | kurze Hinweise: bei der Stoffebene „Gasphase zur Veranschaulichung sichtbar dargestellt“, bei der Teilchenebene die Legende der Symbole |
 | Temperaturregler | großer Schieberegler mit Wertanzeige in °C und Markierungen für Schmelz- und Siedetemperatur |
 | Bedienfeld rechts | Reiter **Aufgabe · Ergebnisse · Hefteintrag** |
@@ -23,7 +23,7 @@ Auf Bildschirmen unter 900 px Breite stehen Bild, Schema, Regler und Bedienfeld 
 
 ## Schema der Phasenübergänge
 
-**Schema** blendet neben dem Bild das Dreieck fest – flüssig – gasförmig mit den sechs Übergängen ein. Die Kästen färben sich nach dem Anteil des Stoffes im jeweiligen Zustand; der gerade ablaufende Übergang wird hervorgehoben und als bewegter Pfeil gezeigt. Darunter steht, welcher Übergang gerade abläuft. Die Einstellung bleibt beim Neuladen erhalten.
+**Schema** teilt den Bildbereich: links der Versuch, rechts (auf schmalen Bildschirmen darunter) das Dreieck fest – flüssig – gasförmig mit den sechs Übergängen ein. Die Kästen färben sich nach dem Anteil des Stoffes im jeweiligen Zustand; der gerade ablaufende Übergang wird hervorgehoben und als bewegter Pfeil gezeigt. Darunter steht, welcher Übergang gerade abläuft. Die Einstellung bleibt beim Neuladen erhalten.
 
 ## Stoff und Ansicht wechseln
 
