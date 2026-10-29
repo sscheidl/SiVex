@@ -5,13 +5,13 @@
 | Bereich | Inhalt |
 | --- | --- |
 | Kopfzeile | App-Name, **Hefteintrag** (springt direkt zum Hefteintrag), **Bedienfeld** (ein-/ausblenden) |
-| Leiste über dem Bild | Stoffwahl **Wasser · Iod · Eisen · Kochsalz**, Ansicht **Stoffebene · Teilchenebene**, nur bei Iod: **Kalte Oberfläche einblenden** |
-| Bild | eine große Darstellung – entweder Stoffebene oder Teilchenebene; nichts liegt darüber |
-| Leiste unter dem Bild | kurze Hinweise: bei der Stoffebene „Gasphase zur Veranschaulichung sichtbar dargestellt“, bei der Teilchenebene die Bedeutung der Symbole |
+| Leiste über dem Bild | Stoffwahl **Wasser · Iod · Eisen · Kochsalz**, Ansicht **Stoffebene · Teilchenebene**, nur bei Iod: **Kalte Oberfläche einblenden**, **Schema** (Phasenübergänge neben dem Bild ein-/ausblenden) |
+| Bild | eine große Darstellung – entweder Stoffebene oder Teilchenebene; nichts liegt darüber. Mit eingeblendetem Schema steht rechts daneben das Schema der Phasenübergänge |
+| Leiste unter dem Bild | kurze Hinweise: bei der Stoffebene „Gasphase zur Veranschaulichung sichtbar dargestellt“, bei der Teilchenebene die Legende der Symbole |
 | Temperaturregler | großer Schieberegler mit Wertanzeige in °C und Markierungen für Schmelz- und Siedetemperatur |
 | Bedienfeld rechts | Reiter **Aufgabe · Ergebnisse · Hefteintrag** |
 
-Auf Bildschirmen unter 900 px Breite stehen Bild, Regler und Bedienfeld untereinander.
+Auf Bildschirmen unter 900 px Breite stehen Bild, Schema, Regler und Bedienfeld untereinander.
 
 ## Temperatur einstellen
 
@@ -19,6 +19,11 @@ Auf Bildschirmen unter 900 px Breite stehen Bild, Regler und Bedienfeld unterein
 - **Tastatur:** Regler fokussieren (Tab), dann Pfeiltasten (±1 °C), Bild ↑/↓ oder Umschalt + Pfeil (großer Schritt: Wasser und Iod 10 °C, Kochsalz 25 °C, Eisen 50 °C), Pos1/Ende (Bereichsanfang/-ende).
 - Der Regler stellt die Temperatur **direkt** ein (Modell, kein Heizen). Die Zahl ändert sich sofort, das Bild folgt weich innerhalb etwa einer Sekunde; der Wechsel des Zustands ist für einen Augenblick als Mischung zu sehen.
 - Jede Temperatur in ganzen Grad ist einstellbar, auch genau die Schmelz- und die Siedetemperatur. Dort bleiben beide Zustände nebeneinander sichtbar.
+- Bei Eisen und Kochsalz ist die Reglerskala gestaucht: Fest, flüssig und gasförmig nehmen etwa gleich viel Reglerweg ein. Die Markierungen zeigen die richtigen Temperaturen.
+
+## Schema der Phasenübergänge
+
+**Schema** blendet neben dem Bild das Dreieck fest – flüssig – gasförmig mit den sechs Übergängen ein. Die Kästen färben sich nach dem Anteil des Stoffes im jeweiligen Zustand; der gerade ablaufende Übergang wird hervorgehoben und als bewegter Pfeil gezeigt. Darunter steht, welcher Übergang gerade abläuft. Die Einstellung bleibt beim Neuladen erhalten.
 
 ## Stoff und Ansicht wechseln
 
@@ -27,7 +32,7 @@ Auf Bildschirmen unter 900 px Breite stehen Bild, Regler und Bedienfeld unterein
 
 ## Kalte Oberfläche (nur Iod)
 
-„Kalte Oberfläche einblenden“ legt ein Uhrglas mit Eis auf das Becherglas. Bei erwärmtem Iod wachsen an seiner Unterseite dunkle Kristalle. Die Schaltfläche heißt danach „Kalte Oberfläche ausblenden“.
+Das Becherglas ist immer mit einem Uhrglas abgedeckt. „Kalte Oberfläche einblenden“ legt Eis auf dieses Uhrglas. Bei erwärmtem Iod wachsen an seiner Unterseite dunkle Kristalle. Die Schaltfläche heißt danach „Kalte Oberfläche ausblenden“.
 
 ## Aufgaben
 

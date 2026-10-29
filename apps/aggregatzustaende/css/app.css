@@ -25,7 +25,32 @@
 .lk-btn.cold[aria-pressed="true"] { background: #dcecf8; border-color: #6f9cc4; color: #1d4f7a; }
 .lk-btn.cold::before { content: "❄"; font-size: 15px; }
 
-.canvas-wrap { position: relative; flex: 1 1 auto; min-height: 240px; margin: 0 10px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #c4cfda; }
+.viewrow { flex: 1 1 auto; min-height: 240px; display: flex; gap: 10px; margin: 0 10px; }
+.canvas-wrap { position: relative; flex: 1 1 auto; min-width: 0; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #c4cfda; }
+.lk-btn.schemebtn { min-height: var(--touch); }
+.lk-btn.schemebtn::before { content: "△"; font-size: 14px; }
+.lk-btn.schemebtn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
+
+/* ---------- Schema der Phasenübergänge (Spalte neben dem Bild) ---------- */
+.scheme { flex: 0 0 250px; display: flex; flex-direction: column; gap: 6px; padding: 10px 10px 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.scheme h2 { margin: 0; font-size: 15px; }
+.scheme svg { width: 100%; height: auto; max-height: 100%; flex: 1 1 auto; min-height: 0; }
+.scheme .box .base { fill: #fff; stroke: none; }
+.scheme .box .fill { fill: #8fbbea; stroke: none; transition: opacity .35s; }
+.scheme .box .frame { fill: none; stroke: #8aa0b8; stroke-width: 1.4; transition: stroke-width .3s; }
+.scheme .box.main .frame { stroke: var(--accent-2); stroke-width: 2.6; }
+.scheme .box text { font: 700 13px var(--font); fill: #17212c; }
+.scheme .arr line { stroke: #9aa9b8; stroke-width: 1.6; marker-end: url(#sah); transition: stroke .3s, stroke-width .3s; }
+.scheme .arr.on line, .scheme .arr.eq line { marker-end: url(#sahOn); }
+.scheme .arr text { font: 600 12px var(--font); fill: #4a5868; transition: fill .3s; }
+.scheme .arr.on line { stroke: var(--accent); stroke-width: 3.2; stroke-dasharray: 7 5; animation: az-flow .6s linear infinite; }
+.scheme .arr.eq line { stroke: var(--accent); stroke-width: 2.2; stroke-dasharray: 4 5; animation: az-flow 1.4s linear infinite; }
+.scheme .arr.on text, .scheme .arr.eq text { fill: var(--accent-2); font-weight: 800; }
+@keyframes az-flow { to { stroke-dashoffset: -24; } }
+.scheme .now { margin: 0; min-height: 38px; font-size: 13px; line-height: 1.4; color: var(--text-2); }
+.scheme .now b { color: var(--accent-2); }
+.scheme .legend { margin: 0; font-size: 11.5px; color: var(--muted); }
+@media (max-width: 1200px) { .scheme { flex-basis: 214px; } }
 .canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .canvas-wrap canvas[hidden] { display: none; }
 
@@ -33,6 +58,7 @@
 .infobar .note { color: var(--muted); }
 .infobar .sym { display: inline-flex; align-items: center; gap: 6px; }
 .infobar canvas { width: 26px; height: 20px; flex: 0 0 26px; }
+.infobar .chips { display: inline-flex; flex-wrap: wrap; gap: 4px 14px; }
 
 /* ---------- Temperaturregler ---------- */
 .tempbar { flex: 0 0 auto; display: flex; align-items: flex-start; gap: 6px 18px; padding: 6px 16px 4px; background: var(--surface); border-top: 1px solid var(--line); }
@@ -99,7 +125,10 @@ table.res td.seen { white-space: nowrap; }
 
 /* ---------- Schmale Bildschirme ---------- */
 @media (max-width: 899px) {
+  .viewrow { flex-direction: column; flex: 0 0 auto; }
   .canvas-wrap { flex: 0 0 auto; height: min(58vh, 520px, 80vw); min-height: 260px; }
+  .scheme { flex: 0 0 auto; }
+  .scheme svg { max-height: 300px; }
   .levels { margin-left: 0; }
   .tempbar { flex-wrap: wrap; }
   .tlabel { flex-direction: row; align-items: baseline; gap: 10px; min-width: 0; }
