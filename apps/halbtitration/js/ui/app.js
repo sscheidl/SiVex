@@ -136,7 +136,7 @@
   // ------------------------------------------------------------ Messreihen
 
   function activeSeries() { const e = es(); return e.active >= 0 ? e.series[e.active] || null : null; }
-  function seriesLabel(s) { return 'Messreihe ' + s.no + ' · ' + (s.kind === 'survey' ? 'Titrationskurve' : 'Halbtitration'); }
+  function seriesLabel(s) { return 'Messreihe ' + s.no + ' · ' + (s.kind === 'survey' ? 'vollständige Titration' : 'Halbtitration'); }
 
   function newSeries(kind) {
     const e = es();
@@ -171,22 +171,22 @@
     refresh();
   }
 
-  function takeReading(auto) {
+  /**
+   * Messpunkt aufnehmen (ab 0.2.2 nur automatisch, sobald die Anzeige stabil
+   * ist): nach jeder Zugabe, nach dem Schließen des Hahns, beim Eintauchen der
+   * Elektrode (Startpunkt) und nach dem Ein-/Ausschalten des Rührers.
+   * Ein Punkt beim gleichen Volumen wird durch den neuen Wert ersetzt.
+   */
+  function takeReading() {
     const l = lab();
     const s = activeSeries();
-    if (!s || s.finished) { if (!auto) toast('Setze zuerst eine frische Probe an.', 'warn'); return; }
-    if (!l.meterReady) { if (!auto) toast(l.calibration < 2 ? 'Das pH-Meter ist noch nicht kalibriert.' : 'Die Elektrode taucht nicht in die Probe ein.', 'warn'); return; }
+    autoPending = false;
+    if (!s || s.finished || !l.meterReady) return;
     const r = l.reading();
     const p = { v: r.v, pH: r.pH, stable: r.stable, settled: r.settled, homogeneous: r.homogeneous, stirred: r.stirred, t: Math.round(l.time * 10) / 10 };
     const i = s.points.findIndex(function (q) { return Math.abs(q.v - p.v) < 0.005; });
-    const replaced = i >= 0 ? s.points[i] : null;
     if (i >= 0) s.points[i] = p; else s.points.push(p);
     s.points.sort(function (a, b) { return a.v - b.v; });
-    if (!auto) {
-      if (!r.settled || !r.stable) toast('Messpunkt gespeichert, aber noch nicht stabil (offener Kreis). Nach dem Zugeben kurz warten, bis die Anzeige „stabil“ zeigt.', 'warn', 6000);
-      else if (replaced && (replaced.pH !== p.pH || replaced.stable !== p.stable)) toast('Messpunkt bei ' + fmt(p.v, 2) + ' mL ersetzt.');
-    }
-    autoPending = false;
     save();
     refresh();
   }
@@ -251,6 +251,7 @@
   function bindLab(l, id) {
     l.on('step-done', function () { if (id === state.current) autoPending = true; });
     l.on('valve', function (e) { if (!e.open && id === state.current) autoPending = true; });
+    l.on('stirrer', function () { if (id === state.current) autoPending = true; });
     l.on('empty', function () { if (id === state.current) toast('Bürette am Ende der Skala (50,00 mL) – zwischen zwei Proben nachfüllen.', 'warn'); });
     l.on('limited', function () { if (id === state.current) toast('Nur bis zum Ende der Bürettenskala zugegeben.', 'warn'); });
     l.on('blocked', function (e) { if (id === state.current) toast(blockedText(e.reason), 'warn'); });
@@ -258,6 +259,7 @@
       if (e.action === 'sample-done') l.addWater(); // Probe vorlegen: pipettieren, dann verdünnen
       if (e.action === 'cal-done' && e.step === 1 && pendingCal2) { pendingCal2 = false; l.calibrate(2); }
       if (id !== state.current) return;
+      if (e.action === 'electrode') autoPending = true; // Startpunkt bzw. neuer Wert nach dem Eintauchen
       if (/-done$/.test(e.action) || e.action === 'electrode') { save(); refreshLab(); }
     });
   }
@@ -334,7 +336,6 @@
         (allDone ? '<button type="button" class="lk-btn small" data-action="toggle-prep">Einklappen</button>' : '') + '</div>';
     }
     // Messen: Rührer, Dosierung, Übernahme, Erfassungsart
-    const auto = state.prefs.capture !== 'manual';
     h += '<div class="deck-row measure">' +
       '<button type="button" class="lk-btn small stir" data-action="stir" aria-pressed="' + l.stirrer + '">Rührer ' + (l.stirrer ? 'an' : 'aus') + '</button>' +
       '<div class="readout" aria-live="off"><span>V zugegeben</span><b id="roV">–</b><span>Bürette</span><b id="roR">–</b><span>pH</span><b><span id="roPH">–</span><span id="roSt" class="status-pill"></span></b></div>' +
@@ -343,10 +344,6 @@
       }).join('') + '</div>' +
       '<button type="button" class="lk-btn primary" data-action="dose" title="Taste D">Zugeben <span id="doseLbl"></span></button>' +
       '<button type="button" class="lk-btn" data-action="valve" id="btnValve" title="Taste H">Hahn öffnen</button>' +
-      '<button type="button" class="lk-btn take" data-action="take" title="Taste M">Messwert übernehmen</button>' +
-      '<div class="lk-seg light capture" role="group" aria-label="Messwerterfassung"><span class="seg-label">Erfassung</span>' +
-      '<button type="button" data-action="capture" data-mode="auto" aria-pressed="' + auto + '" title="Nach jeder Zugabe wird der Messwert übernommen, sobald die Anzeige stabil ist – die Kurve wächst mit">automatisch</button>' +
-      '<button type="button" data-action="capture" data-mode="manual" aria-pressed="' + !auto + '" title="Messwerte nur mit „Messwert übernehmen“ (Taste M)">manuell</button></div>' +
       '<span class="util"><label class="rate">Tropfgeschwindigkeit <input type="range" id="rate" min="0" max="100" step="1" value="' + rateToSlider(l.flowRate) + '" aria-label="Tropfgeschwindigkeit bei offenem Hahn"><span id="rateLbl"></span></label>' +
       (s && !s.finished && s.indicator !== 'none' ? '<button type="button" class="lk-btn small" data-action="endpoint">Endpunkt notieren</button>' : '') +
       (s && !s.finished && s.kind === 'half' ? '<span class="target"><label for="targetIn">Zielmarke</label><input type="text" inputmode="decimal" id="targetIn" value="' + esc(s.targetDraft !== undefined ? s.targetDraft : Number.isFinite(s.target) ? fmt(s.target, 2) : '') + '" autocomplete="off"><span class="unit">mL</span><button type="button" class="lk-btn small" data-action="set-target">Setzen</button></span>' : '') +
@@ -373,7 +370,7 @@
 
   function seriesBarHtml() {
     const s = activeSeries();
-    return '<button type="button" class="lk-btn small" data-action="new-sample" data-kind="survey" title="Kolben leeren, frische Probe für eine Titrationskurve (gespeicherte Reihen bleiben)">Neue Probe (Kurve)</button>' +
+    return '<button type="button" class="lk-btn small" data-action="new-sample" data-kind="survey" title="Kolben leeren, frische Probe für eine vollständige Titration bis über den Sprung (gespeicherte Reihen bleiben)">Neue Probe (vollständig)</button>' +
       '<button type="button" class="lk-btn small" data-action="new-sample" data-kind="half" title="Kolben leeren, frische Probe für die Halbtitration (gespeicherte Reihen bleiben)">Neue Probe (Halbtitration)</button>' +
       '<button type="button" class="lk-btn small" data-action="repeat"' + (s && s.points.length ? '' : ' disabled') + ' title="Aktive Messreihe verwerfen und mit frischer Probe wiederholen">Reihe wiederholen</button>';
   }
@@ -484,7 +481,7 @@
     const ac = data.series.find(function (q) { return q.id === data.activeId; });
     if (ac) lg += '<span><i class="dot" style="background:' + ac.color + '"></i>' + esc(ac.label) + '</span>';
     if (data.series.length > 1) lg += '<span><i class="dot" style="background:' + NS.TitrationChart.COLORS.pale + '"></i>gespeicherte Reihe(n)</span>';
-    lg += '<span><i class="ring"></i>nicht stabil</span><span><i class="line"></i>Verbindung der Messpunkte</span>';
+    lg += '<span><i class="line"></i>Verbindung der Messpunkte</span>';
     if (data.current) lg += '<span><i class="line dash"></i>aktuelle Position</span>';
     if (data.markers.some(function (m) { return Number.isFinite(m.v); })) lg += '<span><i class="line dash green"></i>eigener Marker</span>';
     if (data.model) lg += '<span><i class="line dash grey"></i>Modellreferenz</span>';
@@ -656,13 +653,11 @@
         save(); refresh();
         break;
       }
-      case 'capture': state.prefs.capture = b.dataset.mode === 'manual' ? 'manual' : 'auto'; save(); refreshLab(); break;
       case 'toggle-prep': { const p = prepStatus(); const open = es().open.prep !== undefined ? es().open.prep : !p.allDone(); es().open.prep = !open; save(); refreshLab(); break; }
       case 'stir': l.setStirrer(!l.stirrer); save(); refreshLab(); break;
       case 'dose-size': doseSize = b.dataset.size === 'drop' ? 'drop' : Number(b.dataset.size); $$('[data-action="dose-size"]').forEach(function (q) { q.setAttribute('aria-pressed', String(q === b)); }); renderDynamic(true); break;
       case 'dose': dose(); break;
       case 'valve': if (l.valveOpen || canStartDosing()) { l.toggleValve(); renderDynamic(true); } break;
-      case 'take': takeReading(false); break;
       case 'endpoint': markEndpoint(); break;
       case 'new-sample': {
         const cur = activeSeries();
@@ -683,7 +678,7 @@
       }
       case 'xmode': es().view.xMode = b.dataset.x; save(); updateChart(); break;
       case 'chart-marker': {
-        if (!T.survey()) { toast('Nimm zuerst eine Titrationskurve auf.', 'warn'); break; }
+        if (!T.survey()) { toast('Führe zuerst eine vollständige Titration durch.', 'warn'); break; }
         chart.mode = 'marker';
         chart.activeMarker = b.dataset.marker;
         updateChart();
@@ -743,7 +738,6 @@
     const l = lab();
     if (k === 'd') { ev.preventDefault(); dose(); }
     else if (k === 'h') { ev.preventDefault(); if (l.valveOpen || canStartDosing()) { l.toggleValve(); renderDynamic(true); } }
-    else if (k === 'm') { ev.preventDefault(); takeReading(false); }
   });
 
   $('#labCanvas').addEventListener('pointerdown', function (ev) {
@@ -774,7 +768,7 @@
     Object.keys(labs).forEach(function (id) { labs[id].update(dt); });
     if (pendingEndpoint && l.isSettled) recordEndpoint();
     const s = activeSeries();
-    if (autoPending && state.prefs.capture !== 'manual' && l.isSettled && l.stable && s && !s.finished && l.meterReady) takeReading(true);
+    if (autoPending && l.isSettled && l.stable && s && !s.finished && l.meterReady) takeReading();
     renderer.setOptions({ targetReading: s && s.kind === 'half' && Number.isFinite(s.target) && l.burette.filled ? (s.startReading !== null ? s.startReading : l.burette.reading) + s.target : null });
     renderer.frame(dt);
     renderDynamic(false);

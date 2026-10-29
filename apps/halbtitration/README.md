@@ -1,12 +1,12 @@
 # Halbtitrationslabor – pKₛ- und pK_B-Werte experimentell bestimmen
 
-**Status: prototype 0.2.1** · Chemie Q13 (eA), LehrplanPLUS Gymnasium Bayern, Lernbereich 3 · statische Browseranwendung ohne Backend, Konto oder Netzzugriff · SiVex-Labkit 0.1.1
+**Status: prototype 0.2.2** · Chemie Q13 (eA), LehrplanPLUS Gymnasium Bayern, Lernbereich 3 · statische Browseranwendung ohne Backend, Konto oder Netzzugriff · SiVex-Labkit 0.1.1
 
 ![Labor mit Titrationskurve und Dosierleiste](docs/screenshots/9-messbetrieb-desktop-1440x900.png)
 
 Die Lernenden kennen Titration, pKₛ/pK_B und die zugehörigen Rechnungen. Neu ist die **experimentelle Bestimmung eines pK-Werts durch Halbtitration**. Die App startet deshalb direkt im Labor mit einem kurzen Auftrag:
 
-**selbst titrieren → ÄP an der eigenen Kurve → halben Umsatz untersuchen → Zielvolumen berechnen → frische Probe gezielt halbtitrieren → am MWG begründen → eigenen pK abgeben → mit der Literatur vergleichen und sichern**
+**vollständig titrieren → ÄP am Sprung der eigenen Kurve → halben Umsatz untersuchen → Zielvolumen berechnen → frische Probe gezielt halbtitrieren → am MWG begründen → eigenen pK abgeben → mit der Literatur vergleichen und sichern**
 
 | Versuch | Rolle | Probe + Maßlösung | Schwerpunkt |
 | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ Alle vier Versuche sind direkt anwählbar und vollständig bedienbar. Kurve, ÄP
 ## Start
 
 - **Ohne Installation:** Web-ZIP aus `release/` entpacken und `halbtitration/index.html` öffnen. Das funktioniert auch per `file://` und offline.
-- **mebis:** `release/halbtitration-0.2.1-scorm12.zip` als „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“ (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). Es werden keine Noten, Fortschritte oder Personendaten übertragen.
+- **mebis:** `release/halbtitration-0.2.2-scorm12.zip` als „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“ (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). Es werden keine Noten, Fortschritte oder Personendaten übertragen.
 - **Entwicklung:** `npm start`, dann http://localhost:8080/. Der Server bildet `/labkit/` auf `shared/labkit/` ab.
 
 ```bash

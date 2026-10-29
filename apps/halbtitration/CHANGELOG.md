@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.2.2 – 29.10.2026
+
+Messwerterfassung didaktisch vereinfacht (Rückmeldung der Lehrkraft):
+
+- Messpunkte entstehen **immer automatisch**, sobald die Anzeige stabil ist: beim Eintauchen der Elektrode (Startpunkt), nach jeder Zugabe bzw. nach dem Schließen des Hahns und nach dem Ein-/Ausschalten des Rührers. Die Kurve wächst beim Titrieren mit.
+- Entfallen: Knopf „Messwert übernehmen“ (Taste M), Umschalter „Erfassung automatisch/manuell“ und die Meldung zu nicht stabilen Werten.
+- Begriffe: Der erste Durchgang heißt „vollständige Titration“ (Knopf „Neue Probe (vollständig)“). Das Zielvolumen der Halbtitration ist ausdrücklich das halbe Äquivalenzvolumen der vollständigen Titration.
+
 ## 0.2.1 – 29.10.2026
 
 Bedienung im Labor nach Rückmeldung der Lehrkraft vereinfacht:

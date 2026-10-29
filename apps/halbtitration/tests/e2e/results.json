@@ -1,15 +1,15 @@
 {
   "root": "dist\\halbtitration",
-  "date": "2026-10-29T21:40:34.957Z",
+  "date": "2026-10-29T22:02:25.420Z",
   "browser": "Microsoft Edge (Playwright channel msedge)",
   "results": [
     {
       "name": "E1",
       "status": "PASS",
-      "seconds": 33,
+      "seconds": 31,
       "detail": {
         "pHs": [
-          4.76
+          4.75
         ],
         "errors": []
       },
@@ -18,10 +18,10 @@
     {
       "name": "E2",
       "status": "PASS",
-      "seconds": 27,
+      "seconds": 25,
       "detail": {
         "pHs": [
-          9.24
+          9.25
         ],
         "lines": [
           "pKₛ(NH₄⁺) = 9,24 (Literatur)"
@@ -33,7 +33,7 @@
     {
       "name": "E3",
       "status": "PASS",
-      "seconds": 41,
+      "seconds": 38,
       "detail": {
         "pHs": [
           2.48,
@@ -46,7 +46,7 @@
     {
       "name": "E4",
       "status": "PASS",
-      "seconds": 41,
+      "seconds": 39,
       "detail": {
         "pHs": [
           2.57,
@@ -59,7 +59,7 @@
     {
       "name": "E5",
       "status": "PASS",
-      "seconds": 33,
+      "seconds": 30,
       "detail": {
         "errors": []
       },
@@ -68,7 +68,7 @@
     {
       "name": "E6",
       "status": "PASS",
-      "seconds": 8,
+      "seconds": 7,
       "detail": {
         "errors": []
       },
@@ -86,27 +86,27 @@
     {
       "name": "E8",
       "status": "PASS",
-      "seconds": 26,
+      "seconds": 25,
       "detail": {
         "frames": [
-          "0/0/0.3",
-          "0/0/0.36",
-          "1/0/0.27",
-          "1/0/0.14",
-          "1/0/0.08",
-          "2/0/0.09",
-          "1/1/0.44",
-          "1/1/0.54",
-          "2/1/0.36",
-          "1/2/0.58",
-          "2/2/0.17",
-          "1/3/0.5",
-          "1/3/0.32",
-          "0/4/0.51",
-          "0/4/0.48",
-          "0/4/0.27"
+          "0/0/0.41",
+          "0/0/0.27",
+          "1/0/0.31",
+          "1/0/0.18",
+          "1/0/0.12",
+          "2/0/0.1",
+          "1/1/0.57",
+          "1/1/0.56",
+          "2/1/0.37",
+          "1/2/0.68",
+          "1/3/0.36",
+          "1/3/0.55",
+          "1/3/0.27",
+          "0/4/0.32",
+          "0/4/0.55",
+          "0/4/0.3"
         ],
-        "calm": 1.0056264443392138e-7,
+        "calm": 4.299713509681169e-7,
         "errors": []
       },
       "errors": []
@@ -114,7 +114,7 @@
     {
       "name": "E9",
       "status": "PASS",
-      "seconds": 74,
+      "seconds": 76,
       "detail": {
         "desktop-1440x900": {
           "lab": 495,
