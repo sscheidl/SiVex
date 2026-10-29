@@ -487,3 +487,17 @@ test('Neustart behält Ergebnisse, Snapshot unveränderlich', () => {
   assert.equal(e.state.run, 2);
   near(e.state.history[0].fractions[0].vol, v, 1e-9, 'archiviertes Volumen');
 });
+
+test('M-04 Volle Vorlage läuft über die Öffnung über: weitere Tropfen gehen auf den Tisch, Bilanz stimmt', () => {
+  const e = setup({ heat: 'high' });
+  assert.ok(runUntil(e, (st) => st.drops.list.length > 0, 1500), 'es tropft');
+  const st = e.state, r = st.receiver;
+  // Vorlage bis zum Rand füllen; das zugegebene Wasser zählt als eingesetzt, damit die Bilanz geschlossen bleibt
+  const add = M.RECV_ML - vol(r.c);
+  r.c.W += add; st.charged.W += add;
+  const table0 = vol(st.lost.table), n0 = st.drops.seq;
+  assert.ok(runUntil(e, (s) => s.drops.seq > n0 + 5, 600), 'weitere Tropfen');
+  assert.ok(vol(r.c) <= M.RECV_ML + 1e-9, 'Vorlage nie über den Rand gefüllt: ' + vol(r.c));
+  assert.ok(vol(st.lost.table) > table0 + 4 * M.DROP_VOL * 0.999, 'Überlauf landet auf dem Tisch');
+  balanceOk(e, 'Bilanz mit Überlauf');
+});

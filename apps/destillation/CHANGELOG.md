@@ -1,5 +1,13 @@
 # Changelog – Destillation
 
+## 0.3.1 – 29.10.2026
+
+Fehlerbehebung (Korrekturauftrag „Flüssigkeitsanimation und Gefäßkollisionen“), keine neuen Funktionen. Ursachen und Nachweise im Abschnitt „Korrektur 0.3.1“ von `docs/TESTBERICHT.md`.
+
+- Einfüllen: Der Strahl beginnt an der Ausgusskante des Becherglases, nicht in seiner Mitte. Die Kante wird aus Lage und Neigung berechnet; der Strahl fällt als Wurfparabel in den Trichter. Im Glas bleibt der Spiegel waagrecht, die Menge folgt dem Modell, und das Glas wird beim Leeren weiter geneigt – es fließt erst, wenn der Spiegel die Kante erreicht.
+- Tropfen in die Vorlage enden an ihrem Spiegel bzw. Boden in der gezeichneten Lage, auch während sie abgenommen, zurückgestellt oder gewechselt wird; Wand und Boden sind undurchlässig, neben der Vorlage fallen sie auf den Laborboy.
+- Volle Vorlage (120 mL bis zum Rand): Der Spiegel steigt bis in den Hals, weitere Tropfen laufen über die Öffnung ab (Tisch) – die Bilanz bleibt geschlossen.
+
 ## 0.3.0 – 25.10.2026
 
 Überarbeitung nach der zweiten Durchsicht der Lehrkraft (17 Befunde; Ursachen und Regressionstests in `docs/TESTBERICHT.md`). Die Gestaltung bleibt erhalten.
