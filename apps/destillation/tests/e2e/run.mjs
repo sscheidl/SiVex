@@ -179,17 +179,37 @@ await scenario('E02', 'Standard 2 komplett: Propanon/Wasser, klar andere Tempera
   await shot(page, '13-propanon-wasser');
   await speed(page, 30);
   await waitFor(page, (st, M) => M.vol(st.receiver.c) > 15);
-  const r = await check(page);
-  assert(/Ergebnis belegt/.test(r), r);
+  const r0 = await check(page);
+  assert(/Brennprobe fehlt/.test(r0), 'Aufgabe 2 verlangt die Brennprobe: ' + r0);
   const share = await S(page, (st, M) => M.share(st.receiver.c).P);
   assert(share > 0.97, 'Fraktion Propanon ' + share);
+  // Warnung, bevor Wasser übergeht – dann Heizung aus und Brennprobe am Prüfplatz (0.3.2)
+  await waitFor(page, (st) => !!st.warned.breakthrough1, null, 240000);
+  await heater(page, false);
+  await waitFor(page, (st, M) => st.fx.vapor === 0 && M.vol(st.film) < 0.01);
+  await speed(page, 1);
+  await clickAct(page, 'toggleReceiver');
+  await sleep(1100);
+  await tapHit(page, 'pipette'); await tapHit(page, 'receiver');
+  await idle(page);
+  await tapHit(page, 'dish');
+  await idle(page);
+  await tapHit(page, 'lighter'); await tapHit(page, 'dish');
+  await waitFor(page, (st) => st.fx.flame > 0.2, null, 20000);
+  const fl = await S(page, (st) => [st.dish.result, st.dish.fuel, st.fx.flame]);
+  assert(fl[0] === 'burns' && fl[1] === 'P', 'Propanon brennt: ' + fl);
+  await sleep(300); await shot(page, '13b-brennprobe-propanon-gelb');
+  await waitFor(page, (st) => !st.dish.burning, null, 60000);
+  const r = await check(page);
+  assert(/Ergebnis belegt/.test(r) && /gelblich/.test(r), r);
   // Danach steigt die Temperatur deutlich (Fraktion abgrenzbar)
+  await tapHit(page, 'receiver'); await sleep(1100);
+  await heater(page, true);
+  await speed(page, 30);
   await waitFor(page, (st) => st.reading > 85, null, 240000);
-  const warned = await S(page, (st) => !!st.warned.breakthrough1);
-  assert(warned, 'Warnung vor dem Wasserübertritt ausgegeben');
   await done();
   assert(!errors.length, errors.join('; '));
-  return `T ${de(T)} °C, Propanon-Anteil ${(share * 100).toFixed(0)} %`;
+  return `T ${de(T)} °C, Propanon-Anteil ${(share * 100).toFixed(0)} %, Flamme gelblich`;
 });
 
 // =========================================================== E03 Expertenmodus komplett
@@ -795,7 +815,7 @@ await scenario('E14', 'Befunde 2, 3, 4, 7: Erklärhinweis oben ohne Überdeckung
   await speed(page, 30);
   await waitFor(page, (st) => st.flask.c.E === 0 && st.reading > 99.5 && st.fx.pass > 1e-4, null, 300000);
   await speed(page, 1); await sleep(300);
-  const pw = await particlePixels(page);
+  const pw = await particlePixels(page, 90); // nur ≈ 4 Teilchen im Wasser-Abschnitt: über ≈ 6 s messen, damit jedes den Abgang passiert
   const T = await readTemp(page);
   assert(pw.blue > 20 && pw.red === 0, `Wasser-Abschnitt (${de(T)} °C): blau ${pw.blue}, rot ${pw.red} px`);
   await shot(page, '34c-teilchen-wasser');

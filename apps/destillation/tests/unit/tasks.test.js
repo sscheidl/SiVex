@@ -30,7 +30,11 @@ test('L-01 Ergebnis prüfen hängt vom Versuchszustand ab (Aufgabe 1)', () => {
 test('L-01 Aufgaben 2 und 3 werten echte Fraktionen aus', () => {
   const p = setup({ mix: 'pw' });
   runUntil(p, (s) => vol(s.receiver.c) > 8, 3000, 1);
-  assert.equal(T.evaluate('pw', p.state).ok, true);
+  assert.equal(T.evaluate('pw', p.state).code, 'noBurn', 'Aufgabe 2 verlangt die Brennprobe');
+  assert.equal(burnTest(p).result, 'burns');
+  const rp = T.evaluate('pw', p.state);
+  assert.equal(rp.ok, true, rp.text);
+  assert.match(rp.text, /gelblicher/);
   const x = setup({ mix: 'pew' });
   runUntil(x, (s) => vol(s.receiver.c) > 20, 4000, 1);
   assert.notEqual(T.evaluate('pew', x.state).ok, true, 'ohne Wechsel kein Erfolg');

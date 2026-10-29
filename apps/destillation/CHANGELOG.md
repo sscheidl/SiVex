@@ -1,5 +1,15 @@
 # Changelog – Destillation
 
+## 0.3.2 – 29.10.2026
+
+Korrekturen nach Rückmeldung zu 0.3.1 und Brennprobe im Propanon-Versuch.
+
+- Brennprobe auch in Aufgabe 2 (Propanon/Wasser): Prüfplatz mit Pipette, Porzellanschale und Stabfeuerzeug; Propanon brennt mit gelblicher, leuchtender Flamme (Ethanol bläulich). Aufgabe, Sicherheitshinweis, Auswertung, Protokollfrage 7 und Lösung ergänzt; Ethanol und Propanon verbrennen anteilig. Das Dreistoffgemisch bleibt ohne Brennprobe.
+- Temperatureinbruch zwischen zwei Fraktionen flacher (Propanon/Wasser ≈ 11 K statt 26 K): Der schon mit Dampf gefüllte Aufsatz wird von der sich erwärmenden Restflüssigkeit warm gehalten. Vor dem ersten Sieden bleibt das Thermometer kalt.
+- Nach „Neu beginnen“ blieben unter Umständen Siedeblasen im leeren Kolben stehen; Blasen, Tropfen, Spritzer und Wellen gehören jetzt zum jeweiligen Versuch.
+- Spritzer beim Auftreffen der Tropfen fallen auf den Spiegel zurück und bleiben zwischen den Wänden. Vorher flogen sie eine feste Zeit weiter und erschienen bei wenig Inhalt als helle Punkte unter dem Erlenmeyerkolben auf dem Laborboy.
+- Erklärmodus: Dampfteilchen oben im Rundkolben bleiben innerhalb der Kugel (dort ist sie schmaler).
+
 ## 0.3.1 – 29.10.2026
 
 Fehlerbehebung (Korrekturauftrag „Flüssigkeitsanimation und Gefäßkollisionen“), keine neuen Funktionen. Ursachen und Nachweise im Abschnitt „Korrektur 0.3.1“ von `docs/TESTBERICHT.md`.

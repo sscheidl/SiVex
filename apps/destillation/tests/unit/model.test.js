@@ -421,14 +421,38 @@ test('E-06 Brennprobe: Probe aus der Vorlage, Schale, Zünden, bläuliche Flamme
   assert.equal(act(e, 'ignite', 'dish').ok, false, 'geprüfte Probe nicht erneut');
 });
 
-test('E-06 Brennprobe: Schwellen und nur bei Ethanol/Wasser', () => {
+test('E-06 Brennprobe: Schwellen; Ethanol- und Propanon-Versuch, nicht im Dreistoffgemisch', () => {
   assert.equal(M.burnResult({ P: 0, E: 0.9, W: 0.1 }), 'burns');
   assert.equal(M.burnResult({ P: 0, E: 0.4, W: 0.6 }), 'flicker');
   assert.equal(M.burnResult({ P: 0, E: 0.2, W: 0.8 }), 'none');
+  assert.equal(M.burnResult({ P: 0.9, E: 0, W: 0.1 }), 'burns');
+  const x = setup({ mix: 'pew' });
+  runUntil(x, (s) => vol(s.receiver.c) >= 3, 3000, 1);
+  act(x, 'toggleReceiver');
+  assert.equal(act(x, 'takeSample', 'receiver').code, 'noBurnTest', 'Dreistoffgemisch ohne Brennprobe');
+});
+
+test('E-06 Brennprobe mit Propanon: gelbliche, leuchtende Flamme, Propanon verbrennt, Bilanz stimmt', () => {
   const e = setup({ mix: 'pw' });
-  runUntil(e, (s) => vol(s.receiver.c) >= 3, 3000, 1);
+  const msgs = [];
+  e.on('message', (m) => msgs.push(m.text));
+  runUntil(e, (s) => vol(s.receiver.c) >= 6, 3000, 1);
+  act(e, 'setHeater', false);
   act(e, 'toggleReceiver');
-  assert.equal(act(e, 'takeSample', 'receiver').ok, false);
+  assert.equal(act(e, 'takeSample', 'receiver').ok, true, 'Probe aus der abgenommenen Vorlage');
+  assert.equal(act(e, 'sampleToDish').ok, true);
+  const P0 = e.state.dish.c.P;
+  act(e, 'ignite', 'dish');
+  assert.equal(e.state.dish.result, 'burns');
+  assert.equal(e.state.dish.fuel, 'P');
+  assert.equal(e.state.burnTests[0].fuel, 'P');
+  assert.ok(msgs.some((t) => /gelblicher, leuchtender Flamme/.test(t)), 'Meldung nennt die gelbliche Flamme: ' + msgs.slice(-2).join(' | '));
+  e.advance(1);
+  assert.ok(e.state.fx.flame > 0.2, 'Flamme brennt an (erlischt nicht sofort)');
+  e.advance(30);
+  assert.ok(!e.state.dish.burning, 'begrenzte Brenndauer');
+  assert.ok(e.state.dish.c.P < P0 * 0.5, 'Propanon verbraucht');
+  balanceOk(e, 'Brennprobe Propanon');
 });
 
 test('M-03 Warnung, bevor nach dem Ethanol das Wasser übergeht', () => {
@@ -500,4 +524,26 @@ test('M-04 Volle Vorlage läuft über die Öffnung über: weitere Tropfen gehen 
   assert.ok(vol(r.c) <= M.RECV_ML + 1e-9, 'Vorlage nie über den Rand gefüllt: ' + vol(r.c));
   assert.ok(vol(st.lost.table) > table0 + 4 * M.DROP_VOL * 0.999, 'Überlauf landet auf dem Tisch');
   balanceOk(e, 'Bilanz mit Überlauf');
+});
+
+test('M-07 Einbruch zwischen den Fraktionen: Anzeige sinkt merklich, aber nicht bis zur Raumtemperatur; vor dem ersten Sieden bleibt sie kalt', () => {
+  for (const [mix, plateau] of [['pw', 56], ['ew', 78]]) {
+    const e = setup({ mix, heat: 'mid' });
+    const st = e.state;
+    let firstVapor = null, maxPlateau = 0, minAfter = Infinity, reached100 = false;
+    for (let t = 0; t < 2400 && !reached100; t += 5) {
+      e.advance(5);
+      if (!st.headWet && st.flask.T < plateau - 3) firstVapor = st.reading; // Flüssigkeit warm, Aufsatz noch voll Luft
+      const low = st.flask.c[mix === 'pw' ? 'P' : 'E'];
+      if (low > 1) maxPlateau = Math.max(maxPlateau, st.reading);
+      else if (maxPlateau > 0) minAfter = Math.min(minAfter, st.reading);
+      if (st.reading > 99) reached100 = true;
+    }
+    assert.ok(firstVapor < 30, `${mix}: vor der Dampffront kalt (${firstVapor})`);
+    assert.ok(Math.abs(maxPlateau - plateau) < 4, `${mix}: Plateau ${maxPlateau}`);
+    const dip = maxPlateau - minAfter;
+    assert.ok(dip > 5 && dip < 22, `${mix}: Einbruch ${dip.toFixed(1)} K`);
+    assert.ok(minAfter > 40, `${mix}: kein Absturz zur Raumtemperatur (${minAfter.toFixed(1)} °C)`);
+    assert.ok(reached100, `${mix}: danach Wasser bei 100 °C`);
+  }
 });
