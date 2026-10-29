@@ -12,6 +12,7 @@ apps/
   destillation/       # Destillation 0.3.1 (prototype) auf Basis des Labkits
   halbtitration/      # Halbtitrationslabor 0.1.0 (prototype), Laboraufbau aus TitraLab 3
   pufferfish/         # Pufferfish 0.2.0 (prototype) – Puffer untersuchen, herleiten, berechnen und herstellen; Henderson-Hasselbalch
+  aggregatzustaende/  # Aggregatzustände 0.1.0 (prototype) – Stoff- und Teilchenebene, eine Teilchen-Engine für vier Stoffe
   ester-gleichgewicht/
   _template/
 shared/

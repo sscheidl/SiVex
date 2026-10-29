@@ -15,6 +15,7 @@ SiVex ist eine Sammlung interaktiver naturwissenschaftlicher Lernanwendungen fü
 | [**Trennverfahren** – Stoffgemische trennen](apps/trennverfahren/) | prototype 0.1.0 · Jgst. 8/9 | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/trennverfahren/release/trennverfahren-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/trennverfahren/release/trennverfahren-0.1.0-web.zip) · [Testbericht](apps/trennverfahren/docs/TESTBERICHT.md) |
 | [**Halbtitrationslabor**](apps/halbtitration/) – pKₛ- und pK_B-Werte | prototype 0.1.0 · Q13 eA | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/halbtitration/release/halbtitration-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/halbtitration/release/halbtitration-0.1.0-web.zip) · [Testbericht](apps/halbtitration/docs/TESTBERICHT.md) |
 | [**Pufferfish**](apps/pufferfish/) – Warum bleibt der pH fast gleich? Puffer untersuchen, berechnen, herstellen | prototype 0.2.0 · Q13 eA · nicht für den Unterricht freigegeben (iPad, mebis, fachliche Prüfung stehen aus) | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/pufferfish/release/pufferfish-0.2.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/pufferfish/release/pufferfish-0.2.0-web.zip) · [Testbericht](apps/pufferfish/docs/TESTBERICHT.md) |
+| [**Aggregatzustände**](apps/aggregatzustaende/) – Teilchenmodell, Schmelz- und Siedetemperatur | prototype 0.1.0 · Jgst. 8/9 · nicht für den Unterricht freigegeben (iPad, mebis, fachliche Prüfung stehen aus) | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/aggregatzustaende/release/aggregatzustaende-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/aggregatzustaende/release/aggregatzustaende-0.1.0-web.zip) · [Testbericht](apps/aggregatzustaende/docs/TESTBERICHT.md) |
 
 In Planung: [Esterbildung und chemisches Gleichgewicht](apps/ester-gleichgewicht/).
 
@@ -27,8 +28,8 @@ In Planung: [Esterbildung und chemisches Gleichgewicht](apps/ester-gleichgewicht
 | [![Papierchromatographie](apps/chromatographie/docs/screenshots/09-front-spaet.png)](apps/chromatographie/) | [![Destillation](apps/destillation/docs/screenshots/07-kondensat-tropfen.png)](apps/destillation/) |
 | **Halbtitrationslabor** | **Pufferfish** |
 | [![Halbtitrationslabor](apps/halbtitration/docs/screenshots/3-phosphorsaeure-1-erstdurchgang.png)](apps/halbtitration/) | [![Pufferfish](apps/pufferfish/docs/screenshots/01-start-versuch1.png)](apps/pufferfish/) |
-| **Trennverfahren** | |
-| [![Trennverfahren](apps/trennverfahren/docs/screenshots/03-v2-filtriert.png)](apps/trennverfahren/) | |
+| **Trennverfahren** | **Aggregatzustände** |
+| [![Trennverfahren](apps/trennverfahren/docs/screenshots/03-v2-filtriert.png)](apps/trennverfahren/) | [![Aggregatzustände](apps/aggregatzustaende/docs/screenshots/51-wasser-verdampft.png)](apps/aggregatzustaende/) |
 
 ## Einsatz im Unterricht
 
