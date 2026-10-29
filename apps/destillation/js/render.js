@@ -100,7 +100,7 @@
     const vis = { lastT: null, time: 0, water: 0, film: 0, hose: 0, bubbles: [], bubbleSeq: 0, drops: [], lastDrop: 0, stream: 0, swap: null, nFractions: null, lastRealDrops: [], rings: [], splashes: [], wave: 0, recvPose: null, recvDrawn: null };
 
     function ensureGeo(st) {
-      const key = st.mix === 'ew' ? 'S' : 'N';
+      const key = M.MIXES[st.mix].burnTest ? 'S' : 'N'; // Prüfplatz für die Brennprobe
       if (key === geoKey && geo) return false;
       geo = G.build({ station: key === 'S' });
       geoKey = key;
@@ -350,7 +350,9 @@
         });
       }
       // Blasen: Siedekeime an den Steinen, Dampfblasen beim Sieden – nur aus dem Modellzustand
+      // ohne Flüssigkeit keine Blasen – auch nicht im Stillstand (vorher blieben sie nach einem Neustart stehen)
       if (V > 0.05) updateBubbles(st, dtVis, lev, surf, bottom);
+      else vis.bubbles = [];
       for (const b of vis.bubbles) {
         ctx.strokeStyle = `rgba(255,255,255,${0.85 * b.a})`; ctx.lineWidth = px(1.1);
         ctx.fillStyle = `rgba(255,255,255,${0.18 * b.a})`;
@@ -802,7 +804,7 @@
       if (dtVis > 0) {
         vis.drops.forEach((d) => { d.t += dtVis; });
         vis.rings.forEach((r) => { r.age += dtVis; });
-        vis.splashes.forEach((p) => { p.age += dtVis; p.x += p.vx * dtVis; p.y += p.vy * dtVis; p.vy += GRAVITY * 0.6 * dtVis; });
+        vis.splashes.forEach((p) => { p.age += dtVis; });
         vis.wave *= Math.exp(-dtVis * 3);
       }
       const x = a.tip.x;
@@ -812,7 +814,8 @@
           if (surf && !reduce) {
             vis.rings.push({ age: 0, life: 0.9 });
             vis.wave = Math.min(1.4, vis.wave + 0.6);
-            for (let k = 0; k < 2; k++) vis.splashes.push({ x, y: target, vx: (hash(d.n * 3 + k) - 0.5) * 90, vy: -110 - hash(d.n + k) * 80, age: 0, life: 0.3 });
+            // Spritzer fallen auf den Spiegel zurück und bleiben zwischen den Wänden (nicht durch den Boden)
+            for (let k = 0; k < 2; k++) vis.splashes.push({ x0: x, y0: target, half: Math.max(0, hit.half - 1.2), vx: (hash(d.n * 3 + k) - 0.5) * 90, vy: -110 - hash(d.n + k) * 80, age: 0 });
           }
           return false;
         }
@@ -820,9 +823,12 @@
         return true;
       });
       vis.rings = vis.rings.filter((r) => r.age < r.life).slice(-6);
-      vis.splashes = vis.splashes.filter((p) => p.age < p.life);
       ctx.fillStyle = 'rgba(210,232,255,0.85)';
-      for (const p of vis.splashes) { ctx.beginPath(); ctx.arc(p.x, p.y, 1.1, 0, Math.PI * 2); ctx.fill(); }
+      vis.splashes = vis.splashes.filter((p) => {
+        const q = G.splashAt(p, p.age, GRAVITY * 0.6);
+        if (q) { ctx.beginPath(); ctx.arc(q.x, q.y, 1.1, 0, Math.PI * 2); ctx.fill(); }
+        return !!q;
+      });
       // hängender Tropfen an der Spitze wächst mit dem Modell und reißt ab
       const tv = M.vol(st.tip);
       if (tv > 0.002) { const rr = 1 + 1.6 * Math.cbrt(tv / M.DROP_VOL); drawDrop(a.tip.x, tipY + rr * 0.9, rr, 1.15); }
@@ -1008,19 +1014,21 @@
       }
       // Flamme aus dem Modell (Brenndauer und Stärke)
       const fl = st.fx.flame;
+      const yellow = st.dish && st.dish.fuel === 'P'; // Propanon: gelblich, leuchtend; Ethanol: bläulich, kaum leuchtend
       if (fl > 0) {
         const hgt = 30 + 46 * fl;
         for (let i = 0; i < 3; i++) {
           const w = (16 - i * 4) * (0.7 + 0.3 * fl);
           const flick = (noise(vis.time * 9, i) - 0.5) * 6;
           const fg = ctx.createLinearGradient(0, d.y - 14, 0, d.y - 14 - hgt);
-          fg.addColorStop(0, `rgba(40,90,255,${0.65 - i * 0.12})`); fg.addColorStop(0.55, `rgba(90,140,255,${0.45 - i * 0.1})`); fg.addColorStop(0.92, 'rgba(255,220,140,0.12)'); fg.addColorStop(1, 'rgba(255,255,255,0)');
+          if (yellow) { fg.addColorStop(0, `rgba(60,110,255,${0.6 - i * 0.12})`); fg.addColorStop(0.18, `rgba(255,190,60,${0.75 - i * 0.12})`); fg.addColorStop(0.65, `rgba(255,215,90,${0.6 - i * 0.1})`); fg.addColorStop(1, 'rgba(255,240,180,0)'); }
+          else { fg.addColorStop(0, `rgba(40,90,255,${0.65 - i * 0.12})`); fg.addColorStop(0.55, `rgba(90,140,255,${0.45 - i * 0.1})`); fg.addColorStop(0.92, 'rgba(255,220,140,0.12)'); fg.addColorStop(1, 'rgba(255,255,255,0)'); }
           ctx.fillStyle = fg;
           ctx.beginPath(); ctx.moveTo(d.x - w, d.y - 12);
           ctx.quadraticCurveTo(d.x - w * 0.9, d.y - 14 - hgt * 0.5, d.x + flick, d.y - 14 - hgt * (1 - i * 0.12));
           ctx.quadraticCurveTo(d.x + w * 0.9, d.y - 14 - hgt * 0.5, d.x + w, d.y - 12); ctx.closePath(); ctx.fill();
         }
-        text(st.dish && st.dish.result === 'flicker' ? 'kurzes Aufflackern' : 'bläuliche Flamme', d.x, d.y - 26 - hgt, { size: 11, color: '#1d3f9a', bg: 'rgba(255,255,255,0.85)' });
+        text(st.dish && st.dish.result === 'flicker' ? 'kurzes Aufflackern' : yellow ? 'gelbliche Flamme' : 'bläuliche Flamme', d.x, d.y - 26 - hgt, { size: 11, color: yellow ? '#7a4a00' : '#1d3f9a', bg: 'rgba(255,255,255,0.85)' });
       } else if (st.dish && st.dish.result && !(st.op && st.op.type === 'light')) {
         const txt = { burns: 'Flamme erloschen', flicker: 'kurz aufgeflackert', none: 'keine Flamme' }[st.dish.result];
         text(txt, d.x, d.y - 46, { size: 11, color: '#3d4b5a', bg: 'rgba(255,255,255,0.85)' });
@@ -1072,7 +1080,10 @@
         if (u < 0.75 || !reachArm) {
           const v = reachArm ? u / 0.75 : u;
           y = lerp(surfY - 4, yTop + (reachArm ? 0 : 30), v);
-          x = (hash(i + 2) - 0.5) * 2 * (y > g.neck.y0 ? g.flask.R * 0.5 : g.head.hw * 0.7);
+          // seitlich nur so weit, wie der Kolben in dieser Höhe innen breit ist (oben an der Kugel schmaler)
+          const rin = g.flask.R - D.glass - 2.5, dy = y - g.flask.c.y;
+          const half = y > g.neck.y0 ? Math.min(g.flask.R * 0.5, Math.sqrt(Math.max(0, rin * rin - dy * dy))) : g.head.hw * 0.7;
+          x = (hash(i + 2) - 0.5) * 2 * half;
           if (!reachArm && v > 0.85) continue;
         } else {
           const v = (u - 0.75) / 0.25;
@@ -1312,6 +1323,11 @@
       vis.lastT = st.t;
       const dtVis = dtModel > 0 ? Math.min(0.1, dtReal) : 0;
       if (dtVis > 0) vis.time += dtVis;
+      // Neuer Versuch: Blasen, Tropfen, Spritzer und Wellen des alten Versuchs verwerfen
+      if (vis.run !== st.run) {
+        Object.assign(vis, { bubbles: [], drops: [], rings: [], splashes: [], wave: 0, swap: null, nFractions: null, lastRealDrops: [] });
+        vis.run = st.run;
+      }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(bg, 0, 0);

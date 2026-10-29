@@ -1,0 +1,2 @@
+c59be275749022cf269246ecba6179edcc91588dcc46e78ba7b5f5d7aaa1e65f  aggregatzustaende-0.2.0-web.zip
+5d2f4a0214be6221374683773bdbfbde1642fbe30bfc30777fded3452bad6018  aggregatzustaende-0.2.0-scorm12.zip

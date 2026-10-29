@@ -182,3 +182,27 @@ test('G-03 Vorlage bis zum Rand: Spiegel steigt im Hals weiter, 120 mL erreichen
   const top = G.receiverLevel(g, M.RECV_ML);
   assert.ok(Math.abs(top.y - g.receiver.rim) < 1, 'RECV_ML entspricht dem Inhalt bis zum Rand: ' + (top.y - g.receiver.rim));
 });
+
+test('G-05 Spritzer fallen auf den Spiegel zurück und bleiben zwischen den Wänden – nie unter den Boden', () => {
+  const g = G.build({ station: true });
+  const r = g.receiver, grav = 2600 * 0.6;
+  for (const V of [0.3, 2, 20, 80, 115]) {
+    const hit = G.erlenStop(r, V, g.adapter.tip.x, g.adapter.tip.y);
+    assert.equal(hit.into, 'liquid');
+    for (let k = 0; k < 40; k++) {
+      const s = { x0: g.adapter.tip.x, y0: hit.y, half: hit.half - 1.2, vx: ((k % 9) / 8 - 0.5) * 90, vy: -110 - ((k * 7) % 11) / 10 * 80 };
+      let ended = false;
+      for (let t = 0; t <= 0.5; t += 0.002) {
+        const p = G.splashAt(s, t, grav);
+        if (!p) { ended = true; break; }
+        assert.ok(p.y <= s.y0 + 1e-9, `Spritzer bleibt über dem Spiegel (V=${V})`);
+        assert.ok(p.y < r.base - G.DIM.glass, 'nie unter dem Innenboden');
+        assert.ok(Math.abs(p.x - s.x0) <= hit.half, 'bleibt zwischen den Wänden');
+      }
+      assert.ok(ended, 'Spritzer endet, wenn er auf den Spiegel zurückfällt');
+    }
+  }
+  // Fehlerbild vorher: feste Lebensdauer 0,3 s – ein langsamer Spritzer fiel bis zu ≈ 37 mm unter den Spiegel
+  const vy = -110, t = 0.3, below = vy * t + 0.5 * grav * t * t;
+  assert.ok(below > 30, 'alte Bahn endete weit unter dem Spiegel: ' + below.toFixed(1));
+});

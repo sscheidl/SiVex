@@ -1,6 +1,6 @@
 # Destillation – Fachmodell, Modellgrenzen, Quellen
 
-Version 0.3.1 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
+Version 0.3.2 · Quellcode: [`js/model.js`](../js/model.js) (ohne DOM, in Node testbar)
 
 ## 1. Stoffgemische
 
@@ -65,8 +65,10 @@ Typische Zeiten bei „mittel“ und korrekter Kühlung (Standard 1): erste Trop
 | Lage | Messwert im Modell |
 | --- | --- |
 | Kugel auf Höhe des seitlichen Abgangs (richtig) | Dampftemperatur, sobald Dampf den Aufsatz passiert (Zeitkonstante 6 s); ohne Dampfstrom die Temperatur im Aufsatz |
-| Kugel oberhalb des Abgangs | nicht vom Dampf umspült: 20 °C + 0,72 · (örtliche Temperatur − 20 °C), träge (30 s) – deutlich zu niedrig |
+| Kugel oberhalb des Abgangs | nicht vom Dampf umspült: 20 °C + 0,72 · (örtliche Temperatur − 20 °C), träge (30 s) – deutlich zu niedrig. Achtung: Siedendes Wasser erscheint dann mit ≈ 78 °C, also fast beim Siedepunkt von Ethanol |
 | Kugel tief im Kolbenhals | nahe der heißen Flüssigkeit, von Spritzern getroffen: Flüssigkeitstemperatur + 2 K + 5 % des Abstands zum Heizpilz – zu hoch |
+
+**Einbruch zwischen zwei Fraktionen (0.3.2):** Ist der leichter siedende Stoff übergegangen, erreicht zunächst kein Dampf mehr das Thermometer, bis die Restflüssigkeit ihren neuen Siedepunkt erreicht; die Anzeige sinkt. Der Aufsatz ist dann aber schon mit Dampf gefüllt und benetzt, und die sich erwärmende Flüssigkeit liefert weiter Dampf nach – umso mehr, je näher sie ihrem Siedepunkt kommt (Dampfdruck nach Clausius-Clapeyron, Wärmeübergang 0,3 W/K bei 1 atm). Der Einbruch bleibt deshalb flach (Propanon/Wasser ≈ 11 K, Ethanol/Wasser ≈ 15 K) statt bis zur Raumtemperatur. Vor dem ersten Sieden steht im Aufsatz noch Luft; dort bleibt das Thermometer kalt, bis die Dampffront ankommt.
 
 Die Lage lässt sich nur verstellen, wenn die Heizung aus ist und nichts mehr siedet. Messwerte einer Vorlage gelten als „nicht repräsentativ“, wenn mehr als 20 % ihrer Tropfen bei falscher Lage aufgefangen wurden.
 
@@ -85,15 +87,17 @@ Die Dampfteilchen sind nach Stoffen gefärbt: Ethanol rot, Wasser blau, Propanon
 
 ## 6. Brennprobe (Modellvereinfachung)
 
-Eine Probe von 1 mL wird mit der Pipette aus der **abgenommenen** Vorlage am Prüfplatz entnommen (aus der montierten Vorlage nicht möglich) und in der Porzellanschale entzündet. Entnahme, Überführen und Anzünden sind Handgriffe mit festem Wirkzeitpunkt (0,55 / 0,7 / 0,72 ihrer Dauer); sie laufen höchstens in Echtzeit. Ethanol-Wasser-Gemische lassen sich nur entzünden, wenn ihr Flammpunkt nahe an oder unter der Probentemperatur liegt. Der Flammpunkt steigt mit dem Wasseranteil (Richtwerte: reines Ethanol ≈ 13 °C, 50 % ≈ 24 °C, 40 % ≈ 26 °C, 30 % ≈ 29 °C, 20 % ≈ 36 °C Volumenanteil Ethanol). Eine kleine Probe in der Schale, die mit dem Stabfeuerzeug direkt beflammt wird, entzündet sich deshalb erst ab etwa der Hälfte Ethanol zuverlässig. Das Modell verwendet daher vereinfachte Schwellen:
+Eine Probe von 1 mL wird mit der Pipette aus der **abgenommenen** Vorlage am Prüfplatz entnommen (aus der montierten Vorlage nicht möglich) und in der Porzellanschale entzündet. Entnahme, Überführen und Anzünden sind Handgriffe mit festem Wirkzeitpunkt (0,55 / 0,7 / 0,72 ihrer Dauer); sie laufen höchstens in Echtzeit. Gemische mit Wasser lassen sich nur entzünden, wenn ihr Flammpunkt nahe an oder unter der Probentemperatur liegt. Der Flammpunkt steigt mit dem Wasseranteil (Richtwerte: reines Ethanol ≈ 13 °C, 50 % ≈ 24 °C, 40 % ≈ 26 °C, 30 % ≈ 29 °C, 20 % ≈ 36 °C Volumenanteil Ethanol). Eine kleine Probe in der Schale, die mit dem Stabfeuerzeug direkt beflammt wird, entzündet sich deshalb erst ab etwa der Hälfte Ethanol zuverlässig. Das Modell verwendet daher vereinfachte Schwellen für den Anteil brennbarer Stoffe (Ethanol + Propanon):
 
-| Ethanolanteil der Probe (Volumen) | Beobachtung |
+| Anteil brennbarer Stoffe in der Probe (Volumen) | Beobachtung |
 | --- | --- |
-| ≥ 50 % | anhaltende, überwiegend bläuliche Flamme; verbrennt Ethanol mit 0,08 mL/s, bis der Anteil unter 25 % fällt |
+| ≥ 50 % | anhaltende Flamme – Ethanol: überwiegend bläulich, kaum leuchtend; Propanon: gelblich, leuchtend mit bläulichem Fuß; verbrennt mit 0,08 mL/s (Ethanol und Propanon anteilig), bis der Anteil unter 25 % fällt |
 | 30 – 50 % | kurzes Aufflackern |
 | < 30 % | keine anhaltende Flamme |
 
-Eine Flamme zeigt Brennbarkeit, sie beweist weder die Identität noch die Reinheit von Ethanol. Die Brennprobe gehört nur zum Ethanol-Wasser-Versuch; beim Propanon (leicht entzündlich) ist sie keine Unterrichtsaufgabe. Zünden an der Apparatur und Probenahme aus dem heißen Kolben lösen einen Sicherheitsstopp aus.
+Propanon-Wasser-Gemische entzünden sich real schon bei deutlich geringerem Propanonanteil als Ethanol-Wasser-Gemische (Flammpunkt von reinem Propanon ≈ −20 °C); das Modell verwendet der Einfachheit halber dieselben Schwellen. Die Flammenfarbe ist eine vereinfachte Darstellung: Propanon brennt sichtbarer und gelblicher als die kaum sichtbare, bläuliche Ethanolflamme; die genaue Farbe hängt von Menge und Luftzufuhr ab.
+
+Eine Flamme zeigt Brennbarkeit, sie beweist weder die Identität noch die Reinheit eines Stoffs. Die Brennprobe gehört zu den Versuchen 1 (Ethanol/Wasser) und 2 (Propanon/Wasser, seit 0.3.2), nicht zum Dreistoffgemisch. **Sicherheit beim Propanon:** leicht entzündlich, zündfähige Dämpfe schon bei Raumtemperatur, Dämpfe schwerer als Luft – real nur wenige Tropfen am getrennten Prüfplatz, Vorlage und Vorratsflasche fern der Flamme, nach Gefährdungsbeurteilung der Schule (in der Regel Lehrerversuch). Zünden an der Apparatur und Probenahme aus dem heißen Kolben lösen einen Sicherheitsstopp aus.
 
 ## 7. Sicherheitsstopps
 

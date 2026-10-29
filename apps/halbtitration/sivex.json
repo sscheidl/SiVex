@@ -1,7 +1,7 @@
 {
   "id": "chemie/halbtitration",
   "title": "Halbtitrationslabor",
-  "description": "pKs- und pKB-Werte experimentell durch Halbtitration bestimmen: Essigsäure, Ammoniak, Phosphorsäure und Glycinhydrochlorid. Erstdurchgang und gezielte Halbtitration mit Bürette, pH-Elektrode und dynamisch wachsender Titrationskurve; eigene Rechnungen, Literaturfreigabe nach eigener Bestimmung, Fehlerbetrachtung.",
+  "description": "pKs- und pKB-Werte experimentell durch Halbtitration bestimmen. Start im Labor: Titrationskurve aufnehmen, Äquivalenzpunkt an der eigenen Kurve bestimmen, halben Umsatz untersuchen, gezielt halbtitrieren und am MWG begründen. Essigsäure als Kern, Ammoniak als Transfer, Phosphorsäure und Glycinhydrochlorid als Vertiefungen.",
   "subject": "Chemie",
   "topics": [
     "Säure-Base-Gleichgewichte",
@@ -15,6 +15,7 @@
   "grades": [
     13
   ],
-  "version": "0.1.0",
+  "version": "0.2.1",
+  "labkit": "0.1.1",
   "status": "prototype"
 }

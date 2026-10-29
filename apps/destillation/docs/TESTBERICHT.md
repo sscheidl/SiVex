@@ -1,6 +1,6 @@
-# Destillation 0.3.1 – Testbericht
+# Destillation 0.3.2 – Testbericht
 
-**Stand:** 29.10.2026 (0.3.1, Korrektur Ausgießen/Vorlage; alle Tests neu gelaufen) · **Prüfgegenstand:** statischer Build `dist/destillation/` und die daraus gepackten Dateien `release/destillation-0.3.1-web.zip` und `release/destillation-0.3.1-scorm12.zip` (byte-identisch mit dem getesteten Build geprüft, PKG-1) · **Baukasten:** `shared/labkit` 0.1.1 (in 0.3.0 unverändert)
+**Stand:** 29.10.2026 (0.3.2: Spritzer, Einbruch zwischen den Fraktionen, Siedeblasen nach Neustart, Brennprobe Propanon; alle Tests neu gelaufen) · **Prüfgegenstand:** statischer Build `dist/destillation/` und die daraus gepackten Dateien `release/destillation-0.3.2-web.zip` und `release/destillation-0.3.2-scorm12.zip` (byte-identisch mit dem getesteten Build geprüft, PKG-1) · **Baukasten:** `shared/labkit` 0.1.1 (in 0.3.0 unverändert)
 
 **Prüfumgebung:** Windows 11 Pro · Node.js 24.22.1 · Playwright 1.56.1 · Microsoft Edge 156.0.4314.42 (Chromium) headless über `channel: 'msedge'` · Desktop 1440×900, Tablet-Viewports 1180×820, 1024×768 und 768×1024 (hoch) mit Touch-Emulation (`hasTouch`), schmal 820×1100
 
@@ -8,14 +8,30 @@
 
 | Testart | Befehl | Ergebnis |
 | --- | --- | --- |
-| Unit- und Regressionstests: Fachmodell, Geometrie, Aufgaben, Baukasten | `npm test` | **59 / 59 bestanden (Modell 35, Geometrie 12, Aufgaben 7, Labkit 5)** – darin 5 neue Tests der Korrektur 0.3.1; die 8 Befund-Tests von 0.3.0 schlagen am Stand 0.2.0 fehl |
-| Build- und Paketprüfung | `npm run package` | **Build OK: 13 Dateien, 265,1 KiB, Labkit 0.1.1 – keine externen Ressourcen, keine absoluten Pfade, kein Netzwerkzugriff; Web-ZIP 84,5 KiB, SCORM-ZIP 84,8 KiB; zweimal gepackt → identische Prüfsummen** |
+| Unit- und Regressionstests: Fachmodell, Geometrie, Aufgaben, Baukasten | `npm test` | **62 / 62 bestanden (Modell 37, Geometrie 13, Aufgaben 7, Labkit 5)** – darin die Tests von 0.3.1 (5) und 0.3.2 (3 neu, 2 angepasst); die 8 Befund-Tests von 0.3.0 schlagen am Stand 0.2.0 fehl |
+| Build- und Paketprüfung | `npm run package` | **Build OK: 13 Dateien, 268,4 KiB, Labkit 0.1.1 – keine externen Ressourcen, keine absoluten Pfade, kein Netzwerkzugriff; Web-ZIP 86,0 KiB, SCORM-ZIP 86,3 KiB; zweimal gepackt → identische Prüfsummen** |
 | Browser-End-to-End mit echter Bedienung | `npm run test:e2e` | **17 / 17 Szenarien bestanden** ([results.json](../tests/e2e/results.json)) |
 | SCORM-Paket im Mock-LMS (eingebettet + neues Fenster), Web-ZIP per `file://` | `npm run test:scorm` | **16 / 16 Prüfungen bestanden** ([scorm-results.json](../tests/e2e/scorm-results.json)) |
 
 **Gesamtstatus der Entwicklungsabnahme: PASS.** Alle entwicklerseitig prüfbaren Pflichtkriterien (Abschnitt 9 des Auftrags) sind erfüllt und belegt. Nicht blockierend und **nicht getestet**: echte Schul-iPads, mebis-Kursimport und Unterricht (Abschnitt 10 des Auftrags: Aufgabe der Lehrkraft). Der Status in `sivex.json` bleibt `prototype`.
 
 Die Browsertests bedienen ausschließlich die gerenderte Oberfläche: Klicks und Tipps auf die Trefferflächen der Laborbühne, die Handlungsleiste, die Schalter für Heizung und Kühlwasser, das Bedienfeld, Tastatur sowie Ziehen an der Trennlinie (Maus und Touch über CDP). Der Modellzustand wird nur gelesen, um Beobachtungen zu belegen, nie gesetzt (`tests/e2e/lib.mjs`). Abgelesene Temperaturen stammen aus der Anzeige (Textspiegel `#readout`), nicht aus dem Modell.
+
+## Version 0.3.2 – Korrekturen und Brennprobe mit Propanon
+
+Rückmeldungen zu 0.3.1: (1) Unter dem Erlenmeyerkolben erschienen auf dem Laborboy weiterhin helle Punkte, als fielen Tropfen durch den Boden. (2) Propanon/Wasser zeigte nach dem Propanon ein Plateau bei 78 °C. (3) Der Einbruch nach dem Propanon war zu tief. (4) Nach einem Neustart blieben Siedeblasen im Kolben. (5) Brennprobe auch mit Propanon.
+
+| Fehler | Ursache | Behebung (geänderte Funktionen) | Nachweis |
+| --- | --- | --- | --- |
+| Helle Punkte unter dem Erlenmeyerkolben | Es waren nicht die Tropfen (die enden seit 0.3.1 am Spiegel), sondern die zwei **Spritzer**, die jeder Tropfen beim Auftreffen auslöst. Sie flogen als freie Teilchen mit fester Lebensdauer von 0,3 s, ohne Bezug zum Gefäß. Nach 0,14–0,24 s waren sie zurück auf Spiegelhöhe und fielen dann bis zu ≈ 37 mm weiter, bei wenig Inhalt also durch Boden und Laborboy | `geometry.js`: neu `splashAt` – Wurf ab dem Spiegel, endet, sobald der Spritzer auf den Spiegel zurückfällt, seitlich höchstens bis zur Wand. `erlenStop` liefert dafür die lichte Breite am Auftreffpunkt. `render.js` `drawDrops` zeichnet die Spritzer nur noch über `splashAt` | Nachgestellt im Browser (Pixelzählung auf der dunklen Platte des Laborboys unter der Vorlage, 25 s Tropfen bei wenig Inhalt): **0.3.1 in 51 von 539 Bildern helle Punkte, 0.3.2 in 0 von 544**. Unit `G-05 Spritzer fallen auf den Spiegel zurück …` (Füllstände 0,3–115 mL, 40 Würfe: nie unter Spiegel oder Innenboden, nie durch die Wand) |
+| Plateau bei 78 °C im Propanon-Wasser-Versuch | **Kein Modellfehler:** Das Thermometer saß zu hoch (Startzustand, Kugel über dem Abgang). Dann zeigt das Modell 20 °C + 0,72 · (T − 20 °C): siedendes Wasser erscheint als 77,6 °C, nahe dem Siedepunkt von Ethanol. Im Kolben war kein Ethanol, das Wasser ging tatsächlich über (nachgestellt in Node) | keine Änderung; Hinweis in `CHEMIE.md`, Abschnitt 4 | Nachstellung mit `thermo: 'high'`: Kolben P/E/W = 0/0/57 mL, Vorlage W steigt, Anzeige 77,6 °C |
+| Einbruch nach dem Propanon zu tief (bis ≈ 33 °C) | Ohne Dampfstrom kühlte der Aufsatz ungebremst zur Raumtemperatur ab (90 J/K, 0,25 W/K, Zeitkonstante 6 min), das Thermometer folgte | `model.js` (Aufsatz-Wärmebilanz): Nach dem ersten Durchströmen (`headWet`) hält die sich erwärmende Restflüssigkeit den Aufsatz warm; Wärmeübergang `K_RES` = 0,3 W/K, gewichtet mit ihrem relativen Dampfdruck (Clausius-Clapeyron). Vor dem ersten Sieden unverändert kalt | Unit `M-07 Einbruch zwischen den Fraktionen …` (Propanon/Wasser und Ethanol/Wasser: Einbruch 5–22 K, Minimum > 40 °C, vor der Dampffront < 30 °C, danach 100 °C); `M-02/G-10` unverändert bestanden. Einbruch jetzt ≈ 11 K bzw. ≈ 15 K |
+| Siedeblasen bleiben nach „Neu beginnen“ im leeren Kolben | Die Blasen wurden nur fortgeschrieben – und dabei entfernt –, solange Flüssigkeit im Kolben war, gezeichnet aber immer. Nach dem Neustart (leerer Kolben) blieb die Liste stehen. Die Zeichenzustände waren nicht an den Versuch gebunden | `render.js` `frame`: bei neuem Versuch (`st.run`) Blasen, Tropfen, Spritzer, Wellen und Wechselanimation verwerfen; `drawFlask`: ohne Flüssigkeit keine Blasen | Sichtprüfung im Browser: siedender Kolben → „Neu beginnen“ → leer, ohne Blasen |
+| (gleiche Fehlerart) Dampfteilchen im Erklärmodus | Im Kolben wurden sie seitlich bis ±25 mm verteilt, auch oben an der Kugel, wo sie nur noch ≈ 13 mm breit ist; dort lagen sie kurz außerhalb des Glases | `render.js` `drawExplainVapor`: seitliche Verteilung höchstens bis zur lichten Breite der Kugel in dieser Höhe | Rechnung (Kugelschnitt), Browsertests E14 |
+
+**Brennprobe mit Propanon (Erweiterung auf Wunsch der Lehrkraft):** Der Prüfplatz erscheint jetzt auch in Aufgabe 2 (`render.js` `ensureGeo`, Gemisch-Eigenschaft `burnTest`). Propanon brennt mit gelblicher, leuchtender Flamme (`model.js` `burnFuel`, Meldung; `render.js` Flammenfarbe und Beschriftung); Ethanol und Propanon verbrennen anteilig (`burnOff`). Vorher hätte eine Propanonprobe als „bläulich“ gegolten und wäre sofort erloschen, weil nur der Ethanolanteil zählte; über die Oberfläche war das nicht erreichbar. Aufgabe 2 verlangt die Brennprobe (Text mit Sicherheitshinweis, Auswertung, Protokollfrage 7, Lösung, Tipp „burnFail“ allgemein). Nachweis: Unit `E-06 Brennprobe mit Propanon …` (Flamme brennt an, gelbliche Meldung, Propanon verbraucht, Bilanz), `E-06 Brennprobe: Schwellen; …` (Dreistoffgemisch weiter ohne), `L-01 Aufgaben 2 und 3 …` (erst „Brennprobe fehlt“, dann Erfolg mit „gelblicher“), Browser E02 (Brennprobe über die Oberfläche, `13b-brennprobe-propanon-gelb.png`).
+
+**Weitere Teilchen geprüft:** Siedebläschen (auf das Kolbeninnere beschnitten), fallende Tropfen (seit 0.3.1 an Spiegel bzw. Glas), Ringwellen (auf den Spiegel gezeichnet), Pipettentropfen in die Schale (enden an ihrem Inhalt). Dort lag kein Fehler vor.
 
 ## Korrektur 0.3.1 – Ausgießen und Vorlage
 
@@ -133,7 +149,7 @@ Gefunden durch Browserdurchläufe und Sichtprüfung, behoben und erneut geprüft
 | E-03 | PASS | Unit `E-03 Thermometer nur im sicheren Zustand verstellbar`; E06: Messwert zu niedrig, Protokoll meldet „Thermometerkugel saß nicht auf Höhe …“, Ergebnis nicht belegt, Verstellen während des Siedens gesperrt, nach Korrektur 79,2 °C (`20`, `21`). |
 | E-04 | PASS | Unit `E-04 Ohne Siedesteine`, `E-04 Zu hohe Heizleistung` (Warnung, unreineres Destillat), `E-04 Vorlage fehlt`; E08 (`23`), E09 (`24`). |
 | E-05 | PASS | Unit `E-05 Trockenlauf`, `Befund 8 …` (Neubefüllen), `Befund 9 …` (kein Stopfen: Vorstoß belüftet, Entscheidung in CHEMIE.md), `E-05/E-06 Zünden …, heißer Kolben`; E09: Zünden am Kühler → Stopp (`25`), kein Stopfen, Trockenlauf → Stopp (`26`) → nach dem Abkühlen neu befüllt (`26b`). |
-| E-06 | PASS | Unit `E-06 Brennprobe …` (Probe, Schale, Zünden, Flamme, Verbrauch, begrenzte Dauer, keine Zweitzündung) und `Schwellen und nur bei Ethanol/Wasser`; E01: Probe an der montierten Vorlage abgelehnt, Vorlage abnehmen → Pipette → Vorlage → Schale → Feuerzeug → Schale als Bewegungsabläufe (`09a`–`09c`), keine Flamme ohne Zünden, bläuliche Flamme (`09`); Protokollfrage widerlegt „Flamme beweist reines Ethanol“. |
+| E-06 | PASS | Unit `E-06 Brennprobe …` (Probe, Schale, Zünden, Flamme, Verbrauch, begrenzte Dauer, keine Zweitzündung) und `Schwellen; Ethanol- und Propanon-Versuch, nicht im Dreistoffgemisch`, `Brennprobe mit Propanon …` (0.3.2); E01: Probe an der montierten Vorlage abgelehnt, Vorlage abnehmen → Pipette → Vorlage → Schale → Feuerzeug → Schale als Bewegungsabläufe (`09a`–`09c`), keine Flamme ohne Zünden, bläuliche Flamme (`09`); Protokollfrage widerlegt „Flamme beweist reines Ethanol“. |
 | L-01 | PASS | Unit `L-01 Ergebnis prüfen …`, `L-01 Aufgaben 2 und 3 …`, `L-01 Beobachtungsfrage richtet sich nach dem eigenen Versuch`; Messwertfelder gegen Median der eigenen Anzeige (±1,5 K) und das eigene Volumen; E01 trägt die abgelesene Temperatur ein. |
 | L-02 | PASS | Unit `L-01/L-02 Protokoll`; E10: falsch → teilweise (richtige Felder bleiben, Eingaben erhalten) → richtig (`27`, `28`); E01 vollständig richtig (`11`). |
 | L-03 | PASS | Unit `L-03 Drei Tipps je Befund`; E10: Tipp-Angebot nach zwei Fehlversuchen, Tipp 1/3–3/3, „Lösung anzeigen“ mit Rückfrage; Trainer mit eigenen Tipps und Lösung. |
@@ -146,30 +162,32 @@ Gefunden durch Browserdurchläufe und Sichtprüfung, behoben und erneut geprüft
 | T-03 | PASS | 72 Screenshots aus echten Zwischenzuständen inkl. verstelltem Splitter und vier Ansichten; Bildfolgen-Vergleiche in E01/E11/E16, Pixelzählung der Teilchenfarben in E14; neue und geänderte Bilder angesehen (siehe Sichtprüfung). |
 | T-04 | PASS | Build-Prüfung (keine externen Verweise/Netz-APIs); E2E-Gesamtlauf 312 Anfragen, alle lokal; WEB-2 und SCORM-*-5 ohne externe Anfragen und Konsolenfehler. |
 | T-05 | PASS | `npm run test:scorm` 16 / 16 Prüfungen bestanden: Manifest, Dateiliste, relative Verweise, byte-identisch mit Build, eingebettet und neues Fenster (Aufgabe 1 über die Oberfläche belegt, LMSInitialize/LMSFinish je einmal, keine Werte), Web-ZIP per `file://` (`50-scorm-*`, `51-web-zip-file.png`). |
-| T-06 | PASS | README, CHANGELOG, `sivex.json` (0.3.1, Labkit 0.1.1, prototype), CHEMIE.md (Entscheidung Stopfen), BEDIENUNG.md, dieser Bericht, Übersichtszeilen in `README.md`/`docs/ARCHITECTURE.md`, Pakete mit `SHA256SUMS.txt` (zweimal gebaut, identisch); PR gegen `main`, kein Merge ohne Freigabe. |
+| T-06 | PASS | README, CHANGELOG, `sivex.json` (0.3.2, Labkit 0.1.1, prototype), CHEMIE.md (Entscheidung Stopfen), BEDIENUNG.md, dieser Bericht, Übersichtszeilen in `README.md`/`docs/ARCHITECTURE.md`, Pakete mit `SHA256SUMS.txt` (zweimal gebaut, identisch); PR gegen `main`, kein Merge ohne Freigabe. |
 
 
 ### Browser-Szenarien
 
 | Szenario | Status | Inhalt | Ergebnis |
 | --- | --- | --- | --- |
-| E01 | PASS | Standard 1 komplett: befüllen → Siedesteine → Kühlwasser EIN → Heizung EIN → Sieden → Ablesen → Destillat → Brennprobe → AUS → Auswertung → Hefteintrag | T 79,1 °C, Destillat 13,2 mL, Flamme bläulich |
-| E02 | PASS | Standard 2 komplett: Propanon/Wasser, klar andere Temperatur, abgrenzbare Fraktion | T 57,2 °C, Propanon-Anteil 100 % |
+| E01 | PASS | Standard 1 komplett: befüllen → Siedesteine → Kühlwasser EIN → Heizung EIN → Sieden → Ablesen → Destillat → Brennprobe → AUS → Auswertung → Hefteintrag | T 79,1 °C, Destillat 13,3 mL, Flamme bläulich |
+| E02 | PASS | Standard 2 komplett: Propanon/Wasser, klar andere Temperatur, abgrenzbare Fraktion | T 57,2 °C, Propanon-Anteil 100 %, Flamme gelblich |
 | E03 | PASS | Expertenmodus: drei Komponenten, Vorlagenwechsel, Fraktionen und Temperaturkurve | [[1,"P",30,57.6],[2,"E",30,79.3],[3,"W",3,99.9]] |
-| E04 | PASS | Ohne Kühlung vs. mit korrekter Kühlung bei gleicher Modellzeit | t = 843 s: mit Kühlung 12,7 mL, ohne 3,5 mL, Verlust 4,1 mL (Dampftemperatur 79,2 °C; Vorlage 12,7 mL / Dampftemperatur 79,1 °C; Vorlage 3,5 mL) |
+| E04 | PASS | Ohne Kühlung vs. mit korrekter Kühlung bei gleicher Modellzeit | t = 842 s: mit Kühlung 12,7 mL, ohne 3,5 mL, Verlust 4,1 mL (Dampftemperatur 79,2 °C; Vorlage 12,7 mL / Dampftemperatur 79,1 °C; Vorlage 3,5 mL) |
 | E05 | PASS | Falsch angeschlossene Schläuche, Wirkung, Korrektur | Mantelfüllung vertauscht 0.12, Verlust 0,5 mL → nach Korrektur +0.00 mL |
 | E06 | PASS | Falsche Thermometerlage vs. richtige: Messwert und Auswertungsfeedback | zu hoch 62,0 °C → richtig 79,2 °C |
 | E07 | PASS | Heizpilz EIN/AUS + Stufe, Kühlwasser unabhängig EIN/AUS + Durchfluss, plausibler Verlauf | Heizpilz niedrig 57 °C → hoch 83 °C; Kondensation 4.8 → 2.5 mL/min |
-| E08 | PASS | Siedesteine fehlen: Stopp, Ursache, Korrektur, Wiederaufnahme | Siedeverzug → Siedesteine abgelehnt (Anzeige 20,9 °C, Flüssigkeit 79,7 °C) → Abkühlen → Siedesteine → Destillat |
+| E08 | PASS | Siedesteine fehlen: Stopp, Ursache, Korrektur, Wiederaufnahme | Siedeverzug → Siedesteine abgelehnt (Anzeige 21,1 °C, Flüssigkeit 79,7 °C) → Abkühlen → Siedesteine → Destillat |
 | E09 | PASS | Vorlage fehlt / Zünden am Aufbau / kein Stopfen (Befund 9) / Trockenlauf und Neubefüllen (Befund 8) | Tisch statt Vorlage, Zünden, kein Stopfen, Trockenlauf gestoppt, neu befüllt (2.4 → 102.4 mL) |
 | E10 | PASS | Lernsystem: richtig / teilweise / falsch, drei Tipps, Lösung, Geräte-Trainer, Hefteintrag ohne Versuch | Tipps 1–3, Lösung mit Rückfrage, Protokoll falsch → teilweise → richtig, Trainer 12/12 |
 | E11 | PASS | Grafik-Zwischenstände und fortlaufende Bildfolgen (Pause hält an) | Blasen/Strömung bewegen sich, Pause friert ein |
 | E12 | PASS | Responsive 1440×900, 1180×820, 1024×768, 768×1024 (Touch), Trennlinie Maus/Touch/Tastatur/Doppelklick, Verbindungen intakt; Apparatur größer (Befund 11) | 1440×900 ok, 1180×820 ok, 1024×768 ok, 768×1024 gestapelt ok (Maßstab 0.663), schmal gestapelt |
 | E13 | PASS | Befunde 1, 15, 17: Start mit 1×, „Namen“ aus und nach „Erkunden“ (auch nach Neuladen); Bedienknöpfe in einer Zeile, Knopf „Vorlage“ | Ansicht: explore · labels · detail · explain · chart; Bedienleiste mit 8 Elementen in einer Zeile |
-| E14 | PASS | Befunde 2, 3, 4, 7: Erklärhinweis oben ohne Überdeckung, Vorlagen-Anzeige nach „Diagramm“, Skala ohne „mL“, Teilchen nach Dampfzusammensetzung (Ethanol rot, bei 99,9 °C nur Wasser blau) | Ethanol: rot 103/blau 0 px; 99,6 °C: blau 41/rot 0 px |
+| E14 | PASS | Befunde 2, 3, 4, 7: Erklärhinweis oben ohne Überdeckung, Vorlagen-Anzeige nach „Diagramm“, Skala ohne „mL“, Teilchen nach Dampfzusammensetzung (Ethanol rot, bei 99,9 °C nur Wasser blau) | Ethanol: rot 78/blau 0 px; 99,8 °C: blau 327/rot 0 px |
 | E15 | PASS | Befunde 5, 12: Kühler-Detail ohne überstehende Beschriftung; Diagramm antippen → bildschirmfüllend → antippen/Escape → klein (vier Ansichten) | 1440×900 ok, 1180×820 ok, 1024×768 ok, 768×1024 ok |
-| E16 | PASS | Befunde 13, 16: Uhr steht nach dem Versuch und läuft beim erneuten Heizen weiter; nach dem Abkühlen auf 20 °C keine Blasen | Uhr 13:14 angehalten, nach erneutem Heizen 13:15; Kolben 21,0 °C ohne Blasen |
-| T04 | PASS | Keine externen Ressourcen, keine Konsolenfehler | 312 Anfragen, alle lokal |
+| E16 | PASS | Befunde 13, 16: Uhr steht nach dem Versuch und läuft beim erneuten Heizen weiter; nach dem Abkühlen auf 20 °C keine Blasen | Uhr 13:14 angehalten, nach erneutem Heizen 13:16; Kolben 21,0 °C ohne Blasen |
+| T04 | PASS | Keine externen Ressourcen, keine Konsolenfehler | 300 Anfragen, alle lokal |
+
+E14 (0.3.2): Im Wasser-Abschnitt gibt es nur ≈ 4 Dampfteilchen. Der Test zählte sie über 14 Bilder (≈ 1 s); durch den flacheren Einbruch beginnt der Abschnitt früher, und das Messfenster lag in allen drei Läufen in einer Lücke (blau 0, rot 0, im Browser nachgesehen: Teilchen vorhanden und blau). Gemessen wird jetzt über 90 Bilder (≈ 6 s); damit ist „nur blau“ belastbar und „kein Rot“ strenger geprüft. Zweimal einzeln bestanden.
 
 ## Screenshots (aus echten Zwischenzuständen, inhaltlich angesehen)
 
@@ -243,6 +261,7 @@ Alle Bilder in [`docs/screenshots/`](screenshots/) stammen aus den Browsertests 
 | `50-scorm-popup.png` | SCORM im Mock-LMS popup |
 | `51-web-zip-file.png` | Web-ZIP per file:// |
 | `60-ausgiessen-strahl-an-der-ausgusskante.png` | 0.3.1: Einfüllen kurz nach Beginn – Strahl ab der Ausgusskante, Spiegel im Glas waagrecht (Einzelbild bei angehaltenem Modell, 2×) |
+| `13b-brennprobe-propanon-gelb.png` | 0.3.2: Brennprobe mit Propanon am Prüfplatz – gelbliche Flamme |
 | `61-ausgiessen-glas-fast-leer.png` | 0.3.1: Glas fast leer und stärker geneigt, Ausgusskante mitgewandert (Einzelbild bei angehaltenem Modell, 2×) |
 
 ### Sichtprüfung
@@ -262,4 +281,4 @@ Die Bilder wurden einzeln angesehen. Befunde der letzten Prüfung:
 - **Safari/WebKit und Firefox** wurden nicht automatisiert geprüft (installiert ist nur Edge). Die App nutzt nur Standard-Canvas-2D, Pointer Events und CSS Grid wie TitraLab 3 und Redoxlabor.
 - **Idealisierte Trennung:** fachlich bewusst (Auftrag); die Grenze ist in App und CHEMIE.md benannt.
 - **Zeitmaßstab:** Durchflussstufen (1/4/10 mL/s) und Heizleistungen sind didaktisch gewählt, keine Messwerte einer bestimmten Apparatur.
-- **Labkit:** 0.3.0 und 0.3.1 ändern `shared/labkit` nicht (0.1.1 wie die Papierchromatographie); die Chromatographie bleibt unberührt.
+- **Labkit:** 0.3.0 bis 0.3.2 ändern `shared/labkit` nicht (0.1.1 wie die Papierchromatographie); die Chromatographie bleibt unberührt.

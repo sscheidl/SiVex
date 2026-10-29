@@ -25,7 +25,7 @@ Die Reihenfolge ist frei, soweit sie physikalisch und sicherheitstechnisch vertr
 6. **Heizung EIN**, Heizstufe wählen (mittel). Zeitraffer 10× oder 30×.
 7. **Beobachten:** Siedeblasen, Thermometer und Digitalanzeige, Kondensat im Innenrohr, Tropfen in die Vorlage.
 8. **Heizung AUS**, sobald die Temperatur über den Abschnitt steigt (die App warnt vorher, bevor Wasser übergeht).
-9. **Brennprobe** (nur Ethanol/Wasser): „Vorlage“ antippen (abnehmen) – sie kommt zum Prüfplatz. Pipette antippen → Vorlage antippen (Probe wird gezogen) → Porzellanschale antippen (Probe wird überführt) → Stabfeuerzeug antippen → Schale antippen (Feuerzeug fährt hin, Funke, Flamme). Danach Vorlage antippen, um sie zurückzustellen; Kühlwasser AUS.
+9. **Brennprobe** (Ethanol/Wasser und Propanon/Wasser): „Vorlage“ antippen (abnehmen) – sie kommt zum Prüfplatz. Pipette antippen → Vorlage antippen (Probe wird gezogen) → Porzellanschale antippen (Probe wird überführt) → Stabfeuerzeug antippen → Schale antippen (Feuerzeug fährt hin, Funke, Flamme). Danach Vorlage antippen, um sie zurückzustellen; Kühlwasser AUS.
 10. **Auswertung:** „Ergebnis prüfen“, Protokoll ausfüllen, „Antworten prüfen“; Tipps 1/3–3/3; „Lösung anzeigen“.
 
 ## Weitere Bedienelemente

@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-29T20:57:10.785Z",
+  "package": "aggregatzustaende-0.2.0-scorm12.zip",
+  "web": "aggregatzustaende-0.2.0-web.zip",
+  "passed": 17,
+  "total": 17,
+  "results": [
+    {
+      "id": "SCORM-1",
+      "status": "PASS",
+      "detail": "imsmanifest.xml im Paketstamm, SCORM 1.2, SCO mit Startpunkt index.html"
+    },
+    {
+      "id": "SCORM-2",
+      "status": "PASS",
+      "detail": "Manifest listet alle 15 Dateien des Pakets (inkl. labkit/)"
+    },
+    {
+      "id": "SCORM-3",
+      "status": "PASS",
+      "detail": "alle 13 Verweise relativ und im Paket vorhanden, keine externen Ressourcen"
+    },
+    {
+      "id": "WEB-1",
+      "status": "PASS",
+      "detail": "Web-ZIP enthält dieselben 15 Laufzeitdateien im Ordner aggregatzustaende/"
+    },
+    {
+      "id": "PKG-1",
+      "status": "PASS",
+      "detail": "SHA256SUMS.txt nennt beide Pakete"
+    },
+    {
+      "id": "SCORM-iframe-1",
+      "status": "PASS",
+      "detail": "eingebettet: LMSInitialize genau einmal"
+    },
+    {
+      "id": "SCORM-iframe-2",
+      "status": "PASS",
+      "detail": "eingebettet: Stoff, Regler und Ebene über die Oberfläche bedient, Teilchen und Prüfung korrekt"
+    },
+    {
+      "id": "SCORM-iframe-4",
+      "status": "PASS",
+      "detail": "keine Werte gelesen oder geschrieben (keine Noten, Antworten, Personendaten)"
+    },
+    {
+      "id": "SCORM-iframe-5",
+      "status": "PASS",
+      "detail": "keine Konsolenfehler, keine externen Anfragen"
+    },
+    {
+      "id": "SCORM-popup-1",
+      "status": "PASS",
+      "detail": "neues Fenster: LMSInitialize genau einmal"
+    },
+    {
+      "id": "SCORM-popup-2",
+      "status": "PASS",
+      "detail": "neues Fenster: Stoff, Regler und Ebene über die Oberfläche bedient, Teilchen und Prüfung korrekt"
+    },
+    {
+      "id": "SCORM-popup-3",
+      "status": "PASS",
+      "detail": "neues Fenster: LMSFinish beim Schließen genau einmal"
+    },
+    {
+      "id": "SCORM-popup-4",
+      "status": "PASS",
+      "detail": "keine Werte gelesen oder geschrieben (keine Noten, Antworten, Personendaten)"
+    },
+    {
+      "id": "SCORM-popup-5",
+      "status": "PASS",
+      "detail": "keine Konsolenfehler, keine externen Anfragen"
+    },
+    {
+      "id": "WEB-http",
+      "status": "PASS",
+      "detail": "frisch entpacktes Web-ZIP per HTTP bedienbar, Zustände korrekt, keine Fehler, keine fremden Anfragen"
+    },
+    {
+      "id": "WEB-file",
+      "status": "PASS",
+      "detail": "frisch entpacktes Web-ZIP per file:// bedienbar, Zustände korrekt, keine Fehler, keine fremden Anfragen"
+    },
+    {
+      "id": "HTTP-404",
+      "status": "PASS",
+      "detail": "alle Ressourcen aus den entpackten Paketen geladen (42 Anfragen)"
+    }
+  ]
+}

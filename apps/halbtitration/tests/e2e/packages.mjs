@@ -62,6 +62,7 @@ const walk = (d, b = d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e
 const webFiles = walk(path.join(WORK, 'web'));
 assert(webFiles.every((f) => f.startsWith('halbtitration/')), 'Web-ZIP: alle Dateien unter halbtitration/');
 assert(webFiles.includes('halbtitration/index.html'), 'Web-ZIP: index.html fehlt');
+assert(webFiles.includes('halbtitration/labkit/css/labkit.css') && webFiles.includes('halbtitration/labkit/js/splitter.js'), 'Web-ZIP: Labkit fehlt');
 const scFiles = walk(path.join(WORK, 'scorm'));
 assert(scFiles.includes('imsmanifest.xml') && scFiles.includes('index.html'), 'SCORM: imsmanifest.xml oder index.html nicht im Stamm');
 const manifest = fs.readFileSync(path.join(WORK, 'scorm', 'imsmanifest.xml'), 'utf8');
@@ -97,15 +98,16 @@ async function smoke(dir, url, label, wrapper) {
   }
   await frame.evaluate(() => localStorage.clear());
   await frame.goto(frame.url());
-  await F.plan(frame, { exp: 'glycine', titrant: 'NaOH', stage: 1, particle: 'ampholyte', eqCat: 'neutral', indicator: 'bromothymolBlue' });
-  await frame.click('.phase[data-view="lab"]');
+  await frame.waitForSelector('.step[data-step="start"]');
+  await F.chooseExp(frame, 'glycine');
+  await F.chooseTitrant(frame, 'NaOH');
   await F.prepare(frame);
   await F.waitStable(frame);
   await F.act(frame, 'take');
   await F.doseAndTake(frame, 2);
   const n = await frame.evaluate(() => Halbtitration.App.activeSeries().points.length);
   assert(n === 2, label + ': Messung im entpackten Paket nicht möglich');
-  await frame.click('.phase[data-view="eval"]');
+  await frame.click('.lk-tabs [data-tab="results"]');
   const lms = wrapper ? await page.evaluate(() => window.__lms) : null;
   await ctx.close();
   server.close();
@@ -139,7 +141,7 @@ try {
   const errs = [];
   page.on('pageerror', (e) => errs.push(e.message));
   await page.goto('file:///' + path.join(WORK, 'web', 'halbtitration', 'index.html').split(path.sep).join('/'));
-  const ok = await page.evaluate(() => !!(window.Halbtitration && window.Halbtitration.App && document.querySelector('#theoryDoc h1')));
+  const ok = await page.evaluate(() => !!(window.Halbtitration && window.Halbtitration.App && document.querySelector('.step[data-step="start"]') && window.LK && window.LK.splitter));
   await ctx.close();
   results.push({ name: 'Web-ZIP per file://', status: ok && !errs.length ? 'PASS' : 'HOLD – failed', errors: errs });
   console.log('Web-ZIP per file://', ok && !errs.length ? 'PASS' : 'HOLD – failed', errs.join(' | '));
