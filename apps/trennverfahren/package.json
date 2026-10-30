@@ -1,6 +1,6 @@
 {
   "name": "sivex-trennverfahren",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Trennverfahren: Stoffgemische trennen – Dekantieren, Filtrieren, Eindampfen, Scheiden, Trennkette (statische Webanwendung, SiVex)",
   "scripts": {

@@ -2,6 +2,18 @@
 
 Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatus: **prototype**
 
+## 0.3.2 – Stand 30.10.2026
+
+Korrekturen nach dem Unterrichtseinsatz. Prüfung in der Entwicklungsumgebung ohne Browser; die Abläufe wurden in einer simulierten Seite (jsdom) mit dem App-Code nachgespielt.
+
+| ID | Prüffall | Status | Nachweis |
+| --- | --- | --- | --- |
+| TV37 | Pause in einem Versuch blockiert keinen anderen; Wechsel schließt Handgriffe ab, Zeit 1×; Bedienen beendet die Pause | **PASS** (simulierte Seite) · Browser **HOLD** | vier Fälle nachgespielt (Pause + Wechsel, Pause mitten im Handgriff, Pause + neuer Handgriff, Wechsel beim Gießen); E13 ergänzt |
+| TV38 | Auffanggefäß unter Trichter bzw. Hahn höchstens randvoll, Überschuss auf den Tisch, Warnung | **PASS** | `model.test.js` (V2, V4); Bilanz erhalten |
+| TV39 | Auswahlliste springt nach Antippen nicht erneut auf; nach Tastaturbedienung behält sie den Fokus | **PASS** (simulierte Seite) · iPad **HOLD** | Wahl per Zeiger und per Tastatur nachgespielt |
+| – | Unit-Tests | **PASS** 60/60 | `npm test` |
+| – | Browserabnahme E1–E13, Paketprüfung | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner |
+
 ## 0.3.1 – Stand 30.10.2026
 
 | Prüfung | Status | Nachweis |

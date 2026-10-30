@@ -1,5 +1,14 @@
 # Änderungen – Trennverfahren
 
+## 0.3.2 – 30.10.2026 (prototype)
+
+Korrekturen nach dem Unterrichtseinsatz vom 30.10.2026 (iPad, mebis).
+
+- **Pause blockierte andere Versuche (schwerwiegend):** Pause und Zeitraffer galten für alle Versuche, jeder Versuch hat aber eigene Zeit. Nach einer Pause in V1 blieb der erste Handgriff in V2 stehen, alles Weitere wurde mit „Warte, bis der laufende Handgriff fertig ist“ abgewiesen. Jetzt: Beim Versuchswechsel wird laufendes Gießen gestoppt, ein angefangener Handgriff abgeschlossen und die Zeit auf 1× gestellt; Bedienen bei angehaltener Zeit beendet die Pause (mit Meldung); die App startet nie pausiert.
+- **Auffanggefäß lief nicht über:** Über den Trichter (und den Hahn des Scheidetrichters) ließ sich das Gefäß darunter unbegrenzt füllen. Jetzt wird es höchstens randvoll; der Überschuss läuft mit Warnung auf den Tisch (Pfütze neben dem Gefäß). Die Spritzflasche liefert weiterhin unbegrenzt Wasser.
+- **Auswahlliste „Gemischart“ sprang erneut auf (iPad):** Nach der Wahl einer Antwort wurde das Bedienfeld neu aufgebaut und die Liste fokussiert – Safari öffnet sie dann sofort wieder. Auswahllisten erhalten den Fokus nur noch nach Tastaturbedienung zurück.
+- Tests: 60 Unit-Tests; E13 spielt die gemeldeten Abläufe nach (Pause und Versuchswechsel).
+
 ## 0.3.1 – 30.10.2026 (prototype)
 
 **Behoben (schwerwiegend):** Sackgasse in Versuch 5. Nach dem Magnetscheiden blieb der Magnet gewählt; jedes weitere Antippen – auch von Uhrglas, Becherglas A oder Porzellanschale – wurde als „Magnet durchziehen“ gedeutet und mit „kein Eisen“ abgewiesen. Lag das Gemenge auf dem Uhrglas, kam man nicht weiter.
