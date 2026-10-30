@@ -1,5 +1,14 @@
 # Änderungen
 
+## 0.3.0 – 30.10.2026 (prototype)
+
+Rückmeldung aus dem Unterrichtseinsatz auf Schul-iPads (30.10.2026); Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps), Labkit 0.2.0.
+
+- **Zuordnungsaufgaben ohne Überdecken:** Bei schmalem Bedienfeld wurde der Satz neben einer breiten Auswahlliste (z. B. „Erklärung im Teilchenmodell“) auf fast null Breite gequetscht und lief unter die Liste. Jetzt stehen Satz und Auswahl nebeneinander, solange beide Platz haben; sonst rutscht die Auswahl unter den Satz und nimmt die volle Breite ein.
+- **Auswahllisten im Lückentext** dürfen schmaler werden als ihr längster Eintrag; der sichtbare Text wird gekürzt, beim Antippen erscheinen alle Einträge vollständig.
+- Regeln 2–4 (Auswahllisten öffnen sich nicht von selbst, Fassungsvermögen, Pause) betreffen diese App nicht: Das Bedienfeld fokussiert nach einem Neuaufbau nichts neu, es gibt keine Gefäße zum Befüllen und keine Pause.
+- Geprüft auf dem iPad mit Safari über mebis (Lehrkraft, 30.10.2026, Stand 0.2.1).
+
 ## 0.2.1 – 29.10.2026 (prototype)
 
 Rückmeldung der Lehrkraft zu 0.2.0:

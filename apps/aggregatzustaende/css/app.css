@@ -102,14 +102,20 @@ html, body { font-size: 16px; }
 .stepchips button[aria-pressed="true"] .done { color: #fff; }
 .cloze p { line-height: 2.5; margin: 0 0 10px; }
 .cloze .gapw { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; max-width: 100%; }
-.cloze select, .assign select { min-height: 40px; max-width: 100%; padding: 4px 8px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: #fff; font-size: 16px; }
+.cloze select, .assign select { min-height: 40px; max-width: 100%; min-width: 0; text-overflow: ellipsis; padding: 4px 8px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: #fff; font-size: 16px; }
 .cloze select.right, .assign select.right { border-color: var(--ok); background: var(--ok-soft); }
 .cloze select.wrong, .assign select.wrong { border-color: var(--bad); background: var(--bad-soft); }
 .cloze .fbline { display: block; line-height: 1.35; margin: -4px 0 8px; font-size: 13.5px; }
 .cloze .fbline.n { color: var(--bad); }
-.assign .arow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, auto); gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+/* Zuordnungszeilen (iPad-Regel 1, 0.3.0): Satz und Auswahl nebeneinander, solange beide Platz haben;
+   sonst rutscht die Auswahl unter den Satz (vorher wurde der Satz neben einer breiten Liste auf fast
+   null Breite gequetscht) */
+.assign .arow { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
 .assign .arow:first-of-type { border-top: 0; }
-.assign .arow .lk-fb { grid-column: 1 / -1; margin: 0; }
+.assign .arow > span:first-child { flex: 1 1 8em; min-width: 0; overflow-wrap: break-word; hyphens: auto; }
+.assign .arow > .gapw { flex: 1 1 10em; min-width: 0; max-width: 100%; display: inline-flex; align-items: center; gap: 4px; }
+.assign .arow > .gapw select { flex: 1 1 auto; }
+.assign .arow .lk-fb { flex: 1 1 100%; margin: 0; }
 .tipbox .lvl { font-weight: 700; color: var(--accent-2); }
 .tipbox p { margin: 4px 0; }
 .lk-card .lk-row { margin-top: 8px; }
@@ -150,7 +156,6 @@ table.res td.seen { white-space: nowrap; }
   .lk-head .lk-btn.small { padding: 0 8px; }
   .lk-seg.light button { padding: 0 10px; font-size: 14px; }
   .tick { font-size: 11px; }
-  .assign .arow { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ---------- Druck: Arbeitsblatt auf einer Seite ---------- */

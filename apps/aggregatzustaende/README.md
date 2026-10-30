@@ -1,6 +1,6 @@
 # Aggregatzustände und Teilchenmodell
 
-**prototype 0.2.1** · Chemie Jgst. 8 (NTG) / 9 (SG) · Labkit 0.1.1 · [Testbericht](docs/TESTBERICHT.md) · [Chemie und Vereinfachungen](docs/CHEMIE.md) · [Bedienung](docs/BEDIENUNG.md)
+**prototype 0.3.0** · Chemie Jgst. 8 (NTG) / 9 (SG) · Labkit 0.2.0 · [Testbericht](docs/TESTBERICHT.md) · [Chemie und Vereinfachungen](docs/CHEMIE.md) · [Bedienung](docs/BEDIENUNG.md)
 
 Wasser, Iod, Eisen und Kochsalz bei frei wählbarer Temperatur – fest, flüssig und gasförmig, auf der **Stoffebene** (Becherglas mit Uhrglas bzw. Tiegel im Ofen – jeweils geschlossen) und auf der **Teilchenebene**. Ein zuschaltbares Schema teilt sich den Bildbereich mit dem Versuch und zeigt, welcher Übergang gerade abläuft. Schmelz- und Siedetemperatur als Kenneigenschaften, die sechs Phasenübergänge, Sublimation und Resublimation von Iod an einer kalten Oberfläche.
 
@@ -40,8 +40,8 @@ npm run test:scorm   # Pakete frisch entpackt: SCORM im Mock-LMS, Web-ZIP per HT
 
 ## Pakete
 
-- [`release/aggregatzustaende-0.2.1-scorm12.zip`](release/aggregatzustaende-0.2.1-scorm12.zip) – SCORM 1.2 für mebis (Darstellung „Neues Fenster“ empfohlen)
-- [`release/aggregatzustaende-0.2.1-web.zip`](release/aggregatzustaende-0.2.1-web.zip) – Webserver oder lokal (`index.html` öffnen)
+- [`release/aggregatzustaende-0.3.0-scorm12.zip`](release/aggregatzustaende-0.3.0-scorm12.zip) – SCORM 1.2 für mebis (Darstellung „Neues Fenster“ empfohlen)
+- [`release/aggregatzustaende-0.3.0-web.zip`](release/aggregatzustaende-0.3.0-web.zip) – Webserver oder lokal (`index.html` öffnen)
 - Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
 Kein Backend, keine externen Ressourcen, keine Übertragung von Antworten, Noten oder personenbezogenen Daten.

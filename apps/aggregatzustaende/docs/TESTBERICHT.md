@@ -1,4 +1,19 @@
-# Aggregatzustände 0.2.1 – Testbericht
+# Aggregatzustände 0.3.0 – Testbericht
+
+## Nachtrag 0.3.0 (30.10.2026) – iPad- und Bedienregeln
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Zuordnungszeilen umbrechen statt den Satz zu quetschen (Bedienfeld 300 px) | **PASS** (CSS-Prüfung) · iPad **HOLD** | Flex-Zeilen mit Umbruch statt Raster `minmax(150px, auto)`; im Browser ohne Gerät nicht gemessen |
+| Auswahllisten im Lückentext schrumpfen statt überzustehen | **PASS** (CSS-Prüfung) · iPad **HOLD** | `min-width: 0`, `max-width: 100%` |
+| Unit-Tests | **PASS** 36/36 | `npm test` |
+| Browserabnahme E1–E16, Paketprüfung | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner |
+
+---
+
+Frühere Fassung des Berichts:
+
+## Aggregatzustände 0.2.1 – Testbericht
 
 Stand 29.10.2026 · Labkit 0.1.1 (unverändert) · Status **prototype**
 

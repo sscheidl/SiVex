@@ -409,7 +409,7 @@
         <h2>Kenneigenschaften (bei 1013 hPa)</h2>
         <table><thead><tr><th>Stoff</th><th>Schmelztemperatur</th><th>Siedetemperatur</th><th>Zustand bei 1000 °C</th></tr></thead><tbody>${rows}</tbody></table>
         <h2>Meine Beobachtung beim Iod</h2><div class="lines"></div><div class="lines"></div><div class="lines"></div>
-        <p style="font-size:9pt;color:#555">SiVex · Aggregatzustände 0.2.1 · Teilchenebene schematisch, nicht maßstabsgetreu.</p>`;
+        <p style="font-size:9pt;color:#555">SiVex · Aggregatzustände 0.3.0 · Teilchenebene schematisch, nicht maßstabsgetreu.</p>`;
     }
 
     // ------------------------------------------------------------ Bedienfeld zeichnen und bedienen
