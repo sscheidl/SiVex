@@ -1,6 +1,6 @@
 # Trennverfahren – Bedienung
 
-Stand 0.2.0 · für Lernende und Lehrkräfte
+Stand 0.3.0 · für Lernende und Lehrkräfte
 
 ## Aufbau des Bildschirms
 
@@ -29,14 +29,16 @@ Stand 0.2.0 · für Lernende und Lehrkräfte
 | Filterpapier | Trichter | Rundfilter falten und einlegen (nur leerer Trichter) |
 | Trichter | Filtrierring | in den Ring setzen |
 | Trichter mit Papier und Rückstand | Uhrglas (Versuch 2) | Filterpapier mit dem feuchten Rückstand auf das Uhrglas legen – erst, wenn nichts mehr tropft |
-| Abdampfschale mit Kristallen | Uhrglas (Versuch 3) | Kristalle mit dem Spatel überführen – erst nach dem Abkühlen (unter 45 °C) und wenn keine Lösung mehr in der Schale ist |
+| Abdampfschale mit Kristallen | Uhrglas, Becherglas, Porzellanschale | Kristalle mit dem Spatel überführen – erst nach dem Abkühlen (unter 45 °C) und wenn keine Lösung mehr in der Schale ist; in drei Portionen, die Menge im Ziel wächst sichtbar |
+| Uhrglas mit Inhalt | Becherglas, Erlenmeyerkolben, Porzellanschale, Abdampfschale | Inhalt mit dem Spatel weitergeben (drei Portionen); ein Filterpapier bleibt auf dem Uhrglas liegen. Was auf dem Uhrglas liegt, ist damit nie eine Sackgasse |
 | Scheidetrichter | Ring am Stativ / Hand / Ablage | einhängen; gefüllt mit Stopfen und geschlossenem Hahn **zum Schütteln in die Hand nehmen**; leer zurück auf die Ablage |
 | Stopfen | Scheidetrichter | Stopfen aufsetzen. Den aufgesetzten Stopfen antippen: abnehmen und zurück auf die Ablage |
 | Hahn (direkt am Scheidetrichter) | – | jedes Antippen stellt weiter: zu → Tropfen → offen → zu (Griff waagrecht = zu, schräg = Tropfen, senkrecht = offen) |
-| Magnet | Gefäß mit Eisen | Magnet durchziehen; der Magnet bleibt gewählt |
+| Drehknopf (direkt an der Heizplatte, Versuch 3 und 5) | – | jedes Antippen stellt weiter: aus → niedrig → hoch → aus (Skala 0 · 1 · 2); die Knöpfe in der Bedienleiste bleiben |
+| Magnet | Gefäß mit Eisen | Magnet durchziehen; der Magnet bleibt gewählt. Im trockenen Gemisch genügen zwei Durchgänge, im nassen drei – danach ist kein Eisen mehr da (die Meldung sagt, ob noch Eisenkörner zu sehen sind) |
 | Magnet mit Eisen | Uhrglas | Eisen abstreifen |
 
-Alle Geräte auf der Laborfläche – auch der Hahn – sind **Schaltflächen**: mit **Tab** erreichbar, mit **Eingabe** oder **Leertaste** auszulösen; ihre Beschriftung nennt den aktuellen Inhalt bzw. Zustand (z. B. „Becherglas A: Wasser · Bodensatz: Sand“, „Hahn: zu – antippen zum Umstellen“). „Gießen stoppen“, „Heizplatte aus“ und „Hahn zu“ sind immer in der Bedienleiste erreichbar.
+Alle Geräte auf der Laborfläche – auch der Hahn und der Drehknopf der Heizplatte – sind **Schaltflächen**: mit **Tab** erreichbar, mit **Eingabe** oder **Leertaste** auszulösen; ihre Beschriftung nennt den aktuellen Inhalt bzw. Zustand (z. B. „Becherglas A: Wasser · Bodensatz: Sand“, „Hahn: zu – antippen zum Umstellen“). „Gießen stoppen“, „Heizplatte aus“ und „Hahn zu“ sind immer in der Bedienleiste erreichbar.
 
 **Schütteln (Versuch 4, freiwillig):** Stopfen aufsetzen, Hahn schließen, Scheidetrichter „zum Schütteln in die Hand nehmen“, **Schütteln**, wieder in den Ring hängen, entmischen lassen, Stopfen abnehmen. Im Ring wird nicht geschüttelt. Das Trennziel ist auch ohne Schütteln erreichbar.
 

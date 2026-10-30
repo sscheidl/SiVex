@@ -54,6 +54,13 @@
   const LV = 2257; // J/g Verdampfungsenthalpie Wasser
   const ROOM = 20;
   const OPS = { move: 0.7, go: 0.9, back: 0.8, stir: 3, wash: 1.6, paper: 1.4, magnet: 2.6, magdrop: 1.8, shake: 3, stopper: 0.8, paperOut: 1.6, scrape: 2.2 };
+  /**
+   * Magnet: Anteil des noch vorhandenen Eisens je Durchgang. Trocken genügen zwei Durchgänge,
+   * im nassen Gemisch (oder Filterrückstand) drei – danach ist das Eisen restlos entfernt.
+   */
+  const MAG_PASS = { dry: [0.75, 1], wet: [0.6, 0.75, 1] };
+  /** Spatel: Anzahl der Portionen beim Überführen (je Spatelgang eine). */
+  const SCRAPE_PORTIONS = 3;
   /** Spritzflasche: Wasser fließt nur, solange der Strahl sichtbar ist (Vorlauf und Nachlauf in s). */
   const WASH_WIN = [0.35, 0.25];
   /** Unter dieser Temperatur darf eine Schale angefasst werden (°C). */
@@ -190,7 +197,10 @@
         { id: 'E', type: 'erlenmeyer', name: 'Erlenmeyerkolben', home: 'under' },
         { id: 'D', type: 'dish', name: 'Abdampfschale', home: 'plate' }
       ],
-      plate: true, main: 'M'
+      plate: true, main: 'M',
+      // Jeder richtig ausgeführte Trennschritt trennt vollständig (Magnet in 2–3 Durchgängen restlos,
+      // Filtrat nimmt das gelöste Salz vollständig mit). Fehlhandlungen bleiben möglich.
+      complete: true
     }
   };
   const EXP_IDS = [1, 2, 3, 4, 5];
@@ -441,6 +451,7 @@
       op.poured += dry ? solids(out) : liq(out);
       op.ml = (op.ml || 0) + liq(out); op.g = (op.g || 0) + solids(out);
       deliver(dst, out, st.pourSpeed === 'fast' ? 0.55 : 0.3);
+      if (!dry && liq(out) > 0 && sand(src.c) + src.c.iron > 0.5 && solids(out) < 0.03 * liq(out)) st.flags.decanted = (st.flags.decanted || 0) + liq(out);
       if (!dry && liq(src.c) < 0.05) {
         const rest = solids(src.c);
         stopPour(rest > 0.3 ? `Die Flüssigkeit ist abgegossen. Der Bodensatz bleibt in ${label(src)} liegen.` : `${label(src)} ist leer.`);
@@ -520,7 +531,7 @@
       if (!f || f.type !== 'funnel' || !f.paper) return fail('Im Trichter liegt kein Filterpapier.', 'nopaper');
       if (!d || d.type !== 'watch') return fail('Lege das Filterpapier mit dem Rückstand auf ein Uhrglas.', 'target');
       if (d.paper || !isEmpty(d.c)) return fail(`${label(d)} ist nicht leer.`, 'target');
-      const R = PAPER_HOLD + SOLIDS.reduce((s, k) => s + f.c[k] * HOLD[k], 0);
+      const R = holdOf(f);
       if (f.c.water - R > 0.1 || f.c.oil > 0.05 || st.drip.F > 0.01) return fail('Es läuft noch Flüssigkeit durch das Filterpapier. Warte, bis nichts mehr tropft.', 'dripping');
       st.op = { type: 'paperOut', v: fId, dst: dstId, t: 0, dur: OPS.paperOut };
       return ok('Du nimmst das Filterpapier mit dem Rückstand aus dem Trichter und faltest es auf dem Uhrglas auseinander.');
@@ -533,26 +544,57 @@
       addTo(d.c, out); d.paper = true;
       msg(`Filterpapier mit Rückstand auf ${label(d)}: ${core.fmt(sand(out), 1)} g Sand${out.iron > 0.05 ? `, ${core.fmt(out.iron, 1)} g Eisen` : ''}, noch feucht.`, 'info', 'paperOut');
     }
-    /** Kristalle (bzw. Feststoff) aus der abgekühlten Abdampfschale in ein leeres Gefäß überführen. */
+    /**
+     * Mit dem Spatel überführen: Kristalle aus der abgekühlten, trockenen Abdampfschale oder den
+     * Inhalt eines Uhrglases (auch Rückstand vom Filterpapier, das Papier bleibt liegen) in ein
+     * anderes Gefäß. Je Spatelgang eine Portion – die Menge im Ziel wächst sichtbar.
+     */
+    const SCRAPE_TO = { dish: ['watch', 'beaker', 'erlenmeyer', 'bowl'], watch: ['beaker', 'erlenmeyer', 'bowl', 'dish'] };
     function scrape(srcId, dstId) {
       const o = O(srcId), d = O(dstId);
       if (st.op) return fail('Warte, bis der laufende Handgriff fertig ist.', 'busy');
-      if (!o || o.type !== 'dish') return fail('Mit dem Spatel werden Kristalle aus der Abdampfschale überführt.', 'noscrape');
-      if (solids(o.c) < 0.05) return fail(`In ${label(o)} sind keine Kristalle.`, 'empty');
+      if (!o || !SCRAPE_TO[o.type]) return fail('Mit dem Spatel überführt man den Inhalt einer Abdampfschale oder eines Uhrglases.', 'noscrape');
+      if (o.type === 'dish' && solids(o.c) < 0.05) return fail(`In ${label(o)} sind keine Kristalle.`, 'empty');
+      if (o.type === 'watch' && isEmpty(o.c)) return fail('Das Uhrglas ist leer.', 'empty');
       if (o.temp > HANDLE_T) return fail(`${label(o)} ist noch heiß (${core.fmt(o.temp, 0)} °C). Schalte die Heizplatte aus und lass die Schale abkühlen.`, 'hot');
-      if (o.c.water > 1) return fail('In der Schale ist noch Lösung. Dampfe zuerst weiter ein, bis die Kristalle trocken sind.', 'wet');
-      if (!d || !(d.type === 'watch' || d.type === 'beaker') || d.paper || !isEmpty(d.c)) return fail('Überführe die Kristalle auf ein leeres Uhrglas.', 'target');
-      st.op = { type: 'scrape', v: srcId, dst: dstId, t: 0, dur: OPS.scrape };
-      return ok(`Mit dem Spatel schabst du die Kristalle aus der Abdampfschale in ${label(d)}.`);
+      if (o.type === 'dish' && o.c.water > 1) return fail('In der Schale ist noch Lösung. Dampfe zuerst weiter ein, bis die Kristalle trocken sind.', 'wet');
+      if (!d || !SCRAPE_TO[o.type].includes(d.type)) return fail(o.type === 'dish' ? 'Überführe die Kristalle auf ein Uhrglas oder in ein Becherglas.' : 'Gib den Inhalt des Uhrglases in ein Becherglas, eine Porzellanschale oder die Abdampfschale.', 'target');
+      if (d.type === 'watch' && (d.paper || !isEmpty(d.c))) return fail('Überführe die Kristalle auf ein leeres Uhrglas.', 'target');
+      if (d.at === 'plate' && d.temp > 50) return fail(`${label(d)} ist noch heiß. Lass sie zuerst abkühlen.`, 'hot');
+      if (liq(o.c) > T(d).cap - liq(d.c)) return fail(`${label(d)} ist zu voll.`, 'target');
+      st.op = { type: 'scrape', v: srcId, dst: dstId, t: 0, dur: OPS.scrape, n: 0, from: o.type };
+      return ok(o.type === 'dish' ? `Mit dem Spatel schabst du die Kristalle aus der Abdampfschale in ${label(d)}.` : `Mit dem Spatel schiebst du den Inhalt des Uhrglases${o.paper ? ' vom Filterpapier' : ''} in ${label(d)}.`);
+    }
+    /** Eine Portion überführen (die letzte nimmt den ganzen Rest). */
+    function scrapePortion(op) {
+      const o = O(op.v), d = O(op.dst);
+      const left = SCRAPE_PORTIONS - op.n;
+      const f = left <= 1 ? 1 : 1 / left;
+      const out = zero();
+      for (const k of KEYS) { out[k] = o.c[k] * f; o.c[k] -= out[k]; }
+      for (const k of SOLIDS) o.susp[k].m *= (1 - f);
+      if (f === 1) { for (const k of KEYS) o.c[k] = 0; o.susp = zsusp(); }
+      tidy(o.c);
+      deliver(d, out, 0.15);
+      d.temp = Math.max(d.temp, o.temp);
+      op.n += 1;
+      op.moved = op.moved || zero(); addTo(op.moved, out);
     }
     function finishScrape(op) {
-      const o = O(op.v), d = O(op.dst);
-      const out = Object.assign(zero(), o.c);
-      for (const k of KEYS) o.c[k] = 0;
-      o.susp = zsusp();
-      addTo(d.c, out);
-      d.temp = Math.max(d.temp, o.temp);
-      msg(`${core.fmt(out.saltS, 1)} g Kochsalzkristalle in ${label(d)}.`, 'info', 'scrape');
+      op.n = op.n || 0;
+      while (op.n < SCRAPE_PORTIONS) scrapePortion(op);
+      const d = O(op.dst), m = op.moved;
+      if (op.from !== 'watch') msg(`${core.fmt((m || zero()).saltS, 1)} g Kochsalzkristalle in ${label(d)}.`, 'info', 'scrape');
+      else msg(`Überführt in ${label(d)}: ${describeAmounts(m || zero())}.`, 'info', 'scrape');
+    }
+    function describeAmounts(c) {
+      const parts = [];
+      if (sand(c) > 0.05) parts.push(`${core.fmt(sand(c), 1)} g Sand`);
+      if (c.iron > 0.02) parts.push(`${core.fmt(c.iron, 1)} g Eisen`);
+      if (c.saltS > 0.02) parts.push(`${core.fmt(c.saltS, 1)} g Kochsalz`);
+      if (c.water > 0.1) parts.push(`${core.fmt(c.water, 1)} mL Wasser${c.saltD > 0.02 ? ' (mit gelöstem Salz)' : ''}`);
+      if (c.oil > 0.1) parts.push(`${core.fmt(c.oil, 1)} mL Öl`);
+      return parts.join(', ') || 'kaum etwas';
     }
 
     // ----- Magnet
@@ -654,17 +696,24 @@
       } else if (op.type === 'magnet' && !op.done && op.t >= 0.7) {
         const o = O(op.v), m = O('mag');
         const wet = liq(o.c) > 0.5 || o.type === 'funnel';
-        const eff = wet ? 0.65 : 0.8;
+        // Durchgänge je Gefäß zählen; kam seitdem Eisen hinzu, beginnt die Zählung neu
+        if (!(o.magN > 0) || o.c.iron > (o.magIron || 0) + 0.01) o.magN = 0;
+        const plan = wet ? MAG_PASS.wet : MAG_PASS.dry;
+        const eff = plan[Math.min(o.magN, plan.length - 1)];
         const taken = o.c.iron * eff;
-        const film = wet ? Math.min(o.c.water, taken * 0.05) : 0;
         const out = zero();
         out.iron = taken;
-        if (film > 0) { out.water = film; out.saltD = o.c.water > 0 ? o.c.saltD * film / o.c.water : 0; }
         for (const k of KEYS) o.c[k] -= out[k];
+        if (o.c.iron < 1e-6) o.c.iron = 0;
         o.susp.iron.m = Math.min(o.susp.iron.m, o.c.iron);
         tidy(o.c);
         addTo(m.c, out);
-        op.done = true; op.taken = taken;
+        o.magN += 1; o.magIron = o.c.iron;
+        op.done = true; op.taken = taken; op.left = o.c.iron;
+      } else if (op.type === 'scrape') {
+        // Portion, sobald der Spatel über dem Ziel ist (Mitte jedes Spatelgangs, vgl. render.js)
+        op.n = op.n || 0;
+        while (op.n < SCRAPE_PORTIONS && op.t >= (op.n + 0.5) / SCRAPE_PORTIONS * op.dur) scrapePortion(op);
       } else if (op.type === 'magdrop' && !op.done && op.t >= 1.0) {
         const o = O(op.v), m = O('mag');
         const out = Object.assign({}, m.c);
@@ -680,20 +729,30 @@
         if (done.type === 'stopper') { const s = O(done.v); s.stopper = done.on; s.vac = 0; const so = Object.values(st.objs).find((q) => q.type === 'stopper'); if (so) so.at = done.on ? s.id : so.home; msg(done.on ? 'Stopfen aufgesetzt.' : 'Stopfen abgenommen – beim Ablassen kann Luft nachströmen.', 'info', 'stopper'); }
         if (done.type === 'paperOut') finishPaperOut(done);
         if (done.type === 'scrape') finishScrape(done);
-        if (done.type === 'magnet') msg(`Am Magneten hängen jetzt ${core.fmt(O('mag').c.iron, 1)} g Eisen. Sand und Salz bleiben zurück.`, 'info', 'magnet');
+        if (done.type === 'magnet') {
+          const v = O(done.v);
+          msg(`Am Magneten hängen jetzt ${core.fmt(O('mag').c.iron, 1)} g Eisen. Sand und Salz bleiben zurück. ` +
+            (v.c.iron > 0.005 ? 'Im Gemisch sind noch Eisenkörner zu sehen – zieh den Magneten noch einmal hindurch.' : 'Jetzt ist kein Eisen mehr im Gemisch.'), 'info', 'magnet');
+        }
         if (done.type === 'magdrop') msg(`Eisen abgestreift: ${label(O(done.v))} enthält jetzt ${core.fmt(O(done.v).c.iron, 1)} g Eisen.`, 'info', 'magdrop');
         if (done.type === 'shake') msg('Geschüttelt: Das Öl ist in vielen Tröpfchen im Wasser verteilt.', 'info', 'shaken');
         bus.emit('change', { action: 'opDone', op: done.type });
       }
     }
 
+    /**
+     * Flüssigkeit, die im nassen Papier und im Rückstand hängen bleibt (mit dem darin gelösten Salz).
+     * Im vollständigen Modus (V5) tropft der Rückstand ganz ab: Das gelöste Salz geht vollständig
+     * ins Filtrat, ungelöstes Salz bleibt liegen (zu wenig Wasser bleibt ein Fehler).
+     */
+    function holdOf(f) { return ex.complete ? 0.02 : PAPER_HOLD + SOLIDS.reduce((s, k) => s + f.c[k] * HOLD[k], 0); }
     function filterStep(dt) {
       const f = funnel(st);
       if (!f) return;
       const c = f.c;
       if (f.at !== 'ring') return;
       const recv = objAt(st, 'under');
-      const R = f.paper ? PAPER_HOLD + SOLIDS.reduce((s, k) => s + c[k] * HOLD[k], 0) : 0.02;
+      const R = f.paper ? holdOf(f) : 0.02;
       const D = Math.max(0, c.water - R) + (f.paper ? 0 : c.oil);
       st.drip.F = 0;
       if (D <= 1e-6) return;
@@ -957,7 +1016,7 @@
   }
 
   return {
-    KEYS, SOLIDS, RHO, TYPES, SETTLE, SUSPEND, HOLD, PAPER_HOLD, POUR, POUR_SOLID, FILTER, COCK, EMUL_TAU, HEAT, OPS, WASH, WASH_WIN, HANDLE_T, SLOT_ACCEPT,
+    KEYS, SOLIDS, RHO, TYPES, SETTLE, SUSPEND, HOLD, PAPER_HOLD, POUR, POUR_SOLID, FILTER, COCK, EMUL_TAU, HEAT, OPS, WASH, WASH_WIN, HANDLE_T, SLOT_ACCEPT, MAG_PASS, SCRAPE_PORTIONS,
     EXPERIMENTS, EXP_IDS, csat, liq, sand, salt, solids, total, isEmpty, zero,
     initialState, inventory, balance, describe, evaluate, createEngine, slotOf, objAt
   };

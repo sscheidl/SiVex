@@ -110,7 +110,7 @@
     function select(id) {
       const o = st().objs[id];
       if (!o) return;
-      if (o.type === 'watch' || (o.type === 'bowl' && M.isEmpty(o.c)) || (o.type === 'dish' && M.solids(o.c) < 0.05)) {
+      if ((o.type === 'watch' && M.isEmpty(o.c)) || (o.type === 'bowl' && M.isEmpty(o.c)) || (o.type === 'dish' && M.solids(o.c) < 0.05)) {
         ui.selected = null; if (o.c) ui.pFocus[ui.cur] = id;
         showMsg(`${o.name}${o.paper ? ' mit Filterpapier' : ''}: ${M.describe(o).text}. ${o.type === 'bowl' || o.type === 'watch' ? '' : 'Gieße mit einem anderen Gefäß hinein.'}`);
         refreshDeck(); return;
@@ -128,6 +128,8 @@
       if (busy()) { showMsg('Warte, bis der laufende Handgriff fertig ist.'); return; }
       // Hahn direkt am Scheidetrichter: zu → Tropfen → offen → zu
       if (id === 'cock') { const sp = s.objs.S; if (sp) act('setCock', (sp.cock + 1) % 3); return; }
+      // Drehknopf direkt an der Heizplatte: aus → niedrig → hoch → aus
+      if (id === 'knob') { if (s.plate) act('heat', (s.plate.level + 1) % 3); return; }
       const sel = ui.selected ? s.objs[ui.selected] : null;
       // Stopfen auf dem Scheidetrichter antippen: abnehmen und auf die Ablage legen
       if (obj && obj.type === 'stopper' && s.objs[obj.at] && (!sel || sel.id === id)) { act('stopper', false); deselect(); return; }
@@ -152,7 +154,8 @@
         case 'magnet': act(s.objs.mag.c.iron > 0.005 ? 'magnetDrop' : 'magnet', id); break;
         case 'stopper': if (obj.type === 'sep') { const r = act('stopper', true); if (r.ok) deselect(); } else select(id); break;
         case 'funnel': if (obj.type === 'watch') { const r = act('transferPaper', sel.id, id); if (r.ok) deselect(); } else select(id); break;
-        case 'dish': if (obj.type === 'watch' || obj.type === 'beaker') { const r = act('scrape', sel.id, id); if (r.ok) deselect(); } else select(id); break;
+        case 'dish': if (['watch', 'beaker', 'erlenmeyer', 'bowl'].includes(obj.type)) { const r = act('scrape', sel.id, id); if (r.ok) deselect(); } else select(id); break;
+        case 'watch': if (['beaker', 'erlenmeyer', 'bowl', 'dish'].includes(obj.type)) { const r = act('scrape', sel.id, id); if (r.ok) deselect(); } else select(id); break;
         default:
           if (M.TYPES[sel.type].pour && obj.c) { const r = act('pour', sel.id, id); if (r.ok) deselect(); }
           else select(id);
@@ -169,7 +172,8 @@
         case 'wash': vessels.filter((o) => !['dish', 'watch'].includes(o.type) && (o.type !== 'funnel' || o.at === 'ring') && (o.type !== 'sep' || o.at === 'sepring')).forEach((o) => out.push({ id: o.id, text: `Wasser in ${label(o)}` })); break;
         case 'paper': vessels.filter((o) => o.type === 'funnel').forEach((o) => out.push({ id: o.id, text: 'in den Trichter legen' })); break;
         case 'stopper': if (s.objs.S && !s.objs.S.stopper) out.push({ id: 'S', text: 'auf den Scheidetrichter setzen' }); break;
-        case 'dish': vessels.filter((o) => (o.type === 'watch' || o.type === 'beaker') && M.isEmpty(o.c) && !o.paper).forEach((o) => out.push({ id: o.id, text: `Kristalle ${o.type === 'watch' ? 'auf das Uhrglas' : 'in ' + o.name} überführen` })); break;
+        case 'dish': vessels.filter((o) => (o.type === 'watch' && M.isEmpty(o.c) && !o.paper) || ['beaker', 'erlenmeyer', 'bowl'].includes(o.type)).forEach((o) => out.push({ id: o.id, text: `Kristalle ${o.type === 'watch' ? 'auf das Uhrglas' : 'in ' + o.name} überführen` })); break;
+        case 'watch': vessels.filter((o) => ['beaker', 'erlenmeyer', 'bowl', 'dish'].includes(o.type)).forEach((o) => out.push({ id: o.id, text: `Inhalt mit dem Spatel in ${o.name} geben` })); break;
         case 'magnet':
           if (s.objs.mag.c.iron > 0.005) vessels.filter((o) => o.type === 'watch' || o.c.iron > 0.02).sort((a, b) => (a.type === 'watch' ? -1 : 0) - (b.type === 'watch' ? -1 : 0)).forEach((o) => out.push({ id: o.id, text: o.type === 'watch' ? 'Eisen auf dem Uhrglas abstreifen' : `Eisen zurück in ${label(o)}` }));
           else vessels.filter((o) => o.c.iron > 0.02).forEach((o) => out.push({ id: o.id, text: o.type === 'funnel' ? 'durch den Rückstand im Filter ziehen' : `durch ${o.name} ziehen` }));
@@ -277,7 +281,7 @@
         x = Math.max(0, Math.min(W - w, x)); y = Math.max(0, Math.min(H - h, y));
         Object.assign(el.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
         if (b.kind === 'obj') el.setAttribute('aria-label', describeObj(s.objs[b.id]));
-        else if (b.kind === 'part') el.setAttribute('aria-label', cockLabel());
+        else if (b.kind === 'part') el.setAttribute('aria-label', b.id === 'knob' ? knobLabel() : cockLabel());
         else el.setAttribute('aria-label', slotName(M.slotOf(s, b.id)));
       }
       updateHitStates();
@@ -285,6 +289,8 @@
       layoutDirty = false;
     }
     const COCK_TXT = ['zu', 'tropfenweise geöffnet', 'ganz geöffnet'];
+    const HEAT_TXT = ['aus', 'niedrige Stufe', 'hohe Stufe'];
+    function knobLabel() { const p = st().plate; return p ? `Heizplatte: ${HEAT_TXT[p.level]} – Drehknopf antippen zum Umstellen (aus → niedrig → hoch)` : 'Drehknopf'; }
     function cockLabel() { const sp = st().objs.S; return sp ? `Hahn: ${COCK_TXT[sp.cock]} – antippen zum Umstellen (zu → Tropfen → offen)` : 'Hahn'; }
     function updateHitStates() {
       const s = st();
@@ -364,17 +370,18 @@
       $('#pObs').textContent = o.ref ? o.obs : (M.describe(o).text || '') + (o.type === 'funnel' ? (o.paper ? ' (mit Filterpapier)' : ' (ohne Filterpapier)') : '') + (o.temp > 30 ? ` · ${fmt(o.temp, 0)} °C` : '');
       $('#pModel').textContent = PV.modelText(s, o);
       const c = o.c;
-      const L = c.water > 0.02 ? [['water', 'Wasserteilchen', '']] : [];
-      if (c.saltD > 0.02 || c.saltS > 0.02) L.push(['na', 'Na⁺', ''], ['cl', 'Cl⁻', '']);
+      const L = c.water > 0.02 ? [['water', 'Wasserteilchen', 'tri']] : [];
+      if (c.saltD > 0.02 || c.saltS > 0.02) L.push(['na', 'Na⁺-Ion', 'ion', '+'], ['cl', 'Cl⁻-Ion', 'ion big', '−']);
       if (c.oil > 0.05) L.push(['oil', 'Ölteilchen', 'sq']);
       if (M.sand(c) > 0.05) L.push(['sand', 'Sandkorn (sehr viele Teilchen)', 'gr']);
-      if (c.iron > 0.05) L.push(['iron', 'Eisenkorn (sehr viele Teilchen)', 'gr']);
-      const html = L.map(([k, t, cls]) => `<li><i class="${cls}" style="background:${PV.COLORS[k]}"></i>${t}</li>`).join('');
+      if (c.iron > 0.02) L.push(['iron', 'Eisenkorn (sehr viele Teilchen)', 'gr']);
+      const html = L.map(([k, t, cls, g]) => `<li><i class="${cls}" style="background:${PV.COLORS[k]}" aria-hidden="true">${g || ''}</i>${t}</li>`).join('');
       if ($('#pLegend').dataset.html !== html) { $('#pLegend').innerHTML = html; $('#pLegend').dataset.html = html; }
     }
 
     // ------------------------------------------------------------------ Bedienfeld
-    const complete = (n) => !!(notes[n].goalAt && T.checkCls(n, notes[n].cls).all && T.checkPrin(n, notes[n].prin).ok);
+    const flagsOf = (n) => (engines[n] ? engines[n].state.flags : saved && saved.models && saved.models[n] ? saved.models[n].flags : null);
+    const complete = (n) => !!(notes[n].goalAt && T.checkCls(n, notes[n].cls).all && T.checkPrin(n, notes[n].prin, flagsOf(n)).ok);
     const allDone = () => N.every(complete);
     function quizState() {
       const items = {};
@@ -419,7 +426,7 @@
       h += `<p class="status-line">Trennziel: ${note.goalAt ? `<span class="y">✓ erreicht</span> (Ansatz ${note.goalAt.ansatz}, nach ${core.fmtTime(note.goalAt.t)} min Versuchszeit)` : '<span class="n">noch nicht erreicht</span>'} · Ansatz ${note.ansatz}</p></div>`;
       // Protokoll
       const cls = note.graded ? T.checkCls(n, note.cls) : null;
-      const pr = note.graded ? T.checkPrin(n, note.prin) : null;
+      const pr = note.graded ? T.checkPrin(n, note.prin, flagsOf(n)) : null;
       const miss = new Set(note.missing || []);
       h += `<div class="lk-card lk-form"><h2>Protokoll – Versuch ${n}</h2>`;
       h += `<p class="doc-note">1. und 2. sind deine eigene Dokumentation. Sie werden <b>nicht bewertet</b>; geprüft werden das Versuchsergebnis sowie 3. und 4.</p>`;

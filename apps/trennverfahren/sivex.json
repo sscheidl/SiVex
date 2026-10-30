@@ -1,7 +1,7 @@
 {
   "id": "chemie/trennverfahren",
   "title": "Trennverfahren – Stoffgemische trennen",
-  "description": "Fünf klassische Trennversuche selbst durchführen: Sand/Wasser sedimentieren und dekantieren, filtrieren (Rückstand auf dem Uhrglas), Kochsalzlösung eindampfen (Kristalle entnehmen), Öl/Wasser im Scheidetrichter scheiden (Schütteln freiwillig), Eisen/Sand/Kochsalz mit eigener Trennkette trennen. Mit schaltbarem Teilchenmodell, unbewertetem Beobachtungsprotokoll, Kontrolle und Hefteintrag.",
+  "description": "Fünf klassische Trennversuche selbst durchführen: Sand/Wasser sedimentieren und dekantieren, filtrieren (Rückstand auf dem Uhrglas), Kochsalzlösung eindampfen (Kristalle portionsweise entnehmen), Öl/Wasser im Scheidetrichter scheiden (Schütteln freiwillig), Eisen/Sand/Kochsalz mit eigener Trennkette vollständig trennen. Mit schaltbarem Teilchenmodell, unbewertetem Beobachtungsprotokoll, Kontrolle und Hefteintrag.",
   "subject": "Chemie",
   "topics": [
     "Stoffgemische und Reinstoffe",

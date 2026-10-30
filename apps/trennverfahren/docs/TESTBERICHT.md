@@ -1,8 +1,47 @@
-# Trennverfahren 0.2.0 – Testbericht
+# Trennverfahren – Testbericht
 
-Stand 29.10.2026 · Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Grundlage: Korrekturauftrag „Trennverfahren 0.2.0“ (P0, P1, P2) · Gesamtstatus: **prototype** – Entwicklungsabnahme der Prüfungen TV01–TV21 bestanden; iPad, mebis und fachliche Freigabe stehen aus (**HOLD – unverified**)
+Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatus: **prototype**
 
-## Umgebung
+## 0.3.0 – Stand 30.10.2026
+
+Grundlage: Durchsicht vom 30.10.2026 (Tropfen, Teilchenmodell, V3 Spatel, V4 Teilchenebene, V5 vollständige Trennschritte, Heizplatte am Gerät, Uhrglas weitergeben). Entwicklungsprüfung in einer Linux-Umgebung **ohne Browser**: Modell und Darstellungslogik sind durch Unit-Tests abgedeckt, die Zeichnung wurde mit einer Canvas-Bibliothek ohne Browser gerendert und gesichtet. **Browserabnahme (E1–E13) und Paketprüfung im Browser stehen aus (HOLD – unverified).**
+
+| | |
+| --- | --- |
+| System | Linux (Ubuntu 24.04), Node.js 22.23.4 |
+| Browser | – (keiner verfügbar; Playwright-Browser ließen sich in dieser Umgebung nicht laden) |
+| Sichtprüfung | Renderer und Teilchenansicht in Node mit `@napi-rs/canvas` gerendert (nicht Teil des Repositorys) |
+| Pakete | `release/trennverfahren-0.3.0-web.zip`, `release/trennverfahren-0.3.0-scorm12.zip` (`npm run package`: Build OK, 14 Dateien), Prüfsummen in `release/SHA256SUMS.txt` |
+
+```bash
+npm test          # 58 Unit-Tests: Modell 37, Aufgaben 9, Teilchenansicht 4, Geometrie 3, Labkit 5 – alle PASS
+npm run package   # Build-Prüfung, Web- und SCORM-ZIP 0.3.0, Prüfsummen
+```
+
+| ID | Prüffall | Status | Nachweis |
+| --- | --- | --- | --- |
+| TV22 | Tropfen größer, hängender Tropfen, Übergang Tropfen → Rinnsal nach Durchfluss | **PASS** (Sichtprüfung) · Browser **HOLD** | gerenderte Bildfolgen V2 (volles Filter: Rinnsal bis in den Kolben; wenig Durchfluss: einzelne Tropfen mit hängendem Tropfen) und V4 (Hahn „Tropfen“ / „offen“); E13 prüft `streamK` und Auftreffpunkt im Browser |
+| TV23 | Teilchensymbole: Wasser als blaues Dreieck, Ionenladungen lesbar, etwa doppelte Größe, Legende passend | **PASS** (Sichtprüfung) · Browser **HOLD** | gerenderte Teilchenbilder V1–V5 und Vergleichsbilder V3; E8 (Legende) und E13 im Browser |
+| TV24 | Gleichmäßige Verteilung: Öl in der ganzen Ölphase, reines Öl ohne Schichten, keine Randreihen | **PASS** | `particles.test.js` (Höhen- und Randverteilung, Spanne der Ölteilchen > 80 % der Ölphase) |
+| TV25 | Schütteln: Öltröpfchen im Wasser, kein Wasser im Tröpfchen, keine Überlappung, Entmischung in Ruhe | **PASS** | `particles.test.js`; achtfach wiederholt ohne Ausreißer |
+| TV26 | Magnet auf Teilchenebene: erfasste Körner verlassen das Bild, übrige bleiben liegen, nichts fällt zurück | **PASS** | `particles.test.js` |
+| TV27 | Mehr Salzteilchen; Gemenge mit Salzkristallen zwischen den Körnern | **PASS** (Sichtprüfung) | `particles.test.js` (Mengen) und gerenderte Bilder V3/V5 |
+| TV28 | V3: Spatel in drei Portionen, Menge auf dem Uhrglas wächst | **PASS** | `model.test.js` (Zwischenstände ⅓, ⅔, 3/3, Bilanz); E13 im Browser **HOLD** |
+| TV29 | Uhrglas weitergeben (Gemenge, Eisen, Rückstand vom Filterpapier; Papier bleibt) | **PASS** | `model.test.js` (V5, V2) |
+| TV30 | Heizplatte am Gerät (Maus, Touch, Tastatur), Trefferfläche überdeckt die Schale nicht | **PASS** (Logik) · Browser **HOLD** | Trefferflächen bei vier Bühnengrößen geprüft (Knopf verdeckt die Mitte der Abdampfschale nie); E13 im Browser |
+| TV31 | V5: Magnet trocken 2 / nass 3 Durchgänge restlos; Zählung beginnt bei neuem Eisen neu | **PASS** | `model.test.js` |
+| TV32 | V5: Filtration vollständig, ungelöstes Salz bei zu wenig Wasser bleibt Fehler | **PASS** | `model.test.js` (inkl. bestehendem Korrekturfall „Nachspülen korrigiert“) |
+| TV33 | V5: Dichte richtig bei Dekantieren, Korngröße entbehrlich ohne Filtration | **PASS** | `tasks.test.js`, `model.test.js` (Dekantieren erkannt, Aufgießen einer Suspension nicht) |
+| TV34 | Altfälle TV01–TV21 | **PASS** (Unit) · Browser **HOLD** | alle bisherigen Unit-Tests grün; Browserszenarien E1–E12 sind an die Neuerungen angepasst geprüft (Code-Durchsicht), aber nicht ausgeführt |
+| TV35 | Web-/SCORM-Paket im Browser | **HOLD – unverified** | `npm run test:scorm` steht aus |
+
+**Auf dem Entwicklungsrechner auszuführen:** `npm run test:all` (Unit, Paket, E1–E13, Paketprüfung). Danach diesen Abschnitt mit den Ergebnissen ergänzen und die Screenshots `70`–`77` (E13) sichten. Weiter ausstehend wie bei 0.2.0: iPad/Safari, mebis, fachliche Durchsicht, Unterrichtserprobung.
+
+## Abnahme 0.2.0 – Stand 29.10.2026 (Browser)
+
+Grundlage: Korrekturauftrag „Trennverfahren 0.2.0“ (P0, P1, P2). Die folgenden Ergebnisse gelten für 0.2.0; die Prüfsummen beziehen sich auf die damaligen Pakete (in der Git-Historie).
+
+### Umgebung
 
 | | |
 | --- | --- |
@@ -12,7 +51,7 @@ Stand 29.10.2026 · Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALIT
 | Baukasten | Labkit 0.1.1 (unverändert) |
 | Pakete | `release/trennverfahren-0.2.0-web.zip`, `release/trennverfahren-0.2.0-scorm12.zip`, Prüfsummen in `release/SHA256SUMS.txt` |
 
-## Ausgeführte Befehle und Reihenfolge
+### Ausgeführte Befehle und Reihenfolge
 
 ```bash
 npm test                  # 46 Unit-Tests (Modell 30, Aufgaben 8, Geometrie 3, Labkit 5)
@@ -33,7 +72,7 @@ Prüfsummen der ausgelieferten Pakete (SHA-256):
 
 Ergebnisse maschinenlesbar: [`tests/e2e/results.json`](../tests/e2e/results.json) (Nachläufe vermerkt), [`tests/e2e/scorm-results.json`](../tests/e2e/scorm-results.json).
 
-## PASS/HOLD-Matrix (TV01–TV21)
+### PASS/HOLD-Matrix (TV01–TV21)
 
 | ID | Prüffall | Status | Nachweis |
 | --- | --- | --- | --- |
@@ -62,7 +101,7 @@ Ergebnisse maschinenlesbar: [`tests/e2e/results.json`](../tests/e2e/results.json
 
 Zusätzlich weiter grün: E1 Pflichtablauf (jetzt mit Papier- und Kristallüberführung), E2 Touch, E3 Tastatur, E4 Korrekturen, E5 Speicherung, E7 Animation, E8 Teilchenmodell. Alle Szenarien prüfen außerdem: keine Konsolenfehler, keine Anfragen außerhalb des App-Servers.
 
-## Ausstehende Prüfungen (nicht in dieser Umgebung möglich)
+### Ausstehende Prüfungen (nicht in dieser Umgebung möglich)
 
 | Prüfung | Status |
 | --- | --- |
@@ -71,7 +110,7 @@ Zusätzlich weiter grün: E1 Pflichtablauf (jetzt mit Papier- und Kristallüberf
 | Fachliche Durchsicht durch die Lehrkraft (Trennprinzip-Bewertung, Toleranzen, Texte) | **HOLD – unverified** |
 | Unterrichtserprobung | **HOLD – unverified** |
 
-## Bekannte Grenzen und Risiken für den Schulbetrieb
+### Bekannte Grenzen und Risiken für den Schulbetrieb
 
 - Versuch 2 und 5 bleiben bei 1024×768 mit beiden Zusatzanzeigen die kleinsten Aufbauten (Maßstab 0,54 bzw. 0,59); Ausblenden des Bedienfelds oder Verschieben der Trennlinie vergrößert sie.
 - Die Spritzflasche wird bei Zielen am linken Rand gespiegelt geführt, unter der Wandablage flacher – die Bewegung ist schematisch.
@@ -79,6 +118,6 @@ Zusätzlich weiter grün: E1 Pflichtablauf (jetzt mit Papier- und Kristallüberf
 - Zeiten sind beschleunigt; Parameter in [CHEMIE.md](CHEMIE.md).
 - Echte Geräte- und Plattformprüfungen fehlen (siehe oben); bis dahin bleibt `sivex.json` auf `prototype`.
 
-## Screenshots
+### Screenshots
 
 `docs/screenshots/`: `01`–`08b` Pflichtablauf · `10` Tablet/Touch · `11` Tastatur · `20`–`24` Korrekturfälle · `30` Speicherung · `40-layout-*` (4 Viewports, alle Versuche) · `41-lange-meldung-*` · `42-neustart-*` · `43` Scheidetrichter-Tropfen · `50`–`53` Scheidetrichter (TV07, TV08) · `54` Protokoll · `55-tv21-*` Vergleichsbilder · `60`/`61` Pakete · `anim/` Bildfolgen (Gießen, Tropfen, Spritzflasche, Sedimentation, Entmischung, Lösen, Kristalle) · `vergleich/` Vorher (0.1.0) / Nachher (0.2.0) bei 1024×768 und 1180×820.

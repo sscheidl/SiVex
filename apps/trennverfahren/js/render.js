@@ -17,6 +17,9 @@
   const TAU = Math.PI * 2;
   const GRAV = 9000; // Weltpixel/s² (≈ 0,8 g bei 1,25 px/mm, damit Strahlen sichtbar bleiben)
   const WAVE_N = 28;
+  /** Gezeichneter Tropfen ≈ realer Tropfen (0,05 mL); ab etwa 8 bis 14 Tropfen/s wird daraus ein Rinnsal. */
+  const DROP_V = 0.05;
+  const STREAM_ON = [8, 14];
   const FONT = '"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
 
   const COL = {
@@ -238,11 +241,15 @@
       ctx.fillStyle = on ? '#ff6a2a' : '#8b95a0';
       ctx.beginPath(); ctx.arc(x + w / 2 - 22, top + 22, 5, 0, TAU); ctx.fill();
       if (on) { ctx.fillStyle = 'rgba(255,106,42,0.3)'; ctx.beginPath(); ctx.arc(x + w / 2 - 22, top + 22, 9, 0, TAU); ctx.fill(); }
-      for (let i = 0; i < 2; i++) { ctx.fillStyle = i < p.level ? '#ff8a3c' : '#c3cbd3'; ctx.fillRect(x - w / 2 + 16 + i * 14, top + 19, 10, 6); }
-      // Drehknopf
-      ctx.fillStyle = '#39414b'; ctx.beginPath(); ctx.arc(x - w / 2 + 60, top + 22, 8, 0, TAU); ctx.fill();
-      const ka = -Math.PI * 0.75 + p.level * Math.PI * 0.6;
-      ctx.strokeStyle = '#eef2f6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - w / 2 + 60, top + 22); ctx.lineTo(x - w / 2 + 60 + Math.cos(ka) * 6, top + 22 + Math.sin(ka) * 6); ctx.stroke();
+      for (let i = 0; i < 2; i++) { ctx.fillStyle = i < p.level ? '#ff8a3c' : '#c3cbd3'; ctx.fillRect(x - w / 2 + 50 + i * 14, top + 19, 10, 6); }
+      // Drehknopf (am Gerät bedienbar): Skala 0 · 1 · 2 und Zeiger
+      const kx = x - w / 2 + 25, ky = top + 21;
+      ctx.font = `700 7px ${FONT}`; ctx.fillStyle = '#56616d'; ctx.textAlign = 'center';
+      for (let i = 0; i < 3; i++) { const a = -Math.PI * 0.85 + i * Math.PI * 0.35; ctx.fillText(String(i), kx + Math.cos(a) * 15, ky + Math.sin(a) * 15 + 2.5); }
+      ctx.fillStyle = '#2f363f'; ctx.beginPath(); ctx.arc(kx, ky, 10, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(kx, ky, 8.5, 0, TAU); ctx.stroke();
+      const ka = -Math.PI * 0.85 + p.level * Math.PI * 0.35;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(kx + Math.cos(ka) * 2, ky + Math.sin(ka) * 2); ctx.lineTo(kx + Math.cos(ka) * 8, ky + Math.sin(ka) * 8); ctx.stroke(); ctx.lineCap = 'butt';
     }
 
     // ------------------------------------------------------------------ Flüssigkeit in Glasgefäßen
@@ -941,23 +948,36 @@
       fx.bubbles = fx.bubbles.filter((b) => (b.age += dt) < b.life);
       fx.mist = fx.mist.filter((m) => { m.age += dt; m.x += m.vx * dt; m.y += m.vy * dt; m.r += dt * 8; return m.age < m.life; });
       fx.splashes = fx.splashes.filter((p) => { p.age += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += GRAV * 0.5 * dt; if (p.x0 != null) p.x = clamp(p.x, p.x0, p.x1); return p.age < p.life && !(p.floor != null && p.vy > 0 && p.y > p.floor); });
-      // Tropfen aus Trichter und Scheidetrichter
-      for (const [key, srcId, tipFn, kindSlot] of [['F', 'F', G.funnelTip, 'under'], ['S', 'S', G.sepTip, 'sepunder']]) {
-        const src = st.objs[srcId];
-        if (!src) continue;
-        const rate = st.drip[key] || 0;
-        const w = V(srcId);
-        if (rate <= 0.005) { w.dripAcc = 0; continue; }
-        const pose = homePose(st, src);
-        const tip = tipFn(pose);
-        w.dripAcc += rate * dt * (k || 1) / 0.08;
+      // Tropfen und Rinnsal aus Trichter und Scheidetrichter. Die sichtbare Tropfenzahl je s
+      // entscheidet über die Darstellung: einzelne Tropfen → Tropfenkette → zusammenhängendes Rinnsal
+      // (wie in der Destillation). Reine Darstellung, das Modell bleibt unberührt.
+      for (const dr of dripSources(st)) {
+        const w = V(dr.id);
+        const q = st.drip[dr.key] || 0;
+        w.qs = (w.qs || 0) + (q - (w.qs || 0)) * (1 - Math.exp(-dt / 0.25));
+        if (q < 0.004) w.qs = Math.min(w.qs, q * 4);
+        const rv = q * (k || 1) / DROP_V;
+        w.streamK = clamp(((w.qs * (k || 1) / DROP_V) - STREAM_ON[0]) / (STREAM_ON[1] - STREAM_ON[0]), 0, 1);
+        if (q < 0.004) { w.dripAcc = 0; w.streamK = 0; continue; }
+        if (w.streamK >= 1) { w.dripAcc = 0; continue; }
+        w.dripAcc += rv * dt;
         let n = 0;
-        while (w.dripAcc >= 1 && n++ < 6) {
+        while (w.dripAcc >= 1 && n++ < 4) {
           w.dripAcc -= 1;
-          const recv = key === 'S' && src.at !== 'sepring' ? null : Mo.objAt(st, kindSlot);
-          const isOil = key === 'S' && src.c.water < 0.02;
-          fx.drops.push({ x: tip.x, y: tip.y, t: 0, y0: tip.y, recv: recv ? recv.id : null, oil: isOil, vol: 0.08 });
+          fx.drops.push({ x: dr.tip.x, y: dr.tip.y + dripR() * 0.6, t: 0, y0: dr.tip.y + dripR() * 0.6, recv: dr.recv ? dr.recv.id : null, oil: dr.oil });
         }
+        if (w.dripAcc > 1) w.dripAcc = 1;
+      }
+      // Rinnsal: Auftreffimpulse und Ringwellen wie beim Gießen, ohne Gefäß eine Pfütze
+      for (const dr of dripSources(st)) {
+        const w = V(dr.id);
+        if (!(w.streamK > 0.3) || !(st.drip[dr.key] > 0.004)) continue;
+        const target = dr.recv && Mo.objAt(st, dr.recv.at) === dr.recv ? catchAt(st, dr.recv) : null;
+        if (target) {
+          const u = clamp((dr.tip.x - target.x0) / Math.max(1, target.x1 - target.x0), 0, 1);
+          if (Math.random() < dt * 24) impulse(dr.recv.id, u, 6 + 6 * w.streamK);
+          if (Math.random() < dt * 9) { V(dr.recv.id).rings.push({ x: dr.tip.x, dx: dr.tip.x - target.cx, age: 0, life: 0.7 }); if (V(dr.recv.id).rings.length > 8) V(dr.recv.id).rings.shift(); }
+        } else if (Math.random() < dt * 6) addPuddle(dr.tip.x, dr.oil);
       }
       fx.drops = fx.drops.filter((d) => {
         d.t += dt;
@@ -1207,7 +1227,12 @@
       ctx.save(); ctx.translate(x, y); ctx.rotate(-0.5);
       ctx.fillStyle = '#9aa4b0'; roundRect(ctx, -4, -70, 5, 62, 2); ctx.fill();
       ctx.fillStyle = '#c3cbd4'; roundRect(ctx, -9, -10, 15, 12, 3); ctx.fill();
-      if (f < 0.5) { ctx.fillStyle = '#ffffff'; ctx.strokeStyle = 'rgba(120,135,150,0.7)'; for (let i = 0; i < 6; i++) { ctx.fillRect(-7 + i * 2.2, -13 - (i % 2) * 2, 2.4, 2.4); } }
+      if (f < 0.5) {
+        const c = Mo.solids(s.c) > 0.01 || !op.moved ? s.c : op.moved, tot = Math.max(1e-6, Mo.solids(c));
+        const cols = [[c.iron / tot, '#3a3e45'], [Mo.sand(c) / tot, '#c9a56b'], [c.saltS / tot, '#ffffff']];
+        const pick = (q) => { let acc = 0; for (const [w, col] of cols) { acc += w; if (q <= acc) return col; } return Mo.solids(c) > 0.01 ? '#ffffff' : 'rgba(150,196,232,0.9)'; };
+        for (let i = 0; i < 6; i++) { ctx.fillStyle = Mo.solids(c) > 0.01 ? pick((i + 0.5) / 6) : 'rgba(150,196,232,0.9)'; ctx.fillRect(-7 + i * 2.2, -13 - (i % 2) * 2, 2.4, 2.4); }
+      }
       ctx.restore();
       void a; void b;
     }
@@ -1290,7 +1315,8 @@
         if (sel === 'mag') highlight(mp.pose, G.EXTENT.magnet);
       }
       // Spritzer, Tropfen, Dunst
-      for (const d of fx.drops) drawDrop(d.x, d.y, d.oil);
+      drawDripStreams(st);
+      for (const d of fx.drops) drawDrop(d.x, d.y, d.oil, null, 1.05 + Math.min(0.5, GRAV * d.t / 2600));
       for (const p of fx.splashes) { ctx.fillStyle = p.oil ? 'rgba(226,182,44,0.8)' : 'rgba(200,225,245,0.85)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.4, 0, TAU); ctx.fill(); }
       for (const m of fx.mist) {
         const t = m.age / m.life, a = m.a * Math.sin(Math.PI * t);
@@ -1300,10 +1326,78 @@
       }
       last = { poses };
     }
-    function drawDrop(x, y, oil) {
-      ctx.fillStyle = oil ? 'rgba(226,182,44,0.9)' : 'rgba(150,196,232,0.9)';
-      ctx.beginPath(); ctx.moveTo(x, y - 4.5); ctx.quadraticCurveTo(x + 2.6, y - 0.5, x, y + 2.2); ctx.quadraticCurveTo(x - 2.6, y - 0.5, x, y - 4.5); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(x - 0.9, y - 1.6, 0.9, 1.6);
+    /**
+     * Tropfenradius in Weltpixeln: real ≈ 2,3 mm (≈ 2,9 px), leicht überzeichnet und so, dass ein
+     * Tropfen auch bei kleinem Maßstab (kleine Bildschirme, Teilchenmodell daneben) mindestens
+     * etwa 3 Bildschirmpixel Radius hat.
+     */
+    const dripR = () => clamp(4.2 / Math.max(view.scale, 0.2), 4.6, 6.4);
+    /** Quellen, aus denen gerade etwas tropfen kann: Trichter (im Ring) und Scheidetrichter. */
+    function dripSources(st) {
+      const out = [];
+      for (const [key, id, tipFn, slot] of [['F', 'F', G.funnelTip, 'under'], ['S', 'S', G.sepTip, 'sepunder']]) {
+        const src = st.objs[id];
+        if (!src) continue;
+        const tip = tipFn(homePose(st, src));
+        const recv = key === 'S' && src.at !== 'sepring' ? null : Mo.objAt(st, slot);
+        out.push({ key, id, tip, recv, oil: key === 'S' && src.c.water < 0.02 });
+      }
+      return out;
+    }
+    /** Auftreffpunkt unter einer Tropfquelle (Spiegel bzw. Innenboden des Auffanggefäßes oder Tisch). */
+    function dripTarget(st, dr) {
+      const t = dr.recv && Mo.objAt(st, dr.recv.at) === dr.recv ? catchAt(st, dr.recv) : null;
+      return t ? { x: dr.tip.x, y: t.y, into: dr.recv.id, x0: t.x0, x1: t.x1 } : { x: dr.tip.x, y: G.BASE_Y + 4, into: null };
+    }
+    let dripHit = {};
+    /** Rinnsal: zusammenhängender, nach unten schmaler werdender Strahl mit wandernden Verdickungen. */
+    function drawDripStreams(st) {
+      dripHit = {};
+      for (const dr of dripSources(st)) {
+        const w = vis[dr.id];
+        const q = st.drip[dr.key] || 0;
+        const hang = w && q >= 0.004 && w.streamK < 1 ? w.dripAcc || 0 : 0;
+        const r = dripR();
+        // hängender Tropfen an der Spitze wächst und reißt ab
+        if (hang > 0.05) {
+          const rr = r * (0.45 + 0.55 * Math.cbrt(hang));
+          drawDrop(dr.tip.x, dr.tip.y + rr * 0.55, dr.oil, rr, 0.85);
+        }
+        if (!w || !(w.streamK > 0) || q < 0.004) continue;
+        const tg = dripTarget(st, dr);
+        dripHit[dr.id] = tg;
+        const a = w.streamK;
+        const top = dr.tip.y, len = Math.max(4, tg.y - top);
+        const wTop = Math.max(clamp(1.8 + Math.sqrt(w.qs) * 1.4, 2.4, 5.2), 3 / Math.max(view.scale, 0.2));
+        const wBot = wTop * 0.62;
+        const col = dr.oil ? [205, 160, 30] : [80, 140, 210];
+        ctx.save();
+        ctx.globalAlpha = a;
+        const g = ctx.createLinearGradient(dr.tip.x - wTop, 0, dr.tip.x + wTop, 0);
+        g.addColorStop(0, rgba(col, 0.85)); g.addColorStop(0.5, dr.oil ? 'rgba(250,222,120,0.95)' : 'rgba(190,222,252,0.95)'); g.addColorStop(1, rgba(col, 0.85));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(dr.tip.x - wTop / 2, top); ctx.lineTo(dr.tip.x + wTop / 2, top);
+        ctx.lineTo(dr.tip.x + wBot / 2, top + len); ctx.lineTo(dr.tip.x - wBot / 2, top + len);
+        ctx.closePath(); ctx.fill();
+        // Verdickungen wandern nach unten und zeigen die Fließrichtung
+        ctx.fillStyle = rgba(col, 0.9);
+        const sp = 24, off = (time * 260) % sp;
+        for (let y = top + off; y < top + len - 2; y += sp) {
+          const u = (y - top) / len, ww = lerp(wTop, wBot, u) * 0.75;
+          ctx.beginPath(); ctx.ellipse(dr.tip.x, y, ww, ww * 1.5, 0, 0, TAU); ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+    function drawDrop(x, y, oil, r, stretch) {
+      r = r || dripR();
+      const s = stretch || 1.15;
+      ctx.fillStyle = oil ? 'rgba(226,182,44,0.92)' : 'rgba(140,190,235,0.92)';
+      ctx.beginPath(); ctx.moveTo(x, y - r * 1.7 * s); ctx.quadraticCurveTo(x + r * 1.05, y - r * 0.35, x + r * 0.62, y + r * 0.45);
+      ctx.arc(x, y + r * 0.2, r * 0.66, 0.35, Math.PI - 0.35); ctx.quadraticCurveTo(x - r * 1.05, y - r * 0.35, x, y - r * 1.7 * s); ctx.fill();
+      ctx.strokeStyle = oil ? 'rgba(150,110,10,0.55)' : 'rgba(70,120,175,0.55)'; ctx.lineWidth = 0.7; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.ellipse(x - r * 0.28, y - r * 0.15, r * 0.16, r * 0.3, -0.3, 0, TAU); ctx.fill();
     }
     function rank(st, id, poses) {
       const o = st.objs[id], p = poses[id];
@@ -1365,6 +1459,9 @@
         // Hahn als eigene Trefferfläche am gezeichneten Scheidetrichter
         if (o.type === 'sep' && !pose.lying) out.push({ id: 'cock', kind: 'part', x0: pose.x - 4, x1: pose.x + 36, y0: pose.y + 1, y1: pose.y + 24 });
       }
+      // Drehknopf der Heizplatte als eigene Trefferfläche (zuletzt, damit er über dem Gefäß liegt)
+      const plateSlot = st.plate && e.exp.slots.find((q) => q.kind === 'plate');
+      const knob = plateSlot ? { id: 'knob', kind: 'part', x0: plateSlot.x - G.PLATE.w / 2 + 9, x1: plateSlot.x - G.PLATE.w / 2 + 41, y0: G.PLATE_TOP + 8, y1: G.PLATE_TOP + 36 } : null;
       const slots = [];
       for (const s of e.exp.slots) {
         if (Mo.objAt(st, s.id)) continue;
@@ -1381,14 +1478,14 @@
         else r = { x0: s.x - 48, x1: s.x + 48, y0: G.BASE_Y - 124, y1: G.BASE_Y };
         slots.push(Object.assign({ id: s.id, kind: 'slot' }, r));
       }
-      // freie Plätze zuerst (liegen in der Stapelfolge unter den Geräten)
-      return slots.concat(out);
+      // freie Plätze zuerst (liegen in der Stapelfolge unter den Geräten), Drehknopf zuletzt
+      return slots.concat(out, knob ? [knob] : []);
     }
     /** Weltrechteck → Bildschirmrechteck (CSS-Pixel relativ zum Canvas). */
     const toScreen = (r) => ({ x: view.ox + r.x0 * view.scale, y: view.oy + r.y0 * view.scale, w: (r.x1 - r.x0) * view.scale, h: (r.y1 - r.y0) * view.scale });
     const worldX = (x) => view.ox + x * view.scale;
 
-    return { frame, resize, fit, boxes, toScreen, worldX, worldY: (y) => view.oy + y * view.scale, catchAt: (id) => catchAt(getEngine().state, getEngine().state.objs[id]), get streamHit() { return streamHit; }, get washHit() { return washHit; }, view, get time() { return time; }, get vis() { return vis; }, get last() { return last; } };
+    return { frame, resize, fit, boxes, toScreen, worldX, worldY: (y) => view.oy + y * view.scale, catchAt: (id) => catchAt(getEngine().state, getEngine().state.objs[id]), get streamHit() { return streamHit; }, get washHit() { return washHit; }, get dripHit() { return dripHit; }, view, get time() { return time; }, get vis() { return vis; }, get last() { return last; } };
   }
 
   (root.TV = root.TV || {}).render = { createRenderer, COL };

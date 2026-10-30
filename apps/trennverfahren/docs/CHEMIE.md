@@ -41,6 +41,7 @@ Folge: Zu frühes oder zu schnelles Abgießen ergibt ein trübes Dekantat; Abset
 - Ein Rundfilter hält **alle ungelösten Körner** zurück (Sand, Eisen, ungelöste Salzkristalle). Wasser und **gelöstes Salz** passieren.
 - Der Ablauf hängt von der Füllhöhe ab (`q = V/6 s`, höchstens 2,5 mL/s); der Trichter fasst 45 mL über dem Papier. Läuft er fast voll, stoppt das Gießen mit einem Hinweis – nachgießen, wenn Flüssigkeit durchgelaufen ist.
 - Im nassen Papier bleiben 1,2 mL, im Rückstand je g Sand 0,25 mL (Feinanteil 0,3 mL, Eisen 0,08 mL, Salzkristalle 0,12 mL) Flüssigkeit hängen – mit dem darin gelösten Salz. Nachspülen verdünnt diese anhaftende Lösung.
+- **Versuch 5 (ab 0.3.0, vollständige Trennschritte):** Der Rückstand tropft vollständig ab; das gelöste Salz geht also ganz ins Filtrat, Nachspülen ist nicht nötig (schadet aber nicht). Ungelöstes Salz bleibt liegen – zu wenig Wasser zum Lösen bleibt ein Fehler, den Nachspülen korrigiert.
 - **Ohne Papier** läuft alles samt Sand durch das Trichterrohr. **Trocken** auf den Filter gegebenes Sand-Salz-Gemenge bleibt vollständig liegen; erst Wasser löst das Salz heraus.
 - Steht nichts unter dem Trichter, tropft das Filtrat auf den Tisch (Verlusttopf „verschüttet“, sichtbar als Pfütze).
 - **Filterpapier entnehmen:** Wenn nichts mehr tropft, wird das Papier samt feuchtem Rückstand (Sand, ggf. ungelöstes Salz, anhaftende Lösung) vollständig auf ein leeres Uhrglas gelegt. Der Trichter ist danach leer und kann ein neues Papier aufnehmen.
@@ -57,7 +58,12 @@ Folge: Zu frühes oder zu schnelles Abgießen ergibt ein trübes Dekantat; Abset
 
 ### Magnettrennung
 
-Der Magnet (in einer Kunststofftüte) zieht **nur Eisen** an: je Durchgang 80 % des Eisens aus trockenem, 65 % aus nassem Gemisch oder Filterrückstand. An nassem Eisen haftet ein dünner Film Lösung (0,05 mL je g). Abstreifen über einem Gefäß überführt das Eisen dorthin. Sand und Salz bleiben unverändert liegen.
+Der Magnet (in einer Kunststofftüte) zieht **nur Eisen** an. Ab 0.3.0 ist die Trennung nach einer festen Zahl von Durchgängen **restlos** (keine Restmenge, die nie ganz verschwindet):
+
+- trockenes Gemisch: 1. Durchgang ¾ des Eisens, 2. Durchgang der Rest;
+- nasses Gemisch oder Filterrückstand: 60 %, dann 75 % des Rests, im 3. Durchgang der Rest.
+
+Die Durchgänge werden je Gefäß gezählt; kommt danach wieder Eisen hinzu, beginnt die Zählung neu. Nach jedem Durchgang meldet die App, ob im Gemisch noch Eisenkörner zu sehen sind. Am Eisen haftet keine Lösung. Abstreifen über einem Gefäß überführt das Eisen dorthin. Sand und Salz bleiben unverändert liegen.
 
 ### Heizen und Eindampfen
 
@@ -66,9 +72,22 @@ Der Magnet (in einer Kunststofftüte) zieht **nur Eisen** an: je Durchgang 80 % 
 - Unter der Siedetemperatur verdunstet wenig Wasser (stark temperaturabhängig). Beim **Sieden** geht die überschüssige Leistung vollständig in die Verdampfung (2257 J/g). Siedetemperatur der Lösung: 100 °C + 8 K × Sättigungsgrad (gesättigte Sole ≈ 108 °C).
 - **Siedeblasen nur beim Sieden**; keine Blasen bei kalter Lösung.
 - **Wasserdampf ist unsichtbar.** Gasförmiges Wasser sieht man nicht. Über der heißen Flüssigkeit wird erst mit Abstand eine weiße Wolke gezeichnet – in Schülertexten „Dampf“ genannt; sie besteht aus kondensierten Wassertröpfchen. Der Hintergrund ist dafür etwas dunkler als in 0.1.0.
-- **Abkühlen und Entnehmen:** Kristalle lassen sich erst unter 45 °C (Unterrichtsparameter `HANDLE_T`) und ohne restliche Lösung (≤ 1 mL Wasser) mit dem Spatel auf ein leeres Uhrglas überführen; die gesamte Masse samt Restfeuchte wird übertragen.
+- **Abkühlen und Entnehmen:** Kristalle lassen sich erst unter 45 °C (Unterrichtsparameter `HANDLE_T`) und ohne restliche Lösung (≤ 1 mL Wasser) mit dem Spatel auf ein leeres Uhrglas (oder in ein Becherglas bzw. eine Porzellanschale) überführen. Ab 0.3.0 in **drei Portionen**, je Spatelgang ein Drittel – die Kristallfläche auf dem Uhrglas wächst sichtbar; am Ende ist die gesamte Masse samt Restfeuchte übertragen.
+- **Uhrglas weitergeben (ab 0.3.0):** Der Inhalt eines Uhrglases (Feststoffe, ggf. mit Restfeuchte; auch der Rückstand auf einem abgelegten Filterpapier – das Papier bleibt liegen) lässt sich mit dem Spatel in ein Becherglas, einen Erlenmeyerkolben, eine Porzellanschale oder die abgekühlte Abdampfschale geben, ebenfalls in drei Portionen. So ist das Uhrglas keine Sackgasse mehr.
 - Salz wird nicht gasförmig und schmilzt nicht (Schmelztemperatur ≈ 801 °C wird nie erreicht).
 - **Trockenlaufen:** Ist auf hoher Stufe nur noch wenig Wasser (< 1,5 mL) über reichlich Kristallen, spritzen Salzkristalle heraus (Verlusttopf „verspritzt“, Warnung „herunterschalten oder ausschalten – die Restwärme genügt“). Ist die Schale trocken und weiter heiß, erscheint „Heizplatte ausschalten“.
+
+### Teilchenmodell (Darstellung, ab 0.3.0)
+
+- Symbole wie in „Aggregatzustände“: **Wasserteilchen als blaue Dreiecke**, Na⁺ (violett, kleiner) und Cl⁻ (grün, größer) mit deutlich lesbarem Ladungszeichen, Ölteilchen als gelbe Stäbchen, Sand- und Eisenkörner als Verbände sehr vieler Teilchen. Alle Symbole etwa doppelt so groß wie in 0.2.0.
+- **Gleichmäßige Verteilung:** Jedes Teilchen hat einen Platz relativ zu seiner Phase (Ölphase, Wasserphase, Bodensatz) und bewegt sich thermisch darum; die Plätze wandern langsam ungeordnet. Dadurch füllen Ölteilchen die ganze Ölschicht (nicht nur die Grenzfläche), reines Öl bildet keine Schichten, und beim Befüllen entstehen keine Reihen.
+- **Emulsion:** Nach dem Schütteln ist der Anteil `emul` des Öls auf Tröpfchen verteilt (bis zu 12, Fläche entsprechend ihrem Ölanteil, ohne Überlappung) – umgeben von Wasserteilchen, in Tröpfchen kein Wasser. In Ruhe steigen die Tröpfchen auf und vereinigen sich mit der Schicht, im Takt der Entmischung im Scheidetrichter.
+- **Mengen:** Ionenzahl ∝ Konzentration × sichtbare Flüssigkeit (bei Sättigung 36 Paare für den ganzen Ausschnitt); festes Salz 10 Ionen je g (höchstens 96) als wenige große Kristalle bzw. – im Gemenge – als kleine Kristalle zwischen den Körnern; Eisenkörner ∝ Masse (1 Korn je 0,8 g), Sandkörner 1 je 1,6 g. Die Verhältnisse sind bewusst nicht maßstäblich (real ≈ 1 Ionenpaar auf 16 Wassermoleküle in gesättigter Lösung).
+- **Magnet:** Nur die tatsächlich erfassten Eisenkörner wandern zum Magneten, bleiben dort und verlassen mit ihm das Bild; die übrigen bleiben im Gemisch liegen.
+
+### Tropfen und Rinnsal (Darstellung, ab 0.3.0)
+
+Aus Trichter und Scheidetrichter fallen gezeichnete Tropfen von ≈ 0,05 mL (realer Tropfen). Ihre Größe ist leicht überzeichnet und so begrenzt, dass ein Tropfen auch bei kleinem Maßstab gut zu sehen ist; an der Spitze wächst ein hängender Tropfen und reißt ab. Ab etwa 8 sichtbaren Tropfen je s geht die Darstellung in eine Tropfenkette und ab 14 je s in ein zusammenhängendes, nach unten schmaler werdendes Rinnsal über (wie in der Destillation). Das Rinnsal endet am Spiegel bzw. Innenboden des Auffanggefäßes. Reine Darstellung – das Modell rechnet unverändert mit dem Volumenstrom.
 
 ### Gefäßgeometrie und Flüssigkeitsdarstellung
 
@@ -84,7 +103,7 @@ Bewertet wird der **tatsächliche Bestand in getrennten Fraktionen**, nicht eine
 | 2 Filtrieren | 100 mL Wasser, 20 g Sand | mindestens 30 mL durch ein Filterpapier im Ring filtriert; ≥ 60 mL Filtrat ohne Sand (≤ 0,05 g); ≥ 15 g Sand im Filterpapier – im Trichter **oder** mit dem Papier auf dem Uhrglas | ≈ 6 mL bleiben im nassen Rückstand; ein kleiner Sandrest im Becherglas wird toleriert. |
 | 3 Eindampfen | 40 mL Lösung mit 8 g Kochsalz | ≥ 5,6 g Kristalle in der Schale **oder** nach dem Überführen auf dem Uhrglas; ≤ 1 mL Restwasser; ≥ 25 mL verdampft | 70 % Ausbeute erlaubt Reste im Becherglas und Spritzverluste. |
 | 4 Scheiden | 50 mL Wasser, 50 mL Öl | ≥ 30 mL über den Hahn abgelassen (kein Schüttelkriterium – Schütteln ist freiwillig); Gefäß mit ≥ 40 mL Wasser und ≤ 1,5 mL Öl; anderes Gefäß mit ≥ 40 mL Öl und ≤ 1,5 mL Wasser | Mit „Tropfen“ an der Grenzfläche erreichbar (Test: 0,9 mL Öl im Wasser, 0,4 mL Wasser im Öl). |
-| 5 Trennkette | 5 g Eisen, 10 g Sand, 5 g Kochsalz | Eisen ≥ 4 g mit ≤ 0,1 g Sand und ≤ 0,15 g Salz; Sand ≥ 7,5 g mit ≤ 0,3 g Eisen und ≤ 0,6 g Salz (fest + gelöst); Salz ≥ 3,5 g trocken (≤ 1 mL Wasser) mit ≤ 0,05 g Sand und Eisen | Zwei Magnetdurchgänge genügen; ungelöstes oder in der Restfeuchte gelöstes Salz im Sand muss durch genug Wasser bzw. Nachspülen entfernt werden. |
+| 5 Trennkette | 5 g Eisen, 10 g Sand, 5 g Kochsalz | Eisen ≥ 4 g mit ≤ 0,1 g Sand und ≤ 0,15 g Salz; Sand ≥ 7,5 g mit ≤ 0,3 g Eisen und ≤ 0,6 g Salz (fest + gelöst); Salz ≥ 3,5 g trocken (≤ 1 mL Wasser) mit ≤ 0,05 g Sand und Eisen | Jeder richtig ausgeführte Schritt trennt vollständig (0.3.0): zwei Magnetdurchgänge (nass drei) entfernen alles Eisen, das Filtrat nimmt alles gelöste Salz mit. Ungelöstes Salz (zu wenig Wasser) bleibt ein Fehler. |
 
 Erreichte Ziele werden je Versuch mit Ansatz und Versuchszeit gespeichert; ein späteres Verändern des Ansatzes nimmt den Erfolg nicht zurück. „Ergebnis prüfen“ zeigt jederzeit den aktuellen Zustand.
 
@@ -98,7 +117,7 @@ Gefragt wird nach der Eigenschaft, die **unmittelbar** zum Trennen genutzt wird.
 | 2 Filtrieren | Korngröße | Löslichkeit (Voraussetzung) |
 | 3 Eindampfen | Flüchtigkeit | Löslichkeit (Ausgangslage) |
 | 4 Scheiden | Nichtmischbarkeit, Dichte | Löslichkeit (gegenseitige Unlöslichkeit = Nichtmischbarkeit; das genauere Kreuz wird erläutert) |
-| 5 Trennkette | Magnetismus, Löslichkeit, Korngröße, Flüchtigkeit | Dichte (Absetzen kann vorkommen) |
+| 5 Trennkette | Magnetismus, Löslichkeit, Korngröße, Flüchtigkeit | Dichte (wenn nicht dekantiert). **Ab 0.3.0:** Wurde in der Kette dekantiert (≥ 10 mL Flüssigkeit über einem Bodensatz abgegossen), zählt Dichte als richtig; ohne Filtration wird dann Dichte statt Korngröße verlangt. |
 
 Alle anderen Kreuze (z. B. Farbe) sind falsch. Freitexte werden nicht bewertet.
 

@@ -1,2 +1,2 @@
-5e20d701251011639a06a737e7905e6f2b41b6ab9cbea772ecc3bd7a7f19f11c  trennverfahren-0.2.0-web.zip
-55ccb9eefd134a65fb7d8e253b4218510b24ee37cfa0f23c68f4d42bc6be586c  trennverfahren-0.2.0-scorm12.zip
+6f802257e44a0b58ba2729c47f5be2b04e25cfc530b10b2366d652bb0e495df1  trennverfahren-0.3.0-web.zip
+496ed592226677e875c824815f7b8281fa9b5987db7a7a14766b13e29ddd2db4  trennverfahren-0.3.0-scorm12.zip

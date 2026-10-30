@@ -476,3 +476,103 @@ test('Gespeicherter Zustand wird übernommen (Sitzungswiederherstellung)', () =>
   assert.equal(b.state.objs.B.c.water, a.state.objs.B.c.water);
   assert.ok(b.evaluate().done);
 });
+
+// ------------------------------------------------------------------ 0.3.0: vollständige Trennschritte (V5), Spatel, Uhrglas
+test('V5 (0.3.0): Magnet trocken in zwei Durchgängen restlos, der erste nimmt drei Viertel', () => {
+  const e = M.createEngine(5);
+  act(e, 'magnet', 'M');
+  near(e.state.objs.M.c.iron, 1.25, 1e-9, 'nach dem 1. Durchgang');
+  assert.match(e.state.log[e.state.log.length - 1].text, /noch Eisenkörner/);
+  act(e, 'magnetDrop', 'U');
+  act(e, 'magnet', 'M');
+  assert.equal(e.state.objs.M.c.iron, 0, 'nach dem 2. Durchgang kein Eisen mehr');
+  assert.equal(e.state.objs.mag.c.water || 0, 0, 'kein anhaftender Flüssigkeitsfilm');
+  act(e, 'magnetDrop', 'U');
+  near(e.state.objs.U.c.iron, 5, 1e-9, 'alles Eisen auf dem Uhrglas');
+  assert.equal(act(e, 'magnet', 'M').ok, false, 'Schale eisenfrei');
+  balanced(e);
+});
+
+test('V5 (0.3.0): Magnet im nassen Gemisch braucht drei Durchgänge; neues Eisen startet die Zählung neu', () => {
+  const e = M.createEngine(5);
+  pour(e, 'M', 'A', { speed: 'fast' });
+  e.act('setWashAmount', 20); act(e, 'wash', 'A');
+  const left = [];
+  for (let i = 0; i < 3; i++) { act(e, 'magnet', 'A'); left.push(e.state.objs.A.c.iron); act(e, 'magnetDrop', 'U'); }
+  near(left[0], 2, 1e-9, '1. Durchgang'); near(left[1], 0.5, 1e-9, '2. Durchgang'); assert.equal(left[2], 0, '3. Durchgang restlos');
+  // Eisen zurück ins Gemisch: wieder drei Durchgänge nötig
+  act(e, 'magnet', 'U'); act(e, 'magnet', 'U');
+  act(e, 'magnetDrop', 'A');
+  act(e, 'magnet', 'A');
+  assert.ok(e.state.objs.A.c.iron > 1, 'erster Durchgang nach neuem Eisen nimmt nicht alles: ' + e.state.objs.A.c.iron);
+  balanced(e);
+});
+
+test('V5 (0.3.0): Filtration nimmt das gelöste Salz vollständig mit – Sand ohne Salz auch ohne Nachspülen', () => {
+  const e = M.createEngine(5);
+  for (let i = 0; i < 2; i++) { act(e, 'magnet', 'M'); act(e, 'magnetDrop', 'U'); }
+  pour(e, 'M', 'A', { speed: 'fast' });
+  e.act('setWashAmount', 20); act(e, 'wash', 'A'); act(e, 'wash', 'A'); act(e, 'stir', 'A'); act(e, 'stir', 'A');
+  act(e, 'insertPaper', 'F');
+  for (let i = 0; i < 6 && e.state.objs.A.c.water > 0.1; i++) { act(e, 'stir', 'A'); pour(e, 'A', 'F', { speed: 'fast' }); wait(e, 15); }
+  runUntil(e, (st) => st.drip.F < 0.005, 300);
+  const F = e.state.objs.F.c;
+  assert.ok(F.saltD + F.saltS < 0.02, 'kein Salz im Rückstand: ' + (F.saltD + F.saltS));
+  near(sand(e.state.objs.F), 10, 1e-6, 'aller Sand im Filter');
+  assert.ok(crit(e, 'sand'), JSON.stringify(e.evaluate().criteria));
+  balanced(e);
+});
+
+test('V3 (0.3.0): Spatel überführt die Kristalle in drei Portionen – die Menge auf dem Uhrglas wächst', () => {
+  const e = M.createEngine(3);
+  pour(e, 'A', 'D');
+  e.act('heat', 2); runUntil(e, (st) => st.objs.D.c.water < 2, 900); e.act('heat', 0); runUntil(e, (st) => st.objs.D.c.water < 0.01 && st.objs.D.temp < 40, 1200);
+  const total = e.state.objs.D.c.saltS;
+  assert.ok(e.act('scrape', 'D', 'U').ok);
+  const seen = [];
+  runUntil(e, (st) => { seen.push(st.objs.U.c.saltS); return !st.op; }, 10, 0.05);
+  const steps = [...new Set(seen.map((x) => Math.round(x / total * 3)))];
+  assert.deepEqual(steps, [0, 1, 2, 3], 'Zwischenstände ein, zwei, drei Drittel: ' + steps);
+  near(e.state.objs.U.c.saltS, total, 1e-9, 'am Ende alles auf dem Uhrglas');
+  assert.ok(e.evaluate().done, JSON.stringify(e.evaluate().criteria));
+  balanced(e);
+});
+
+test('V5 (0.3.0): Uhrglas ist keine Sackgasse – Inhalt lässt sich mit dem Spatel weitergeben', () => {
+  const e = M.createEngine(5);
+  pour(e, 'M', 'U', { speed: 'fast' });
+  assert.ok(M.solids(e.state.objs.U.c) > 5, 'Gemenge liegt auf dem Uhrglas');
+  assert.equal(e.act('pour', 'U', 'A').ok, false, 'Gießen aus dem Uhrglas geht nicht …');
+  const r = act(e, 'scrape', 'U', 'A');
+  assert.ok(r.ok, '… aber Überführen mit dem Spatel: ' + r.message);
+  assert.ok(M.isEmpty(e.state.objs.U.c), 'Uhrglas leer');
+  near(e.state.objs.A.c.iron + sand(e.state.objs.A) + e.state.objs.A.c.saltS, 20, 1e-9, 'alles in Becherglas A');
+  // Ziele: Porzellanschale und Abdampfschale ja, ein zweites Uhrglas bzw. der Magnet nein
+  pour(e, 'A', 'U', { speed: 'fast' });
+  assert.ok(act(e, 'scrape', 'U', 'M').ok, 'in die Porzellanschale');
+  assert.equal(e.act('scrape', 'U', 'mag').ok, false);
+  balanced(e);
+});
+
+test('V2 (0.3.0): Filterpapier mit Rückstand auf dem Uhrglas – Rückstand lässt sich weitergeben, das Papier bleibt', () => {
+  const e = M.createEngine(2);
+  act(e, 'move', 'F', 'ring'); act(e, 'move', 'E', 'under'); act(e, 'insertPaper', 'F');
+  act(e, 'stir', 'A'); pour(e, 'A', 'F', { speed: 'fast', until: (st) => st.objs.F.c.water > 35 });
+  runUntil(e, (st) => st.objs.F.c.water < 3 && st.drip.F < 0.01, 300);
+  assert.ok(act(e, 'transferPaper', 'F', 'U').ok);
+  const sandU = sand(e.state.objs.U);
+  assert.ok(act(e, 'scrape', 'U', 'B').ok);
+  near(sand(e.state.objs.B), sandU, 1e-9, 'Sand in Becherglas B');
+  assert.equal(e.state.objs.U.paper, true, 'Filterpapier bleibt auf dem Uhrglas');
+  balanced(e);
+});
+
+test('Dekantieren wird erkannt (Abgießen über einem Bodensatz), Aufgießen einer Suspension nicht', () => {
+  const e = M.createEngine(1);
+  act(e, 'stir', 'A');
+  pour(e, 'A', 'B', { speed: 'fast', until: (st) => st.objs.A.c.water < 80 });
+  assert.ok(!(e.state.flags.decanted >= 10), 'trübe Suspension abgegossen ist kein Dekantieren: ' + e.state.flags.decanted);
+  wait(e, 120);
+  pour(e, 'A', 'C', { until: (st) => st.objs.A.c.water < 40 });
+  assert.ok(e.state.flags.decanted >= 10, 'über dem Bodensatz abgegossen: ' + e.state.flags.decanted);
+});

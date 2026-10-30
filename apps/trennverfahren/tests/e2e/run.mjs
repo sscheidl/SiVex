@@ -648,6 +648,75 @@ await scenario('E12', 'Pause, Zeitraffer und Doppelklick während Handgriffen (T
   return 'ein Transfer, 1× während des Gießens, Pause synchron';
 });
 
+// ------------------------------------------------------------------ E13 Neuerungen 0.3.0
+await scenario('E13', '0.3.0: Rinnsal/Tropfen, Heizplatten-Drehknopf am Gerät, Spatel in Portionen, Uhrglas weitergeben, Magnet in zwei Durchgängen, Teilchenbilder', async (page) => {
+  const out = [];
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator('#btnParticles').click(); await sleep(200);
+  // V2: zu Beginn läuft ein Rinnsal, später fallen einzelne Tropfen
+  await L.exp(page, 2);
+  await L.use(page, 'F', 'ring'); await L.idle(page); await L.use(page, 'E', 'under'); await L.idle(page);
+  await L.use(page, 'paper', 'F'); await L.idle(page);
+  await L.use(page, 'rod', 'A'); await L.idle(page);
+  await L.pour(page, 'A', 'F', (st) => st.objs.F.c.water > 35, { speed: 'fast' });
+  await sleep(600);
+  const stream = await page.evaluate(() => { const v = window.TV.app.renderer.vis.F; return { k: v && v.streamK, hit: !!window.TV.app.renderer.dripHit.F }; });
+  assert(stream.k > 0.9 && stream.hit, 'volles Filter: zusammenhängendes Rinnsal ' + JSON.stringify(stream));
+  await shot(page, '70-v2-rinnsal');
+  await L.speed(page, 10); await L.waitFor(page, (st) => st.drip.F < 0.12); await L.speed(page, 1); await sleep(800);
+  const drops = await page.evaluate(() => window.TV.app.renderer.vis.F.streamK);
+  assert(drops < 0.05, 'wenig Durchfluss: einzelne Tropfen ' + drops);
+  await shot(page, '71-v2-tropfen');
+  out.push('Rinnsal → Tropfen');
+  // V3: Drehknopf am Gerät (Maus und Tastatur), Spatel in drei Portionen
+  await L.exp(page, 3);
+  await L.pour(page, 'A', 'D', null, { speed: 'fast' });
+  await L.tapHit(page, 'knob'); assert(await S(page, (st) => st.plate.level === 1), 'Knopf: niedrige Stufe');
+  await L.tapHit(page, 'knob'); assert(await S(page, (st) => st.plate.level === 2), 'Knopf: hohe Stufe');
+  assert(/hohe Stufe/.test(await page.locator('#hits [data-hit="knob"]').getAttribute('aria-label')), 'Knopf beschriftet');
+  await L.speed(page, 30); await L.waitFor(page, (st) => st.objs.D.c.water < 2.5);
+  await page.locator('#hits [data-hit="knob"]').focus(); await page.keyboard.press('Enter'); await sleep(80);
+  assert(await S(page, (st) => st.plate.level === 0), 'Knopf per Tastatur: aus');
+  await L.waitFor(page, (st) => st.objs.D.c.water < 0.01 && st.objs.D.temp < 40); await L.speed(page, 1);
+  const total = await S(page, (st) => st.objs.D.c.saltS);
+  await L.use(page, 'D', 'U');
+  await L.waitFor(page, (st) => st.objs.U.c.saltS > 0.2);
+  const first = await S(page, (st) => [st.objs.U.c.saltS, !!st.op]);
+  assert(first[1] && first[0] < total * 0.5, 'erste Portion auf dem Uhrglas, Spatel noch in Bewegung ' + JSON.stringify(first));
+  await shot(page, '72-v3-spatel-portion');
+  await L.idle(page);
+  assert(Math.abs(await S(page, (st) => st.objs.U.c.saltS) - total) < 1e-6, 'am Ende alles auf dem Uhrglas');
+  out.push(`Spatel: ${first[0].toFixed(1)} g nach der ersten Portion`);
+  // V5: Magnet trocken in zwei Durchgängen restlos; Gemenge auf dem Uhrglas ist keine Sackgasse
+  await L.exp(page, 5);
+  await page.locator('#pSelect').selectOption('M'); await sleep(400);
+  await shot(page, '73-v5-gemenge-teilchen');
+  await L.use(page, 'mag', 'M'); await L.idle(page);
+  assert(await S(page, (st) => st.objs.M.c.iron > 0.5), 'nach dem 1. Durchgang ist noch Eisen da');
+  await L.tapHit(page, 'U'); await L.idle(page); await L.tapHit(page, 'M'); await L.idle(page);
+  assert(await S(page, (st) => st.objs.M.c.iron === 0), 'nach dem 2. Durchgang kein Eisen mehr');
+  await sleep(600); await shot(page, '74-v5-nach-zwei-durchgaengen');
+  await L.tapHit(page, 'U'); await L.idle(page); await L.tapHit(page, 'mag');
+  await L.pour(page, 'M', 'U', null, { speed: 'fast' });
+  await L.use(page, 'U', 'A'); await L.idle(page);
+  assert(await S(page, (st, M) => M.isEmpty(st.objs.U.c) && st.objs.A.c.saltS > 4), 'Uhrglas mit dem Spatel in Becherglas A geleert');
+  await shot(page, '75-v5-uhrglas-geleert');
+  out.push('Magnet 2 Durchgänge, Uhrglas weitergegeben');
+  // V4: Teilchenbild nach dem Schütteln
+  await L.exp(page, 4);
+  await L.use(page, 'S', 'sepring'); await L.idle(page);
+  await L.pour(page, 'A', 'S', null, { speed: 'fast' });
+  await page.locator('#pSelect').selectOption('S'); await sleep(1500);
+  await shot(page, '76-v4-schichten-teilchen');
+  await L.use(page, 'stop', 'S'); await L.idle(page);
+  await L.use(page, 'S', 'hand'); await L.idle(page);
+  await page.locator('#btnShake').click(); await L.idle(page);
+  assert(await S(page, (st) => st.objs.S.emul > 0.5), 'geschüttelt');
+  await L.use(page, 'S', 'sepring'); await L.idle(page); await sleep(600);
+  await shot(page, '77-v4-emulsion-teilchen');
+  return out.join('; ');
+});
+
 // ------------------------------------------------------------------ Abschluss
 await browser.close();
 if (srv) srv.close();

@@ -149,22 +149,21 @@
       material: 'Porzellanschale mit 5 g Eisen, 10 g Sand, 5 g Kochsalz, Magnet in einer Kunststofftüte, Uhrglas, Spritzflasche, Becherglas A, Glasstab, Rundfilter, Trichter im Filtrierring mit Erlenmeyerkolben, Abdampfschale auf Heizplatte',
       cls: { q: 'Das Ausgangsgemisch aus Eisen, Sand und Kochsalz ist …', hom: 'het', kind: 'gemenge' },
       prin: ['magn', 'loes', 'korn', 'fluecht'],
-      prinNeutral: { dichte: 'Absetzen kann in deiner Trennkette vorkommen, ist aber kein eigener Trennschritt für einen der drei Stoffe. Dein Kreuz ist nicht falsch, aber nicht nötig.' },
+      prinNeutral: { dichte: 'In deiner Trennkette hast du nicht dekantiert: Der Sand wurde durch Filtrieren abgetrennt, nicht durch Absetzen. Dein Kreuz ist nicht falsch, aber nicht nötig. (Wer den Sand absetzen lässt und die Lösung abgießt, nutzt die Dichte – dann zählt das Kreuz als richtig.)' },
       obsHint: 'Beschreibe deine Schritte und was du dabei jeweils beobachtest.',
       explHint: 'Erkläre, welche Eigenschaft du bei jedem Schritt genutzt hast.',
       sample: 'Am Magneten bleiben nur schwarze Eisenkörner hängen; sie lassen sich auf dem Uhrglas abstreifen. Nach Zugabe von Wasser und Umrühren sind die weißen Salzkörner nicht mehr zu sehen, der Sand bleibt am Boden. Beim Filtrieren bleibt nasser Sand im Papier, ein klares Filtrat läuft durch. Beim Eindampfen des Filtrats entstehen weiße Kristalle.',
       tips: [
         () => 'Welcher der drei Stoffe lässt sich ohne Wasser abtrennen? Welcher löst sich in Wasser, welcher nicht?',
-        (st, ev) => !ok(ev, 'iron') ? 'Fang mit dem Eisen an: Magnet antippen, dann die Porzellanschale – danach das Eisen auf dem Uhrglas abstreifen. Wiederhole das, bis kaum noch Eisen übrig ist.'
-          : !ok(ev, 'sand') && st.objs.F.c.saltS > 0.05 ? 'Im Filter liegen noch ungelöste Salzkristalle. Spüle den Rückstand mit Wasser aus der Spritzflasche, damit sich das Salz löst.'
-          : !ok(ev, 'sand') && st.objs.F.c.saltD > 0.6 ? 'Im feuchten Sand hängt noch Salzlösung. Spüle den Rückstand im Filter mit etwas Wasser nach.'
+        (st, ev) => !ok(ev, 'iron') ? 'Fang mit dem Eisen an: Magnet antippen, dann die Porzellanschale – danach das Eisen auf dem Uhrglas abstreifen. Wiederhole das, bis kein Eisen mehr zu sehen ist (im trockenen Gemisch zweimal, im nassen dreimal).'
+          : !ok(ev, 'sand') && st.objs.F.c.saltS > 0.05 ? 'Im Filter liegen noch ungelöste Salzkristalle – es war zu wenig Wasser. Spüle den Rückstand mit Wasser aus der Spritzflasche, damit sich das Salz löst und durchläuft.'
           : 'Löse das Salz mit Wasser heraus (rühren!), filtriere den Sand ab und dampfe das klare Filtrat ein.',
-        () => 'Magnet → Schale, Magnet → Uhrglas (zweimal). Schale → Becherglas A (ausschütten). Spritzflasche (20 mL) → A, nochmals 20 mL; Glasstab → A. Filterpapier → Trichter. A → Trichter. Rückstand mit 5 mL nachspülen. Erlenmeyerkolben → Abdampfschale, Heizplatte „hoch“, kurz vor dem Trocknen „aus“.'
+        () => 'Magnet → Schale, Magnet → Uhrglas (zweimal). Schale → Becherglas A (ausschütten). Spritzflasche (20 mL) → A, nochmals 20 mL; Glasstab → A. Filterpapier → Trichter. A → Trichter. Erlenmeyerkolben → Abdampfschale, Heizplatte „hoch“ (Drehknopf oder Knöpfe unten), kurz vor dem Trocknen „aus“.'
       ],
       solution: [
-        'Magnettrennung: Mit dem Magneten (in der Tüte) das Eisen herausziehen und auf dem Uhrglas abstreifen – zwei- bis dreimal.',
+        'Magnettrennung: Mit dem Magneten (in der Tüte) das Eisen herausziehen und auf dem Uhrglas abstreifen – zweimal, bis kein Eisen mehr zu sehen ist (im nassen Gemisch dreimal).',
         'Extraktion: Das Sand-Salz-Gemenge in ein Becherglas geben, Wasser zugeben und umrühren, bis sich das Salz gelöst hat. Der Sand löst sich nicht.',
-        'Filtration: Die Suspension filtrieren. Sand bleibt als Rückstand im Filter; den Rückstand mit wenig Wasser nachspülen, damit keine Salzlösung darin hängen bleibt.',
+        'Filtration: Die Suspension filtrieren. Sand bleibt als Rückstand im Filter, die Salzlösung läuft als klares Filtrat durch. (Statt zu filtrieren, kann man den Sand auch absetzen lassen und die Lösung vorsichtig abgießen – dekantieren.)',
         'Eindampfen: Das klare Filtrat (Kochsalzlösung) in der Abdampfschale eindampfen. Zurück bleibt festes Kochsalz.',
         'Andere Reihenfolge möglich: zuerst lösen und filtrieren, dann das Eisen mit dem Magneten aus dem Rückstand im Filter ziehen.'
       ]
@@ -190,8 +189,17 @@
    * Fachlich vertretbare Zusatzkreuze (z. B. Unlöslichkeit als Voraussetzung) gelten nicht als Fehler,
    * sondern werden erläutert; nur unpassende Eigenschaften sind falsch.
    */
-  function checkPrin(n, chosen) {
-    const want = EXP[n].prin, neutral = EXP[n].prinNeutral || {};
+  function checkPrin(n, chosen, flags) {
+    let want = EXP[n].prin, neutral = Object.assign({}, EXP[n].prinNeutral || {});
+    // V5: Wer in der eigenen Trennkette dekantiert hat (Sand absetzen lassen, Lösung abgießen), hat
+    // die Dichte genutzt – das Kreuz ist dann richtig. Ohne Filtration ist die Korngröße nicht nötig.
+    const decanted = n === 5 && flags && flags.decanted >= 10;
+    if (decanted) {
+      delete neutral.dichte;
+      want = want.concat('dichte');
+      if (!(flags.paperFiltered >= 10)) { want = want.filter((x) => x !== 'korn'); neutral.korn = 'Du hast ohne Filter getrennt (dekantiert). Die Korngröße hast du dabei nicht genutzt. Dein Kreuz ist nicht falsch, aber nicht nötig.'; }
+      else if (!(chosen || []).includes('dichte')) want = want.filter((x) => x !== 'dichte');
+    }
     const set = new Set(chosen || []);
     const missing = want.filter((x) => !set.has(x));
     const wrong = [...set].filter((x) => !want.includes(x) && !neutral[x]);
@@ -203,7 +211,7 @@
     }
     const bits = [];
     if (!set.size) return { ok: false, items, fb: 'Noch nichts angekreuzt.', notes: [] };
-    if (!missing.length && !wrong.length) bits.push('Richtig. ' + want.map((x) => PRINCIPLE_WHY[x]).join(' '));
+    if (!missing.length && !wrong.length) bits.push('Richtig. ' + want.map((x) => decanted && x === 'dichte' ? 'Dichte: Beim Dekantieren hast du den Sand absetzen lassen, weil er eine größere Dichte als die Lösung hat.' : PRINCIPLE_WHY[x]).join(' '));
     if (wrong.length) bits.push('Nicht zutreffend: ' + wrong.map((x) => PRINCIPLE_WHY[x]).join(' '));
     if (missing.length) bits.push(`Es fehlt noch ${missing.length === 1 ? 'eine Eigenschaft' : missing.length + ' Eigenschaften'}, die bei diesem Versuch unmittelbar zum Trennen genutzt wird.`);
     return { ok: !missing.length && !wrong.length, items, fb: bits.join(' '), notes: extraOk.map((x) => neutral[x]) };

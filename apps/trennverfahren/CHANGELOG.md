@@ -1,5 +1,33 @@
 # Änderungen – Trennverfahren
 
+## 0.3.0 – 30.10.2026 (prototype)
+
+Überarbeitung nach der Durchsicht vom 30.10.2026 (Grafik, Teilchenmodell, V3–V5).
+
+**Tropfen und Rinnsal**
+- Tropfen aus Trichter und Scheidetrichter sind größer (≈ 0,05 mL, leicht überzeichnet; bei kleinem Maßstab nicht unter etwa 3 Bildschirmpixel Radius) und fallen gestreckt; an der Spitze wächst ein hängender Tropfen und reißt ab.
+- Nach der sichtbaren Tropfenzahl geht die Darstellung von einzelnen Tropfen über eine Tropfenkette in ein zusammenhängendes, nach unten schmaler werdendes Rinnsal über (wie in der Destillation): volles Filter und offener Hahn zeigen einen Strahl, wenig Durchfluss und „Tropfen“ einzelne Tropfen. Das Rinnsal endet am Spiegel des Auffanggefäßes und regt dort Wellen an.
+
+**Teilchenmodell**
+- Wasserteilchen als **blaue Dreiecke** (wie in „Aggregatzustände“); alle Symbole etwa doppelt so groß; Na⁺ und Cl⁻ mit deutlich lesbarem Ladungszeichen; Legende mit passenden Symbolen.
+- Neu aufgebaute Verteilung: Teilchen haben Plätze relativ zu ihrer Phase und bewegen sich ungeordnet darum. Ölteilchen füllen die ganze Ölschicht (vorher nur an der Grenzfläche), reines Öl bildet keine Schichten, Wasser verteilt sich gleichmäßig.
+- Schütteln (V4): Öltröpfchen (Ansammlungen von Ölteilchen) in der Wasserphase, ohne Wasser im Innern und ohne Überlappung; in Ruhe steigen sie auf und vereinigen sich zur Schicht – passend zur Entmischung im Scheidetrichter.
+- Deutlich mehr Salzteilchen: Lösungen bis 36 Ionenpaare (mit der Flüssigkeitsmenge abnehmend), festes Salz als große Ionengitter (10 Ionen je g).
+- Gemenge (V5): Kochsalz als kleine Kristalle zwischen Sand- und Eisenkörnern; Eisen- und Sandkörner proportional zur Masse.
+- Magnet: Nur die erfassten Eisenkörner wandern zum Magneten und verlassen mit ihm das Bild; die übrigen bleiben liegen – nichts fällt mehr zurück ins Gemisch.
+
+**Handgriffe**
+- V3: Der Spatel überführt die Kristalle in drei Portionen; die Kristallfläche auf dem Uhrglas wächst mit jeder Portion.
+- Uhrglas ist keine Sackgasse mehr: Sein Inhalt (auch der Rückstand vom Filterpapier) lässt sich mit dem Spatel in Becherglas, Erlenmeyerkolben, Porzellanschale oder Abdampfschale weitergeben.
+- Heizplatten (V3, V5) direkt am Gerät bedienbar: Drehknopf antippen (Maus, Touch, Tastatur), aus → niedrig → hoch → aus.
+
+**Versuch 5: vollständige Trennschritte**
+- Jeder richtig ausgeführte Schritt trennt vollständig. Magnet: trocken zwei Durchgänge (¾, dann der Rest), nass drei – danach ist das Eisen restlos entfernt; kein anhaftender Flüssigkeitsfilm mehr. Die Meldung sagt nach jedem Durchgang, ob noch Eisenkörner zu sehen sind.
+- Filtration: Der Rückstand tropft vollständig ab, das gelöste Salz geht ganz ins Filtrat; Nachspülen ist nicht mehr nötig (bleibt möglich). Zu wenig Wasser zum Lösen bleibt ein Fehler (ungelöstes Salz im Filter), den Nachspülen korrigiert.
+- Trennprinzip: Wer in der Kette dekantiert hat, bekommt das Kreuz „Dichte“ als richtig gewertet (ohne Filtration wird dann Dichte statt Korngröße verlangt); sonst bleibt es „nicht nötig, aber nicht falsch“.
+
+**Tests:** 58 Unit-Tests (neu: Magnetdurchgänge, vollständige Filtration, Spatel-Portionen, Uhrglas weitergeben, Dekantieren, Trennprinzip V5, Teilchenansicht ohne Zeichnen); neues Browserszenario E13 für die Neuerungen (noch auszuführen, siehe Testbericht).
+
 ## 0.2.0 – 29.10.2026 (prototype)
 
 Korrektur- und Erweiterungsauftrag nach der gemeinsamen Durchsicht vom 29.10.2026.

@@ -126,3 +126,24 @@ test('Hilfen: drei Stufen je Versuch, zustandsabhängig ausführbar; Vorgehen vo
     assert.ok(T.EXP[n].solution.length >= 4);
   }
 });
+
+test('V5 (0.3.0): Dichte zählt als richtig, wenn in der Trennkette dekantiert wurde', () => {
+  const base = ['magn', 'loes', 'korn', 'fluecht'];
+  // nur filtriert: Dichte nicht nötig, aber nicht falsch
+  const f = { paperFiltered: 40, decanted: 0 };
+  assert.ok(T.checkPrin(5, base, f).ok);
+  const n = T.checkPrin(5, [...base, 'dichte'], f);
+  assert.ok(n.ok); assert.equal(n.items.dichte, 'neutral');
+  // dekantiert und filtriert: Dichte richtig (nicht verlangt)
+  const df = { paperFiltered: 40, decanted: 30 };
+  assert.ok(T.checkPrin(5, base, df).ok);
+  assert.equal(T.checkPrin(5, [...base, 'dichte'], df).items.dichte, 'right');
+  // nur dekantiert (ohne Filter): Dichte verlangt, Korngröße nicht nötig
+  const d = { paperFiltered: 0, decanted: 30 };
+  assert.equal(T.checkPrin(5, base, d).ok, false, 'Dichte fehlt');
+  const r = T.checkPrin(5, ['magn', 'loes', 'dichte', 'fluecht'], d);
+  assert.ok(r.ok); assert.match(r.fb, /Dekantieren/);
+  assert.equal(T.checkPrin(5, ['magn', 'loes', 'dichte', 'fluecht', 'korn'], d).items.korn, 'neutral');
+  // ohne Zustand wie bisher
+  assert.ok(T.checkPrin(5, base).ok);
+});
