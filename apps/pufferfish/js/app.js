@@ -62,8 +62,36 @@
   // ------------------------------------------------------------ Labor: Versuch, Lösung, Pipette, Menge, Ziel
   function afterLabChange(full) { U.refreshLab(full); U.save(); }
 
+  // ------------------------------------------------------------ Pause blockiert nie (iPad-Regel 4, 0.3.0)
+  /** Pause beenden (1×) und das sagen. */
+  function resume(text) {
+    if (ui.speed !== 0) return false;
+    ui.speed = 1; U.renderBars(); U.save();
+    if (text) U.toast(text);
+    return true;
+  }
+  /**
+   * Bedienen bei angehaltener Zeit, während eine Zugabe oder Messung stillsteht: Zeit läuft wieder,
+   * der Vorgang läuft zu Ende (sonst würde alles mit „Warte …“ abgewiesen). Gibt true zurück, wenn
+   * die Bedienung deshalb abgefangen wurde.
+   */
+  function unblock() {
+    if (ui.speed === 0 && eng.busy()) { resume('Pause beendet – die laufende Zugabe bzw. Messung läuft jetzt zu Ende. Danach kannst du weitermachen.'); return true; }
+    return false;
+  }
+  /** Laufende Zugabe oder Messung sofort zu Ende rechnen (z. B. vor einem Versuchswechsel). */
+  function finishRunning() {
+    for (let i = 0; i < 1200 && eng.busy(); i++) eng.step(0.05);
+    let committed = false;
+    for (const f of eng.drainFx()) if (f.type === 'commit' || f.type === 'measured') committed = true;
+    if (committed) U.save();
+  }
+
   $('#expChips').addEventListener('click', (e) => {
     const b = e.target.closest('[data-exp]'); if (!b) return;
+    // Versuchswechsel: laufende Zugabe/Messung abschließen, Zeit auf 1× (iPad-Regel 4)
+    if (eng.busy()) finishRunning();
+    if (ui.speed === 0) { ui.speed = 1; U.renderBars(); }
     const r = eng.selectExperiment(b.dataset.exp);
     if (r.ok) {
       lab.resetFx(); ui.tab = 'task'; U.refreshLab(true); U.renderPanel(); U.save();
@@ -89,13 +117,15 @@
   const isMixExp = () => E.expById(eng.state.exp).mixing;
 
   $('#tags').addEventListener('click', (e) => {
+    if (e.target.closest('[data-bottle],[data-pip]') && unblock()) return;
     const b = e.target.closest('[data-bottle]'); if (b) { selectReagent(b.dataset.bottle); return; }
     const p = e.target.closest('[data-pip]');
     if (p) { const r = eng.setTool(p.dataset.pip); if (!r.ok) U.toast(r.text); else afterLabChange(false); }
   });
 
   function doDose() {
-    if (ui.speed === 0) { U.toast('Die Zeit ist angehalten. Wähle ¼× oder 1×, um zu dosieren.'); return; }
+    if (unblock()) return;
+    resume('Pause beendet – die Zeit läuft wieder (1×).');
     if (eng.busy()) { U.toast('Die Pipette ist noch unterwegs – warte, bis die Zugabe beendet ist.'); return; }
     const block = U.dosingBlock();
     if (block) { U.toast(block); if (isMixExp()) { ui.tab = 'task'; $('#main').classList.remove('panel-hidden'); U.renderPanel(); } return; }
@@ -103,7 +133,8 @@
     if (!r.ok) U.toast(r.text); else U.renderBars();
   }
   function doMeasure() {
-    if (ui.speed === 0) { U.toast('Die Zeit ist angehalten. Wähle ¼× oder 1×, um zu messen.'); return; }
+    if (unblock()) return;
+    resume('Pause beendet – die Zeit läuft wieder (1×).');
     if (eng.busy()) { U.toast('Warte, bis die laufende Zugabe oder Messung beendet ist.'); return; }
     const block = U.dosingBlock();
     if (block) { U.toast(block); return; }
@@ -115,6 +146,7 @@
 
   $('#deck').addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.speed == null && t.id !== 'btnStep' && t.id !== 'btnStir' && t.id !== 'btnGo' && t.id !== 'btnMeasure' && unblock()) return;
     if (t.dataset.reagent) { selectReagent(t.dataset.reagent); return; }
     if (t.dataset.tool) { const r = eng.setTool(t.dataset.tool); if (!r.ok) U.toast(r.text); else afterLabChange(false); return; }
     if (t.dataset.kind) { const r = eng.setKind(t.dataset.kind); if (!r.ok) U.toast(r.text); else afterLabChange(false); return; }
@@ -125,9 +157,9 @@
     if (t.id === 'btnGo') { doDose(); return; }
     if (t.id === 'btnMeasure') { doMeasure(); return; }
   });
-  $('#btnNewSeries').addEventListener('click', () => { const r = eng.newSeries(); if (r.ok) { U.toast('Reihe gespeichert – frische Ansätze stehen bereit.'); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
-  $('#btnCont').addEventListener('click', () => { const r = eng.continueWithOther(); if (r.ok) { U.toast(`Gegenprobe: dieselben, bereits behandelten Ansätze erhalten jetzt ${eng.current().reagent}.`); U.refreshLab(true); U.save(); } else U.toast(r.text); });
-  $('#btnBatch').addEventListener('click', () => { const r = eng.newBatch(); if (r.ok) { U.toast('Leeres Becherglas aufgestellt. Frühere Messungen stehen unter „Ergebnisse“.'); lab.resetFx(); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
+  $('#btnNewSeries').addEventListener('click', () => { if (unblock()) return; const r = eng.newSeries(); if (r.ok) { U.toast('Reihe gespeichert – frische Ansätze stehen bereit.'); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
+  $('#btnCont').addEventListener('click', () => { if (unblock()) return; const r = eng.continueWithOther(); if (r.ok) { U.toast(`Gegenprobe: dieselben, bereits behandelten Ansätze erhalten jetzt ${eng.current().reagent}.`); U.refreshLab(true); U.save(); } else U.toast(r.text); });
+  $('#btnBatch').addEventListener('click', () => { if (unblock()) return; const r = eng.newBatch(); if (r.ok) { U.toast('Leeres Becherglas aufgestellt. Frühere Messungen stehen unter „Ergebnisse“.'); lab.resetFx(); U.refreshLab(true); U.renderPanel(); U.save(); } else U.toast(r.text); });
   $('#chkIndicator').addEventListener('change', (e) => { ui.indicator = e.target.checked; applySettings(); U.save(); });
   $('#chkZoom').addEventListener('change', (e) => { ui.zoom = e.target.checked; U.save(); });
   $('#chkPka').addEventListener('change', (e) => { ui.pka = e.target.checked; U.save(); });
@@ -152,6 +184,7 @@
     m.entries = { r: '', vb: '', va: '' }; m.res = null; m.checked = false; m.tip = 0; m.sol = false;
   }
   function setTarget(pH) {
+    if (unblock()) return;
     if (eng.busy()) { U.toast('Warte, bis die laufende Zugabe oder Messung beendet ist.'); return; }
     const msg = L.targetMessage(null, pH);
     if (!msg.ok) { ui.mix.customMsg = msg.text; U.toast(msg.text); U.renderPanel(); U.save(); return; } // bisheriges Ziel bleibt
@@ -162,6 +195,7 @@
   }
   function setSystem(id) {
     const m = ui.mix;
+    if (unblock()) { U.renderPanel(); return; }
     if (eng.busy()) { U.toast('Warte, bis die laufende Zugabe oder Messung beendet ist.'); U.renderPanel(); return; }
     const msg = L.targetMessage(id, m.target);
     const r = eng.selectSystem(msg.ok ? id : null, m.target);

@@ -759,7 +759,7 @@ await scenario('E14', 'P14', 'Neuladen: Messreihen, Antworten, Auswahl, Ansicht 
 });
 
 // =========================================================== E15 Schnellbedienung, Pause, Schritt
-await scenario('E15', 'P14', 'Doppelklick/Schnellbedienung ohne Doppeldosierung; Pause friert Tropfen ein; Schritt; Wechsel während Zugabe abgewiesen', async () => {
+await scenario('E15', 'P14', 'Doppelklick/Schnellbedienung ohne Doppeldosierung; Pause friert Tropfen ein; Schritt; Bedienen beendet die Pause', async () => {
   const { page, errors, done } = await open();
   await page.locator('#btnGo').dblclick();
   await page.locator('#btnGo').click({ force: true });
@@ -771,12 +771,13 @@ await scenario('E15', 'P14', 'Doppelklick/Schnellbedienung ohne Doppeldosierung;
   await adv(page, 800);
   const y1 = await S(page, (A) => ({ y: A.eng.state.drops[0].y, t: A.eng.state.time }));
   assert(y0.y === y1.y && y0.t === y1.t, 'Pause: Tropfen und Zeit stehen');
-  await go(page);
-  assert(/angehalten/.test(await toastText(page)), 'Dosieren in der Pause abgewiesen');
   await click(page, '#btnStep');
   const y2 = await S(page, (A) => A.eng.state.time);
   near(y2 - y1.t, 0.2, 1e-9, 'Schritt = 0,2 s Modellzeit');
-  await speed(page, '1'); await idle(page);
+  // 0.3.0 (iPad-Regel 4): Bedienen bei stillstehender Zugabe beendet die Pause, statt alles zu blockieren
+  await go(page);
+  assert(/Pause beendet/.test(await toastText(page)) && await S(page, (A) => A.ui.speed === 1), 'Dosieren in der Pause beendet die Pause, die laufende Zugabe läuft zu Ende');
+  await idle(page);
   const log = await S(page, (A) => ({ n: A.eng.state.log.length, added: A.eng.current().beakers.map((b) => b.added) }));
   assert(log.n === 1 && log.added.every((v) => Math.abs(v - 0.05) < 1e-12), `genau eine Zugabe (${log.n})`);
   // Umrühren, Tropfen- und Strahlanimation, Meniskus: Zeichnung ändert sich tatsächlich (Übergänge, nicht nur Endzustände)

@@ -1,6 +1,6 @@
 # Pufferfish – Warum bleibt der pH fast gleich?
 
-SiVex-Lernsimulation für **Chemie Q13 (erhöhtes Anforderungsniveau)**: Pufferwirkung auf Stoff- und Teilchenebene, Herleitung und Anwendung der Henderson-Hasselbalch-Gleichung, Pufferbereich, begrenzte Pufferkapazität und – neu – einen **Puffer gezielt berechnen, herstellen und messen**. **Status: prototype 0.2.2** (Labkit 0.1.1). Kein Unterrichtseinsatz freigegeben: echtes iPad, mebis-Import und fachlich-didaktische Freigabe stehen aus ([Testbericht](docs/TESTBERICHT.md)).
+SiVex-Lernsimulation für **Chemie Q13 (erhöhtes Anforderungsniveau)**: Pufferwirkung auf Stoff- und Teilchenebene, Herleitung und Anwendung der Henderson-Hasselbalch-Gleichung, Pufferbereich, begrenzte Pufferkapazität und – neu – einen **Puffer gezielt berechnen, herstellen und messen**. **Status: prototype 0.3.0** (Labkit 0.2.0). Kein Unterrichtseinsatz freigegeben: echtes iPad, mebis-Import und fachlich-didaktische Freigabe stehen aus ([Testbericht](docs/TESTBERICHT.md)).
 
 ![Pufferfish – Versuch 1: Laborbild mit Teilchenmodell](docs/screenshots/01-start-versuch1.png)
 
@@ -23,8 +23,8 @@ SiVex-Lernsimulation für **Chemie Q13 (erhöhtes Anforderungsniveau)**: Pufferw
 
 ## Starten
 
-- **Web:** `release/pufferfish-0.2.2-web.zip` entpacken und `pufferfish/index.html` öffnen (auch offline, auch per `file://`).
-- **mebis:** `release/pufferfish-0.2.2-scorm12.zip` als „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“ ([mebis-Hinweise](../../docs/MEBIS.md)). Es werden keine Noten, Antworten oder personenbezogenen Daten übertragen.
+- **Web:** `release/pufferfish-0.3.0-web.zip` entpacken und `pufferfish/index.html` öffnen (auch offline, auch per `file://`).
+- **mebis:** `release/pufferfish-0.3.0-scorm12.zip` als „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“ ([mebis-Hinweise](../../docs/MEBIS.md)). Es werden keine Noten, Antworten oder personenbezogenen Daten übertragen.
 - **Entwicklung:** `npm start` (Server auf http://localhost:8080, Labkit wird aus `shared/labkit` eingebunden).
 - **Speicherstand:** `sivex.pufferfish.v2`; der Stand von 0.1.0 wird nicht gelesen (Details in den [Bedienhinweisen](docs/BEDIENUNG.md)).
 

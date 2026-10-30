@@ -77,6 +77,7 @@
         if (!Number.isFinite(ui.seed)) ui.seed = Math.floor(Math.random() * 4294967295) + 1;
       }
       ui.confirmSol = null;
+      if (ui.speed === 0) ui.speed = 1; // eine gespeicherte Sitzung startet nie angehalten (iPad-Regel 4)
       if (!['lab', 'theory', 'tasks', 'apps'].includes(ui.page)) ui.page = 'lab';
       const ok = eng.restore(o.engine);
       if (!ok) return false;
@@ -126,13 +127,42 @@
         b.classList.toggle('locked', !open);
       });
     }
+    // ---------------------------------------------------------- Fokus nach Neuaufbau (iPad-Regel 2, 0.3.0)
+    const FOCUS_ATTR = ['f', 'q', 'free', 'mixf', 'mixcustom', 'mixsystem', 'appQ', 'act', 'tab', 'step', 'unit'];
+    /** Merkt das fokussierte Element als Selektor (mit Schreibmarke), um es nach innerHTML wiederzufinden. */
+    function focusMark(box) {
+      const el = document.activeElement;
+      if (!el || !box.contains(el)) return null;
+      let sel = el.id ? '#' + CSS.escape(el.id) : null;
+      if (!sel && el.dataset) {
+        for (const k of FOCUS_ATTR) {
+          if (el.dataset[k] == null) continue;
+          const attr = 'data-' + k.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
+          sel = `[${attr}="${CSS.escape(el.dataset[k])}"]`;
+          if (el.type === 'radio' || el.type === 'checkbox') sel += `[value="${CSS.escape(el.value)}"]`;
+          break;
+        }
+      }
+      if (!sel && el.name) sel = `[name="${CSS.escape(el.name)}"]` + (el.type === 'radio' || el.type === 'checkbox' ? `[value="${CSS.escape(el.value)}"]` : '');
+      if (!sel) return null;
+      return { sel: el.tagName.toLowerCase() + sel, caret: 'selectionStart' in el && el.type !== 'radio' && el.type !== 'checkbox' ? [el.selectionStart, el.selectionEnd] : null };
+    }
+    function focusBack(box, mark) {
+      if (!mark) return;
+      let el = null;
+      try { el = box.querySelector(mark.sel); } catch (e) { el = null; }
+      if (el) core.restoreFocus(el, mark.caret);
+    }
+
     function renderPage() {
       const page = $('#page');
       if (ui.page === 'lab') { page.hidden = true; return; }
       page.hidden = false;
       const body = $('#pageBody');
+      const mark = focusMark(body);
       body.innerHTML = ui.page === 'theory' ? theoryHtml() : ui.page === 'tasks' ? tasksHtml() : appsHtml();
       page.scrollTop = page.scrollTop; // Position halten
+      focusBack(body, mark);
       if (orderDirty) { orderDirty = false; save(); }
     }
     function lockHtml(title, need, key, go) {
@@ -258,8 +288,10 @@
       document.querySelectorAll('.lk-tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
       const body = $('#panelBody');
       const y = $('#panel').scrollTop;
+      const mark = focusMark(body);
       body.innerHTML = ui.tab === 'task' ? taskHtml() : ui.tab === 'results' ? resultsHtml() : ui.tab === 'journal' ? journalHtml() : notebookHtml();
       $('#panel').scrollTop = y;
+      focusBack(body, mark);
       if (orderDirty) { orderDirty = false; save(); }
     }
 

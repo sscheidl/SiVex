@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 – 30.10.2026 (prototype)
+
+Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) nach dem Unterrichtseinsatz der SiVex-Apps; Labkit 0.2.0.
+
+- **Pause blockiert nicht mehr:** Dosieren, Messen und andere Bedienung in der Pause beenden die Pause (1×, mit Hinweis), statt abgewiesen zu werden. Eine in der Pause stehengebliebene Zugabe oder Messung läuft beim nächsten Antippen zu Ende, statt alles mit „Warte …“ zu blockieren. Beim Versuchswechsel wird eine laufende Zugabe oder Messung abgeschlossen. Eine gespeicherte Sitzung startet nie angehalten.
+- **Fokus bleibt erhalten:** Nach dem Neuaufbau von Bedienfeld und Seiten (Prüfen, Tipp, neue Messung) bekommt das zuvor fokussierte Feld den Fokus samt Schreibmarke zurück – auch während des Tippens in Versuch 3. Auswahllisten nur nach Tastaturbedienung (Labkit `restoreFocus`).
+- **Auswahllisten** in Herleitung, Rechnen und Diagrammsteuerung werden bei wenig Platz schmaler statt breiter als die Spalte.
+- Fassungsvermögen war bereits geregelt (Zugaben über 95 mL werden abgewiesen).
+
 ## 0.2.2 – 29.10.2026 (prototype)
 
 - **Wechsel HCl ↔ NaOH beginnt immer mit frischen Ansätzen** (Wunsch der Lehrkraft): Bisher zeigte die Rückkehr zu einer schon benutzten Reihe deren alten Stand (z. B. angesäuertes Wasser), was irritierte. Jetzt wird eine benutzte Reihe beim Wechsel automatisch unter „Ergebnisse“ abgelegt (Hinweis erscheint) und Wasser/Pufferlösung starten wieder bei pH 7,00/7,20. Unbenutzte Reihen werden nicht abgelegt. Die Gegenprobe (bewusstes Weiterbehandeln derselben Ansätze) bleibt unverändert.

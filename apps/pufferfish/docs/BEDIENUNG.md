@@ -49,7 +49,7 @@ Die **pH-Kurve** in Versuch 3 zeigt die Messpunkte pH gegen lg[n(A⁻)/n(HA)] mi
 
 ## Zeit und Bewegung
 
-- **Pause** hält Tropfen, Mischung und Teilchenbewegung an; „Schritt ▸“ rückt 0,2 s Modellzeit vor. Dosieren und Messen sind in der Pause gesperrt.
+- **Pause** hält Tropfen, Mischung und Teilchenbewegung an; „Schritt ▸“ rückt 0,2 s Modellzeit vor. Wer in der Pause dosiert, misst oder etwas anderes bedient, beendet die Pause: Die Zeit läuft wieder mit 1×, eine angehaltene Zugabe läuft zu Ende (seit 0.3.0, damit nichts unbemerkt blockiert). Beim Versuchswechsel wird eine laufende Zugabe oder Messung abgeschlossen. Eine gespeicherte Sitzung startet nie angehalten.
 - **¼×** verlangsamt alles; die Ergebnisse sind unabhängig vom Tempo.
 - **Weniger Bewegung** (oder Systemeinstellung „Bewegung reduzieren“) schaltet Logoanimation, Wellen, Spritzer und Teilchenbewegung ab. Chemie, Messwerte und Bedienbarkeit bleiben gleich.
 

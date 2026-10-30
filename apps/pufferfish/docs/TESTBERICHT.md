@@ -1,4 +1,22 @@
-# Pufferfish 0.2.2 – Testbericht
+# Pufferfish 0.3.0 – Testbericht
+
+## Nachtrag 0.3.0 (30.10.2026) – iPad- und Bedienregeln
+
+Prüfung in der Entwicklungsumgebung ohne Browser; Abläufe in einer simulierten Seite (jsdom) mit dem App-Code nachgespielt. Browserabnahme und iPad: **HOLD – unverified**.
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Dosieren in der Pause startet die Zugabe und beendet die Pause | **PASS** (simuliert) | Zeit 1×, Zugabe läuft, Hinweis „Pause beendet“ |
+| In der Pause stehengebliebene Zugabe blockiert nicht | **PASS** (simuliert) | erneutes Antippen: Pause beendet, Zugabe läuft zu Ende, keine Doppeldosierung |
+| Versuchswechsel während einer Zugabe | **PASS** (simuliert) | Zugabe abgeschlossen, Wechsel ausgeführt, Zeit 1× |
+| Unit-Tests | **PASS** 61/61 | `npm test` |
+| E15 angepasst (Bedienen beendet die Pause), E1–E19 im Browser | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner |
+
+---
+
+Frühere Fassung des Berichts:
+
+## Pufferfish 0.2.2 – Testbericht
 
 Stand 29.10.2026 · Labkit 0.1.1 · Status **prototype** (Entwicklungsstand, **nicht** für den Unterricht freigegeben)
 

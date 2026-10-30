@@ -216,7 +216,7 @@ button.go.measure:hover { background: var(--accent-soft); }
 .chartctl { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: center; margin-left: auto; }
 .chartctl[hidden] { display: none; }
 .chartctl .chk { min-height: 36px; font-size: 13px; }
-.chartctl select { min-height: 36px; max-width: 220px; border: 1px solid var(--line-2); border-radius: 6px; background: #fff; font-size: 13px; }
+.chartctl select { min-height: 36px; max-width: min(220px, 100%); min-width: 0; text-overflow: ellipsis; border: 1px solid var(--line-2); border-radius: 6px; background: #fff; font-size: 13px; }
 .chartwrap { position: relative; flex: 1; min-height: 120px; }
 #chart { position: absolute; inset: 0; width: 100%; height: 100%; }
 .chartlegend { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 12.5px; padding-top: 2px; }
@@ -369,3 +369,7 @@ details.help summary { cursor: pointer; font-weight: 700; min-height: 32px; disp
 .addtag .ar { display: block; color: var(--muted); }
 .addtag .ar.on { color: var(--text); font-weight: 700; }
 .chip.water { border: 1.4px solid #4dabf7; }
+
+/* Auswahllisten schmaler als ihr längster Eintrag (iPad-Regel 1, 0.3.0) */
+.frow select { max-width: 100%; min-width: 0; text-overflow: ellipsis; }
+.frow .flabel { min-width: 0; overflow-wrap: break-word; }
