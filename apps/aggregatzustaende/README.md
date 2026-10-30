@@ -48,4 +48,4 @@ Kein Backend, keine externen Ressourcen, keine Übertragung von Antworten, Noten
 
 ## Status
 
-`prototype` bis zur fachlichen Freigabe durch die Lehrkraft und zum Test in mebis (siehe Testbericht). Auf dem iPad (Safari) am 30.10.2026 geprüft: sichtbar und bedienbar, Abläufe wie erwartet.
+`prototype` bis zur fachlichen Freigabe durch die Lehrkraft (siehe Testbericht). In mebis auf dem iPad (Safari) am 30.10.2026 geprüft: sichtbar und bedienbar, Abläufe wie erwartet.

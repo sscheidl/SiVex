@@ -50,7 +50,7 @@ Der Quellstand lädt den Baukasten unter `labkit/` – direkt per `index.html` s
 
 ## Grenzen
 
-- Status **prototype**: Auf dem iPad mit Safari geprüft (30.10.2026). Fachliche Freigabe durch die Lehrkraft, Test in mebis und Unterrichtserprobung stehen aus (siehe Testbericht).
+- Status **prototype**: In mebis auf dem iPad mit Safari geprüft (30.10.2026). Fachliche Freigabe durch die Lehrkraft und Unterrichtserprobung stehen aus (siehe Testbericht).
 - Vereinfachtes, beschleunigtes Unterrichtsmodell; die Zeitkonstanten sind keine Messwerte (siehe CHEMIE.md).
 - Kein Versuch mit Hibiskustee (laut Auftrag nicht erforderlich).
 - Zurückgestellt: Kochsalz mit dem Löffel selbst dosieren (P2 des Auftrags 0.2.0).

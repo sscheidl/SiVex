@@ -6,9 +6,9 @@ Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatu
 
 | Prüfung | Status | Nachweis |
 | --- | --- | --- |
-| iPad mit Safari: sichtbar, bedienbar, Abläufe | **PASS** (Lehrkraft, 30.10.2026, Stand 0.3.0) | manuelle Prüfung auf dem Gerät |
+| iPad mit Safari: sichtbar, bedienbar, Abläufe | **PASS** (Lehrkraft, 30.10.2026, Stand 0.3.0) | manuelle Prüfung auf dem Gerät über mebis |
 | TV36: keine Sackgasse nach abgewiesenem Ziel (Fehlerbericht V5: Magnet blieb gewählt, Uhrglas nicht mehr wählbar) | **PASS** (simulierte Seite) · Browser **HOLD** | Ablauf in einer simulierten Seite (jsdom) mit dem ausgelieferten Code nachgespielt: vorher Sackgasse, jetzt Uhrglas → Becherglas A erfolgreich; Unit-Tests 58/58; E13 ergänzt |
-| mebis-Import und -Start | **HOLD – unverified** | ausstehend |
+| mebis-Import und -Start | **PASS** (Lehrkraft, 30.10.2026, Stand 0.3.0) | SCORM-Paket in mebis gestartet und auf dem iPad bedient; 0.3.1 ersetzt es mit der Korrektur der Auswahl |
 | fachliche Durchsicht, Unterrichtserprobung | **HOLD – unverified** | ausstehend |
 
 ## 0.3.0 – Stand 30.10.2026

@@ -16,11 +16,11 @@ Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = gepr
 | Browserprüfung Edge (Desktop, Tablet- und Handy-Emulation) | PASS 16/16 | `tests/e2e/results.json`, Abschnitt 2 |
 | Pakete: SCORM 1.2 (Mock-LMS eingebettet/neues Fenster), Web-ZIP über HTTP und file://, frisch entpackt | PASS 17/17 | `tests/e2e/scorm-results.json`, Abschnitt 3 |
 | Visuelle Kontrolle der Bilder je Stoff und Zustand | PASS (Entwickler) | `docs/screenshots/`, Abschnitt 4 |
-| Echtes iPad (Safari), Touch | **PASS** (Lehrkraft, 30.10.2026) | auf dem iPad mit Safari geprüft: sichtbar und bedienbar, Abläufe wie erwartet |
-| mebis-Import (ByCS) | **HOLD – unverified** | nicht durchgeführt; nur Mock-LMS |
+| Echtes iPad (Safari), Touch | **PASS** (Lehrkraft, 30.10.2026) | auf dem iPad mit Safari über mebis geprüft: sichtbar und bedienbar, Abläufe wie erwartet |
+| mebis-Import (ByCS) | **PASS** (Lehrkraft, 30.10.2026) | SCORM-Paket in mebis gestartet und auf dem iPad bedient |
 | Fachliche und didaktische Freigabe durch die Lehrkraft | **HOLD – unverified** | ausstehend |
 
-Ohne mebis- und fachliche Lehrkraftprüfung bleibt der Status `prototype`.
+Ohne fachliche Lehrkraftprüfung bleibt der Status `prototype`.
 
 ## 1. Unit-Tests (`npm test`, 36 Tests)
 
@@ -100,5 +100,5 @@ Die Bilder in `docs/screenshots/` (aus E03–E13 und dem Paketlauf) wurden durch
 2. **iPad hoch und quer:** keine Überdeckung, Markierungen am Regler lesbar, Bedienfeld scrollt.
 3. **Kalte Oberfläche bei Iod:** Kristalle wachsen sichtbar; Ausblenden.
 4. **Schema** auf dem iPad hoch und quer: lesbar, bewegte Pfeile flüssig.
-5. **mebis:** SCORM-ZIP als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“; Start, Neuladen, keine Bewertung im Kurs.
+5. ✓ **mebis** (30.10.2026 erledigt): SCORM-ZIP als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“; Start, Neuladen, keine Bewertung im Kurs.
 6. **Lehrkraft fachlich:** Temperaturwerte und Rundung; Darstellung von Eis, Iod, Eisen, Kochsalz; Kochsalz-Ionenpaare im Gas, Ofen und gestauchte Skala; Formulierungen der Aufgaben und Fehlvorstellungen; Hefteintrag (≈ 100 Wörter, etwa 5 Minuten Abschreibzeit); Arbeitsblatt-Ausdruck.
