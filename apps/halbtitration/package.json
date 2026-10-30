@@ -1,6 +1,6 @@
 {
   "name": "sivex-halbtitration",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "description": "Halbtitrationslabor: pKs- und pKB-Werte experimentell bestimmen (statische Webanwendung, SiVex)",
   "scripts": {

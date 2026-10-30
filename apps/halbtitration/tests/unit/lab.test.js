@@ -115,3 +115,28 @@ test('Neue Probe: Kolben leer, Bürette und Kalibrierung bleiben', () => {
   assert.equal(l.calibration, 2);
   assert.equal(l.burette.reading, r);
 });
+
+test('0.3.0 (iPad-Regel 3): Titrierkolben hat ein Fassungsvermögen – Zugabe stoppt mit „voll“', () => {
+  const l = ready('acetic');
+  const events = [];
+  l.on('full', (e) => events.push(e || {}));
+  // Umweg wie im Unterricht möglich: Bürette in einem anderen Versuch nachgefüllt, hier weiter dosiert
+  l.burette.reading = 0; l.dispensed = l.flaskMax - l.sample - l.water - 3;
+  const r = l.addVolume(10);
+  assert.ok(Math.abs(r.accepted - 3) < 1e-9, 'nur der Platz bis zum Rand wird angenommen: ' + r.accepted);
+  assert.ok(events.some((e) => e.limited), 'Hinweis: nur so viel, wie noch passt');
+  l.simulate(30);
+  assert.ok(l.liquidVolume <= l.flaskMax + 1e-9, 'Kolben höchstens voll: ' + l.liquidVolume);
+  assert.equal(l.canDose(), 'full');
+  assert.equal(l.addVolume(1).accepted, 0);
+  // Hahn öffnen geht nicht mehr
+  assert.equal(l.openValve(), false);
+});
+
+test('0.3.0: offener Hahn schließt, sobald der Kolben voll ist', () => {
+  const l = ready('acetic');
+  l.burette.reading = 0; l.dispensed = l.flaskMax - l.sample - l.water - 0.5;
+  l.setFlowRate(1); l.openValve(); l.simulate(5);
+  assert.equal(l.isFlowing, false, 'Hahn zu');
+  assert.ok(l.liquidVolume <= l.flaskMax + 1e-9);
+});

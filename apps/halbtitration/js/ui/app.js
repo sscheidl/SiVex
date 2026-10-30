@@ -119,7 +119,7 @@
       function close(v) {
         m.hidden = true;
         document.removeEventListener('keydown', onKey, true);
-        if (prev && prev.focus) prev.focus();
+        if (prev && document.contains(prev)) LK.core.restoreFocus(prev);
         resolve(v);
       }
       function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(null); } }
@@ -254,6 +254,7 @@
     l.on('stirrer', function () { if (id === state.current) autoPending = true; });
     l.on('empty', function () { if (id === state.current) toast('Bürette am Ende der Skala (50,00 mL) – zwischen zwei Proben nachfüllen.', 'warn'); });
     l.on('limited', function () { if (id === state.current) toast('Nur bis zum Ende der Bürettenskala zugegeben.', 'warn'); });
+    l.on('full', function (e) { if (id === state.current) toast(e && e.limited ? 'Nur so viel zugegeben, wie noch in den Titrierkolben passt – er ist jetzt voll.' : 'Der Titrierkolben ist voll – mehr Maßlösung passt nicht hinein.', 'warn'); });
     l.on('blocked', function (e) { if (id === state.current) toast(blockedText(e.reason), 'warn'); });
     l.on('prep', function (e) {
       if (e.action === 'sample-done') l.addWater(); // Probe vorlegen: pipettieren, dann verdünnen
@@ -270,6 +271,7 @@
       sample: 'Es ist noch keine Probe im Kolben.',
       water: 'Die Probe wird noch verdünnt.',
       empty: 'Die Bürette ist bis zur 50-mL-Marke abgelassen – vor der nächsten Probe nachfüllen.',
+      full: 'Der Titrierkolben ist voll – mehr Maßlösung passt nicht hinein. Beginne mit einer neuen Probe.',
       titrant: 'Wähle im Bedienfeld zuerst die passende Maßlösung.',
     }[r] || 'Das geht gerade nicht.';
   }
@@ -523,9 +525,38 @@
     else $('#panelBody').innerHTML = '<div class="lk-notebook">' + C.NOTEBOOK + '</div><p class="lk-muted">Zum Abschreiben ins Heft – unabhängig von deinen Messwerten.</p>';
   }
 
+  // Fokus über einen Neuaufbau retten (iPad-Regel 2, 0.3.0): Nach jedem automatischen Messpunkt werden
+  // Bedienleiste und Bedienfeld neu aufgebaut – wer gerade tippte, verlor Feld und Schreibmarke.
+  // Auswahllisten bekommen den Fokus nur nach Tastaturbedienung zurück (sonst öffnet Safari sie neu).
+  function focusMark() {
+    const el = document.activeElement;
+    if (!el || el === document.body) return null;
+    const box = ['#deck', '#panelBody', '#seriesBar', '#expChips'].map(function (q) { return $(q); }).find(function (b) { return b && b.contains(el); });
+    if (!box) return null;
+    let sel = el.tagName.toLowerCase();
+    if (el.id) sel += '#' + CSS.escape(el.id);
+    else {
+      const attrs = Array.prototype.filter.call(el.attributes, function (a) { return /^data-/.test(a.name); });
+      if (!attrs.length && !el.name) return null;
+      attrs.forEach(function (a) { sel += '[' + a.name + '="' + CSS.escape(a.value) + '"]'; });
+      if (el.name) sel += '[name="' + CSS.escape(el.name) + '"]';
+      if (el.type === 'radio' || el.type === 'checkbox') sel += '[value="' + CSS.escape(el.value) + '"]';
+    }
+    const caret = 'selectionStart' in el && el.type !== 'radio' && el.type !== 'checkbox' ? [el.selectionStart, el.selectionEnd] : null;
+    return { sel: sel, caret: caret };
+  }
+  function focusBack(m) {
+    if (!m || (document.activeElement && document.activeElement !== document.body)) return;
+    let el = null;
+    try { el = document.querySelector(m.sel); } catch (e) { el = null; }
+    if (el) LK.core.restoreFocus(el, m.caret);
+  }
+
   function refresh() {
+    const m = focusMark();
     refreshLab();
     renderPanel();
+    focusBack(m);
   }
 
   function applyPanel() {

@@ -1,4 +1,19 @@
-# Testbericht Halbtitrationslabor 0.2.2
+# Testbericht Halbtitrationslabor 0.3.0
+
+## Nachtrag 0.3.0 (30.10.2026) – iPad- und Bedienregeln
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Titrierkolben höchstens 120 mL; Schrittzugabe begrenzt, Hahn schließt, Meldung „voll“ | **PASS** | `lab.test.js` (0.3.0) |
+| Fokus nach Neuaufbau (Messpunkt) | **PASS** (simulierte Seite) | fokussiertes Element nach `refresh()` wieder fokussiert |
+| Unit-Tests | **PASS** 35/35 | `npm test` |
+| Browserabnahme, Paketprüfung, iPad | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner |
+
+---
+
+Frühere Fassung des Berichts:
+
+## Testbericht Halbtitrationslabor 0.2.2
 
 Stand 29.10.2026. Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS**, **HOLD – failed**, **HOLD – incomplete**, **HOLD – unverified**.
 

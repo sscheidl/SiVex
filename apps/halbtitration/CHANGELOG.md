@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.3.0 – 30.10.2026
+
+Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) nach dem Unterrichtseinsatz der SiVex-Apps; Labkit 0.2.0.
+
+- **Titrierkolben hat ein Fassungsvermögen (120 mL):** Über die gemeinsame Bürette (Nachfüllen in einem anderen Versuch) ließ sich der Kolben bisher über den Rand füllen. Jetzt stoppt die Zugabe mit „Der Titrierkolben ist voll – mehr Maßlösung passt nicht hinein“; eine Schrittzugabe wird auf den Platz bis zum Rand begrenzt, ein offener Hahn schließt. Im normalen Ablauf (Probe 20 mL + Wasser 30 mL + höchstens 50 mL Maßlösung) wird die Grenze nie erreicht.
+- **Fokus bleibt erhalten:** Nach jedem automatischen Messpunkt werden Bedienleiste und Bedienfeld neu aufgebaut. Wer gerade tippte (z. B. Zielmarke, Auswertungsfelder), verlor Feld und Schreibmarke – jetzt nicht mehr. Auswahllisten bekommen den Fokus nur nach Tastaturbedienung zurück (Labkit `restoreFocus`), auch nach dem Schließen eines Dialogs.
+- Auswahllisten überdecken nichts (bereits so gestaltet); eine Pause gibt es in dieser App nicht.
+
 ## 0.2.2 – 29.10.2026
 
 Messwerterfassung didaktisch vereinfacht (Rückmeldung der Lehrkraft):

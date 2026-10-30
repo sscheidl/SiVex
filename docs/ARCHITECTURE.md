@@ -10,7 +10,7 @@ apps/
   trennverfahren/     # Trennverfahren 0.4.0 (prototype) auf Basis des Labkits
   chromatographie/    # Papierchromatographie 0.3.0 (prototype) auf Basis des Labkits
   destillation/       # Destillation 0.4.0 (prototype) auf Basis des Labkits
-  halbtitration/      # Halbtitrationslabor 0.2.2 (prototype), Labkit-Hülle, Laboraufbau aus TitraLab 3
+  halbtitration/      # Halbtitrationslabor 0.3.0 (prototype), Labkit-Hülle, Laboraufbau aus TitraLab 3
   pufferfish/         # Pufferfish 0.3.0 (prototype) – Puffer untersuchen, herleiten, berechnen und herstellen; Henderson-Hasselbalch
   aggregatzustaende/  # Aggregatzustände 0.3.0 (prototype) – Stoff- und Teilchenebene, eine Teilchen-Engine für vier Stoffe
   ester-gleichgewicht/

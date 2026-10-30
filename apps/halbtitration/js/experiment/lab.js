@@ -31,6 +31,7 @@
 
   const DEFAULTS = {
     capacity: 50, // mL Skala der Bürette
+    flaskMax: 120, // mL: 100-mL-Enghals-Erlenmeyerkolben bis knapp unter den Hals (iPad-Regel 3, 0.3.0)
     dropVolume: 0.05, // mL je Tropfen
     minFlow: 0.01, // mL/s
     maxFlow: 1.0, // mL/s (Hahn ganz offen)
@@ -59,7 +60,7 @@
       this.exp = exp;
       const o = Object.assign({}, DEFAULTS, options || {});
       Object.assign(this, {
-        capacity: o.capacity, dropVolume: o.dropVolume, minFlow: o.minFlow, maxFlow: o.maxFlow,
+        capacity: o.capacity, flaskMax: o.flaskMax, dropVolume: o.dropVolume, minFlow: o.minFlow, maxFlow: o.maxFlow,
         releaseDelay: o.releaseDelay, fallTime: o.fallTime, mixTauStirred: o.mixTauStirred,
         mixTauStill: o.mixTauStill, sensorTau: o.sensorTau, driftLimit: o.driftLimit,
         stableHold: o.stableHold, pipetteTime: o.pipetteTime, waterTime: o.waterTime,
@@ -118,6 +119,9 @@
     get liquidVolume() { return this.sample + this.water + this.delivered; }
 
     get buretteReady() { return this.burette.filled && !this.burette.bubble; }
+
+    /** Platz im Titrierkolben, einschließlich der schon abgelassenen, noch fallenden Tropfen (mL). */
+    get flaskRoom() { return Math.max(0, this.flaskMax - (this.sample + this.water + this.dispensed)); }
 
     get remaining() {
       if (!this.burette.filled) return 0;
@@ -284,6 +288,7 @@
       // Das Modell rechnet mit der verdünnten Probe (Probe + Wasser)
       if (!this.waterReady) return 'water';
       if (this.isEmpty) return 'empty';
+      if (this.flaskRoom <= EPS) return 'full';
       return null;
     }
 
@@ -324,8 +329,10 @@
       if (this.valveOpen) this.valveOpen = false;
       const base = this.step ? this.step.target : this.dispensed;
       const room = this.capacity - this.burette.reading - (base - this.dispensed);
-      const accepted = Math.max(0, Math.min(volume, room));
-      if (accepted <= EPS) { this._emit('empty', {}); return { accepted: 0 }; }
+      const fRoom = this.flaskRoom - (base - this.dispensed);
+      const accepted = Math.max(0, Math.min(volume, room, fRoom));
+      if (accepted <= EPS) { if (fRoom <= EPS) this._emit('full', {}); else this._emit('empty', {}); return { accepted: 0 }; }
+      if (fRoom < Math.min(volume, room) - EPS) { const target = base + accepted; this.step = { target: target, rate: stepRate(target - this.dispensed) }; this.releaseTimer = 0; this._emit('full', { limited: true }); return { accepted: accepted }; }
       const target = base + accepted;
       this.step = { target: target, rate: stepRate(target - this.dispensed) };
       this.releaseTimer = 0;
@@ -374,7 +381,7 @@
       if (this.isFlowing) {
         let amount = this.currentFlow * dt;
         if (this.step) amount = Math.min(amount, this.step.target - this.dispensed);
-        amount = Math.min(amount, this.capacity - this.burette.reading);
+        amount = Math.min(amount, this.capacity - this.burette.reading, this.flaskRoom);
         if (amount > 0) {
           this.dispensed += amount;
           this.hanging += amount;
@@ -385,6 +392,13 @@
           this.step = null;
           this._emit('step-done', {});
           this._emit('valve', { open: false });
+        }
+        if (this.isFlowing && this.flaskRoom <= EPS) {
+          // Titrierkolben voll: Hahn schließt (aktives Zugeben stoppt mit „voll“)
+          this.valveOpen = false;
+          this.step = null;
+          this._emit('valve', { open: false });
+          this._emit('full', {});
         }
         if (this.capacity - this.burette.reading <= EPS) {
           this.burette.reading = this.capacity;
