@@ -429,6 +429,25 @@
       if (d.oil > 0 && d.water > 0) o.emul = Math.max(o.emul, 0.05);
     }
 
+    /**
+     * Abgabe in ein Auffanggefäß unter Trichter oder Hahn: Ist es voll, läuft der Überschuss über
+     * (Verlusttopf „verschüttet“, sichtbar als Pfütze) – mit Warnung. Feststoffe gehen anteilig mit.
+     */
+    function deliverRecv(recv, out, agitate) {
+      if (recv) {
+        const room = Math.max(0, T(recv).cap - liq(recv.c));
+        const L = liq(out);
+        if (L > room + 1e-9) {
+          const f = L > 0 ? (L - room) / L : 0;
+          const over = zero();
+          for (const k of KEYS) { over[k] = out[k] * f; out[k] -= over[k]; }
+          addTo(st.lost.spilled, over);
+          recv.overflow = st.t;
+          warnOnce('overflow' + recv.id, `${label(recv)} ist voll und läuft über – die Flüssigkeit läuft auf den Tisch. Stelle ein leeres Gefäß darunter.`);
+        }
+      }
+      deliver(recv, out, agitate);
+    }
     function pourStep(op, dt) {
       const src = O(op.src), dst = O(op.dst);
       if (op.phase !== 'flow') return;
@@ -770,7 +789,7 @@
       for (const k of KEYS) c[k] -= out[k];
       tidy(c);
       if (!recv) warnOnce('noFiltRecv', 'Unter dem Trichter steht kein Gefäß – das Filtrat tropft auf den Tisch.');
-      deliver(recv, out, 0.12);
+      deliverRecv(recv, out, 0.12);
       st.drip.F = (liq(out) + solids(out)) / dt;
       st.flags.filtered += out.water;
       if (f.paper) st.flags.paperFiltered += out.water;
@@ -808,7 +827,7 @@
       tidy(c);
       const recv = s.at === 'sepring' ? objAt(st, 'sepunder') : null;
       if (!recv && s.at === 'sepring') warnOnce('nosepRecv', 'Unter dem Scheidetrichter steht kein Gefäß – die Flüssigkeit läuft auf den Tisch!');
-      deliver(recv, out, 0.25);
+      deliverRecv(recv, out, 0.25);
       if (s.at === 'sepring') st.flags.sepOut += liq(out);
       st.drip.S = liq(out) / dt;
       if (liq(c) < 0.02 && !st.warned.sepEmpty) { st.warned.sepEmpty = st.t; msg('Der Scheidetrichter ist leer gelaufen. Schließe den Hahn.', 'info', 'sepEmpty'); }

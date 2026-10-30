@@ -979,6 +979,12 @@
           if (Math.random() < dt * 9) { V(dr.recv.id).rings.push({ x: dr.tip.x, dx: dr.tip.x - target.cx, age: 0, life: 0.7 }); if (V(dr.recv.id).rings.length > 8) V(dr.recv.id).rings.shift(); }
         } else if (Math.random() < dt * 6) addPuddle(dr.tip.x, dr.oil);
       }
+      // Auffanggefäß voll: es läuft am Glas herunter auf den Tisch (Pfütze neben dem Gefäß)
+      for (const dr of dripSources(st)) {
+        const r = dr.recv;
+        if (!r || !(st.drip[dr.key] > 0.004) || Mo.liq(r.c) < Mo.TYPES[r.type].cap - 0.6) continue;
+        if (Math.random() < dt * 5) { const t = catchAt(st, r); if (t) addPuddle(Math.random() < 0.5 ? t.x0 - 6 : t.x1 + 6, dr.oil); }
+      }
       fx.drops = fx.drops.filter((d) => {
         d.t += dt;
         d.y = d.y0 + 0.5 * GRAV * d.t * d.t;

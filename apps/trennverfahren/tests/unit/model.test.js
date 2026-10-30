@@ -576,3 +576,29 @@ test('Dekantieren wird erkannt (Abgießen über einem Bodensatz), Aufgießen ein
   pour(e, 'A', 'C', { until: (st) => st.objs.A.c.water < 40 });
   assert.ok(e.state.flags.decanted >= 10, 'über dem Bodensatz abgegossen: ' + e.state.flags.decanted);
 });
+
+test('V2 (0.3.2): Auffanggefäß unter dem Trichter läuft über, statt unbegrenzt Wasser aufzunehmen', () => {
+  const e = M.createEngine(2);
+  act(e, 'move', 'F', 'ring'); act(e, 'move', 'E', 'under'); act(e, 'insertPaper', 'F');
+  e.act('setWashAmount', 20);
+  for (let i = 0; i < 16; i++) { act(e, 'wash', 'F'); wait(e, 20); }
+  runUntil(e, (st) => st.drip.F < 0.005, 300);
+  const E = e.state.objs.E;
+  assert.ok(M.liq(E.c) <= M.TYPES.erlenmeyer.cap + 1e-6, 'höchstens randvoll: ' + M.liq(E.c));
+  near(M.liq(E.c), M.TYPES.erlenmeyer.cap, 0.5, 'Kolben randvoll');
+  assert.ok(e.state.lost.spilled.water > 50, 'Überschuss auf dem Tisch: ' + e.state.lost.spilled.water);
+  assert.ok(e.state.log.some((m) => /läuft über/.test(m.text)), 'Warnung „läuft über“');
+  balanced(e);
+});
+
+test('V4 (0.3.2): auch unter dem Hahn läuft ein volles Gefäß über', () => {
+  const e = M.createEngine(4);
+  act(e, 'move', 'S', 'sepring');
+  // Becherglas B fast voll machen: Wasser aus A und mehrfach Öl/Wasser nachfüllen ist umständlich – direkt setzen
+  e.state.objs.B.c.water = 225;
+  pour(e, 'A', 'S');
+  act(e, 'move', 'B', 'sepunder');
+  e.act('setCock', 2); runUntil(e, (st) => M.liq(st.objs.S.c) < 0.1, 120, 0.05); e.act('setCock', 0);
+  assert.ok(M.liq(e.state.objs.B.c) <= 230 + 1e-6, 'B höchstens randvoll');
+  assert.ok(e.state.lost.spilled.water + e.state.lost.spilled.oil > 50, 'Rest auf dem Tisch');
+});
