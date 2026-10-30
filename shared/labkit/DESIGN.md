@@ -81,3 +81,11 @@ Einheitlich nach dem Redoxlabor ([`QUALITY.md`](../../docs/QUALITY.md#verbindlic
 | `tests/` | Unit-Tests der Bausteine |
 
 Aus den Fassungen übernommen: `createClock`, `checkGap`, `parseNum` und der SCORM-Adapter aus Fassung B (`apps/trennlabor/js/core.js`, `js/scorm.js`); die Splitter-Logik nach TitraLab 3. Weitere Bausteine kommen erst hinzu, wenn eine zweite App sie tatsächlich braucht.
+
+## iPad-Regeln (Labkit 0.2.0, 30.10.2026)
+
+Nach dem Unterrichtseinsatz auf Schul-iPads gelten zusätzlich die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps). Der Baukasten liefert dafür:
+
+- **Auswahllisten ohne Überdeckung:** `select` in `.lk-panel` und `.lk-card` dürfen schmaler werden als ihr längster Eintrag. Zeilen „Text | Auswahl“ als `<div class="lk-choice"><span>Text</span><select>…</select></div>` (oder mit `.lk-choice-ctl` um Auswahl und Markierung) brechen bei Platzmangel um; die Auswahl steht dann in voller Breite unter dem Text.
+- **Fokus nach Neuaufbau:** `LK.core.restoreFocus(el, caret)` fokussiert Textfelder und Knöpfe wie bisher, Auswahllisten aber nur nach Tastaturbedienung (`LK.core.lastInputKeyboard()`), weil Safari auf dem iPad eine fokussierte Auswahlliste sofort öffnet.
+- Füllgrenze und Pause gehören zum Fachmodell bzw. zur Zeitsteuerung jeder App und werden dort umgesetzt.

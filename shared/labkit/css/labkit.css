@@ -140,3 +140,15 @@ body.is-resizing { cursor: col-resize; -webkit-user-select: none; user-select: n
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ---------- Auswahllisten (iPad-Regel 1, Labkit 0.2.0) ----------
+   Auswahllisten dürfen schmaler werden als ihr längster Eintrag; Zeilen „Text | Auswahl“ brechen um,
+   statt dass die Liste den Text überdeckt. */
+.lk-panel select, .lk-card select { max-width: 100%; min-width: 0; text-overflow: ellipsis; }
+.lk-panel { overflow-wrap: break-word; }
+.lk-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.lk-choice > :first-child { flex: 1 1 12em; min-width: 0; }
+.lk-choice > select, .lk-choice > .lk-choice-ctl { flex: 1 1 10em; min-width: 0; max-width: 100%; }
+.lk-choice > .lk-choice-ctl { display: inline-flex; align-items: center; gap: 4px; }
+.lk-choice > .lk-choice-ctl > select { flex: 1 1 auto; min-width: 0; max-width: 100%; }
+.lk-choice > .lk-fb, .lk-choice > .lk-choice-full { flex: 1 1 100%; }

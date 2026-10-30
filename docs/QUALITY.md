@@ -46,6 +46,43 @@ Wie im TitraLab 3 lassen sich die Laborbühne und das Bedienfeld über eine Tren
 
 Zusätzlich zur Mindestprüfung: Tropfen und Meniskus als tatsächliche Übergänge prüfen (nicht nur Endzustände), Trennlinie per Maus, Finger und Tastatur bei Desktop- und Tablet-Breiten verschieben und dabei kontrollieren, dass Bühne und Bedienfeld lesbar und bedienbar bleiben.
 
+## iPad- und Bedienregeln für alle Apps
+
+Festgelegt am 30.10.2026 nach dem Unterrichtseinsatz von Trennverfahren und Aggregatzuständen auf Schul-iPads (iPad 8. Generation, Safari, meist Querformat; Start aus mebis im neuen Fenster). Gilt für alle bestehenden und neuen SiVex-Apps; Begründung: [Entscheidung](decisions/2026-10-30-ipad-bedienregeln.md). Die Bausteine für Regel 1 und 2 liegen ab Labkit 0.2.0 im gemeinsamen Baukasten.
+
+### 1. Auswahlmenüs überlappen keinen Text
+
+Auswahllisten (`<select>`) in Bedienfeldern, Protokollen und Lückentexten dürfen bei schmalem Bedienfeld nie angrenzenden Text überdecken.
+
+- Zeilen „Text | Auswahl“ umbrechen: Ist nicht genug Platz, rutscht die Auswahl unter den Text und nimmt die volle Breite ein (Labkit: `.lk-choice`).
+- Auswahllisten dürfen schmaler werden als ihr längster Eintrag (`max-width: 100%`, `min-width: 0`); Safari kürzt den sichtbaren Text, die Liste zeigt beim Antippen alle Einträge vollständig.
+- Lange Wörter dürfen umbrechen (`overflow-wrap: anywhere`, `hyphens: auto` bei `lang="de"`).
+
+### 2. Auswahllisten springen nicht von selbst auf
+
+Safari auf dem iPad öffnet eine Auswahlliste, sobald sie den Fokus erhält. Wird das Bedienfeld nach einer Eingabe neu aufgebaut, bekommt eine Auswahlliste den Fokus deshalb **nur nach Tastaturbedienung** zurück (Labkit: `LK.core.restoreFocus`). Andere Felder (Textfelder, Knöpfe) werden wie bisher wieder fokussiert.
+
+### 3. Gefäße haben ein Fassungsvermögen
+
+- **Aktives Zugeben** (Gießen, Pipette, Bürette, Spritzflasche in ein Gefäß) stoppt bzw. wird abgewiesen mit „… ist voll“.
+- **Was von selbst nachläuft** (Filtrat, Ablauf am Hahn, Destillat, Tropfen) lässt ein volles Auffanggefäß **überlaufen**: Das Gefäß bleibt randvoll, der Überschuss geht in einen Verlusttopf („verschüttet“), sichtbar als Pfütze, mit einer Warnung.
+- Bilanz bleibt erhalten; kein Gefäß nimmt mehr auf, als hineinpasst.
+
+### 4. Pause blockiert nie
+
+- **Bedienen beendet die Pause:** Startet jemand bei angehaltener Zeit einen Handgriff oder tippt während eines angehaltenen Handgriffs etwas an, läuft die Zeit wieder mit 1× (kurze Meldung). Ein Handgriff darf nie unsichtbar stillstehen und alles Weitere mit „Warte …“ abweisen.
+- **Versuchswechsel** (Apps mit mehreren Versuchen): Laufendes Gießen wird gestoppt, ein angefangener Handgriff im verlassenen Versuch abgeschlossen, die Zeit auf 1× gestellt.
+- Eine gespeicherte Sitzung startet nie pausiert.
+
+### In Erprobung (noch keine Regel)
+
+- **Kompakte Bedienung direkt am Gerät:** Die Leiste unter der Laborbühne braucht auf dem iPad bis zu drei Zeilen. Geprüft wird eine Testvariante des Trennverfahrens mit Einstellungen als kleine Schaltflächen am gewählten Gerät (Gießtempo, Wassermenge, Schütteln, Stopp beim Gießen) und ohne Zielknöpfe. Erst nach Vergleich im Unterricht wird daraus eine Regel.
+- **mebis und Pop-up-Blocker:** Darstellung „Neues Fenster“ bleibt. Zu prüfen: Mit „Struktur der Inhaltsseite überspringen: Nie“ öffnet das Fenster nach dem Antippen von „Eintreten“ auch bei eingeschaltetem Pop-up-Blocker (siehe [`MEBIS.md`](MEBIS.md)).
+
+### Prüfung
+
+Zusätzlich zur Mindestprüfung: Bedienfeld auf die kleinste Breite ziehen und alle Auswahllisten ansehen; jede Auswahlliste per Antippen und per Tastatur bedienen; jedes Auffanggefäß bis zum Überlaufen füllen; in jedem Versuch pausieren, Versuch wechseln und weiterarbeiten.
+
 ## Verbindliche Lern- und Auswertungsstruktur für weitere Apps
 
 Festgelegt am 23.10.2026. Vorbild ist das **Redoxlabor** mit Protokoll, Ergebnisübersicht und Redox-Trainer. Die Bausteine lassen sich nicht 1:1 auf jedes Labor übertragen; das **Grundprinzip**, der **Aufbau** und die **Art der Fragestellungen** sind aber einheitlich zu übernehmen, damit alle SiVex-Apps gleich funktionieren und gleich aussehen.

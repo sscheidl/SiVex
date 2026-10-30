@@ -50,3 +50,21 @@ test('Ereignisverteiler: an- und abmelden', () => {
   e.emit('x'); off(); e.emit('x');
   assert.equal(n, 1);
 });
+
+test('Fokus (0.2.0): Auswahllisten nur nach Tastaturbedienung erneut fokussieren, Textfelder immer', () => {
+  const el = (tagName) => ({ tagName, focused: 0, sel: null, focus() { this.focused++; }, setSelectionRange(a, b) { this.sel = [a, b]; } });
+  core.noteInput('pointer');
+  const s1 = el('SELECT');
+  assert.equal(core.restoreFocus(s1), false, 'nach Antippen: Auswahlliste bleibt zu (iPad öffnete sie sonst erneut)');
+  assert.equal(s1.focused, 0);
+  const t = el('TEXTAREA');
+  assert.equal(core.restoreFocus(t, [3, 5]), true);
+  assert.equal(t.focused, 1); assert.deepEqual(t.sel, [3, 5]);
+  core.noteInput('keyboard');
+  assert.equal(core.lastInputKeyboard(), true);
+  const s2 = el('select');
+  assert.equal(core.restoreFocus(s2), true, 'nach Tastatur: Fokus zurück, damit man weiterarbeiten kann');
+  assert.equal(core.restoreFocus(null), false);
+  assert.equal(core.VERSION, '0.2.0');
+  core.noteInput('pointer');
+});

@@ -3,6 +3,8 @@
  *
  * Mathematische Hilfen, feste Zeitschritte für reproduzierbare Simulationen,
  * Ereignisverteiler und die Prüfung eingetippter Fachbegriffe (Lückentexte).
+ * Ab 0.2.0 zusätzlich Fokus-Wiederherstellung nach Neuaufbau eines Bereichs (iPad-Regel 2,
+ * docs/QUALITY.md): Der einzige DOM-Bezug; ohne `document` (Node, Tests) bleibt er wirkungslos.
  * Übernommen aus Trennlabor 1.0.0, Fassung B (apps/trennlabor/js/core.js).
  */
 (function (root, factory) {
@@ -12,7 +14,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const VERSION = '0.1.1';
+  const VERSION = '0.2.0';
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const lerp = (a, b, t) => a + (b - a) * t;
   const round = (v, d) => { const k = Math.pow(10, d || 0); return Math.round(v * k) / k; };
@@ -118,5 +120,32 @@
     };
   }
 
-  return { VERSION, clamp, lerp, round, clone, easeInOut, fmt, fmtTime, STEP, createClock, norm, levenshtein, checkGap, gapOk, parseNum, emitter };
+  // ------------------------------------------------------------------ Eingabeart und Fokus (0.2.0)
+  /**
+   * Letzte Eingabeart: Tastatur oder Zeiger/Finger. Safari auf dem iPad öffnet eine Auswahlliste,
+   * sobald sie den Fokus bekommt – nach dem Neuaufbau eines Bedienfelds sprang sie so nach dem
+   * Antippen einer Antwort erneut auf. Auswahllisten werden deshalb nur nach Tastaturbedienung
+   * wieder fokussiert.
+   */
+  let keyboard = false;
+  function noteInput(kind) { keyboard = kind === 'keyboard'; }
+  const lastInputKeyboard = () => keyboard;
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('keydown', () => noteInput('keyboard'), true);
+    document.addEventListener('pointerdown', () => noteInput('pointer'), true);
+    document.addEventListener('touchstart', () => noteInput('pointer'), { capture: true, passive: true });
+  }
+  /**
+   * Fokus nach einem Neuaufbau wiederherstellen. Auswahllisten nur nach Tastaturbedienung;
+   * Textfelder behalten die Schreibmarke (caret = [Anfang, Ende]). Gibt true zurück, wenn fokussiert.
+   */
+  function restoreFocus(el, caret) {
+    if (!el || typeof el.focus !== 'function') return false;
+    if (String(el.tagName).toUpperCase() === 'SELECT' && !keyboard) return false;
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+    if (caret && typeof el.setSelectionRange === 'function') { try { el.setSelectionRange(caret[0], caret[1]); } catch (e) { /* Feld ohne Schreibmarke */ } }
+    return true;
+  }
+
+  return { VERSION, clamp, lerp, round, clone, easeInOut, fmt, fmtTime, STEP, createClock, norm, levenshtein, checkGap, gapOk, parseNum, emitter, noteInput, lastInputKeyboard, restoreFocus };
 });
