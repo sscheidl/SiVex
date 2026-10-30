@@ -196,3 +196,19 @@ details.state ul { margin: 4px 0 0; padding-left: 18px; }
   .lk-brand { flex: 1 0 100%; }
   .lk-stage { height: 86vh; min-height: 600px; }
 }
+
+/* ---------- Testvariante „kompakte Bedienung“ (in Erprobung) ----------
+   Keine Bedienleiste unter der Bühne; Einstellungen als Schaltflächen am gewählten Gerät. */
+.ui-compact #deck { display: none; }
+.chips { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.chipbar[hidden] { display: none; }
+.chipbar { position: absolute; display: flex; align-items: center; gap: 6px; pointer-events: auto; padding: 4px; background: rgba(255, 255, 255, 0.94); border: 1px solid var(--line-2); border-radius: 26px; box-shadow: 0 3px 10px rgba(20, 40, 70, 0.18); white-space: nowrap; }
+.chipbar button { min-height: 44px; min-width: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid var(--line-2); background: #fff; font: 600 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); cursor: pointer; }
+.chipbar button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chipbar button.stop { background: var(--bad); border-color: var(--bad); color: #fff; }
+.chipbar button.x { padding: 0; width: 44px; color: var(--muted); }
+.chipbar button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.chipbar .info { padding: 0 6px; font: 600 13px system-ui, -apple-system, sans-serif; color: var(--text-2); }
+.chipbar.temp { pointer-events: none; padding: 3px 8px; border-radius: 8px; box-shadow: none; font: 700 12px system-ui, -apple-system, sans-serif; color: #b4471a; }
+.chipbar.cock { color: var(--text-2); }
+

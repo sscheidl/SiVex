@@ -1,5 +1,17 @@
 # Änderungen – Trennverfahren
 
+## 0.4.1 – 30.10.2026 (prototype)
+
+**Neu: Testvariante „kompakte Bedienung“** (in Erprobung, siehe [QUALITY.md](../../docs/QUALITY.md#in-erprobung-noch-keine-regel)). Die normale Fassung bleibt in Bedienung und Aussehen unverändert.
+
+- Eigene Pakete `trennverfahren-kompakt-0.4.1-scorm12.zip` und `…-web.zip` mit eigener SCORM-Kennung und eigenem Titel; beide Fassungen können nebeneinander in mebis liegen und im Unterricht verglichen werden. Im Browser auch über `index.html?ui=kompakt`.
+- Keine Bedienleiste unter der Laborbühne – die Bühne wird entsprechend höher (iPad quer: bis zu drei Zeilen gewonnen).
+- Einstellungen erscheinen als Schaltflächen direkt am gewählten Gerät: Gießtempo „vorsichtig | zügig“ an Bechergläsern, Erlenmeyerkolben und Porzellanschale, Wassermenge „5 mL | 20 mL“ an der Spritzflasche, „Schütteln“ am Scheidetrichter in der Hand, „✕“ hebt die Auswahl auf.
+- Beim Gießen erscheint unter dem Zielgefäß „■ Gießen stoppen“ mit der gegossenen Menge und dem Gießtempo; zusätzlich stoppt Antippen von Quell- oder Zielgefäß das Gießen.
+- Temperatur neben dem Drehknopf der Heizplatte, Hahnstellung („zu | tropft | offen“) neben dem Hahn des Scheidetrichters (nur Anzeige; bedient wird wie bisher direkt am Gerät).
+- Keine Zielknöpfe: Ziele werden nur auf der Bühne angetippt. Kennzeichnung „Testvariante: kompakte Bedienung“ in der Kopfzeile; Zwischenstände getrennt von der normalen Fassung gespeichert.
+- Tests: Unit-Tests 61/61; Bedienung in einer simulierten Seite nachgespielt; Browserszenario E14 (iPad quer, Antippen) ergänzt.
+
 ## 0.4.0 – 30.10.2026 (prototype)
 
 Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) und an Labkit 0.2.0.

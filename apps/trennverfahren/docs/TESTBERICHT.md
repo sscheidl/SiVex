@@ -2,6 +2,17 @@
 
 Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatus: **prototype**
 
+## 0.4.1 – Stand 30.10.2026
+
+Testvariante „kompakte Bedienung“ (eigene Pakete), normale Fassung unverändert.
+
+| ID | Prüffall | Status | Nachweis |
+| --- | --- | --- | --- |
+| TV40 | Kompakte Bedienung: keine Leiste; Gießtempo, Wassermenge, Schütteln am Gerät; Stopp per Schaltfläche und durch Antippen von Quell- oder Zielgefäß; Temperatur am Drehknopf | **PASS** (simulierte Seite) · Browser **HOLD** | Abläufe in V2–V5 mit dem gebauten Paket `dist/trennverfahren-kompakt` nachgespielt; Stopp-Schaltfläche bleibt beim laufenden Mitzählen dasselbe Element (kein verlorener Fingertipp); E14 ergänzt |
+| TV41 | Pakete: eigene SCORM-Kennung und eigener Titel, normale Fassung parallel | **PASS** | `npm run package` erzeugt vier Pakete; Manifest-Kennung `SIVEX-CHEMIE-TRENNVERFAHREN-KOMPAKT-0.4.1` |
+| – | Unit-Tests | **PASS** 61/61 | `npm test` |
+| – | Browserabnahme E1–E14, iPad-Vergleich im Unterricht | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner; Vergleich beider Fassungen im Unterricht |
+
 ## 0.4.0 – Stand 30.10.2026
 
 Anpassung an die iPad- und Bedienregeln (Labkit 0.2.0). Unit-Tests 61/61 (inkl. Labkit); Auswahlliste per Antippen und per Tastatur sowie Pause/Versuchswechsel in einer simulierten Seite nachgespielt: **PASS**. Browserabnahme E1–E13 und iPad: **HOLD – unverified**.

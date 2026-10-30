@@ -19,7 +19,13 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   const fmt = core.fmt;
-  const STORE = 'sivex-trennverfahren-v1';
+  /**
+   * Testvariante „kompakte Bedienung“ (in Erprobung, docs/QUALITY.md): ohne Bedienleiste unter der Bühne.
+   * Einstellungen erscheinen als Schaltflächen direkt am gewählten Gerät, Gießen stoppt auch durch Antippen
+   * von Quelle oder Ziel. Eingeschaltet über <html data-ui="kompakt"> (eigenes Paket) oder ?ui=kompakt.
+   */
+  const COMPACT = typeof document !== 'undefined' && (document.documentElement.dataset.ui === 'kompakt' || /(^|[?&])ui=kompakt(&|$)/.test((root.location && root.location.search || '').slice(1)));
+  const STORE = 'sivex-trennverfahren-v1' + (COMPACT ? '-kompakt' : '');
   const N = M.EXP_IDS;
 
   function freshNote() { return { obs: '', expl: '', snaps: [], cls: {}, prin: [], graded: false, fails: 0, tip: 0, solution: false, confirmSolution: false, checked: null, goalAt: null, ansatz: 1, missing: [] }; }
@@ -96,7 +102,7 @@
       el.className = 'hint-msg';
       const s = st();
       const sel = ui.selected && s.objs[ui.selected];
-      el.textContent = sel ? `${sel.name} gewählt – tippe jetzt das Ziel an (oder unten eine Zielschaltfläche).` : 'Tippe ein Gerät oder Gefäß an und danach das Ziel.';
+      el.textContent = sel ? (COMPACT ? `${sel.name} gewählt – tippe jetzt das Ziel an.` : `${sel.name} gewählt – tippe jetzt das Ziel an (oder unten eine Zielschaltfläche).`) : 'Tippe ein Gerät oder Gefäß an und danach das Ziel.';
       el.title = '';
     }
 
@@ -162,7 +168,11 @@
         if (s.op.type !== 'pour') { showMsg('Pause beendet – der angefangene Handgriff läuft jetzt zu Ende. Danach kannst du weitermachen.', 'info'); return; }
         showMsg('Pause beendet – es wird weiter gegossen.', 'info');
       }
-      if (s.op && s.op.type === 'pour') { showMsg('Es wird gerade gegossen. Tippe zuerst „Gießen stoppen“.'); return; }
+      if (s.op && s.op.type === 'pour') {
+        // kompakte Bedienung: Quelle oder Ziel antippen beendet das Gießen
+        if (COMPACT && (id === s.op.src || id === s.op.dst)) { if (s.op.phase !== 'back') act('stopPour'); return; }
+        showMsg(COMPACT ? 'Es wird gerade gegossen. Tippe „Gießen stoppen“ oder eines der beiden Gefäße an.' : 'Es wird gerade gegossen. Tippe zuerst „Gießen stoppen“.'); return;
+      }
       if (busy()) { showMsg('Warte, bis der laufende Handgriff fertig ist.'); return; }
       // Hahn direkt am Scheidetrichter: zu → Tropfen → offen → zu
       if (id === 'cock') { const sp = s.objs.S; if (sp) act('setCock', (sp.cock + 1) % 3); return; }
@@ -266,6 +276,7 @@
       for (const b of document.querySelectorAll('#washAmt button')) b.setAttribute('aria-pressed', String(Number(b.dataset.v) === s.washAmt));
       $('#ctlHeat').hidden = !s.plate;
       if (s.plate) for (const b of document.querySelectorAll('#heatLevel button')) b.setAttribute('aria-pressed', String(Number(b.dataset.v) === s.plate.level));
+      if (COMPACT) placeChips();
       const sep = s.objs.S;
       $('#ctlSep').hidden = !sep;
       if (sep) {
@@ -307,6 +318,69 @@
       const extra = o.type === 'funnel' ? (o.paper ? ' mit Filterpapier' : ' ohne Filterpapier') : o.type === 'sep' ? (o.stopper ? ', Stopfen auf' : '') + `, Hahn ${['zu', 'auf Tropfen', 'offen'][o.cock]}` : '';
       return `${o.name}${extra}: ${d}`;
     }
+    // ------------------------------------------------------------------ Kompakte Bedienung: Schaltflächen am Gerät
+    // Zwei feste Elemente: die Schaltflächenleiste wird nur bei geändertem Aufbau neu erzeugt (sonst gingen
+    // Fingertipps verloren, während Menge oder Temperatur laufend nachgeführt werden).
+    let chipSig = '';
+    function screenBox(id) {
+      const b = renderer.boxes().find((q) => q.id === id);
+      return b ? renderer.toScreen(b) : null;
+    }
+    const seg = (key, opts, cur) => opts.map(([v, t]) => `<button type="button" data-chip="${key}:${v}" aria-pressed="${String(v) === String(cur)}">${t}</button>`).join('');
+    function placeChips() {
+      const host = $('#chips');
+      if (!host) return;
+      const bar = host.querySelector('.chipbar.act'), tchip = host.querySelector('.chipbar.temp');
+      const s = st(), op = s.op;
+      const sel = ui.selected ? s.objs[ui.selected] : null;
+      let anchor = null, html = '', label = '', info = '', below = false;
+      if (op && op.type === 'pour' && op.phase !== 'back') {
+        // unter dem Zielgefäß: darüber hängt das kippende Gefäß
+        anchor = op.dst; below = true; label = 'Gießen';
+        html = '<button type="button" class="stop" data-chip="stop">■ Gießen stoppen</button><span class="info"></span>' +
+          seg('speed', [['slow', 'vorsichtig'], ['fast', 'zügig']], s.pourSpeed);
+        if (op.phase === 'flow') info = `${fmt(op.poured, 0)} ${op.dry ? 'g' : 'mL'}`;
+      } else if (sel && !op) {
+        anchor = sel.id;
+        if (M.TYPES[sel.type].pour && sel.c && !M.isEmpty(sel.c)) { label = 'Gießtempo'; html = seg('speed', [['slow', 'vorsichtig'], ['fast', 'zügig']], s.pourSpeed); }
+        else if (sel.type === 'wash') { label = 'Wassermenge'; html = seg('wash', [[5, '5 mL'], [20, '20 mL']], s.washAmt); }
+        else if (sel.type === 'sep' && sel.at === 'hand') { label = 'Scheidetrichter'; html = '<button type="button" data-chip="shake">Schütteln</button>'; }
+        if (html) html += '<button type="button" class="x" data-chip="desel" aria-label="Auswahl aufheben">✕</button>';
+      }
+      const box = anchor && html ? screenBox(anchor) : null;
+      const sig = box ? label + '|' + html : '';
+      if (sig !== chipSig) {
+        const had = document.activeElement && bar.contains(document.activeElement) ? document.activeElement.dataset.chip : null;
+        chipSig = sig;
+        bar.innerHTML = box ? html : '';
+        bar.setAttribute('aria-label', label);
+        bar.hidden = !box;
+        if (had) { const f = bar.querySelector(`[data-chip="${had}"]`); if (f) f.focus(); }
+      }
+      const W = host.clientWidth, H = host.clientHeight;
+      if (box) {
+        const inf = bar.querySelector('.info');
+        if (inf) { inf.textContent = info; inf.hidden = !info; }
+        const w = bar.offsetWidth, h = bar.offsetHeight;
+        let x = box.x + box.w / 2 - w / 2, y = below ? box.y + box.h + 8 : box.y - h - 8;
+        if (below ? y + h > H - 4 : y < 4) y = below ? box.y - h - 8 : box.y + box.h + 8;
+        x = Math.max(4, Math.min(W - w - 4, x)); y = Math.max(4, Math.min(H - h - 4, y));
+        bar.style.left = Math.round(x) + 'px'; bar.style.top = Math.round(y) + 'px';
+      }
+      // reine Anzeigen rechts neben Drehknopf (Temperatur) und Hahn (Stellung)
+      const d = s.plate && s.objs.D, sp = s.objs.S;
+      label2(tchip, d ? screenBox('knob') : null, d ? `${fmt(d.temp, 0)} °C` : '');
+      label2(host.querySelector('.chipbar.cock'), sp ? screenBox('cock') : null, sp ? 'Hahn: ' + ['zu', 'tropft', 'offen'][sp.cock] : '');
+      function label2(el, kb, text) {
+        el.hidden = !kb;
+        if (!kb) return;
+        el.textContent = text;
+        const kx = kb.x + kb.w + 4, ky = kb.y + kb.h / 2 - el.offsetHeight / 2;
+        el.style.left = Math.round(Math.max(4, Math.min(W - el.offsetWidth - 4, kx))) + 'px';
+        el.style.top = Math.round(Math.max(4, Math.min(H - el.offsetHeight - 4, ky))) + 'px';
+      }
+    }
+
     function placeHits() {
       const s = st();
       const boxes = renderer.boxes();
@@ -332,6 +406,7 @@
       updateHitStates();
       placeNames();
       layoutDirty = false;
+      if (COMPACT) placeChips();
     }
     const COCK_TXT = ['zu', 'tropfenweise geöffnet', 'ganz geöffnet'];
     const HEAT_TXT = ['aus', 'niedrige Stufe', 'hohe Stufe'];
@@ -724,6 +799,26 @@
     $('#btnShake').addEventListener('click', () => act('shake'));
     $('#cock').addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b) act('setCock', Number(b.dataset.v)); });
     $('#pSelect').addEventListener('change', (ev) => { ui.pFocus[ui.cur] = ev.target.value; save(); });
+    if (COMPACT) {
+      document.body.classList.add('ui-compact');
+      const sm = document.querySelector('.lk-brand small');
+      if (sm) sm.textContent = 'Testvariante: kompakte Bedienung';
+      const host = document.createElement('div');
+      host.id = 'chips'; host.className = 'chips';
+      host.innerHTML = '<div class="chipbar act" role="group" hidden></div><div class="chipbar temp" aria-hidden="true" hidden></div><div class="chipbar temp cock" aria-hidden="true" hidden></div>';
+      $('#canvasWrap').appendChild(host);
+      host.addEventListener('click', (ev) => {
+        const b = ev.target.closest('[data-chip]');
+        if (!b) return;
+        const [k, v] = b.dataset.chip.split(':');
+        if (k === 'stop') act('stopPour');
+        else if (k === 'speed') act('setPourSpeed', v);
+        else if (k === 'wash') act('setWashAmount', Number(v));
+        else if (k === 'shake') act('shake');
+        else if (k === 'desel') { deselect(); defaultMsg(); }
+        placeChips();
+      });
+    }
 
     // Trefferflächen: Antippen, Tastatur (Buttons), zusätzlich Ziehen
     let drag = null;

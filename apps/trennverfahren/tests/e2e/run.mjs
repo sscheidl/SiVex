@@ -19,7 +19,8 @@ console.log('Browser:', browser.__channel, browser.version());
 async function scenario(id, title, fn, ctxOpts) {
   if (ONLY && !ONLY.includes(id)) return;
   const t0 = Date.now();
-  const { context, page, errors, requests } = await L.newPage(browser, BASE, ctxOpts);
+  const { url, ...co } = ctxOpts || {};
+  const { context, page, errors, requests } = await L.newPage(browser, BASE + (url || ''), co);
   let status = 'PASS', detail = '';
   try {
     detail = (await fn(page, context)) || '';
@@ -736,6 +737,51 @@ await scenario('E13', '0.3.0: Rinnsal/Tropfen, Heizplatten-Drehknopf am Gerät, 
   out.push('Pause blockiert keine Versuche mehr');
   return out.join('; ');
 });
+
+// ------------------------------------------------------------------ E14 Testvariante kompakte Bedienung
+await scenario('E14', 'Testvariante kompakte Bedienung (?ui=kompakt, iPad quer): keine Leiste, Schaltflächen am Gerät, Stopp durch Antippen', async (page) => {
+  const out = [];
+  const chip = async (v) => { await page.locator(`#chips [data-chip="${v}"]`).tap(); await sleep(80); };
+  const inside = () => page.evaluate(() => {
+    const w = document.querySelector('#canvasWrap').getBoundingClientRect();
+    return [...document.querySelectorAll('#chips .chipbar')].filter((b) => !b.hidden).every((b) => { const r = b.getBoundingClientRect(); return r.left >= w.left - 1 && r.right <= w.right + 1 && r.top >= w.top - 1 && r.bottom <= w.bottom + 1; });
+  });
+  assert(await page.evaluate(() => document.body.classList.contains('ui-compact') && getComputedStyle(document.querySelector('#deck')).display === 'none'), 'Bedienleiste ausgeblendet');
+  assert(await page.evaluate(() => document.querySelector('.lk-brand small').textContent.includes('Testvariante')), 'Testvariante im Kopf gekennzeichnet');
+  const hCanvas = await page.evaluate(() => document.querySelector('#canvasWrap').getBoundingClientRect().height);
+  out.push(`Bühnenhöhe ${Math.round(hCanvas)} px`);
+  await L.exp(page, 2);
+  await L.tapHit(page, 'A', true);
+  assert(await page.locator('#chips [data-chip="speed:fast"]').isVisible(), 'Gießtempo am gewählten Becherglas');
+  await chip('speed:fast');
+  assert(await S(page, (st) => st.pourSpeed === 'fast'), 'Gießtempo per Schaltfläche am Gerät');
+  await chip('speed:slow');
+  assert(await inside(), 'Schaltflächen bleiben in der Bühne');
+  await shot(page, '80-kompakt-auswahl');
+  await L.tapHit(page, 'B', true);
+  await L.waitFor(page, (st) => st.op && st.op.phase === 'flow' && st.op.poured > 4, null, 20000);
+  assert(await page.locator('#chips [data-chip="stop"]').isVisible(), 'Stopp-Schaltfläche beim Gießen');
+  assert(await inside(), 'Stopp-Schaltfläche in der Bühne');
+  await shot(page, '81-kompakt-giessen');
+  await chip('stop');
+  await L.waitFor(page, (st) => !st.op, null, 20000);
+  out.push('Stopp per Schaltfläche');
+  await L.tapHit(page, 'A', true); await L.tapHit(page, 'B', true);
+  await L.waitFor(page, (st) => st.op && st.op.phase === 'flow' && st.op.poured > 2, null, 20000);
+  await L.tapHit(page, 'B', true);
+  await L.waitFor(page, (st) => !st.op, null, 20000);
+  out.push('Stopp durch Antippen des Zielgefäßes');
+  await L.tapHit(page, 'wash', true);
+  await chip('wash:20');
+  assert(await S(page, (st) => st.washAmt === 20), 'Wassermenge am Gerät');
+  await chip('desel');
+  assert(await page.evaluate(() => !window.TV.app.ui.selected && [...document.querySelectorAll('#chips .chipbar.act')].every((b) => b.hidden)), 'Auswahl aufgehoben, keine Schaltflächen');
+  await L.exp(page, 3);
+  await L.tapHit(page, 'knob', true); await L.idle(page);
+  assert(await page.locator('#chips .chipbar.temp:not(.cock)').isVisible(), 'Temperatur neben dem Drehknopf');
+  await shot(page, '82-kompakt-heizplatte');
+  return out.join('; ');
+}, { url: '?ui=kompakt', viewport: { width: 1080, height: 740 }, hasTouch: true });
 
 // ------------------------------------------------------------------ Abschluss
 await browser.close();

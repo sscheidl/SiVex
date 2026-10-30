@@ -1,6 +1,7 @@
 // Erzeugt die Release-Pakete aus dem statischen Build (dist/trennverfahren):
 //   release/trennverfahren-<version>-web.zip      – zum Hochladen auf einen Webserver
 //   release/trennverfahren-<version>-scorm12.zip  – SCORM-1.2-Lernpaket für mebis/Moodle
+//   release/trennverfahren-kompakt-<version>-…   – dieselben Pakete der Testvariante „kompakte Bedienung“
 //   release/SHA256SUMS.txt                    – Prüfsummen aller Pakete im Ordner
 // Nur die aktuelle Version bleibt im Ordner; ältere Pakete werden entfernt
 // (auf main liegt nur der aktuelle Stand, frühere Pakete stehen in der Git-Historie).
@@ -18,7 +19,6 @@ const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(app, 'package.json'), 'utf8'));
 const meta = JSON.parse(fs.readFileSync(path.join(app, 'sivex.json'), 'utf8'));
 const version = pkg.version;
-const dist = path.join(app, 'dist', 'trennverfahren');
 const out = path.join(app, 'release');
 
 execFileSync(process.execPath, [path.join(app, 'scripts', 'build.mjs')], { stdio: 'inherit' });
@@ -26,7 +26,6 @@ execFileSync(process.execPath, [path.join(app, 'scripts', 'build.mjs')], { stdio
 const walk = (d, base = d) => fs.readdirSync(d, { withFileTypes: true })
   .flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name), base) : [path.relative(base, path.join(d, e.name)).split(path.sep).join('/')]))
   .sort();
-const files = walk(dist);
 
 // ------------------------------------------------------------------ ZIP
 const CRC_TABLE = new Uint32Array(256).map((_, n) => {
@@ -75,8 +74,9 @@ function zip(entries) {
 
 // ------------------------------------------------------------------ SCORM-Manifest
 const xml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const manifest = `<?xml version="1.0" encoding="UTF-8"?>
-<manifest identifier="SIVEX-CHEMIE-TRENNVERFAHREN-${xml(version)}" version="${xml(version)}"
+function manifestFor(files, ID, title) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="SIVEX-CHEMIE-${ID}-${xml(version)}" version="${xml(version)}"
   xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
   xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -85,33 +85,44 @@ const manifest = `<?xml version="1.0" encoding="UTF-8"?>
     <schema>ADL SCORM</schema>
     <schemaversion>1.2</schemaversion>
   </metadata>
-  <organizations default="ORG-TRENNVERFAHREN">
-    <organization identifier="ORG-TRENNVERFAHREN">
-      <title>${xml(meta.title)}</title>
-      <item identifier="ITEM-TRENNVERFAHREN" identifierref="RES-TRENNVERFAHREN" isvisible="true">
-        <title>${xml(meta.title)}</title>
+  <organizations default="ORG-${ID}">
+    <organization identifier="ORG-${ID}">
+      <title>${xml(title)}</title>
+      <item identifier="ITEM-${ID}" identifierref="RES-${ID}" isvisible="true">
+        <title>${xml(title)}</title>
       </item>
     </organization>
   </organizations>
   <resources>
-    <resource identifier="RES-TRENNVERFAHREN" type="webcontent" adlcp:scormtype="sco" href="index.html">
+    <resource identifier="RES-${ID}" type="webcontent" adlcp:scormtype="sco" href="index.html">
 ${files.map((f) => `      <file href="${xml(f)}"/>`).join('\n')}
     </resource>
   </resources>
 </manifest>
 `;
+}
 
 // ------------------------------------------------------------------ Pakete schreiben
 fs.mkdirSync(out, { recursive: true });
-const read = (f) => fs.readFileSync(path.join(dist, f));
-const webName = `trennverfahren-${version}-web.zip`;
-const scormName = `trennverfahren-${version}-scorm12.zip`;
-for (const f of fs.readdirSync(out)) if (/^trennverfahren-.*\.zip$/.test(f) && f !== webName && f !== scormName) fs.rmSync(path.join(out, f));
-fs.writeFileSync(path.join(out, webName), zip(files.map((f) => ({ name: 'trennverfahren/' + f, data: read(f) }))));
-fs.writeFileSync(path.join(out, scormName), zip([{ name: 'imsmanifest.xml', data: Buffer.from(manifest, 'utf8') }, ...files.map((f) => ({ name: f, data: read(f) }))]));
-// Prüfsummen für alle vorhandenen Pakete, neueste Version zuerst
-const vkey = (n) => (/^trennverfahren-(\d+)\.(\d+)\.(\d+)/.exec(n) || [0, 0, 0, 0]).slice(1).map((x) => x.padStart(6, '0')).join('.');
-const all = fs.readdirSync(out).filter((f) => /^trennverfahren-.*\.zip$/.test(f)).sort((a, b) => vkey(b).localeCompare(vkey(a)) || (a.includes('-web') ? -1 : 1));
+const VARIANTS = [
+  { dir: 'trennverfahren', base: 'trennverfahren', ID: 'TRENNVERFAHREN', title: meta.title },
+  { dir: 'trennverfahren-kompakt', base: 'trennverfahren-kompakt', ID: 'TRENNVERFAHREN-KOMPAKT', title: meta.title + ' (Testvariante kompakte Bedienung)' },
+];
+const keep = new Set(VARIANTS.flatMap((v) => [`${v.base}-${version}-web.zip`, `${v.base}-${version}-scorm12.zip`]));
+for (const f of fs.readdirSync(out)) if (/^trennverfahren-.*\.zip$/.test(f) && !keep.has(f)) fs.rmSync(path.join(out, f));
+for (const v of VARIANTS) {
+  const dist = path.join(app, 'dist', v.dir);
+  const files = walk(dist);
+  const read = (f) => fs.readFileSync(path.join(dist, f));
+  const webName = `${v.base}-${version}-web.zip`;
+  const scormName = `${v.base}-${version}-scorm12.zip`;
+  fs.writeFileSync(path.join(out, webName), zip(files.map((f) => ({ name: v.dir + '/' + f, data: read(f) }))));
+  fs.writeFileSync(path.join(out, scormName), zip([{ name: 'imsmanifest.xml', data: Buffer.from(manifestFor(files, v.ID, v.title), 'utf8') }, ...files.map((f) => ({ name: f, data: read(f) }))]));
+  for (const n of [webName, scormName]) console.log(`Paket: release/${n} (${(fs.statSync(path.join(out, n)).size / 1024).toFixed(1)} KiB, ${files.length} Dateien${n === scormName ? ' + imsmanifest.xml' : ''})`);
+}
+// Prüfsummen für alle vorhandenen Pakete, neueste Version zuerst, Hauptfassung vor Testvariante
+const vkey = (n) => (/^trennverfahren-(?:kompakt-)?(\d+)\.(\d+)\.(\d+)/.exec(n) || [0, 0, 0, 0]).slice(1).map((x) => x.padStart(6, '0')).join('.');
+const rank = (n) => (n.includes('-kompakt-') ? 2 : 0) + (n.includes('-web') ? 0 : 1);
+const all = fs.readdirSync(out).filter((f) => /^trennverfahren-.*\.zip$/.test(f)).sort((a, b) => vkey(b).localeCompare(vkey(a)) || rank(a) - rank(b));
 const sums = all.map((n) => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(out, n))).digest('hex')}  ${n}`).join('\n') + '\n';
 fs.writeFileSync(path.join(out, 'SHA256SUMS.txt'), sums);
-for (const n of [webName, scormName]) console.log(`Paket: release/${n} (${(fs.statSync(path.join(out, n)).size / 1024).toFixed(1)} KiB, ${files.length} Dateien${n === scormName ? ' + imsmanifest.xml' : ''})`);

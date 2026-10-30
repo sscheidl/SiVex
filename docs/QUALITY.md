@@ -76,7 +76,7 @@ Safari auf dem iPad öffnet eine Auswahlliste, sobald sie den Fokus erhält. Wir
 
 ### In Erprobung (noch keine Regel)
 
-- **Kompakte Bedienung direkt am Gerät:** Die Leiste unter der Laborbühne braucht auf dem iPad bis zu drei Zeilen. Geprüft wird eine Testvariante des Trennverfahrens mit Einstellungen als kleine Schaltflächen am gewählten Gerät (Gießtempo, Wassermenge, Schütteln, Stopp beim Gießen) und ohne Zielknöpfe. Erst nach Vergleich im Unterricht wird daraus eine Regel.
+- **Kompakte Bedienung direkt am Gerät:** Die Leiste unter der Laborbühne braucht auf dem iPad bis zu drei Zeilen. Geprüft wird eine Testvariante des Trennverfahrens mit Einstellungen als kleine Schaltflächen am gewählten Gerät (Gießtempo, Wassermenge, Schütteln, Stopp beim Gießen) und ohne Zielknöpfe – umgesetzt in Trennverfahren 0.4.1 als eigenes Lernpaket `trennverfahren-kompakt-…` (oder `?ui=kompakt`). Erst nach Vergleich im Unterricht wird daraus eine Regel.
 - **mebis und Pop-up-Blocker:** Darstellung „Neues Fenster“ bleibt. Zu prüfen: Mit „Struktur der Inhaltsseite überspringen: Nie“ öffnet das Fenster nach dem Antippen von „Eintreten“ auch bei eingeschaltetem Pop-up-Blocker (siehe [`MEBIS.md`](MEBIS.md)).
 
 ### Prüfung

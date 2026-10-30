@@ -39,3 +39,15 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(`Build OK: ${files.length} Dateien, ${(size / 1024).toFixed(1)} KiB, Labkit ${labkitVersion} → ${path.relative(process.cwd(), out)}`);
+
+// Testvariante „kompakte Bedienung“ (in Erprobung): gleicher Code, nur index.html schaltet die
+// Bedienung um (<html data-ui="kompakt">) und trägt einen eigenen Titel. Eigener Ordner, eigene Pakete,
+// damit beide Fassungen parallel in mebis liegen und im Unterricht verglichen werden können.
+const outK = path.join(app, 'dist', 'trennverfahren-kompakt');
+fs.cpSync(out, outK, { recursive: true });
+const htmlK = html
+  .replace(/<html lang="de">/, '<html lang="de" data-ui="kompakt">')
+  .replace(/<title>[^<]*<\/title>/, '<title>Trennverfahren (kompakte Bedienung) – SiVex</title>');
+if (!htmlK.includes('data-ui="kompakt"') || !htmlK.includes('kompakte Bedienung')) { console.error('Build-Prüfung fehlgeschlagen: Testvariante nicht erzeugt'); process.exit(1); }
+fs.writeFileSync(path.join(outK, 'index.html'), htmlK);
+console.log(`Testvariante kompakte Bedienung → ${path.relative(process.cwd(), outK)}`);

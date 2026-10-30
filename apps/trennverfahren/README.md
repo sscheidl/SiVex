@@ -1,6 +1,6 @@
 # Trennverfahren – Stoffgemische trennen
 
-**Status: prototype 0.4.0** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.2.0
+**Status: prototype 0.4.1** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.2.0
 
 Virtuelles Labor zum letzten Aufgabenblock „Klassische Trennverfahren“: Die Lernenden führen fünf Versuche selbst durch, notieren eigene Beobachtungen, prüfen ihr Wissen in einer gemeinsamen Kontrolle und schreiben am Schluss einen Hefteintrag ab.
 
@@ -16,8 +16,9 @@ Grundlage: [Build-Auftrag](../../prompts/trennlabor-klassik-build-claude.md) und
 
 ## Download
 
-- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.4.0-scorm12.zip`](release/trennverfahren-0.4.0-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
-- **Web/offline:** [`release/trennverfahren-0.4.0-web.zip`](release/trennverfahren-0.4.0-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
+- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.4.1-scorm12.zip`](release/trennverfahren-0.4.1-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
+- **Web/offline:** [`release/trennverfahren-0.4.1-web.zip`](release/trennverfahren-0.4.1-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
+- **Testvariante „kompakte Bedienung“ (in Erprobung):** [`release/trennverfahren-kompakt-0.4.1-scorm12.zip`](release/trennverfahren-kompakt-0.4.1-scorm12.zip) · [Web-ZIP](release/trennverfahren-kompakt-0.4.1-web.zip) – ohne Bedienleiste, Einstellungen direkt am Gerät; eigenes Lernpaket, kann neben der normalen Fassung in mebis liegen
 - Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
 ## Lernen
@@ -32,6 +33,8 @@ Grundlage: [Build-Auftrag](../../prompts/trennlabor-klassik-build-claude.md) und
 ## Bedienung
 
 Gerät antippen → Ziel antippen (oder Zielschaltfläche), erneutes Antippen stellt zurück; Hahn und Heizplatten-Drehknopf direkt am Gerät; Tastatur und Ziehen ebenfalls möglich. Ausführlich: [docs/BEDIENUNG.md](docs/BEDIENUNG.md).
+
+Testvariante „kompakte Bedienung“ (`?ui=kompakt` bzw. eigenes Paket): keine Leiste unter der Bühne; Gießtempo, Wassermenge und „Schütteln“ erscheinen als Schaltflächen am gewählten Gerät, beim Gießen „■ Gießen stoppen“ unter dem Zielgefäß – oder Quell- bzw. Zielgefäß antippen.
 
 ## Entwicklung und Tests
 

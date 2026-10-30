@@ -44,6 +44,15 @@ Alle Geräte auf der Laborfläche – auch der Hahn und der Drehknopf der Heizpl
 
 **Rückgießen (Versuch 4):** Eine verunreinigte Fraktion kann aus jedem Becherglas zurück in den Scheidetrichter gegossen werden – Hahn geschlossen, Stopfen ab, Scheidetrichter im Ring.
 
+## Testvariante „kompakte Bedienung“ (in Erprobung)
+
+Eigenes Lernpaket `trennverfahren-kompakt-…-scorm12.zip` (oder `index.html?ui=kompakt`). Gleiche Versuche, gleiche Bewertung, nur die Bedienung ist anders:
+
+- Die Leiste unter der Laborbühne fehlt; Ziele werden nur auf der Bühne angetippt.
+- Am gewählten Gerät erscheinen die passenden Einstellungen: Gießtempo „vorsichtig | zügig“ an Gefäßen zum Gießen, „5 mL | 20 mL“ an der Spritzflasche, „Schütteln“ am Scheidetrichter in der Hand; „✕“ hebt die Auswahl auf.
+- Beim Gießen steht „■ Gießen stoppen“ unter dem Zielgefäß. Alternativ Quell- oder Zielgefäß antippen.
+- Neben dem Drehknopf der Heizplatte steht die Temperatur, neben dem Hahn des Scheidetrichters seine Stellung.
+
 ## Zeit
 
 - **Pause** hält Versuch, Animation und Teilchenmodell an.
