@@ -31,6 +31,8 @@
     try { saved = JSON.parse(root.sessionStorage.getItem(STORE) || 'null'); } catch (e) { saved = null; }
     if (!saved || saved.v !== 1) saved = null;
     const ui = Object.assign(initialUi(), saved ? saved.ui : {});
+    // Eine gespeicherte Sitzung beginnt nie angehalten oder im Zeitraffer (sonst scheinbar „blockiert“)
+    ui.speed = 1;
     ui.selected = null;
     const notes = {}; for (const n of N) notes[n] = Object.assign(freshNote(), saved && saved.notes ? saved.notes[n] : {});
     const quiz = Object.assign(freshQuiz(), saved && saved.quiz ? saved.quiz : {});
@@ -101,10 +103,29 @@
     // ------------------------------------------------------------------ Handlungen
     function act(name, ...args) {
       const r = eng().act(name, ...args);
+      // Ein neuer Handgriff bei angehaltener Zeit würde stehen bleiben und alles Weitere blockieren
+      if (r && r.ok && ui.speed === 0 && eng().state.op) resume();
       layoutDirty = true;
       refreshDeck();
       save();
       return r;
+    }
+    /** Pause beenden (Echtzeit) und das sichtbar machen. */
+    function resume() {
+      if (ui.speed !== 0) return;
+      ui.speed = 1;
+      showMsg('Pause beendet – die Versuchszeit läuft wieder (1×).', 'info');
+      save();
+    }
+    /**
+     * Beim Verlassen eines Versuchs: laufendes Gießen stoppen und einen angefangenen Handgriff
+     * abschließen, damit beim Zurückkehren nichts „hängt“ (jeder Versuch hat seine eigene Zeit).
+     */
+    function settleExp(n) {
+      const e = engines[n];
+      if (!e || !e.state.op) return;
+      if (e.state.op.type === 'pour') e.act('stopPour');
+      for (let i = 0; i < 400 && e.state.op; i++) e.advance(0.05);
     }
     const busy = () => { const op = st().op; return op && !(op.type === 'pour' && op.phase === 'flow'); };
     function select(id, keepMsg) {
@@ -135,6 +156,12 @@
     function tap(id) {
       const s = st();
       const obj = s.objs[id];
+      // Bedienen im Labor beendet eine Pause – sonst stünde ein laufender Handgriff still und blockierte alles
+      if (ui.speed === 0 && s.op) {
+        ui.speed = 1; save();
+        if (s.op.type !== 'pour') { showMsg('Pause beendet – der angefangene Handgriff läuft jetzt zu Ende. Danach kannst du weitermachen.', 'info'); return; }
+        showMsg('Pause beendet – es wird weiter gegossen.', 'info');
+      }
       if (s.op && s.op.type === 'pour') { showMsg('Es wird gerade gegossen. Tippe zuerst „Gießen stoppen“.'); return; }
       if (busy()) { showMsg('Warte, bis der laufende Handgriff fertig ist.'); return; }
       // Hahn direkt am Scheidetrichter: zu → Tropfen → offen → zu
@@ -653,6 +680,8 @@
 
     function switchExp(n) {
       if (!M.EXPERIMENTS[n]) return;
+      if (n !== ui.cur) settleExp(ui.cur);
+      ui.speed = 1; // jeder Versuch beginnt in Echtzeit, eine Pause wird nicht mitgenommen
       ui.cur = n; ui.selected = null; confirmRestart = false;
       ui.tab = 'exp';
       engine(n);

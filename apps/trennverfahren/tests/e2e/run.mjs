@@ -725,6 +725,15 @@ await scenario('E13', '0.3.0: Rinnsal/Tropfen, Heizplatten-Drehknopf am Gerät, 
   assert(await S(page, (st) => st.objs.S.emul > 0.5), 'geschüttelt');
   await L.use(page, 'S', 'sepring'); await L.idle(page); await sleep(600);
   await shot(page, '77-v4-emulsion-teilchen');
+  // Fehlerbericht 30.10.2026: Pause in einem Versuch blockierte nach dem Wechsel die anderen Versuche
+  await L.exp(page, 1);
+  await L.use(page, 'rod', 'A'); await sleep(300); await L.speed(page, 0);
+  await L.exp(page, 2);
+  assert(await page.evaluate(() => window.TV.app.ui.speed === 1 && !window.TV.app.engines[1].state.op), 'Wechsel: Zeit wieder 1×, angefangener Handgriff in V1 abgeschlossen');
+  await L.speed(page, 0);
+  await L.use(page, 'B', 'pE'); await L.idle(page);
+  assert(await page.evaluate(() => window.TV.app.ui.speed === 1), 'neuer Handgriff beendet die Pause');
+  out.push('Pause blockiert keine Versuche mehr');
   return out.join('; ');
 });
 
