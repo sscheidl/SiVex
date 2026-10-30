@@ -1,2 +1,2 @@
-812d22756ec6ebe1dc96b60ede60ee8ce0cb5793df2861b7ebc51c7fb0bbcca0  chromatographie-0.2.0-web.zip
-30063a27227ca0ce8569883ac61b0ef7ff0a0da1778f308dae3446dc90036eec  chromatographie-0.2.0-scorm12.zip
+05a4b5521f35eb9242932b84e37b782066fccbb1f4318404fc65085c3429c7ed  chromatographie-0.3.0-web.zip
+cb5434118581c49aae3cd6318d8d47e045a61ac215bfe6e6dfef1643e365857a  chromatographie-0.3.0-scorm12.zip

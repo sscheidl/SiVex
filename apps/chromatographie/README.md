@@ -1,6 +1,6 @@
 # Papierchromatographie
 
-**Status: prototype** · Version 0.2.0 · Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Baukasten [`shared/labkit`](../../shared/labkit/) 0.1.1
+**Status: prototype** · Version 0.3.0 · Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Baukasten [`shared/labkit`](../../shared/labkit/) 0.2.0
 
 Eigenständige Browser-App: Farbstoffgemische mit Papierchromatographie trennen. Eine der drei Einzelanwendungen aus dem Trennlabor 1.0.0 ([Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)), neu gebaut: Das Fachmodell stammt aus den Altfassungen, Darstellung und Bedienung sind neu ([Bausteinliste](docs/UEBERNAHME.md)).
 
@@ -47,6 +47,6 @@ npm run test:scorm     # SCORM-Paket im Mock-LMS, Web-ZIP per file://
 ## Dokumentation und Pakete
 
 - [Fachmodell und Grenzen](docs/CHEMIE.md) · [Testbericht mit PASS/HOLD-Matrix](docs/TESTBERICHT.md) · [Bausteinliste](docs/UEBERNAHME.md)
-- `release/chromatographie-0.2.0-web.zip` (Webserver oder lokal entpackt), `release/chromatographie-0.2.0-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
+- `release/chromatographie-0.3.0-web.zip` (Webserver oder lokal entpackt), `release/chromatographie-0.3.0-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
 
 Der Unterrichtseinsatz (`ready`) setzt den Test der Lehrkraft auf den Schul-iPads und in mebis voraus.

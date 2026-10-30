@@ -255,7 +255,7 @@
       const ch = st.chamber;
       if (P().state === 'chamber') return fail('Gieße das Laufmittel ein, bevor das Papier in der Kammer hängt.', 'pourWithPaper');
       if (ch.solvent && ch.solvent !== solvent) return fail(`In der Kammer ist schon ${SOLVENTS[ch.solvent].short}. Leere sie zuerst, wenn du das Laufmittel wechseln willst.`, 'otherSolvent');
-      if (ch.portions >= MAX_PORTIONS) return fail('Mehr passt nicht sinnvoll in die Kammer.', 'full');
+      if (ch.portions >= MAX_PORTIONS) return fail('Die Kammer ist voll – mehr Laufmittel passt nicht sinnvoll hinein.', 'full');
       start('pour', { solvent, from: ch.level });
       return ok(SOLVENTS[solvent].flammable ? 'Ethanol-Wasser eingegossen. Achtung: entzündlich – keine offene Flamme, Kammer abdecken.' : 'Wasser eingegossen.');
     }

@@ -1,4 +1,19 @@
-# Papierchromatographie 0.2.0 – Testbericht
+# Papierchromatographie 0.3.0 – Testbericht
+
+## Nachtrag 0.3.0 (30.10.2026) – iPad- und Bedienregeln
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Handgriff in der Pause beendet die Pause | **PASS** (simulierte Seite) | Linie ziehen bei Pause: Tempo 1×, Hinweis; abgewiesener Handgriff lässt die Pause stehen |
+| Sitzung startet nicht angehalten | **PASS** (Code) | gespeichertes Tempo 0 → Standard 10× |
+| Unit-Tests | **PASS** 57/57 (inkl. Labkit) | `npm test` |
+| Browserabnahme, Paketprüfung, iPad | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner |
+
+---
+
+Frühere Fassung des Berichts:
+
+## Papierchromatographie 0.2.0 – Testbericht
 
 **Stand:** 25.10.2026 (Version 0.2.0, Überarbeitung nach Durchsicht) · **Prüfgegenstand:** statischer Build `dist/chromatographie/` und die daraus gepackten Dateien `release/chromatographie-0.2.0-web.zip` und `release/chromatographie-0.2.0-scorm12.zip` (byte-identisch mit dem getesteten Build geprüft, PKG-1) · **Baukasten:** `shared/labkit` 0.1.1
 

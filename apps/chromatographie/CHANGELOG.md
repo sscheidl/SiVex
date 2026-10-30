@@ -1,5 +1,14 @@
 # Changelog – Papierchromatographie
 
+## 0.3.0 – 30.10.2026
+
+Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) nach dem Unterrichtseinsatz der SiVex-Apps; Labkit 0.2.0.
+
+- **Bedienen beendet die Pause:** Ein Handgriff bei angehaltener Zeit (z. B. Papier einhängen) stellt die Zeit wieder auf 1× (mit Hinweis), statt dass die Entwicklung danach unbemerkt stillsteht. Eine gespeicherte Sitzung startet nie angehalten (sondern mit dem Standardtempo 10×).
+- **Fokus nach dem Neuaufbau des Bedienfelds:** Eingabefelder (Front, Strecke, Rf) behalten Fokus und Schreibmarke, Knöpfe bleiben fokussiert; die Auswahllisten „Bahn“ und „Zone“ bekommen den Fokus nur nach Tastaturbedienung zurück (Labkit `restoreFocus`).
+- **Volle Kammer:** Meldung jetzt „Die Kammer ist voll – mehr Laufmittel passt nicht sinnvoll hinein.“
+- Auswahllisten überdecken nichts (bereits so gestaltet; Labkit-Regeln greifen zusätzlich).
+
 ## 0.2.0 – 25.10.2026
 
 Überarbeitung nach der Durchsicht (acht Befunde), Gestaltung unverändert.

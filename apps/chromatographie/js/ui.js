@@ -31,6 +31,8 @@
     const engine = M.createEngine(saved && saved.model);
     const ui = Object.assign(initialUi(), saved && saved.ui ? saved.ui : {});
     ui.hoverLane = null;
+    // Eine gespeicherte Sitzung startet nie angehalten (iPad-Regel 4, 0.3.0)
+    if (ui.speed === 0) ui.speed = initialUi().speed;
     // ältere Sitzungsstände (ein Bezugspapier je Aufgabe) übernehmen
     Object.values(ui.tasks).forEach((t) => { if (!t.papers) t.papers = t.paper ? [t.paper] : []; delete t.paper; });
     const st = engine.state;
@@ -65,6 +67,8 @@
     // ------------------------------------------------------------ Handlungen
     function act(name, ...args) {
       const r = engine.act(name, ...args);
+      // Bedienen beendet die Pause (iPad-Regel 4, 0.3.0): sonst stünde z. B. das eingehängte Papier still
+      if (r.ok && ui.speed === 0 && name !== 'setExpert') { ui.speed = 1; syncHead(); save(); toast('Pause beendet – die Zeit läuft wieder (1×). Mit 10× oder 30× geht die Entwicklung schneller.'); }
       // Befund 7: nach neuem Papier und nach dem Einhängen kommt der Stift verschlossen in den Ständer
       if (r.ok && (name === 'newSheet' || name === 'insert')) ui.selectedPen = null;
       refresh();
@@ -330,7 +334,12 @@
       checkRefs();
       const body = $('#panelBody');
       body.setAttribute('aria-labelledby', 'tab-' + ui.tab);
+      // Fokus nach dem Neuaufbau zurückgeben (iPad-Regel 2): Felder und Knöpfe immer, Auswahllisten nur nach Tastatur
+      const ae = document.activeElement;
+      const mark = ae && body.contains(ae) ? (ae.id ? '#' + CSS.escape(ae.id) : ae.dataset && ae.dataset.a ? `[data-a="${CSS.escape(ae.dataset.a)}"]` : ae.dataset && ae.dataset.act ? `[data-act="${CSS.escape(ae.dataset.act)}"]` : ae.name ? `[name="${CSS.escape(ae.name)}"]` + (ae.type === 'radio' || ae.type === 'checkbox' ? `[value="${CSS.escape(ae.value)}"]` : '') : null) : null;
+      const caret = mark && 'selectionStart' in ae && !['radio', 'checkbox'].includes(ae.type) ? [ae.selectionStart, ae.selectionEnd] : null;
       body.innerHTML = ui.tab === 'task' ? taskHtml() : ui.tab === 'results' ? resultsHtml() : notebookHtml();
+      if (mark) { let el = null; try { el = body.querySelector(mark); } catch (e) { el = null; } if (el) core.restoreFocus(el, caret); }
       body.querySelectorAll('canvas[data-thumb]').forEach((c) => {
         const a = snapById(c.dataset.thumb);
         if (!a) return;
