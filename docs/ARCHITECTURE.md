@@ -7,7 +7,7 @@ apps/
   titration/
     titralab3/        # geplanter Import des Claude-V3-Releases
   redoxlabor/
-  trennverfahren/     # Trennverfahren 0.3.2 (prototype) auf Basis des Labkits
+  trennverfahren/     # Trennverfahren 0.4.0 (prototype) auf Basis des Labkits
   chromatographie/    # Papierchromatographie 0.2.0 (prototype) auf Basis des Labkits
   destillation/       # Destillation 0.3.2 (prototype) auf Basis des Labkits
   halbtitration/      # Halbtitrationslabor 0.2.2 (prototype), Labkit-Hülle, Laboraufbau aus TitraLab 3

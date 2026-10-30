@@ -62,7 +62,7 @@
 .pview-head { font-size: 14px; }
 .pfocus { color: var(--muted); font-weight: 600; }
 .pchoose { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-.pchoose select { flex: 1 1 auto; min-height: 40px; border: 1px solid var(--line-2); border-radius: 8px; background: #fff; padding: 4px 6px; font-size: 13.5px; }
+.pchoose select { flex: 1 1 auto; min-width: 0; max-width: 100%; text-overflow: ellipsis; min-height: 40px; border: 1px solid var(--line-2); border-radius: 8px; background: #fff; padding: 4px 6px; font-size: 13.5px; }
 #pcanvas { width: 100%; aspect-ratio: 1 / 1; max-height: 300px; display: block; }
 .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 3px 10px; font-size: 12px; color: var(--text-2); }
 .legend li { display: inline-flex; align-items: center; gap: 4px; }
@@ -117,7 +117,7 @@
 .tipbox .lvl { font-weight: 700; color: var(--warn); }
 .lk-form textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 15px; line-height: 1.35; resize: vertical; background: #fff; }
 .lk-form textarea.missing, .lk-form fieldset.missing { border-color: var(--bad); box-shadow: 0 0 0 2px rgba(198,47,58,.15); }
-.lk-form select { width: 100%; min-height: 44px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 6px 8px; background: #fff; }
+.lk-form select { width: 100%; max-width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 6px 8px; background: #fff; }
 .lk-form select.right { border-color: var(--ok); background: var(--ok-soft); }
 .lk-form select.wrong { border-color: var(--bad); background: var(--bad-soft); }
 .lk-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }

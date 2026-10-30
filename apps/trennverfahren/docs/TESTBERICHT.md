@@ -2,6 +2,10 @@
 
 Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatus: **prototype**
 
+## 0.4.0 – Stand 30.10.2026
+
+Anpassung an die iPad- und Bedienregeln (Labkit 0.2.0). Unit-Tests 61/61 (inkl. Labkit); Auswahlliste per Antippen und per Tastatur sowie Pause/Versuchswechsel in einer simulierten Seite nachgespielt: **PASS**. Browserabnahme E1–E13 und iPad: **HOLD – unverified**.
+
 ## 0.3.2 – Stand 30.10.2026
 
 Korrekturen nach dem Unterrichtseinsatz. Prüfung in der Entwicklungsumgebung ohne Browser; die Abläufe wurden in einer simulierten Seite (jsdom) mit dem App-Code nachgespielt.

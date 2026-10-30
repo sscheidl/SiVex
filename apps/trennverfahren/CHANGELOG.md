@@ -1,5 +1,14 @@
 # Änderungen – Trennverfahren
 
+## 0.4.0 – 30.10.2026 (prototype)
+
+Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) und an Labkit 0.2.0.
+
+- Gefäßwahl im Teilchenmodell: Die Auswahlliste wird bei schmalem Bereich nicht mehr breiter als der Platz (lange Einträge wie „Vergleich: Kochsalzlösung (homogenes Gemisch)“ werden gekürzt angezeigt, beim Antippen vollständig).
+- Fokus nach dem Neuaufbau des Bedienfelds über den Labkit-Baustein `restoreFocus` (gleiches Verhalten wie 0.3.2: Auswahllisten nur nach Tastaturbedienung).
+- Regeln 3 und 4 (Überlaufen, Pause) waren bereits mit 0.3.2 umgesetzt.
+- Gebaut mit Labkit 0.2.0.
+
 ## 0.3.2 – 30.10.2026 (prototype)
 
 Korrekturen nach dem Unterrichtseinsatz vom 30.10.2026 (iPad, mebis).

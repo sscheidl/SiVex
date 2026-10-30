@@ -448,16 +448,11 @@
       panel.scrollTop = scroll;
       if (key) {
         const el = body.querySelector(`[data-key="${CSS.escape(key)}"]`);
-        // Auswahllisten nur nach Tastaturbedienung erneut fokussieren: Safari auf dem iPad öffnet eine
-        // fokussierte Auswahlliste sofort wieder – nach dem Antippen einer Antwort sprang sie erneut auf.
-        if (el && !(el.tagName === 'SELECT' && !lastKeyboard)) { el.focus({ preventScroll: true }); if (caret && el.setSelectionRange) try { el.setSelectionRange(caret[0], caret[1]); } catch (e) { /* */ } }
+        // Auswahllisten nur nach Tastaturbedienung erneut fokussieren (iPad-Regel 2, Labkit 0.2.0):
+        // Safari auf dem iPad öffnet eine fokussierte Auswahlliste sofort wieder.
+        core.restoreFocus(el, caret);
       }
     }
-    // Letzte Eingabeart (Tastatur oder Zeiger/Finger) – steuert, ob Auswahllisten den Fokus zurückbekommen
-    var lastKeyboard = false; // eslint-disable-line no-var -- vor dem ersten renderPanel verfügbar
-    document.addEventListener('keydown', () => { lastKeyboard = true; }, true);
-    document.addEventListener('pointerdown', () => { lastKeyboard = false; }, true);
-    document.addEventListener('touchstart', () => { lastKeyboard = false; }, { capture: true, passive: true });
 
     function expHtml() {
       const n = ui.cur, note = notes[n], X = T.EXP[n], ex = M.EXPERIMENTS[n];

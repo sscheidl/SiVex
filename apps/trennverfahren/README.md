@@ -1,6 +1,6 @@
 # Trennverfahren – Stoffgemische trennen
 
-**Status: prototype 0.3.2** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.1.1
+**Status: prototype 0.4.0** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.2.0
 
 Virtuelles Labor zum letzten Aufgabenblock „Klassische Trennverfahren“: Die Lernenden führen fünf Versuche selbst durch, notieren eigene Beobachtungen, prüfen ihr Wissen in einer gemeinsamen Kontrolle und schreiben am Schluss einen Hefteintrag ab.
 
@@ -16,8 +16,8 @@ Grundlage: [Build-Auftrag](../../prompts/trennlabor-klassik-build-claude.md) und
 
 ## Download
 
-- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.3.2-scorm12.zip`](release/trennverfahren-0.3.2-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
-- **Web/offline:** [`release/trennverfahren-0.3.2-web.zip`](release/trennverfahren-0.3.2-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
+- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.4.0-scorm12.zip`](release/trennverfahren-0.4.0-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
+- **Web/offline:** [`release/trennverfahren-0.4.0-web.zip`](release/trennverfahren-0.4.0-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
 - Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
 ## Lernen
