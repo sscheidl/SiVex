@@ -701,7 +701,18 @@ await scenario('E13', '0.3.0: Rinnsal/Tropfen, Heizplatten-Drehknopf am Gerät, 
   await L.use(page, 'U', 'A'); await L.idle(page);
   assert(await S(page, (st, M) => M.isEmpty(st.objs.U.c) && st.objs.A.c.saltS > 4), 'Uhrglas mit dem Spatel in Becherglas A geleert');
   await shot(page, '75-v5-uhrglas-geleert');
-  out.push('Magnet 2 Durchgänge, Uhrglas weitergegeben');
+  // Fehlerbericht 30.10.2026: Gemenge auf dem Uhrglas, Eisen mit dem Magneten in die Porzellanschale –
+  // danach muss sich das Uhrglas ohne Abwählen des Magneten wählen und weitergeben lassen
+  await page.locator('#btnRestart').click(); await page.locator('#rsYes').click(); await sleep(200);
+  await L.pour(page, 'M', 'U', null, { speed: 'fast' });
+  await L.use(page, 'mag', 'U'); await L.idle(page); await L.tapHit(page, 'M'); await L.idle(page);
+  await L.tapHit(page, 'U'); await L.idle(page); await L.tapHit(page, 'M'); await L.idle(page);
+  assert(await S(page, (st) => st.objs.U.c.iron === 0 && st.objs.M.c.iron > 4.9), 'Eisen in der Porzellanschale');
+  await L.tapHit(page, 'U');
+  assert(await page.evaluate(() => window.TV.app.ui.selected === 'U'), 'Uhrglas gewählt, obwohl vorher der Magnet gewählt war');
+  await L.tapHit(page, 'A'); await L.idle(page);
+  assert(await S(page, (st, M) => M.isEmpty(st.objs.U.c) && st.objs.A.c.saltS > 4.9), 'Uhrglas in Becherglas A geleert – keine Sackgasse');
+  out.push('Magnet 2 Durchgänge, Uhrglas weitergegeben, keine Sackgasse nach dem Magneten');
   // V4: Teilchenbild nach dem Schütteln
   await L.exp(page, 4);
   await L.use(page, 'S', 'sepring'); await L.idle(page);

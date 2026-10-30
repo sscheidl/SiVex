@@ -1,6 +1,6 @@
 # Trennverfahren – Stoffgemische trennen
 
-**Status: prototype 0.3.0** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.1.1
+**Status: prototype 0.3.1** · Chemie Jahrgangsstufe 8/9 (NTG 8 / SG 9) · Labkit 0.1.1
 
 Virtuelles Labor zum letzten Aufgabenblock „Klassische Trennverfahren“: Die Lernenden führen fünf Versuche selbst durch, notieren eigene Beobachtungen, prüfen ihr Wissen in einer gemeinsamen Kontrolle und schreiben am Schluss einen Hefteintrag ab.
 
@@ -16,8 +16,8 @@ Grundlage: [Build-Auftrag](../../prompts/trennlabor-klassik-build-claude.md) und
 
 ## Download
 
-- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.3.0-scorm12.zip`](release/trennverfahren-0.3.0-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
-- **Web/offline:** [`release/trennverfahren-0.3.0-web.zip`](release/trennverfahren-0.3.0-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
+- **SCORM 1.2 für mebis:** [`release/trennverfahren-0.3.1-scorm12.zip`](release/trennverfahren-0.3.1-scorm12.zip) – in mebis als „Lernpaket (SCORM)“, Darstellung „Neues Fenster“
+- **Web/offline:** [`release/trennverfahren-0.3.1-web.zip`](release/trennverfahren-0.3.1-web.zip) – entpacken und `trennverfahren/index.html` öffnen (auch ohne Internet, per Doppelklick)
 - Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
 ## Lernen
@@ -50,10 +50,10 @@ Der Quellstand lädt den Baukasten unter `labkit/` – direkt per `index.html` s
 
 ## Grenzen
 
-- Status **prototype**: Fachliche Freigabe durch die Lehrkraft, Test auf echtem iPad/Safari und in mebis sowie Unterrichtserprobung stehen aus (siehe Testbericht).
+- Status **prototype**: Auf dem iPad mit Safari geprüft (30.10.2026). Fachliche Freigabe durch die Lehrkraft, Test in mebis und Unterrichtserprobung stehen aus (siehe Testbericht).
 - Vereinfachtes, beschleunigtes Unterrichtsmodell; die Zeitkonstanten sind keine Messwerte (siehe CHEMIE.md).
 - Kein Versuch mit Hibiskustee (laut Auftrag nicht erforderlich).
 - Zurückgestellt: Kochsalz mit dem Löffel selbst dosieren (P2 des Auftrags 0.2.0).
-- 0.3.0: Browserabnahme (E1–E13) und Paketprüfung auf dem Entwicklungsrechner stehen noch aus (siehe Testbericht).
+- 0.3.x: Browserabnahme (E1–E13) und Paketprüfung auf dem Entwicklungsrechner stehen noch aus (siehe Testbericht).
 
 Änderungen: [CHANGELOG.md](CHANGELOG.md)

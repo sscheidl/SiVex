@@ -16,11 +16,11 @@ Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = gepr
 | Browserprüfung Edge (Desktop, Tablet- und Handy-Emulation) | PASS 16/16 | `tests/e2e/results.json`, Abschnitt 2 |
 | Pakete: SCORM 1.2 (Mock-LMS eingebettet/neues Fenster), Web-ZIP über HTTP und file://, frisch entpackt | PASS 17/17 | `tests/e2e/scorm-results.json`, Abschnitt 3 |
 | Visuelle Kontrolle der Bilder je Stoff und Zustand | PASS (Entwickler) | `docs/screenshots/`, Abschnitt 4 |
-| Echtes iPad (Safari), Touch | **HOLD – unverified** | nicht durchgeführt; nur Touch-Emulation |
+| Echtes iPad (Safari), Touch | **PASS** (Lehrkraft, 30.10.2026) | auf dem iPad mit Safari geprüft: sichtbar und bedienbar, Abläufe wie erwartet |
 | mebis-Import (ByCS) | **HOLD – unverified** | nicht durchgeführt; nur Mock-LMS |
 | Fachliche und didaktische Freigabe durch die Lehrkraft | **HOLD – unverified** | ausstehend |
 
-Ohne iPad-, mebis- und Lehrkraftprüfung bleibt der Status `prototype`.
+Ohne mebis- und fachliche Lehrkraftprüfung bleibt der Status `prototype`.
 
 ## 1. Unit-Tests (`npm test`, 36 Tests)
 
@@ -96,7 +96,7 @@ Die Bilder in `docs/screenshots/` (aus E03–E13 und dem Paketlauf) wurden durch
 
 ## 6. Offene manuelle Abnahme (iPad/Safari, mebis, Lehrkraft)
 
-1. **iPad/Safari:** Regler mit dem Finger ziehen (auch schnell hin und her) und antippen; Stoff- und Ebenenwahl; Trennlinie mit dem Finger; Bildrate der Teilchenebene und der Gaswölkchen flüssig?
+1. ✓ **iPad/Safari** (30.10.2026 erledigt, siehe oben): Regler mit dem Finger ziehen (auch schnell hin und her) und antippen; Stoff- und Ebenenwahl; Trennlinie mit dem Finger; Bildrate der Teilchenebene und der Gaswölkchen flüssig?
 2. **iPad hoch und quer:** keine Überdeckung, Markierungen am Regler lesbar, Bedienfeld scrollt.
 3. **Kalte Oberfläche bei Iod:** Kristalle wachsen sichtbar; Ausblenden.
 4. **Schema** auf dem iPad hoch und quer: lesbar, bewegte Pfeile flüssig.

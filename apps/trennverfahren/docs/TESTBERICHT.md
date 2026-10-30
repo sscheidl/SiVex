@@ -2,6 +2,15 @@
 
 Statusbegriffe nach [`docs/QUALITY.md`](../../../docs/QUALITY.md) · Gesamtstatus: **prototype**
 
+## 0.3.1 – Stand 30.10.2026
+
+| Prüfung | Status | Nachweis |
+| --- | --- | --- |
+| iPad mit Safari: sichtbar, bedienbar, Abläufe | **PASS** (Lehrkraft, 30.10.2026, Stand 0.3.0) | manuelle Prüfung auf dem Gerät |
+| TV36: keine Sackgasse nach abgewiesenem Ziel (Fehlerbericht V5: Magnet blieb gewählt, Uhrglas nicht mehr wählbar) | **PASS** (simulierte Seite) · Browser **HOLD** | Ablauf in einer simulierten Seite (jsdom) mit dem ausgelieferten Code nachgespielt: vorher Sackgasse, jetzt Uhrglas → Becherglas A erfolgreich; Unit-Tests 58/58; E13 ergänzt |
+| mebis-Import und -Start | **HOLD – unverified** | ausstehend |
+| fachliche Durchsicht, Unterrichtserprobung | **HOLD – unverified** | ausstehend |
+
 ## 0.3.0 – Stand 30.10.2026
 
 Grundlage: Durchsicht vom 30.10.2026 (Tropfen, Teilchenmodell, V3 Spatel, V4 Teilchenebene, V5 vollständige Trennschritte, Heizplatte am Gerät, Uhrglas weitergeben). Entwicklungsprüfung in einer Linux-Umgebung **ohne Browser**: Modell und Darstellungslogik sind durch Unit-Tests abgedeckt, die Zeichnung wurde mit einer Canvas-Bibliothek ohne Browser gerendert und gesichtet. **Browserabnahme (E1–E13) und Paketprüfung im Browser stehen aus (HOLD – unverified).**
@@ -105,7 +114,7 @@ Zusätzlich weiter grün: E1 Pflichtablauf (jetzt mit Papier- und Kristallüberf
 
 | Prüfung | Status |
 | --- | --- |
-| iPad mit Safari (Touch, Animation, Fenstergröße) – Tablet wurde nur in Edge emuliert | **HOLD – unverified** |
+| iPad mit Safari (Touch, Animation, Fenstergröße) – Tablet wurde nur in Edge emuliert | **HOLD – unverified** (für 0.2.0; ab 0.3.0 auf dem iPad geprüft, siehe oben) |
 | Import und Start in mebis („Neues Fenster“) – geprüft nur im simulierten LMS | **HOLD – unverified** |
 | Fachliche Durchsicht durch die Lehrkraft (Trennprinzip-Bewertung, Toleranzen, Texte) | **HOLD – unverified** |
 | Unterrichtserprobung | **HOLD – unverified** |

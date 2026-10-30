@@ -107,7 +107,7 @@
       return r;
     }
     const busy = () => { const op = st().op; return op && !(op.type === 'pour' && op.phase === 'flow'); };
-    function select(id) {
+    function select(id, keepMsg) {
       const o = st().objs[id];
       if (!o) return;
       if ((o.type === 'watch' && M.isEmpty(o.c)) || (o.type === 'bowl' && M.isEmpty(o.c)) || (o.type === 'dish' && M.solids(o.c) < 0.05)) {
@@ -117,8 +117,19 @@
       }
       ui.selected = id;
       if (o.c && o.type !== 'magnet') ui.pFocus[ui.cur] = id;
-      defaultMsg();
+      if (!keepMsg) defaultMsg();
       refreshDeck();
+    }
+    /**
+     * Ergebnis einer Handlung mit gewähltem Gerät: bei Erfolg Auswahl aufheben (bzw. behalten),
+     * bei Ablehnung die Auswahl auf das angetippte Gefäß wechseln – die Begründung bleibt stehen.
+     * So bleibt kein Werkzeug „hängen“, und jedes Gefäß lässt sich jederzeit wählen.
+     */
+    function after(r, id, keepOnOk) {
+      if (r && r.ok) { if (!keepOnOk) deselect(); return; }
+      const o = st().objs[id];
+      ui.selected = null;
+      if (o && o.c && o.type !== 'magnet') select(id, true); else refreshDeck();
     }
     function deselect() { ui.selected = null; refreshDeck(); }
     function tap(id) {
@@ -148,16 +159,23 @@
       }
       if (obj.c && obj.type !== 'magnet') ui.pFocus[ui.cur] = id;
       switch (sel.type) {
-        case 'rod': { const r = act('stir', id); if (r.ok) deselect(); break; }
-        case 'wash': { const r = act('wash', id); if (r.ok) deselect(); break; }
-        case 'paper': { const r = act('insertPaper', id); if (r.ok) deselect(); break; }
-        case 'magnet': act(s.objs.mag.c.iron > 0.005 ? 'magnetDrop' : 'magnet', id); break;
-        case 'stopper': if (obj.type === 'sep') { const r = act('stopper', true); if (r.ok) deselect(); } else select(id); break;
-        case 'funnel': if (obj.type === 'watch') { const r = act('transferPaper', sel.id, id); if (r.ok) deselect(); } else select(id); break;
-        case 'dish': if (['watch', 'beaker', 'erlenmeyer', 'bowl'].includes(obj.type)) { const r = act('scrape', sel.id, id); if (r.ok) deselect(); } else select(id); break;
-        case 'watch': if (['beaker', 'erlenmeyer', 'bowl', 'dish'].includes(obj.type)) { const r = act('scrape', sel.id, id); if (r.ok) deselect(); } else select(id); break;
+        case 'rod': after(act('stir', id), id); break;
+        case 'wash': after(act('wash', id), id); break;
+        case 'paper': after(act('insertPaper', id), id); break;
+        case 'magnet': {
+          // Magnet bleibt nach Erfolg gewählt (mehrere Durchgänge). Hängt Eisen daran, bleibt er auch
+          // bei einem ungeeigneten Ziel gewählt; ohne Eisen wechselt die Auswahl zum angetippten Gefäß.
+          const holding = s.objs.mag.c.iron > 0.005;
+          const r = act(holding ? 'magnetDrop' : 'magnet', id);
+          if (!r.ok && !holding) after(r, id);
+          break;
+        }
+        case 'stopper': if (obj.type === 'sep') after(act('stopper', true), id); else select(id); break;
+        case 'funnel': if (obj.type === 'watch') after(act('transferPaper', sel.id, id), id); else select(id); break;
+        case 'dish': if (['watch', 'beaker', 'erlenmeyer', 'bowl'].includes(obj.type)) after(act('scrape', sel.id, id), id); else select(id); break;
+        case 'watch': if (['beaker', 'erlenmeyer', 'bowl', 'dish'].includes(obj.type)) after(act('scrape', sel.id, id), id); else select(id); break;
         default:
-          if (M.TYPES[sel.type].pour && obj.c) { const r = act('pour', sel.id, id); if (r.ok) deselect(); }
+          if (M.TYPES[sel.type].pour && obj.c) after(act('pour', sel.id, id), id);
           else select(id);
       }
     }

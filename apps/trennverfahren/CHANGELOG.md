@@ -1,5 +1,15 @@
 # Änderungen – Trennverfahren
 
+## 0.3.1 – 30.10.2026 (prototype)
+
+**Behoben (schwerwiegend):** Sackgasse in Versuch 5. Nach dem Magnetscheiden blieb der Magnet gewählt; jedes weitere Antippen – auch von Uhrglas, Becherglas A oder Porzellanschale – wurde als „Magnet durchziehen“ gedeutet und mit „kein Eisen“ abgewiesen. Lag das Gemenge auf dem Uhrglas, kam man nicht weiter.
+
+- Wird ein angetipptes Gefäß als Ziel abgewiesen, wechselt die Auswahl jetzt auf dieses Gefäß; die Begründung bleibt sichtbar. Das gilt für alle Werkzeuge und Gefäße (Glasstab, Spritzflasche, Filterpapier, Spatel, Gießen). Kein Gerät bleibt mehr „hängen“.
+- Ein Magnet, an dem Eisen hängt, bleibt bei einem ungeeigneten Ziel gewählt (das Eisen geht nicht verloren); nach erfolgreichem Durchziehen bleibt er wie bisher für weitere Durchgänge gewählt.
+- Browserszenario E13 spielt den gemeldeten Ablauf nach (Gemenge auf dem Uhrglas, Eisen in die Porzellanschale, dann Uhrglas → Becherglas A ohne Abwählen des Magneten).
+
+**Geprüft:** auf dem iPad mit Safari (Lehrkraft, 30.10.2026, Stand 0.3.0): sichtbar und bedienbar, Abläufe wie erwartet.
+
 ## 0.3.0 – 30.10.2026 (prototype)
 
 Überarbeitung nach der Durchsicht vom 30.10.2026 (Grafik, Teilchenmodell, V3–V5).
