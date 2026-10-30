@@ -1,4 +1,20 @@
-# Destillation 0.3.2 – Testbericht
+# Destillation 0.4.0 – Testbericht
+
+## Nachtrag 0.4.0 (30.10.2026) – iPad- und Bedienregeln
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Handgriff in der Pause beendet die Pause | **PASS** (simulierte Seite) | Einfüllen bei Pause: Tempo 1×, Hinweis |
+| Stillstehender Handgriff blockiert nicht | **PASS** (simulierte Seite) | weiterer Handgriff: Pause beendet, Handgriff läuft zu Ende |
+| Volle Vorlage läuft über, eigene Warnung, Vorlage höchstens 120 mL | **PASS** | `model.test.js` (0.4.0) |
+| Unit-Tests | **PASS** 64/64 (inkl. Labkit) | `npm test` |
+| Browserabnahme, Paketprüfung, iPad | **HOLD – unverified** | `npm run test:all` auf dem Entwicklungsrechner |
+
+---
+
+Frühere Fassung des Berichts:
+
+## Destillation 0.3.2 – Testbericht
 
 **Stand:** 29.10.2026 (0.3.2: Spritzer, Einbruch zwischen den Fraktionen, Siedeblasen nach Neustart, Brennprobe Propanon; alle Tests neu gelaufen) · **Prüfgegenstand:** statischer Build `dist/destillation/` und die daraus gepackten Dateien `release/destillation-0.3.2-web.zip` und `release/destillation-0.3.2-scorm12.zip` (byte-identisch mit dem getesteten Build geprüft, PKG-1) · **Baukasten:** `shared/labkit` 0.1.1 (in 0.3.0 unverändert)
 

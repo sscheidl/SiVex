@@ -68,8 +68,22 @@
     engine.on('change', (e) => { if (e && e.action === 'opDone') refresh(true); });
 
     // ------------------------------------------------------------ Handlungen
+    // Diese Handlungen sind auch während eines laufenden Handgriffs erlaubt (siehe model.js, Prüfung „busy“)
+    const DURING_OP = ['restart', 'setHeatLevel', 'setFlow', 'setExpert', 'setWater', 'setHeater'];
+    /** Pause beenden (1×) und das sagen (iPad-Regel 4, 0.4.0). */
+    function resume(text) {
+      if (ui.speed === 0) { ui.speed = 1; syncHead(); if (text) toast(text, 'info'); }
+    }
     function act(name, ...args) {
+      // Ein in der Pause stehengebliebener Handgriff blockierte alles („Einen Moment …“): Bedienen beendet die Pause
+      if (ui.speed === 0 && st().op && !DURING_OP.includes(name)) {
+        resume('Pause beendet – der angefangene Handgriff läuft jetzt zu Ende. Danach kannst du weitermachen.');
+        refresh(true); save();
+        return { ok: false, message: '', code: 'resumed' };
+      }
       const r = engine.act(name, ...args);
+      if (r.ok && (name === 'restart' || name === 'selectMix')) resume(); // neuer Versuch beginnt in Echtzeit
+      else if (r.ok && ui.speed === 0 && st().op) resume('Pause beendet – die Zeit läuft wieder (1×).');
       refresh(true);
       save();
       return r;
@@ -475,8 +489,15 @@
       const body = $('#panelBody');
       const top = $('#panel').scrollTop;
       body.setAttribute('aria-labelledby', 'tab-' + ui.tab);
+      // Ein erzwungener Neuaufbau (Handgriff fertig, Sicherheitsstopp) übernimmt zuerst noch nicht bestätigte
+      // Eingaben und gibt danach den Fokus zurück – Auswahllisten nur nach Tastatur (iPad-Regel 2, 0.4.0)
+      const inPanel = ae && body.contains(ae);
+      if (inPanel) { const f = ae.closest('form'); if (f) keepForm(f); }
+      const mark = inPanel ? (ae.id ? '#' + CSS.escape(ae.id) : ae.name ? `[name="${CSS.escape(ae.name)}"]` + (ae.type === 'radio' || ae.type === 'checkbox' ? `[value="${CSS.escape(ae.value)}"]` : '') : ae.dataset && ae.dataset.act ? `[data-act="${CSS.escape(ae.dataset.act)}"]` : null) : null;
+      const caret = mark && 'selectionStart' in ae && !['radio', 'checkbox'].includes(ae.type) ? [ae.selectionStart, ae.selectionEnd] : null;
       body.innerHTML = ui.tab === 'task' ? taskHtml() : ui.tab === 'results' ? resultsHtml() : ui.tab === 'trainer' ? trainerHtml() : notebookHtml();
       $('#panel').scrollTop = top;
+      if (mark) { let el = null; try { el = body.querySelector(mark); } catch (e) { el = null; } if (el) core.restoreFocus(el, caret); }
     }
 
     function readForm(form, prefix) {
@@ -553,12 +574,15 @@
       refresh(true); save();
     });
     // Eingaben im Protokoll sofort merken (bleiben beim Neuzeichnen erhalten)
-    $('#panelBody').addEventListener('change', (e) => {
-      const form = e.target.closest('form');
-      if (!form) return;
+    function keepForm(form) {
       if (form.id === 'protoForm') TS().answers = Object.assign({}, TS().answers, readForm(form, 'q-'));
       if (form.id === 'namesForm') ui.names.answers = readForm(form, 'n-');
       if (form.id === 'fnForm') ui.fns.answers = readForm(form, 'q-f-');
+    }
+    $('#panelBody').addEventListener('change', (e) => {
+      const form = e.target.closest('form');
+      if (!form) return;
+      keepForm(form);
       save();
     });
 

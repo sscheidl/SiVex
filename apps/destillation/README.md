@@ -1,6 +1,6 @@
 # Destillation
 
-**Status: prototype** · Version 0.3.2 · Jahrgangsstufe 8/9 (NTG 8 / SG 9), optionaler Expertenmodus · Baukasten [`shared/labkit`](../../shared/labkit/) 0.1.1
+**Status: prototype** · Version 0.4.0 · Jahrgangsstufe 8/9 (NTG 8 / SG 9), optionaler Expertenmodus · Baukasten [`shared/labkit`](../../shared/labkit/) 0.2.0
 
 Eigenständige Browser-App: Flüssigkeitsgemische mit einer **fertig montierten Destillationsapparatur** trennen. Eine der drei Einzelanwendungen aus dem Trennlabor 1.0.0 ([Entscheidung](../../docs/decisions/2026-10-23-trennlabor-aufteilung.md)), neu gebaut: Ideen und Sicherheitslogik aus den Altfassungen A/B, Glasdarstellung nach TitraLab 3, Fachmodell, Geometrie und Darstellung neu ([Bausteinmatrix](docs/UEBERNAHME.md)).
 
@@ -48,6 +48,6 @@ npm run test:scorm     # SCORM-Paket im Mock-LMS (eingebettet + neues Fenster), 
 ## Dokumentation und Pakete
 
 - [Fachmodell und Grenzen](docs/CHEMIE.md) · [Bedienung](docs/BEDIENUNG.md) · [Testbericht mit PASS/HOLD-Matrix](docs/TESTBERICHT.md) · [Bausteinmatrix A/B/C](docs/UEBERNAHME.md)
-- `release/destillation-0.3.2-web.zip` (Webserver oder lokal entpackt), `release/destillation-0.3.2-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
+- `release/destillation-0.4.0-web.zip` (Webserver oder lokal entpackt), `release/destillation-0.4.0-scorm12.zip` (mebis: „Lernpaket (SCORM)“, Darstellung „Neues Fenster“), Prüfsummen in `release/SHA256SUMS.txt`
 
 Der Unterrichtseinsatz (`ready`) setzt den Test der Lehrkraft auf den Schul-iPads und in mebis voraus.

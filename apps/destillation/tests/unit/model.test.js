@@ -547,3 +547,15 @@ test('M-07 Einbruch zwischen den Fraktionen: Anzeige sinkt merklich, aber nicht 
     assert.ok(reached100, `${mix}: danach Wasser bei 100 °C`);
   }
 });
+
+test('0.4.0 (iPad-Regel 3): volle Vorlage läuft über – randvoll, Rest auf den Tisch, eigene Warnung', () => {
+  const e = setup({ heat: 'high' });
+  // Vorlage künstlich fast voll machen (wie nach einer zweiten Füllung)
+  e.state.receiver.c.W = M.RECV_ML - 0.5;
+  runUntil(e, (st) => vol(st.lost.table) > 0.5, 900);
+  assert.ok(vol(e.state.lost.table) > 0.5, 'Destillat läuft auf den Tisch');
+  assert.ok(vol(e.state.receiver.c) <= M.RECV_ML + 1e-9, 'Vorlage höchstens randvoll: ' + vol(e.state.receiver.c));
+  const texts = e.state.log.filter((l) => l.text).map((l) => l.text).join(' | ');
+  assert.match(texts, /Vorlage ist voll und läuft über/, 'Warnung „läuft über“');
+  assert.doesNotMatch(texts, /keine Vorlage/, 'nicht die irreführende Meldung „keine Vorlage“');
+});

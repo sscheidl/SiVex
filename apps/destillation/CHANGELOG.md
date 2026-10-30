@@ -1,5 +1,13 @@
 # Changelog – Destillation
 
+## 0.4.0 – 30.10.2026
+
+Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) nach dem Unterrichtseinsatz der SiVex-Apps; Labkit 0.2.0.
+
+- **Pause blockiert nicht mehr:** Ein in der Pause gestarteter Handgriff (Einfüllen, Siedesteine, Pipette, Feuerzeug) stand still, und alles Weitere wurde mit „Einen Moment – der letzte Handgriff ist noch nicht fertig“ abgewiesen. Jetzt beendet ein Handgriff die Pause (1×, mit Hinweis); tippt man während eines stillstehenden Handgriffs etwas an, läuft die Zeit wieder und der Handgriff zu Ende. Gemischwechsel und Neustart beginnen in Echtzeit.
+- **Volle Vorlage läuft über:** Die Vorlage nimmt höchstens 120 mL auf; der Rest tropft wie bisher auf den Tisch, jetzt aber mit eigener Warnung („Die Vorlage ist voll und läuft über …“) statt der irreführenden Meldung „keine Vorlage“, und als Pfütze neben der Hebebühne sichtbar (auch beim Tropfen ohne Vorlage).
+- **Eingaben gehen nicht verloren:** Endet ein Handgriff oder greift der Sicherheitsstopp, wird das Bedienfeld neu aufgebaut. Noch nicht bestätigte Eingaben werden vorher übernommen, Fokus und Schreibmarke zurückgegeben; Auswahllisten (Geräte benennen) nur nach Tastaturbedienung.
+
 ## 0.3.2 – 29.10.2026
 
 Korrekturen nach Rückmeldung zu 0.3.1 und Brennprobe im Propanon-Versuch.

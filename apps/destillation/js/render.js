@@ -745,6 +745,13 @@
       const g = geo, rj = g.receiver.jack;
       const rc = st.receiver;
       drawJack(rj.x, rj.w, rj.top, rj.h);
+      // auf den Tisch gelaufenes Destillat (keine oder volle Vorlage): Pfütze neben der Hebebühne
+      const spilt = M.vol(st.lost.table);
+      if (spilt > 0.05) {
+        const rx = Math.min(70, 9 + 7 * Math.sqrt(spilt)), cx = rj.x + rj.w / 2 + rx * 0.55, cy = rj.top + rj.h - 1;
+        ctx.fillStyle = 'rgba(150,196,232,0.55)'; ctx.beginPath(); ctx.ellipse(cx, cy, rx, rx * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(90,140,190,0.45)'; ctx.lineWidth = 1; ctx.stroke();
+      }
       // Wechselanimation (Expertenmodus): alte Vorlage gleitet auf den Tisch, neue kommt
       const nF = st.fractions.length;
       if (vis.nFractions == null) vis.nFractions = nF;

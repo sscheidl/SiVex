@@ -511,6 +511,11 @@
         r.Tmax = r.Tmax == null ? T : Math.max(r.Tmax, T);
         if (r.readings.length < 3000) r.readings.push(+T.toFixed(2));
         if (st.thermo !== 'correct') r.badThermo++;
+      } else if (to === 'overflow') {
+        // volle Vorlage (iPad-Regel 3): randvoll, der Rest läuft außen ab auf den Tisch
+        add(st.lost.table, c);
+        st.receiver.overflow = +st.t.toFixed(1);
+        warnOnce('recvFull', st.expert ? 'Die Vorlage ist voll und läuft über – das Destillat tropft auf den Tisch. Wechsle die Vorlage oder schalte die Heizung aus.' : 'Die Vorlage ist voll und läuft über – das Destillat tropft auf den Tisch. Schalte die Heizung aus.');
       } else {
         add(st.lost.table, c);
         warnOnce('noReceiver', 'Das Destillat tropft auf den Tisch – unter dem Vorstoß steht keine Vorlage.');
@@ -712,7 +717,7 @@
       let guard = 0;
       while (vol(st.tip) >= DROP_VOL - 1e-12 && guard++ < 50) {
         const d = take(st.tip, DROP_VOL);
-        recordDrop(st.receiver.present && vol(st.receiver.c) + DROP_VOL <= RECV_ML + 1e-9 ? 'receiver' : 'table', d);
+        recordDrop(!st.receiver.present ? 'table' : vol(st.receiver.c) + DROP_VOL <= RECV_ML + 1e-9 ? 'receiver' : 'overflow', d);
       }
 
       // --- Warnung: der leichter siedende Stoff ist fast übergegangen, der nächste kündigt sich an
