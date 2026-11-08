@@ -38,6 +38,8 @@
 
   const params = new URLSearchParams(global.location.search);
   const SPEED = Math.max(1, Math.min(50, Number(params.get('speed')) || 1));
+  // Vorführen durch die Lehrkraft: index.html?markierungen=1 zeigt die Markierungen ohne Abgabe
+  const TEACHER = params.get('markierungen') === '1';
   const START_READINGS = [0.4, 0.25, 0.55, 0.35, 0.6, 0.3];
 
   // ------------------------------------------------------------ Zustand
@@ -165,30 +167,37 @@
     l.newSample();
     renderer.setLab(l);
     if (e.active < 0) newSeries(kind);
-    autoPending = false;
     e.open.prep = undefined;
     save();
     refresh();
   }
 
   /**
-   * Messpunkt aufnehmen (ab 0.2.2 nur automatisch, sobald die Anzeige stabil
-   * ist): nach jeder Zugabe, nach dem Schließen des Hahns, beim Eintauchen der
-   * Elektrode (Startpunkt) und nach dem Ein-/Ausschalten des Rührers.
-   * Ein Punkt beim gleichen Volumen wird durch den neuen Wert ersetzt.
+   * Live-Aufzeichnung (ab 0.4.0): Wie bei einer pH-Sonde am Messwerterfassungs-
+   * system entsteht die Kurve während der Titration – ab dem Eintauchen der
+   * Elektrode ein Wert je angekommenem Tropfen (mindestens 0,05 mL Abstand) und
+   * der Endwert, sobald alles angekommen ist. Kein Übernehmen, kein Warten.
+   * Ein Wert beim gleichen Volumen ersetzt den vorigen. Gibt true zurück, wenn
+   * sich die Reihe geändert hat.
    */
-  function takeReading() {
+  function recordLive() {
     const l = lab();
     const s = activeSeries();
-    autoPending = false;
-    if (!s || s.finished || !l.meterReady) return;
-    const r = l.reading();
-    const p = { v: r.v, pH: r.pH, stable: r.stable, settled: r.settled, homogeneous: r.homogeneous, stirred: r.stirred, t: Math.round(l.time * 10) / 10 };
-    const i = s.points.findIndex(function (q) { return Math.abs(q.v - p.v) < 0.005; });
-    if (i >= 0) s.points[i] = p; else s.points.push(p);
-    s.points.sort(function (a, b) { return a.v - b.v; });
+    if (!s || s.finished || !l.meterReady || l.displayPH === null) return false;
+    const p = { v: l.deliveredRounded, pH: l.displayPH, stable: true };
+    const pts = s.points;
+    const last = pts[pts.length - 1];
+    const i = last && p.v <= last.v + 0.005 ? pts.findIndex(function (q) { return Math.abs(q.v - p.v) < 0.005; }) : -1;
+    if (i >= 0) {
+      if (pts[i].pH === p.pH) return false;
+      pts[i] = p;
+    } else {
+      if (last && p.v > last.v && p.v - last.v < 0.045 && !l.isSettled) return false;
+      pts.push(p);
+      if (last && p.v < last.v) pts.sort(function (a, b) { return a.v - b.v; });
+    }
     save();
-    refresh();
+    return true;
   }
 
   async function markEndpoint() {
@@ -243,15 +252,13 @@
   // ------------------------------------------------------------ Labor: Vorbereitung und Dosierung
 
   const renderer = new NS.LabRenderer($('#labCanvas'));
-  let autoPending = false;
+  let panelDirty = false;
   let pendingEndpoint = false;
   let doseSize = 1;
   let pendingCal2 = false;
 
   function bindLab(l, id) {
-    l.on('step-done', function () { if (id === state.current) autoPending = true; });
-    l.on('valve', function (e) { if (!e.open && id === state.current) autoPending = true; });
-    l.on('stirrer', function () { if (id === state.current) autoPending = true; });
+    l.on('reading', function () { if (id === state.current && recordLive()) panelDirty = true; });
     l.on('empty', function () { if (id === state.current) toast('Bürette am Ende der Skala (50,00 mL) – zwischen zwei Proben nachfüllen.', 'warn'); });
     l.on('limited', function () { if (id === state.current) toast('Nur bis zum Ende der Bürettenskala zugegeben.', 'warn'); });
     l.on('full', function (e) { if (id === state.current) toast(e && e.limited ? 'Nur so viel zugegeben, wie noch in den Titrierkolben passt – er ist jetzt voll.' : 'Der Titrierkolben ist voll – mehr Maßlösung passt nicht hinein.', 'warn'); });
@@ -260,7 +267,6 @@
       if (e.action === 'sample-done') l.addWater(); // Probe vorlegen: pipettieren, dann verdünnen
       if (e.action === 'cal-done' && e.step === 1 && pendingCal2) { pendingCal2 = false; l.calibrate(2); }
       if (id !== state.current) return;
-      if (e.action === 'electrode') autoPending = true; // Startpunkt bzw. neuer Wert nach dem Eintauchen
       if (/-done$/.test(e.action) || e.action === 'electrode') { save(); refreshLab(); }
     });
   }
@@ -337,7 +343,7 @@
         (l.burette.filled && !l.dispensed && !l.isFlowing && l.burette.reading > 20 ? btn('refill', 'Nachfüllen', true, false, 'Bürette vor dieser Probe nachfüllen') : '') +
         (allDone ? '<button type="button" class="lk-btn small" data-action="toggle-prep">Einklappen</button>' : '') + '</div>';
     }
-    // Messen: Rührer, Dosierung, Übernahme, Erfassungsart
+    // Messen: Rührer, Anzeige, Dosierung (die Kurve zeichnet sich dabei selbst)
     h += '<div class="deck-row measure">' +
       '<button type="button" class="lk-btn small stir" data-action="stir" aria-pressed="' + l.stirrer + '">Rührer ' + (l.stirrer ? 'an' : 'aus') + '</button>' +
       '<div class="readout" aria-live="off"><span>V zugegeben</span><b id="roV">–</b><span>Bürette</span><b id="roR">–</b><span>pH</span><b><span id="roPH">–</span><span id="roSt" class="status-pill"></span></b></div>' +
@@ -380,7 +386,7 @@
   // ------------------------------------------------------------ Kurve
 
   const chart = new NS.TitrationChart($('#chart'), {
-    onRead: function (p, s) { $('#chartFoot').innerHTML = '<strong>' + esc(s.label) + '</strong>: V = ' + fmt(p.v, 2) + ' mL · pH = ' + fmt(p.pH, 2) + (p.stable && p.homogeneous !== false ? '' : ' <span class="badge warn">nicht stabil</span>'); },
+    onRead: function (p, s) { $('#chartFoot').innerHTML = '<strong>' + esc(s.label) + '</strong>: V = ' + fmt(p.v, 2) + ' mL · pH = ' + fmt(p.pH, 2); },
     onMarker: function (key, v) {
       T.setMarker(key, v);
       save();
@@ -401,6 +407,36 @@
     if (!ind.range) return null;
     const c = Ind.solutionColor(ind.id, (ind.range[0] + ind.range[1]) / 2, 1.2);
     return { range: ind.range, color: 'rgba(' + Math.round(c.r) + ',' + Math.round(c.g) + ',' + Math.round(c.b) + ',0.22)', label: 'Umschlagsbereich ' + ind.name };
+  }
+
+  /** Markierungen sichtbar? Nach Abgabe bzw. Musterlösung (abschaltbar) oder im Vorführmodus */
+  function marksOn() { return (T.released() || TEACHER) && es().view.marks !== false; }
+
+  /**
+   * Markierungen aus dem Modell: Pufferbereich je Stufe (Verhältnis Säure : Base
+   * zwischen 10 : 1 und 1 : 10, also pH ≈ pKₛ ± 1), Äquivalenzpunkte und
+   * Halbäquivalenzpunkte mit dem dort abzulesenden pK-Wert.
+   */
+  function guides(x) {
+    const eq = Chem.equivalenceVolumes(x).slice(0, x.stages);
+    const lit = Chem.LITERATURE[x.id];
+    const idx = ['₁', '₂'];
+    const g = { buffers: [], eqs: [], halves: [] };
+    eq.forEach(function (v, i) {
+      const n = x.stages > 1 ? ' ' + (i + 1) : '';
+      const v0 = i ? eq[i - 1] : 0;
+      const dv = v - v0;
+      g.buffers.push({ v0: v0 + dv / 11, v1: v0 + (10 * dv) / 11, label: 'Pufferbereich' + n });
+      g.eqs.push({ v: v, label: 'ÄP' + n + ' · ' + fmt(v, 2) + ' mL' });
+      const vh = Chem.halfVolume(x, i + 1);
+      const pH = Chem.phAt(x, vh);
+      let sub;
+      if (x.id === 'ammonia') sub = 'pKₛ(NH₄⁺) ≈ ' + fmt(pH, 2) + ' · pKB ≈ 14 − ' + fmt(pH, 2) + ' = ' + fmt(14 - pH, 2);
+      else if (Math.abs(pH - lit.pKs[i]) > 0.1) sub = 'Näherung: pKₛ' + (x.stages > 1 ? idx[i] : '') + ' (Lit.) = ' + fmt(lit.pKs[i], 2);
+      else sub = 'pKₛ' + (x.stages > 1 ? idx[i] : '') + ' ≈ ' + fmt(pH, 2);
+      g.halves.push({ v: vh, pH: pH, label: 'HÄP' + n + ' · ' + fmt(vh, 2) + ' mL · pH ' + fmt(pH, 2), sub: sub });
+    });
+    return g;
   }
 
   function seriesForChart() {
@@ -426,13 +462,13 @@
     const data = {
       series: seriesForChart(),
       activeId: marking && survey ? survey.id : s ? s.id : survey ? survey.id : null,
-      current: l.sample > 0 && s && !s.finished ? { v: l.addedRounded, pH: l.displayPH } : null,
-      target: s && s.kind === 'half' && Number.isFinite(s.target) ? s.target : null,
+      current: l.sample > 0 && s && !s.finished ? { v: l.deliveredRounded, pH: l.displayPH } : null,
+      targets: s && s.kind === 'half' && Number.isFinite(s.target) ? [s.target] : T.targets(),
       endpoints: (s && s.endpoint ? [{ v: s.endpoint.v, label: 'Endpunkt' }] : []),
       markers: markers,
       band: e.view.band ? indicatorBand(bandInd) : null,
-      xMode: e.view.xMode === 'data' ? 'data' : 'capacity',
       model: null, litLines: [], approxPoints: [],
+      guides: marksOn() ? guides(x) : null,
     };
     if (rel) {
       if (e.view.model) data.model = Chem.curve(x, Math.min(x.capacity, Math.max(10, maxV() + 2)), 300);
@@ -460,10 +496,12 @@
     const showMarkers = !!survey && (!steps.curve || chart.mode === 'marker' || e.open.curve);
     const s = activeSeries();
     const ind = s ? s.indicator : e.indicator;
-    const sig = [rel, e.view.xMode, e.view.band, e.view.model, e.view.lit, e.view.approx, chart.mode, chart.activeMarker, showMarkers, ind, x.id].join('|');
+    const sig = [rel, TEACHER, e.view.marks, e.view.band, e.view.model, e.view.lit, e.view.approx, chart.mode, chart.activeMarker, showMarkers, ind, x.id].join('|');
     if (sig !== toolsSig) {
       toolsSig = sig;
-      let h = '<div class="lk-seg light" role="group" aria-label="Bereich der Volumenachse"><button type="button" data-action="xmode" data-x="capacity" aria-pressed="' + (e.view.xMode !== 'data') + '">0–50 mL</button><button type="button" data-action="xmode" data-x="data" aria-pressed="' + (e.view.xMode === 'data') + '">Messbereich</button></div>';
+      let h = '';
+      if (rel || TEACHER) h += '<label class="chk"><input type="checkbox" id="chkMarks"' + (e.view.marks !== false ? ' checked' : '') + '> Markierungen</label>';
+      else h += '<span class="lk-muted marks-lock" title="Pufferbereich, Äquivalenzpunkt und pK-Werte zum Vergleich">Markierungen nach der Abgabe</span>';
       if (showMarkers) {
         h += '<button type="button" class="lk-btn small' + (chart.mode === 'marker' && chart.activeMarker === 'eq1' ? ' on' : '') + '" data-action="chart-marker" data-marker="eq1">Marker ' + markerLabel('eq1') + '</button>';
         if (x.stages > 1) h += '<button type="button" class="lk-btn small' + (chart.mode === 'marker' && chart.activeMarker === 'eq2' ? ' on' : '') + '" data-action="chart-marker" data-marker="eq2">Marker ÄP 2</button>';
@@ -483,8 +521,9 @@
     const ac = data.series.find(function (q) { return q.id === data.activeId; });
     if (ac) lg += '<span><i class="dot" style="background:' + ac.color + '"></i>' + esc(ac.label) + '</span>';
     if (data.series.length > 1) lg += '<span><i class="dot" style="background:' + NS.TitrationChart.COLORS.pale + '"></i>gespeicherte Reihe(n)</span>';
-    lg += '<span><i class="line"></i>Verbindung der Messpunkte</span>';
+    if (data.guides) lg += '<span><i class="box buf"></i>Pufferbereich</span><span><i class="line dash red"></i>Äquivalenzpunkt</span><span><i class="ring"></i>Halbäquivalenzpunkt (pH = pK)</span>';
     if (data.current) lg += '<span><i class="line dash"></i>aktuelle Position</span>';
+    if (data.targets.length) lg += '<span><i class="line dash orange"></i>Zielvolumen</span>';
     if (data.markers.some(function (m) { return Number.isFinite(m.v); })) lg += '<span><i class="line dash green"></i>eigener Marker</span>';
     if (data.model) lg += '<span><i class="line dash grey"></i>Modellreferenz</span>';
     if (data.litLines.length) lg += '<span><i class="line dot2"></i>Literatur-pKₛ</span>';
@@ -582,16 +621,14 @@
     $('#roPH').textContent = l.displayPH === null ? '–' : fmt(l.displayPH, 2);
     const st = $('#roSt');
     if (!l.meterReady) { st.className = 'status-pill'; st.textContent = 'nicht bereit'; }
-    else if (!l.isSettled) { st.className = 'status-pill warn'; st.textContent = 'Zugabe'; }
-    else if (!l.stable) { st.className = 'status-pill warn'; st.textContent = l.stirrer ? 'misst …' : 'ohne Rühren'; }
-    else { st.className = 'status-pill ok'; st.textContent = 'stabil'; }
+    else { st.className = 'status-pill ok'; st.textContent = 'misst'; }
     $('#btnValve').textContent = l.valveOpen ? 'Hahn schließen' : 'Hahn öffnen';
     $('#btnValve').classList.toggle('on', l.valveOpen);
     $('#doseLbl').textContent = doseSize === 'drop' ? '(0,05 mL)' : '(' + fmt(doseSize, 2) + ' mL)';
     const rl = $('#rateLbl');
     if (rl) rl.textContent = fmt(l.flowRate, 2) + ' mL/s';
     const hint = $('#deckHint');
-    if (hint) hint.textContent = s && s.kind === 'half' && Number.isFinite(s.target) ? 'Ziel ' + fmt(s.target, 2) + ' mL · noch ' + fmt(Math.max(0, s.target - l.addedRounded), 2) + ' mL' : s ? s.points.length + ' Messpunkt(e) in dieser Reihe' : '';
+    if (hint) hint.textContent = s && s.kind === 'half' && Number.isFinite(s.target) ? 'Ziel ' + fmt(s.target, 2) + ' mL · noch ' + fmt(Math.max(0, s.target - l.addedRounded), 2) + ' mL' : s && s.points.length ? 'Kurve bis ' + fmt(s.points[s.points.length - 1].v, 2) + ' mL' : '';
     updateChart();
   }
 
@@ -707,7 +744,6 @@
         save(); refreshLab();
         break;
       }
-      case 'xmode': es().view.xMode = b.dataset.x; save(); updateChart(); break;
       case 'chart-marker': {
         if (!T.survey()) { toast('Führe zuerst eine vollständige Titration durch.', 'warn'); break; }
         chart.mode = 'marker';
@@ -746,6 +782,7 @@
     if (T.onChange(ev)) return;
     if (t.id === 'deckIndicator') { es().indicator = t.value; save(); return; }
     const e = es();
+    if (t.id === 'chkMarks') { e.view.marks = t.checked; save(); updateChart(); }
     if (t.id === 'chkBand') { e.view.band = t.checked; save(); updateChart(); }
     if (t.id === 'chkModel') { e.view.model = t.checked; save(); updateChart(); }
     if (t.id === 'chkLit') { e.view.lit = t.checked; save(); updateChart(); }
@@ -799,7 +836,9 @@
     Object.keys(labs).forEach(function (id) { labs[id].update(dt); });
     if (pendingEndpoint && l.isSettled) recordEndpoint();
     const s = activeSeries();
-    if (autoPending && l.isSettled && l.stable && s && !s.finished && l.meterReady) takeReading();
+    if (recordLive()) panelDirty = true;
+    // Bedienfeld (Punktzahl, Prüfstatus) erst neu aufbauen, wenn die Zugabe angekommen ist
+    if (panelDirty && l.isSettled) { panelDirty = false; refresh(); }
     renderer.setOptions({ targetReading: s && s.kind === 'half' && Number.isFinite(s.target) && l.burette.filled ? (s.startReading !== null ? s.startReading : l.burette.reading) + s.target : null });
     renderer.frame(dt);
     renderDynamic(false);
@@ -814,7 +853,7 @@
   const app = {
     state: state, labs: labs, lab: lab, exp: exp, es: es, save: save, toast: toast, modal: modal, confirmBox: confirmBox,
     esc: esc, subs: subs, activeSeries: activeSeries, seriesLabel: seriesLabel, refresh: refresh, refreshLab: refreshLab,
-    updateChart: updateChart, chartImage: chartImage, renderer: renderer, chart: chart,
+    updateChart: updateChart, chartImage: chartImage, renderer: renderer, chart: chart, guides: guides, marksOn: marksOn,
   };
   NS.App = app;
   T.init(app);

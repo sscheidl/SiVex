@@ -71,7 +71,7 @@ export async function chooseTitrant(page, value) {
   return page.evaluate(() => (Halbtitration.App.es().answers.titrant || {}).status);
 }
 
-/** Warten, bis der automatische Messpunkt beim aktuellen Volumen aufgenommen ist (ab 0.2.2) */
+/** Warten, bis der Messwert beim aktuellen Volumen aufgezeichnet ist (ab 0.4.0 sofort nach dem Ankommen der Tropfen) */
 export async function waitPoint(page) {
   await waitFor(page, () => {
     const l = Halbtitration.App.lab();
@@ -109,15 +109,28 @@ export async function fillField(page, id, value, check = true) {
   return page.evaluate((i) => Object.assign({}, Halbtitration.App.es().fields[i], { current: Halbtitration.Tasks.current(i).status }), id);
 }
 
+/**
+ * Wie Lernende ablesen: im Diagramm bei v antippen (rastet an einer Zielmarke ein)
+ * und V und pH unter dem Diagramm lesen.
+ */
+export async function readAtChart(page, v) {
+  if (await page.evaluate(() => Halbtitration.App.chart.mode === 'marker')) await act(page, 'chart-read');
+  const box = await page.$eval('#chart', (c) => { const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
+  await page.mouse.click(box.x + 46 + (box.w - 60) * (v / 50), box.y + box.h / 2);
+  const t = await page.$eval('#chartFoot', (e) => e.innerText);
+  const m = /V = ([\d,]+) mL · pH = ([\d,]+)/.exec(t);
+  if (!m) throw new Error('Kein Ablesewert unter dem Diagramm: ' + t);
+  return { v: Number(m[1].replace(',', '.')), pH: Number(m[2].replace(',', '.')) };
+}
+
 export async function setDose(page, size) {
   await page.click(`[data-action="dose-size"][data-size="${size}"]`);
 }
 
-export async function doseAndTake(page, size, { take = true, stable = true } = {}) {
+export async function doseAndTake(page, size, { take = true } = {}) {
   await setDose(page, size);
   await act(page, 'dose');
   await waitSettled(page);
-  if (stable) await waitStable(page);
   if (take) await waitPoint(page);
 }
 
@@ -134,7 +147,6 @@ export async function doseTo(page, target, size) {
 
 /** Titrationskurve: grob, fein um alle ÄP, danach Überschuss; optional Endpunkt */
 export async function surveyRun(page, eqs, vEnd, endpoint) {
-  await waitStable(page);
   await waitPoint(page);
   let v = 0;
   let marked = false;

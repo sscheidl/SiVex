@@ -1,12 +1,12 @@
 # Halbtitrationslabor – pKₛ- und pK_B-Werte experimentell bestimmen
 
-**Status: prototype 0.3.0** · Chemie Q13 (eA), LehrplanPLUS Gymnasium Bayern, Lernbereich 3 · statische Browseranwendung ohne Backend, Konto oder Netzzugriff · SiVex-Labkit 0.2.0
+**Status: prototype 0.4.0** · Chemie Q13 (eA), LehrplanPLUS Gymnasium Bayern, Lernbereich 3 · statische Browseranwendung ohne Backend, Konto oder Netzzugriff · SiVex-Labkit 0.2.0
 
 ![Labor mit Titrationskurve und Dosierleiste](docs/screenshots/9-messbetrieb-desktop-1440x900.png)
 
 Die Lernenden kennen Titration, pKₛ/pK_B und die zugehörigen Rechnungen. Neu ist die **experimentelle Bestimmung eines pK-Werts durch Halbtitration**. Die App startet deshalb direkt im Labor mit einem kurzen Auftrag:
 
-**vollständig titrieren → ÄP am Sprung der eigenen Kurve → halben Umsatz untersuchen → Zielvolumen berechnen → frische Probe gezielt halbtitrieren → am MWG begründen → eigenen pK abgeben → mit der Literatur vergleichen und sichern**
+**vollständig titrieren (die Kurve zeichnet sich live) → ÄP am Sprung der eigenen Kurve → halben Umsatz untersuchen → Zielvolumen V(HÄP) berechnen → pH am HÄP an der eigenen Kurve ablesen (klassische Halbtitration mit frischer Probe als freiwillige Kontrolle) → am MWG begründen → eigenen pK abgeben → mit der Literatur und den Markierungen vergleichen**
 
 | Versuch | Rolle | Probe + Maßlösung | Schwerpunkt |
 | --- | --- | --- | --- |
@@ -15,12 +15,12 @@ Die Lernenden kennen Titration, pKₛ/pK_B und die zugehörigen Rechnungen. Neu 
 | 3 | Vertiefung | Phosphorsäure + NaOH | zwei Stufen, V(HÄP,2) = [V(ÄP,1) + V(ÄP,2)]/2, Näherungsgrenze am HÄP 1 |
 | 4 | Vertiefung | Glycinhydrochlorid + NaOH | zwei pKₛ-Werte, Kation → Zwitterion → Anion, abgeleitetes V(ÄP,2) |
 
-Alle vier Versuche sind direkt anwählbar und vollständig bedienbar. Kurve, ÄP-Marker und Messwerte entstehen nur aus eigenen Handlungen. Literaturwerte und Modellreferenz erscheinen erst nach der Abgabe eines eigenen, nachweisbar gemessenen Ergebnisses oder nach einer bewusst angeforderten Musterlösung. Pufferwirkung und -herstellung behandelt die App „Pufferfish“.
+Alle vier Versuche sind direkt anwählbar und vollständig bedienbar. Die Kurve entsteht wie bei einer pH-Sonde am Messwerterfassungssystem **während der Titration** (ab 0.4.0; ein Messwert je Tropfen, ohne Warten auf eine stabile Anzeige), die Volumenachse ist fest 0–50 mL. Kurve, ÄP-Marker und Messwerte entstehen nur aus eigenen Handlungen. Literaturwerte, Modellreferenz und die **Markierungen** (Pufferbereich, Äquivalenzpunkt, Halbäquivalenzpunkt mit pKₛ bzw. pK_B) erscheinen erst nach der Abgabe eines eigenen, nachweisbar gemessenen Ergebnisses oder nach einer bewusst angeforderten Musterlösung; zum Vorführen zeigt `index.html?markierungen=1` sie sofort. Pufferwirkung und -herstellung behandelt die App „Pufferfish“.
 
 ## Start
 
 - **Ohne Installation:** Web-ZIP aus `release/` entpacken und `halbtitration/index.html` öffnen. Das funktioniert auch per `file://` und offline.
-- **mebis:** `release/halbtitration-0.3.0-scorm12.zip` als „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“ (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). Es werden keine Noten, Fortschritte oder Personendaten übertragen.
+- **mebis:** `release/halbtitration-0.4.0-scorm12.zip` als „Lernpaket (SCORM)“ hochladen, Darstellung „Neues Fenster“ (siehe [`docs/MEBIS.md`](../../docs/MEBIS.md)). Es werden keine Noten, Fortschritte oder Personendaten übertragen.
 - **Entwicklung:** `npm start`, dann http://localhost:8080/. Der Server bildet `/labkit/` auf `shared/labkit/` ab.
 
 ```bash
@@ -37,7 +37,7 @@ npm run test:packages  # beide ZIPs frisch entpacken, über HTTP und file:// sta
 ```text
 index.html, css/app.css      App-Hülle auf Basis von labkit/css/labkit.css
 js/model/       chemistry.js (Gleichgewichtssolver), indicators.js, evaluation.js (Rechen- und Nachweisprüfung), format.js
-js/experiment/  lab.js (Bürette, Tropfen, Mischung, Elektrode – ohne DOM)
+js/experiment/  lab.js (Bürette, Tropfen, Elektrode – ohne DOM; ab 0.4.0 sofort durchmischt, Anzeige ohne Ansprechzeit)
 js/view/        geometry.js, lab-renderer.js (aus TitraLab 3), chart.js (Titrationskurve)
 js/ui/          content.js (Aufträge, Fragen, MWG-Trainer, Hilfen, Hefteintrag), store.js (Speicherung v2 mit Migration),
                 tasks.js (Aufgabe, Prüfstatus, Abgabe, Ergebnisse, Bericht), app.js (Bühne, Dosierleiste, Kurve, Ereignisse)
