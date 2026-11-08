@@ -1,5 +1,14 @@
 # Änderungen
 
+## 0.4.1 – 08.11.2026
+
+Rückmeldung der Lehrkraft zu 0.4.0:
+
+- **Behoben:** Am Anfang der Messung wirkte die Kurve dick und fleckig – bei weniger als 60 Messwerten wurden zusätzlich Punkte gezeichnet, die sich überlappten. Punkte erscheinen jetzt nur noch, wo Messwerte im Diagramm mindestens 8 px auseinanderliegen (Startwert, ältere Reihen); die Live-Kurve ist von Anfang an eine saubere Linie.
+- **Neu:** Die Trennlinie zwischen Labor und Kurve lässt sich verschieben (Maus, Finger, Pfeiltasten in 24-px-Schritten; Doppelklick oder Pos1 stellt die Standardaufteilung her). Die Aufteilung wird lokal im Browser gemerkt. In der schmalen Ansicht (Labor und Kurve untereinander) entfällt sie.
+- **Größere Schrift** in der Kurve um etwa 15 %: Achsenzahlen und -titel 14 px, Beschriftungen von Markern, Zielmarken und Markierungen 12,5–13 px, Legende 14 px, Ablesezeile unter dem Diagramm 15 px.
+- Tests: Unit 38/38; E1 und E9 gegen den Build; Paketprüfung 4/4; Schnellprüfung von Kurvenanfang (Spurbreite) und Trennlinie (Ziehen, Tastatur, Mindestbreite, Merken, Zurücksetzen).
+
 ## 0.4.0 – 08.11.2026
 
 Didaktische Vereinfachung nach Rückmeldung der Lehrkraft: Eine elektronische pH-Messung soll sofort einen sichtbaren Kurvenverlauf liefern; die Simulation war an dieser Stelle zu realistisch.

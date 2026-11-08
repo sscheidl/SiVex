@@ -825,6 +825,64 @@
   global.addEventListener('visibilitychange', function () { if (document.hidden) save(true); });
   global.addEventListener('pagehide', function () { save(true); });
 
+  // ------------------------------------------------------------ Trennlinie Labor | Kurve (0.4.1)
+
+  /**
+   * Breite des Laborbereichs als CSS-Variable --lab-w am Raster; die Kurve nimmt
+   * den Rest. Maus, Finger, Pfeiltasten (24 px), Pos1/Doppelklick setzen zurück.
+   * Die Breite wird nur lokal im Browser gemerkt.
+   */
+  function bindLabSplitter() {
+    const sp = $('#labSplitter');
+    const grid = $('#labgrid');
+    if (!sp || !grid) return;
+    const KEY = 'sivex-halbtitration-labsplit';
+    const MIN_LAB = 260; // wie die Mindestbreite im Raster (css/app.css)
+    const MIN_CHART = 240;
+    const store = function (v) { try { if (v == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, String(v)); } catch (e) { /* ohne Speicher */ } };
+    function set(w, save) {
+      const box = grid.getBoundingClientRect();
+      const inner = box.width - sp.getBoundingClientRect().width - 20;
+      const width = Math.round(Math.max(MIN_LAB, Math.min(inner - MIN_CHART, w)));
+      grid.style.setProperty('--lab-w', width + 'px');
+      sp.setAttribute('aria-valuenow', String(width));
+      if (save) store(width);
+    }
+    function reset() { grid.style.removeProperty('--lab-w'); sp.removeAttribute('aria-valuenow'); store(null); }
+    let dragging = false;
+    sp.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      sp.classList.add('is-dragging');
+      document.body.classList.add('is-resizing');
+      try { sp.setPointerCapture(e.pointerId); } catch (err) { /* ignorieren */ }
+      e.preventDefault();
+    });
+    sp.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      const lab = $('.labarea').getBoundingClientRect();
+      set(e.clientX - lab.left - sp.getBoundingClientRect().width / 2, false);
+    });
+    const end = function () {
+      if (!dragging) return;
+      dragging = false;
+      sp.classList.remove('is-dragging');
+      document.body.classList.remove('is-resizing');
+      set($('.labarea').getBoundingClientRect().width, true);
+    };
+    sp.addEventListener('pointerup', end);
+    sp.addEventListener('pointercancel', end);
+    sp.addEventListener('dblclick', reset);
+    sp.addEventListener('keydown', function (e) {
+      if (e.key === 'Home') { e.preventDefault(); reset(); return; }
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      set($('.labarea').getBoundingClientRect().width + (e.key === 'ArrowLeft' ? -24 : 24), true);
+    });
+    let saved = null;
+    try { saved = parseFloat(localStorage.getItem(KEY)); } catch (e) { /* ohne Speicher */ }
+    if (saved) set(saved, false);
+  }
+
   // ------------------------------------------------------------ Zeitschleife
 
   let last = performance.now();
@@ -859,6 +917,7 @@
   T.init(app);
 
   LK.splitter.bindSplitter({ splitter: $('#splitter'), container: $('#main'), panel: $('#panel'), storageKey: 'sivex-halbtitration-panel', minStage: 560 });
+  bindLabSplitter();
   renderer.setLab(lab());
   ensureSeries();
   applyPanel();

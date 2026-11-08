@@ -68,7 +68,7 @@
       this.capacity = 50;
       this.dirty = true;
       this.size = { w: 0, h: 0, dpr: 1 };
-      this.pad = { l: 46, r: 14, t: 14, b: 38 };
+      this.pad = { l: 46, r: 14, t: 16, b: 42 };
       this._bind();
     }
 
@@ -202,7 +202,7 @@
         ctx.fillStyle = this.band.color || 'rgba(214,28,132,0.12)';
         ctx.fillRect(a.x0, y0, a.x1 - a.x0, y1 - y0);
         ctx.fillStyle = '#4a5866';
-        ctx.font = '600 11px ' + FONT;
+        ctx.font = '600 12.5px ' + FONT;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         ctx.fillText(this.band.label, a.x1 - 4, y0 + 2);
@@ -217,7 +217,7 @@
           ctx.fillStyle = COLORS.buffer;
           ctx.fillRect(x0, a.y0, x1 - x0, a.y1 - a.y0);
           ctx.fillStyle = COLORS.lit;
-          ctx.font = '600 11px ' + FONT;
+          ctx.font = '600 12.5px ' + FONT;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
           ctx.fillText(b.label, (x0 + x1) / 2, a.y1 - 4);
@@ -227,7 +227,7 @@
       // Gitter und Achsen
       ctx.strokeStyle = COLORS.grid;
       ctx.lineWidth = 1;
-      ctx.font = '12px ' + FONT;
+      ctx.font = '14px ' + FONT;
       ctx.fillStyle = COLORS.axis;
       const xs = niceStep(r[1] - r[0], Math.max(4, Math.floor((a.x1 - a.x0) / 70)));
       ctx.textAlign = 'center';
@@ -248,7 +248,7 @@
       ctx.beginPath(); ctx.moveTo(a.x0, a.y0); ctx.lineTo(a.x0, a.y1); ctx.lineTo(a.x1, a.y1); ctx.stroke();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      ctx.font = '600 12px ' + FONT;
+      ctx.font = '600 14px ' + FONT;
       ctx.fillText('V(Maßlösung) zugegeben in mL', (a.x0 + a.x1) / 2, this.size.h - 2);
       ctx.save();
       ctx.translate(12, (a.y0 + a.y1) / 2);
@@ -271,7 +271,7 @@
         ctx.beginPath(); ctx.moveTo(a.x0, y); ctx.lineTo(a.x1, y); ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = COLORS.lit;
-        ctx.font = '600 11px ' + FONT;
+        ctx.font = '600 12.5px ' + FONT;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
         ctx.fillText(l.label, a.x0 + 4, y - 2);
@@ -301,7 +301,7 @@
         const x = this._vx(e.v);
         ctx.fillStyle = '#b0177a';
         ctx.beginPath(); ctx.moveTo(x, a.y1 - 1); ctx.lineTo(x - 7, a.y1 - 13); ctx.lineTo(x + 7, a.y1 - 13); ctx.closePath(); ctx.fill();
-        ctx.font = '600 11px ' + FONT;
+        ctx.font = '600 12.5px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(e.label, x, a.y1 - 15);
@@ -317,24 +317,24 @@
         ctx.beginPath(); ctx.moveTo(x, a.y0); ctx.lineTo(x, a.y1); ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = COLORS.target;
-        ctx.font = '700 11px ' + FONT;
+        ctx.font = '700 12.5px ' + FONT;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Ziel ' + fmt(t, 2) + ' mL', x + 4, a.y1 - 18);
+        ctx.fillText('Ziel ' + fmt(t, 2) + ' mL', x + 4, a.y1 - 20);
       }, this);
 
       // Markierungen: Äquivalenzpunkte und Halbäquivalenzpunkte mit pK
       if (g && g.eqs) {
         g.eqs.forEach(function (q, i) {
           const x = this._vx(q.v);
-          const top = a.y0 + 30 + (i % 2) * 14; // benachbarte Beschriftungen versetzt
+          const top = a.y0 + 32 + (i % 2) * 16; // benachbarte Beschriftungen versetzt
           ctx.strokeStyle = COLORS.eq;
           ctx.lineWidth = 1.5;
           ctx.setLineDash([7, 3]);
           ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, a.y1); ctx.stroke();
           ctx.setLineDash([]);
           ctx.fillStyle = COLORS.eq;
-          ctx.font = '700 11px ' + FONT;
+          ctx.font = '700 12.5px ' + FONT;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
           ctx.fillText(q.label, x, top - 2);
@@ -354,12 +354,12 @@
           ctx.lineWidth = 2;
           ctx.stroke();
           // Beschriftung mit hellem Hintergrund, rechts (sonst links) oberhalb des Punkts
-          ctx.font = '700 11.5px ' + FONT;
+          ctx.font = '700 13px ' + FONT;
           const w1 = ctx.measureText(q.label).width;
-          ctx.font = '600 11px ' + FONT;
+          ctx.font = '600 12.5px ' + FONT;
           const w2 = q.sub ? ctx.measureText(q.sub).width : 0;
           const w = Math.max(w1, w2) + 10;
-          const h = q.sub ? 32 : 18;
+          const h = q.sub ? 36 : 20;
           const bx = x + 10 + w < a.x1 ? x + 10 : x - 10 - w;
           const by = Math.max(a.y0, Math.min(a.y1 - h, y - h - 6));
           ctx.fillStyle = 'rgba(255,255,255,0.92)';
@@ -367,9 +367,9 @@
           ctx.fillStyle = COLORS.half;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-          ctx.font = '700 11.5px ' + FONT;
+          ctx.font = '700 13px ' + FONT;
           ctx.fillText(q.label, bx + 5, by + 3);
-          if (q.sub) { ctx.font = '600 11px ' + FONT; ctx.fillText(q.sub, bx + 5, by + 17); }
+          if (q.sub) { ctx.font = '600 12.5px ' + FONT; ctx.fillText(q.sub, bx + 5, by + 19); }
         }, this);
       }
 
@@ -396,10 +396,10 @@
         }
         ctx.setLineDash([]);
         ctx.fillStyle = m.color;
-        ctx.font = '700 11px ' + FONT;
+        ctx.font = '700 12.5px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillText(m.label, x, a.y0 + (i % 2) * 13);
+        ctx.fillText(m.label, x, a.y0 + (i % 2) * 15);
       }, this);
 
       // Näherungswerte (nach Freigabe)
@@ -442,7 +442,7 @@
 
       if (!this.series.some(function (s) { return s.points.length; }) && !g) {
         ctx.fillStyle = '#74828f';
-        ctx.font = '600 13px ' + FONT;
+        ctx.font = '600 15px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Noch keine Messwerte', (a.x0 + a.x1) / 2, (a.y0 + a.y1) / 2);
@@ -463,12 +463,15 @@
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }, this);
       ctx.stroke();
-      // Dicht aufgezeichnete Kurven (ab 0.4.0) ohne Einzelpunkte; wenige Werte (ältere Reihen) als Punkte
-      if (pts.length > 60) return;
+      // Punkte nur, wo Messwerte weit auseinanderliegen (ältere Reihen, Startwert); eine dicht
+      // aufgezeichnete Live-Kurve bleibt eine Linie – auch am Anfang, wenn erst wenige Werte da sind (0.4.1)
       const r = active ? 3.6 : 2.6;
-      pts.forEach(function (p) {
-        const x = this._vx(p.v);
-        const y = this._py(p.pH);
+      const xy = pts.map(function (p) { return [this._vx(p.v), this._py(p.pH)]; }, this);
+      const far = function (i, j) { return j < 0 || j >= xy.length || Math.hypot(xy[i][0] - xy[j][0], xy[i][1] - xy[j][1]) >= 8; };
+      pts.forEach(function (p, i) {
+        if (!(far(i, i - 1) && far(i, i + 1))) return;
+        const x = xy[i][0];
+        const y = xy[i][1];
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         if (p.stable !== false) { ctx.fillStyle = col; ctx.fill(); }

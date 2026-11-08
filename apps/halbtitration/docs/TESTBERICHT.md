@@ -1,4 +1,22 @@
-# Testbericht Halbtitrationslabor 0.4.0
+# Testbericht Halbtitrationslabor 0.4.1
+
+## 0.4.1 (08.11.2026) – Kurvenanfang, Trennlinie Labor | Kurve, Schrift
+
+Bewusst nur die betroffenen Prüfungen (kleine Änderung an Kurve und Layout):
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Unit-Tests | **PASS** 38/38 | `npm test` |
+| Kurvenanfang nach 2 mL als dünne Linie (Spurbreite bei 1 mL ≤ 5 px), keine überlappenden Punkte | **PASS** | Schnellprüfung im Build (Edge) |
+| Trennlinie Labor/Kurve: Ziehen, Pfeiltaste 24 px, Mindestbreite Labor 260 px, nach Neuladen gemerkt, Doppelklick setzt zurück, in schmaler Ansicht ausgeblendet; Trennlinie zum Bedienfeld unverändert | **PASS** | Schnellprüfung im Build (Edge) |
+| Legende 14 px | **PASS** | Schnellprüfung |
+| Kernablauf mit Ablesen an der Kurve (E1), Größen, Touchziele und Bedienfeld-Trennlinie (E9) | **PASS** 2/2 | `ONLY=E1,E9 node tests/e2e/run.mjs` gegen `dist/` |
+| Paketprüfung | **PASS** 4/4 | `node tests/e2e/packages.mjs` |
+| Pakete reproduzierbar | **PASS** | zweimal gebaut, gleiche SHA-256 |
+| E2–E8 | nicht erneut ausgeführt | Messung, Auswertung und Abgabe unverändert; Stand 0.4.0 unten |
+| iPad-Safari, mebis-Import | **HOLD – unverified** | |
+
+---
 
 ## 0.4.0 (08.11.2026) – Live-Kurve, feste Achsen, Markierungen
 

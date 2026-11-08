@@ -1,10 +1,10 @@
-# Bedienung (ab 0.2.0, Stand 0.4.0)
+# Bedienung (ab 0.2.0, Stand 0.4.1)
 
 Die App startet direkt im Labor:
 
 - **Kopfzeile:** App-Titel mit Versionsnummer (z. B. `v0.4.0`), Hefteintrag, Bericht, Zurücksetzen und Bedienfeld ein/aus.
 - **Laborbühne (links):** Titrierstand und Titrationskurve stehen nebeneinander, darunter die Dosierleiste.
-- **Trennlinie:** Sie lässt sich mit Maus, Finger oder Pfeiltasten verschieben; ein Doppelklick stellt die Standardbreite wieder her.
+- **Trennlinien:** Die Linie zwischen Bühne und Bedienfeld und (ab 0.4.1) die Linie zwischen Labor und Kurve lassen sich mit Maus, Finger oder Pfeiltasten verschieben; ein Doppelklick stellt die Standardaufteilung wieder her.
 - **Bedienfeld (rechts):** Reiter **Aufgabe · Ergebnisse · Hefteintrag**.
 
 Messreihen, Eingaben und Antworten bleiben beim Wechsel von Versuch oder Reiter erhalten und werden lokal im Browser gespeichert.
