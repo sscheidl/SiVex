@@ -169,6 +169,24 @@ test('Befund C: ohne Zielvolumen keine Bestätigung „am Zielvolumen“', () =>
   assert.equal(early.quality.stable, false);
 });
 
+test('0.4.0: dichte Kurve – pH am Zielvolumen auch am Nachbarwert abgelesen', () => {
+  const pts = [];
+  for (let v = 11.5; v <= 12.6; v += 0.05) pts.push({ v: Math.round(v * 100) / 100, pH: Math.round((4.757 + 0.08 * (v - 12)) * 100) / 100, stable: true });
+  const at = (v) => pts.find((p) => Math.abs(p.v - v) < 1e-6).pH;
+  // Zielvolumen zwischen zwei Messwerten (12,02 mL): Wert des Nachbarn bei 12,00 mL
+  const r = E.checkMeasuredPH(String(at(12)).replace('.', ','), pts, 12.02);
+  assert.equal(r.status, 'ok', r.message);
+  assert.equal(r.target.ok, true);
+  assert.equal(r.point.v, 12.02);
+  // deutlich daneben (12,50 mL) bleibt eine Zielabweichung
+  const off = E.checkMeasuredPH(String(at(12.5)).replace('.', ','), pts, 12);
+  assert.equal(off.status, 'measured-note');
+  assert.match(off.message, /12,50 mL statt/);
+  const ev = E.evidence({ target: 12.02, targetStatus: 'ok', points: pts, seriesId: 'R1', pHRaw: String(at(12)) });
+  assert.equal(ev.ok, true);
+  assert.deepEqual(ev.flags, []);
+});
+
 test('Befund B: Abgabe nur mit eigenem Zielvolumen und protokolliertem Messpunkt', () => {
   const none = E.evidence({ target: NaN, points: [], seriesId: null, pHRaw: '4,76' });
   assert.equal(none.ok, false);

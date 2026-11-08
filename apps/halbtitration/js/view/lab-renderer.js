@@ -1071,7 +1071,7 @@
         status = 'Elektrode eintauchen';
       } else {
         main = fmt(lab.displayPH, 2);
-        status = lab.stable ? '✓ stabil' : '~ misst …';
+        status = '● misst';
       }
       ctx.shadowColor = 'rgba(80,255,170,0.5)';
       ctx.shadowBlur = 6;
@@ -1085,7 +1085,7 @@
       ctx.fillStyle = 'rgba(157,255,200,0.85)';
       ctx.fillText('pH', dx + 9, dy + 21);
       ctx.font = '600 11px ' + FONT;
-      ctx.fillStyle = lab.stable ? 'rgba(157,255,200,0.95)' : 'rgba(157,255,200,0.6)';
+      ctx.fillStyle = 'rgba(157,255,200,0.95)';
       ctx.fillText(status, dx + 9, dy + 60);
       ctx.textAlign = 'right';
       ctx.font = '500 10px ' + MONO;

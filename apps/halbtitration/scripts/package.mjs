@@ -17,6 +17,13 @@ const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(app, 'package.json'), 'utf8'));
 const meta = JSON.parse(fs.readFileSync(path.join(app, 'sivex.json'), 'utf8'));
 const version = pkg.version;
+// Angezeigte Version (Kopfzeile) und sivex.json müssen zur Paketversion passen
+const indexHtml = fs.readFileSync(path.join(app, 'index.html'), 'utf8');
+const shown = /id="appVersion"[^>]*>v([^<]+)</.exec(indexHtml);
+if (meta.version !== version || !shown || shown[1] !== version || !indexHtml.includes(`title="Version ${version} · Paket halbtitration-${version}"`)) {
+  console.error(`Versionen passen nicht: package.json ${version}, sivex.json ${meta.version}, Kopfzeile ${shown ? shown[1] : 'fehlt'}`);
+  process.exit(1);
+}
 const dist = path.join(app, 'dist', 'halbtitration');
 const out = path.join(app, 'release');
 

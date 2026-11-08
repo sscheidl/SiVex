@@ -2,7 +2,7 @@
  * Texte und Aufgaben des Halbtitrationslabors (ab 0.2.0)
  * -----------------------------------------------------
  * Lernweg: kurzer Auftrag → selbst titrieren → halben Umsatz untersuchen →
- * gezielt halbtitrieren → am eigenen Ergebnis mit dem MWG begründen →
+ * pH am HÄP an der eigenen Kurve ablesen → mit dem MWG begründen →
  * vergleichen und sichern. Keine gesuchten Zahlenwerte in den Texten.
  */
 (function (global) {
@@ -24,7 +24,7 @@
     ammonia: {
       role: 'Transfer',
       chip: 'Ammoniak',
-      task: 'Was ändert sich, wenn die Probe eine schwache Base ist? Bestimme den pK_B-Wert von Ammoniak auf demselben Weg: vollständige Titration, Äquivalenzvolumen, gezielte Halbtitration.',
+      task: 'Was ändert sich, wenn die Probe eine schwache Base ist? Bestimme den pK_B-Wert von Ammoniak auf demselben Weg: vollständige Titration, Äquivalenzvolumen, pH am Halbäquivalenzpunkt.',
       goals: null,
     },
     phosphoric: {
@@ -176,9 +176,9 @@
     }
     if (/^phhalf/.test(field)) {
       return [
-        'Welcher deiner protokollierten Messpunkte der Halbtitration liegt an deinem Zielvolumen?',
-        'Nimm den stabil übernommenen pH-Wert am Zielvolumen aus der Messtabelle der Halbtitration.',
-        ctx && ctx.point ? 'Protokolliert: V = ' + c(ctx.point.v) + ' mL, pH = ' + c(ctx.point.pH) + (ctx.point.stable ? ' (stabil).' : ' (nicht stabil).') : 'Es gibt noch keinen passenden Messpunkt der Halbtitration.',
+        'Welcher pH-Wert gehört auf deiner Kurve zu deinem Zielvolumen?',
+        'Tippe im Diagramm auf die orange Zielmarke: Unter dem Diagramm stehen V und pH des nächsten Messwerts.',
+        ctx && ctx.point ? 'Messwert: V = ' + c(ctx.point.v) + ' mL, pH = ' + c(ctx.point.pH) + '.' : 'Es gibt noch keinen Messwert an deinem Zielvolumen – titriere mindestens bis dorthin.',
       ];
     }
     if (/^pk_/.test(field)) {
@@ -232,7 +232,7 @@
     '<li><strong>Äquivalenzpunkt (ÄP):</strong> Die betrachtete Stufe ist stöchiometrisch vollständig umgesetzt. Er liegt in der Mitte des steilen Sprungs der pH-Kurve.</li>' +
     '<li><strong>Endpunkt:</strong> beobachteter Farbumschlag eines Indikators – stimmt nicht automatisch mit dem ÄP überein. <strong>Neutralpunkt:</strong> pH = 7 (25 °C), kein Synonym für den ÄP.</li>' +
     '<li><strong>Säurekonstante:</strong> HA + H₂O ⇌ H₃O⁺ + A⁻, Kₛ = c(H₃O⁺) · c(A⁻) / c(HA), pKₛ = −lg Kₛ. Für Basen entsprechend K_B, pK_B; pKₛ + pK_B = 14,00 für ein korrespondierendes Paar.</li>' +
-    '<li><strong>Messen:</strong> Im Sprung kleine Zugaben, rühren, erst bei stabiler Anzeige übernehmen. Die Kurve entsteht nur aus deinen übernommenen Messpunkten.</li>' +
+    '<li><strong>Messen:</strong> Die pH-Elektrode misst während der Titration laufend; die Kurve zeichnet sich wie bei einem Messwerterfassungssystem selbst. Rühren sorgt für gleichmäßige Durchmischung.</li>' +
     '</ul>';
 
   const HH =
@@ -253,7 +253,7 @@
     '<p>Am <strong>Halbäquivalenzpunkt (HÄP)</strong> ist eine Protolysestufe zur Hälfte umgesetzt: c(A⁻) ≈ c(HA).</p>' +
     '<span class="eq">Kₛ = c(H₃O⁺) · c(A⁻) / c(HA) &nbsp;⇒&nbsp; Kₛ ≈ c(H₃O⁺) &nbsp;⇒&nbsp; pKₛ ≈ pH(HÄP)</span>' +
     '<ul>' +
-    '<li><strong>Vorgehen:</strong> Vollständige Titration: V(ÄP) am Sprung der Kurve; Halbtitration: frische Probe bis V(HÄP) = V(ÄP)/2 titrieren, pH messen.</li>' +
+    '<li><strong>Vorgehen:</strong> Vollständige Titration: V(ÄP) am Sprung der Kurve; bei V(HÄP) = V(ÄP)/2 den pH ablesen. Klassische Halbtitration: frische Probe nur bis V(HÄP) titrieren, pH messen.</li>' +
     '<li><strong>Schwache Base</strong> (NH₃): am HÄP pOH ≈ pK_B, also pK_B ≈ 14,00 − pH; der pH entspricht pKₛ(NH₄⁺).</li>' +
     '<li><strong>Mehrprotonige Säuren:</strong> V(HÄP,2) = [V(ÄP,1) + V(ÄP,2)]/2.</li>' +
     '<li><strong>Grenze:</strong> pKₛ ≈ pH ist eine Näherung; bei starken Säurestufen liegt der pH am HÄP darüber.</li>' +

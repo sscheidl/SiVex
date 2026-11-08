@@ -1,5 +1,17 @@
 # Änderungen
 
+## 0.4.0 – 08.11.2026
+
+Didaktische Vereinfachung nach Rückmeldung der Lehrkraft: Eine elektronische pH-Messung soll sofort einen sichtbaren Kurvenverlauf liefern; die Simulation war an dieser Stelle zu realistisch.
+
+- **Live-Kurve:** Die Kurve zeichnet sich während der Titration – ab dem Eintauchen der Elektrode ein Messwert je angekommenem Tropfen (höchstens 0,05 mL Abstand), auch bei offenem Hahn und im Zeitraffer. Es gibt kein Übernehmen und kein Warten auf eine stabile Anzeige mehr: Die Lösung gilt als sofort durchmischt, die Anzeige hat keine Ansprechzeit (auch ohne Rühren). Das frühere Messmodell bleibt im Labormodul als Option (`instant: false`) für die Unit-Tests erhalten.
+- **Feste Achsen:** Volumenachse fest 0–50 mL, pH-Achse 0–14; der Umschalter „0–50 mL | Messbereich“ entfällt.
+- **Markierungen** (Schalter über der Kurve): Pufferbereich je Stufe (pH ≈ pKₛ ± 1), Äquivalenzpunkt(e) und Halbäquivalenzpunkt(e) mit dem dort abzulesenden pKₛ – bei Ammoniak pKₛ(NH₄⁺) und pK_B = 14 − pH, an der ersten Stufe von Phosphorsäure und Glycin als Näherung mit dem Literaturwert. Freigabe wie Literatur und Modell erst nach der eigenen Abgabe oder der Musterlösung; zum Vorführen `index.html?markierungen=1`.
+- **Ablauf:** Schritt 5 heißt jetzt „pH am Halbäquivalenzpunkt ablesen“. Der pH wird an der eigenen Kurve bei V(HÄP) abgelesen (Antippen der orangen Zielmarke rastet ein; Zielmarken erscheinen nach Schritt 4 auch auf der Kurve der vollständigen Titration). Die klassische Halbtitration mit frischer Probe bleibt als **freiwillige Kontrolle**; erreicht sie das Zielvolumen, wird sie ausgewertet, sonst die vollständige Titration. Ein am Nachbarwert abgelesener pH (± 0,01) gilt als am Zielvolumen gemessen.
+- **Versionsnummer** hinter dem App-Titel (`v0.4.0`, Tooltip mit Paketname); `npm run package` bricht ab, wenn sie nicht zu `package.json` und `sivex.json` passt. Erprobung des Vorschlags, die Version in allen Apps links oben anzuzeigen.
+- Anzeige und Texte: Status „misst“ statt „stabil/misst …/ohne Rühren“; Bericht und CSV ohne Stabilitätsspalte, der Bericht zeigt höchstens einen Wert je 0,5 mL (im Sprung jeden).
+- Tests: 38 Unit-Tests (neu: sofortige Anzeige, Messwert je Tropfen im Zeitraffer, Ablesen am Nachbarwert); E1–E9 an den neuen Ablauf angepasst (Live-Kurve, Ablesen an der Zielmarke, Markierungen, Versionsanzeige).
+
 ## 0.3.0 – 30.10.2026
 
 Anpassung an die [iPad- und Bedienregeln](../../docs/QUALITY.md#ipad--und-bedienregeln-für-alle-apps) nach dem Unterrichtseinsatz der SiVex-Apps; Labkit 0.2.0.

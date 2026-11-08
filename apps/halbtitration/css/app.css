@@ -43,6 +43,14 @@ sub, sup { line-height: 0; }
 .chart-legend i.line.grey { border-top-color: #6b7a89; }
 .chart-legend i.line.dot2 { border-top: 2px dotted #138a5b; }
 .chart-legend i.dia { width: 8px; height: 8px; background: #7a3fc2; transform: rotate(45deg); }
+.chart-legend i.line.red { border-top-color: #b3261e; }
+.chart-legend i.line.orange { border-top-color: #d26a00; }
+.chart-legend i.box.buf { width: 14px; height: 10px; background: rgba(19, 138, 91, 0.22); border-radius: 2px; }
+.chart-legend i.ring { width: 9px; height: 9px; border: 2px solid #6b2fb3; border-radius: 50%; background: #fff; }
+.marks-lock { font-size: 12.5px; align-self: center; }
+
+/* Versionsnummer hinter dem App-Titel (Vorschlag „Regel 5“, ab 0.4.0) */
+.app-version { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-size: 11px; font-weight: 600; line-height: 16px; vertical-align: 2px; color: #c9d4df; background: rgba(255, 255, 255, 0.1); white-space: nowrap; }
 .chart-foot { font-size: 13px; min-height: 20px; color: var(--text); }
 .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); min-height: 44px; cursor: pointer; }
 .chk input { width: 18px; height: 18px; }

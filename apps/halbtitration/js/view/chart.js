@@ -1,13 +1,15 @@
 /*
  * Titrationskurve (Canvas 2D)
  * ---------------------------
- * Zeigt ausschließlich protokollierte Messpunkte. Verbindungslinien sind
- * als solche erkennbar (dünn), Messpunkte als Kreise; nicht stabil
- * übernommene Werte erscheinen als offene Kreise. Die aktuelle Position
- * (Live-Anzeige) ist kein Messpunkt und wird gestrichelt markiert.
+ * Zeigt die aufgezeichneten Messwerte als Kurve (ab 0.4.0 live während der
+ * Titration, ein Wert je angekommenem Tropfen). Achsen fest: 0–50 mL
+ * (Bürettenskala) und pH 0–14. Bei wenigen Messwerten (ältere Reihen)
+ * erscheinen sie zusätzlich als Punkte. Die aktuelle Position ist
+ * gestrichelt markiert.
  *
- * Modellreferenz, Literatur-pK-Linien und Näherungswerte erscheinen nur,
- * wenn die Oberfläche sie nach der Freigabe übergibt.
+ * Modellreferenz, Literatur-pK-Linien, Näherungswerte und die Markierungen
+ * (Pufferbereich, ÄP, HÄP mit pK) erscheinen nur, wenn die Oberfläche sie
+ * nach der Freigabe übergibt.
  *
  * Bedienung (Pointer Events, Tastatur):
  *  Modus „read“   – Antippen/Ziehen wählt den nächsten Messpunkt der aktiven Reihe
@@ -32,6 +34,9 @@
     approx: '#7a3fc2',
     lit: '#138a5b',
     target: '#d26a00',
+    buffer: 'rgba(19,138,91,0.11)',
+    eq: '#b3261e',
+    half: '#6b2fb3',
   };
 
   function niceStep(range, target) {
@@ -50,7 +55,8 @@
       this.activeId = null;
       this.current = null; // {v, pH, live:true}
       this.markers = []; // {key, v, pH, label, color, interpolated}
-      this.target = null; // eigene Zielmarke (mL)
+      this.targets = []; // eigene Zielmarken (mL)
+      this.guides = null; // Markierungen nach Freigabe: {buffers:[{v0,v1,label}], eqs:[{v,label}], halves:[{v,pH,label,sub}]}
       this.endpoints = []; // {v, label}
       this.band = null; // {range:[lo,hi], color, label}
       this.model = null; // [{v,pH}]
@@ -59,7 +65,6 @@
       this.mode = 'read';
       this.activeMarker = null;
       this.cursor = null; // {seriesId, index}
-      this.xMode = 'capacity';
       this.capacity = 50;
       this.dirty = true;
       this.size = { w: 0, h: 0, dpr: 1 };
@@ -76,28 +81,9 @@
       return this.series.find(function (s) { return s.id === this.activeId; }, this) || null;
     }
 
-    /** x-Bereich: Bürettenskala oder Messbereich (gerundet, verrät keinen ÄP) */
+    /** x-Bereich: fest die Bürettenskala 0–50 mL (ab 0.4.0 ohne Auswahl) */
     range() {
-      if (this.xMode === 'data') {
-        let vMax = 0;
-        this.series.forEach(function (s) { s.points.forEach(function (p) { if (p.v > vMax) vMax = p.v; }); });
-        if (this.current) vMax = Math.max(vMax, this.current.v);
-        const step = 5;
-        return [0, Math.min(this.capacity, Math.max(10, Math.ceil((vMax + 1) / step) * step))];
-      }
-      if (this.xMode === 'zoom' && this.zoom) return this.zoom;
       return [0, this.capacity];
-    }
-
-    setZoom(center, width) {
-      const w = Math.max(1, Math.min(this.capacity, width));
-      let x0 = center - w / 2;
-      let x1 = center + w / 2;
-      if (x0 < 0) { x1 -= x0; x0 = 0; }
-      if (x1 > this.capacity) { x0 -= x1 - this.capacity; x1 = this.capacity; }
-      this.zoom = [Math.max(0, x0), x1];
-      this.xMode = 'zoom';
-      this.dirty = true;
     }
 
     // ---------- Koordinaten ----------
@@ -154,6 +140,8 @@
     _selectNearest(v) {
       const s = this.activeSeries();
       if (!s || !s.points.length) return;
+      // in der Nähe einer Zielmarke auf sie einrasten (Ablesen am HÄP)
+      (this.targets || []).forEach(function (t) { if (Number.isFinite(t) && Math.abs(v - t) < 0.4) v = t; });
       let best = 0;
       s.points.forEach(function (p, i) { if (Math.abs(p.v - v) < Math.abs(s.points[best].v - v)) best = i; });
       this.cursor = { seriesId: s.id, index: best };
@@ -218,6 +206,22 @@
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
         ctx.fillText(this.band.label, a.x1 - 4, y0 + 2);
+      }
+
+      // Pufferbereiche (Markierungen nach Freigabe)
+      const g = this.guides;
+      if (g && g.buffers) {
+        g.buffers.forEach(function (b) {
+          const x0 = this._vx(b.v0);
+          const x1 = this._vx(b.v1);
+          ctx.fillStyle = COLORS.buffer;
+          ctx.fillRect(x0, a.y0, x1 - x0, a.y1 - a.y0);
+          ctx.fillStyle = COLORS.lit;
+          ctx.font = '600 11px ' + FONT;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(b.label, (x0 + x1) / 2, a.y1 - 4);
+        }, this);
       }
 
       // Gitter und Achsen
@@ -303,9 +307,10 @@
         ctx.fillText(e.label, x, a.y1 - 15);
       }, this);
 
-      // Zielmarke
-      if (Number.isFinite(this.target)) {
-        const x = this._vx(this.target);
+      // Zielmarken
+      (this.targets || []).forEach(function (t) {
+        if (!Number.isFinite(t)) return;
+        const x = this._vx(t);
         ctx.strokeStyle = COLORS.target;
         ctx.lineWidth = 1.5;
         ctx.setLineDash([5, 4]);
@@ -315,7 +320,57 @@
         ctx.font = '700 11px ' + FONT;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Ziel ' + fmt(this.target, 2) + ' mL', x + 4, a.y1 - 18);
+        ctx.fillText('Ziel ' + fmt(t, 2) + ' mL', x + 4, a.y1 - 18);
+      }, this);
+
+      // Markierungen: Äquivalenzpunkte und Halbäquivalenzpunkte mit pK
+      if (g && g.eqs) {
+        g.eqs.forEach(function (q, i) {
+          const x = this._vx(q.v);
+          const top = a.y0 + 30 + (i % 2) * 14; // benachbarte Beschriftungen versetzt
+          ctx.strokeStyle = COLORS.eq;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([7, 3]);
+          ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, a.y1); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = COLORS.eq;
+          ctx.font = '700 11px ' + FONT;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(q.label, x, top - 2);
+        }, this);
+      }
+      if (g && g.halves) {
+        g.halves.forEach(function (q) {
+          const x = this._vx(q.v);
+          const y = this._py(q.pH);
+          ctx.strokeStyle = COLORS.half;
+          ctx.lineWidth = 1.3;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath(); ctx.moveTo(a.x0, y); ctx.lineTo(x, y); ctx.lineTo(x, a.y1); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#fff';
+          ctx.beginPath(); ctx.arc(x, y, 5.5, 0, Math.PI * 2); ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          // Beschriftung mit hellem Hintergrund, rechts (sonst links) oberhalb des Punkts
+          ctx.font = '700 11.5px ' + FONT;
+          const w1 = ctx.measureText(q.label).width;
+          ctx.font = '600 11px ' + FONT;
+          const w2 = q.sub ? ctx.measureText(q.sub).width : 0;
+          const w = Math.max(w1, w2) + 10;
+          const h = q.sub ? 32 : 18;
+          const bx = x + 10 + w < a.x1 ? x + 10 : x - 10 - w;
+          const by = Math.max(a.y0, Math.min(a.y1 - h, y - h - 6));
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.fillRect(bx, by, w, h);
+          ctx.fillStyle = COLORS.half;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.font = '700 11.5px ' + FONT;
+          ctx.fillText(q.label, bx + 5, by + 3);
+          if (q.sub) { ctx.font = '600 11px ' + FONT; ctx.fillText(q.sub, bx + 5, by + 17); }
+        }, this);
       }
 
       // Marker der Lernenden
@@ -385,7 +440,7 @@
       }
       ctx.restore();
 
-      if (!this.series.some(function (s) { return s.points.length; })) {
+      if (!this.series.some(function (s) { return s.points.length; }) && !g) {
         ctx.fillStyle = '#74828f';
         ctx.font = '600 13px ' + FONT;
         ctx.textAlign = 'center';
@@ -399,7 +454,8 @@
       const pts = s.points.slice().sort(function (p, q) { return p.v - q.v; });
       const col = active ? s.color : COLORS.pale;
       ctx.strokeStyle = col;
-      ctx.lineWidth = active ? 1.4 : 1;
+      ctx.lineWidth = active ? 2.2 : 1.2;
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       pts.forEach(function (p, i) {
         const x = this._vx(p.v);
@@ -407,13 +463,15 @@
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }, this);
       ctx.stroke();
+      // Dicht aufgezeichnete Kurven (ab 0.4.0) ohne Einzelpunkte; wenige Werte (ältere Reihen) als Punkte
+      if (pts.length > 60) return;
       const r = active ? 3.6 : 2.6;
       pts.forEach(function (p) {
         const x = this._vx(p.v);
         const y = this._py(p.pH);
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
-        if (p.stable) { ctx.fillStyle = col; ctx.fill(); }
+        if (p.stable !== false) { ctx.fillStyle = col; ctx.fill(); }
         else { ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = col; ctx.stroke(); }
       }, this);
     }

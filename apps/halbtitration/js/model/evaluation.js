@@ -147,21 +147,36 @@
   // ------------------------------------------------------------ Rechnung 3: pK
 
   /**
-   * Prüft den eingegebenen pH-Wert gegen die protokollierten Messpunkte
-   * der Halbtitration und den pK-Wert gegen diesen pH-Wert.
-   * @param {object[]} points Messpunkte der Halbtitrationsreihe(n)
+   * Prüft den eingegebenen pH-Wert gegen die aufgezeichneten Messwerte (ab 0.4.0
+   * die Kurve der vollständigen Titration oder einer freiwilligen Halbtitration).
+   * Passt der Wert zu keinem Messwert, aber zum interpolierten pH am Zielvolumen,
+   * gilt er ebenfalls als abgelesen.
+   * @param {object[]} points Messwerte der ausgewerteten Reihe
    * @param {number} target eigenes Zielvolumen (mL) oder NaN
    */
   function checkMeasuredPH(raw, points, target) {
     const r = readInput(raw, null);
     if (r.status !== 'number') return result(r.status, null, r.message);
     const pts = (points || []).filter(function (p) { return Number.isFinite(p.pH); });
-    if (!pts.length) return result('gap', r.value, 'In der Halbtitration wurde noch kein pH-Wert protokolliert (Datenlücke).', 'measure');
+    if (!pts.length) return result('gap', r.value, 'Es gibt noch keine Messkurve (Datenlücke).', 'measure');
+    const hasTarget = Number.isFinite(target) && target > 0;
+    if (hasTarget) {
+      // Dichte Kurve (ab 0.4.0): Passt der Wert zum pH der Kurve am Zielvolumen (auf ± 0,01 genau,
+      // z. B. am Nachbarwert abgelesen), gilt er als am Zielvolumen gemessen.
+      const ip = interpolate(pts, target);
+      if (ip && Number.isFinite(ip.pH) && !ip.outside && (!ip.interpolated || ip.gap <= 0.2) && near(ip.pH, r.value, TOL.readingMatch + 0.005)) {
+        const nb = pts.reduce(function (b, p) { return Math.abs(p.v - target) < Math.abs(b.v - target) ? p : b; });
+        const q = { stable: nb.stable !== false, homogeneous: nb.homogeneous !== false, stirred: nb.stirred !== false };
+        const notes = ['Messwert am eigenen Zielvolumen (' + F.fmt(target, 2) + ' mL).'];
+        if (!q.stable) notes.push('Der Wert wurde übernommen, bevor die Anzeige stabil war.');
+        if (!q.homogeneous) notes.push('Die Lösung war beim Ablesen noch nicht durchmischt.');
+        return Object.assign(result(q.stable && q.homogeneous ? 'ok' : 'measured-note', r.value, notes.join(' '), 'measure'), { point: { v: target, pH: r.value, stable: q.stable, homogeneous: q.homogeneous, stirred: q.stirred }, target: { value: target, dv: 0, ok: true }, quality: q });
+      }
+    }
     const matches = pts.filter(function (p) { return near(p.pH, r.value, TOL.readingMatch); });
     if (!matches.length) {
-      return result('wrong', r.value, 'Dieser pH-Wert steht nicht in deiner Halbtitrations-Messreihe. Trage einen protokollierten Wert ein – am besten den am Zielvolumen.', 'measure');
+      return result('wrong', r.value, 'Dieser pH-Wert steht nicht in deiner Messkurve. Lies den Wert an deinem Zielvolumen ab: Tippe im Diagramm auf die Zielmarke.', 'measure');
     }
-    const hasTarget = Number.isFinite(target) && target > 0;
     // Den Punkt wählen, der dem Zielvolumen am nächsten liegt (ohne Ziel: den letzten passenden)
     let best = matches[matches.length - 1];
     if (hasTarget) matches.forEach(function (p) { if (Math.abs(p.v - target) < Math.abs(best.v - target)) best = p; });
@@ -173,7 +188,7 @@
     const dv = best.v - target;
     const onTarget = Math.abs(dv) <= 0.025;
     const notes = [];
-    notes.push(onTarget ? 'Messpunkt am eigenen Zielvolumen (' + F.fmt(target, 2) + ' mL).' : 'Messpunkt bei V = ' + F.fmt(best.v, 2) + ' mL statt am eigenen Zielvolumen ' + F.fmt(target, 2) + ' mL (' + F.signed(dv, 2) + ' mL).');
+    notes.push(onTarget ? 'Messwert am eigenen Zielvolumen (' + F.fmt(target, 2) + ' mL).' : 'Messwert bei V = ' + F.fmt(best.v, 2) + ' mL statt am eigenen Zielvolumen ' + F.fmt(target, 2) + ' mL (' + F.signed(dv, 2) + ' mL).');
     if (!quality.stable) notes.push('Der Wert wurde übernommen, bevor die Anzeige stabil war.');
     if (!quality.homogeneous) notes.push('Die Lösung war beim Ablesen noch nicht durchmischt.');
     const status = onTarget && quality.stable && quality.homogeneous ? 'ok' : 'measured-note';
@@ -233,14 +248,14 @@
     if (!(Number.isFinite(o.target) && o.target > 0)) blocking.push('Es fehlt ein eigenes Zielvolumen V(HÄP).');
     else if (o.targetStatus && o.targetStatus !== 'ok') flags.push('Zielvolumen rechnerisch nicht bestätigt');
     const pts = (o.points || []).filter(function (p) { return Number.isFinite(p.pH); });
-    if (!o.seriesId || !pts.length) blocking.push('Es gibt noch keine Halbtitrations-Messreihe mit protokollierten Messpunkten.');
+    if (!o.seriesId || !pts.length) blocking.push('Es gibt noch keine Messkurve, an der du den pH-Wert ablesen kannst.');
     const m = checkMeasuredPH(o.pHRaw, pts, o.target);
     let point = null;
     if (m.status === 'empty' || m.status === 'invalid') blocking.push('Trage den gemessenen pH-Wert am HÄP ein.');
-    else if (m.status === 'wrong' || m.status === 'gap') blocking.push('Der eingetragene pH-Wert gehört zu keinem protokollierten Messpunkt der gewählten Halbtitrationsreihe.');
+    else if (m.status === 'wrong' || m.status === 'gap') blocking.push('Der eingetragene pH-Wert gehört zu keinem Messwert deiner Kurve.');
     else {
       point = m.point;
-      if (m.target && !m.target.ok) flags.push('Messpunkt ' + F.signed(m.target.dv, 2) + ' mL neben dem Zielvolumen');
+      if (m.target && !m.target.ok) flags.push('Messwert ' + F.signed(m.target.dv, 2) + ' mL neben dem Zielvolumen');
       if (m.quality && !m.quality.stable) flags.push('vor Stabilisierung abgelesen');
       if (m.quality && !m.quality.homogeneous) flags.push('nicht durchmischt');
       if (m.quality && !m.quality.stirred) flags.push('ohne Rühren');

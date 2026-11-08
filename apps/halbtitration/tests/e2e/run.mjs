@@ -1,4 +1,4 @@
-// Browserprüfung des Halbtitrationslabors 0.2.0 (Edge über Playwright).
+// Browserprüfung des Halbtitrationslabors (ab 0.4.0 mit Live-Kurve; Edge über Playwright).
 // Bedient die Anwendung über die Oberfläche wie Lernende, prüft Zustände und
 // erzeugt Screenshot-Nachweise in docs/screenshots.
 //
@@ -57,8 +57,8 @@ async function coreRun(page, o) {
   assert(t === 'ok', 'Maßlösung nicht akzeptiert');
   await F.prepare(page, { indicator: o.indicator || null });
   await page.waitForTimeout(100);
-  const ink0 = await F.curveInk(page, 'chart');
-  assert(ink0.blue < 5, 'Kurve zeigt vor der ersten Messung Punkte');
+  const n0 = await page.evaluate(() => Halbtitration.App.activeSeries().points.length);
+  assert(n0 <= 1, 'Kurve hat vor der ersten Zugabe mehr als den Startwert: ' + n0);
   await F.surveyRun(page, o.eqs, o.vEnd, o.endpoint);
   if (o.shots) await shot(page, o.shots + '-1-kurve');
   await F.openStep(page, 'curve');
@@ -75,26 +75,32 @@ async function coreRun(page, o) {
     assert(r.current === 'ok', 'V(HÄP,' + j + ') nicht akzeptiert: ' + JSON.stringify(r));
   }
   await F.openStep(page, 'measure');
-  await page.click('.step[data-step="measure"] [data-action="new-sample"]');
-  if (await page.$('#modal:not([hidden])')) await F.confirm(page);
-  await F.prepare(page);
-  await page.click('.step[data-step="measure"] [data-action="set-target"]');
-  await F.waitStable(page);
-  await F.waitPoint(page);
-  for (const h of o.halves) { await F.doseTo(page, Math.floor(h - 0.5), 2); await F.doseTo(page, h, 0.5); }
+  if (o.classic) {
+    // freiwillige Kontrolle: klassische Halbtitration mit frischer Probe
+    await page.click('.step[data-step="measure"] details[data-key="halfrun"] summary');
+    await page.click('.step[data-step="measure"] [data-action="new-sample"]');
+    if (await page.$('#modal:not([hidden])')) await F.confirm(page);
+    await F.prepare(page);
+    await page.click('.step[data-step="measure"] [data-action="set-target"]');
+    await F.waitPoint(page);
+    for (const h of o.halves) { await F.doseTo(page, Math.floor(h - 0.5), 2); await F.doseTo(page, h, 0.5); }
+    if (o.shots) await shot(page, o.shots + '-2-halbtitration');
+    await F.openStep(page, 'measure');
+  }
   const ser = await page.evaluate(() => Halbtitration.App.es().series.map((s) => ({ kind: s.kind, n: s.points.length })));
-  assert(ser.some((s) => s.kind === 'survey' && s.n > 10) && ser.some((s) => s.kind === 'half'), 'Erste Messreihe nicht erhalten: ' + JSON.stringify(ser));
-  if (o.shots) await shot(page, o.shots + '-2-halbtitration');
-  await F.openStep(page, 'measure');
-  const pts = await page.evaluate(() => Halbtitration.Tasks.half().points);
+  assert(ser.some((s) => s.kind === 'survey' && s.n > 100) && (!o.classic || ser.some((s) => s.kind === 'half')), 'Messreihen: ' + JSON.stringify(ser));
   const pHs = [];
   for (let j = 1; j <= o.halves.length; j++) {
-    const p = pts.find((q) => Math.abs(q.v - o.halves[j - 1]) < 1e-6);
-    assert(p, 'kein Messpunkt am Ziel');
-    pHs.push(p.pH);
-    const r = await F.fillField(page, 'phhalf' + j, de(p.pH));
+    const src = await page.evaluate((k) => Halbtitration.Tasks.measureSeries(k).kind, j);
+    assert(src === (o.classic ? 'half' : 'survey'), 'Ausgewertete Reihe Stufe ' + j + ': ' + src);
+    // wie Lernende: im Diagramm auf die Zielmarke tippen und den Wert unter dem Diagramm ablesen
+    const got = await F.readAtChart(page, o.halves[j - 1]);
+    assert(Math.abs(got.v - o.halves[j - 1]) <= 0.05, 'Ablesen an der Zielmarke trifft nicht: ' + JSON.stringify(got));
+    pHs.push(got.pH);
+    const r = await F.fillField(page, 'phhalf' + j, de(got.pH));
     assert(r.current === 'ok', 'pH(HÄP) nicht bestätigt: ' + JSON.stringify(r));
   }
+  if (o.shots && !o.classic) await shot(page, o.shots + '-2-abgelesen');
   await F.openStep(page, 'why');
   await F.answerAll(page, 'why');
   if (o.shots) await shot(page, o.shots + '-3-trainer');
@@ -103,9 +109,9 @@ async function coreRun(page, o) {
     const r = await F.fillField(page, 'pk_' + key, val);
     assert(r.current === expect, key + ': erwartet ' + expect + ', erhalten ' + JSON.stringify(r));
   }
-  // vor der Abgabe: keine Literatur, keine Modellschalter
-  const pre = await page.evaluate(() => ({ text: document.getElementById('panelBody').innerText, model: !!document.getElementById('chkModel') }));
-  assert(!/Martell|Quelle:/.test(pre.text) && !pre.model, 'Literatur/Modell vor der Abgabe sichtbar');
+  // vor der Abgabe: keine Literatur, keine Modellschalter, keine Markierungen
+  const pre = await page.evaluate(() => ({ text: document.getElementById('panelBody').innerText, model: !!document.getElementById('chkModel'), marks: !!document.getElementById('chkMarks'), guides: !!Halbtitration.App.chart.guides }));
+  assert(!/Martell|Quelle:/.test(pre.text) && !pre.model && !pre.marks && !pre.guides, 'Literatur/Modell/Markierungen vor der Abgabe sichtbar');
   await F.act(page, 'submit');
   await F.confirm(page);
   const sb = await page.evaluate(() => Halbtitration.App.es().submission);
@@ -113,6 +119,10 @@ async function coreRun(page, o) {
   await F.openStep(page, 'compare');
   const lit = await page.evaluate(() => document.getElementById('panelBody').innerText);
   assert(/Martell/.test(lit), 'Literatur nach Abgabe nicht sichtbar');
+  // nach der Abgabe: Markierungen (Pufferbereich, ÄP, HÄP mit pK) eingeblendet und abschaltbar
+  const g = await page.evaluate(() => Halbtitration.App.chart.guides);
+  assert(g && g.eqs.length === o.halves.length && g.halves.length === o.halves.length && g.buffers.length === o.halves.length, 'Markierungen nach der Abgabe fehlen: ' + JSON.stringify(g));
+  if (o.shots) await shot(page, o.shots + '-3b-markierungen');
   const tasks = await page.evaluate(() => Halbtitration.Evaluation.pkTasks(Halbtitration.App.exp()).map((t) => ({ key: t.key, lit: Halbtitration.Evaluation.literatureValue(Halbtitration.App.exp(), t.key) })));
   for (const tk of tasks) {
     const own = sb.values[tk.key];
@@ -137,15 +147,21 @@ const scenarios = {
     const order = await page.$$eval('.deck .prep .pstep', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ').trim()));
     assert(/^1 Bürette/.test(order[0]) && /^2 pH-Meter/.test(order[1]) && /^3 Probe/.test(order[2]) && /^4 Indikator/.test(order[3]) && /^5 Rührer/.test(order[4]) && /^6 Elektrode/.test(order[5]), 'Reihenfolge der Vorbereitung: ' + order.join(' | '));
     assert(!(await page.$('[data-action="take"]')) && !(await page.$('[data-action="capture"]')), 'Knopf oder Umschalter für die Erfassung noch vorhanden');
+    // 0.4.0: feste Volumenachse ohne Auswahl, Versionsnummer in der Kopfzeile = sivex.json
+    assert(!(await page.$('[data-action="xmode"]')) && (await page.evaluate(() => Halbtitration.App.chart.range().join('-'))) === '0-50', 'Volumenachse nicht fest 0–50 mL');
+    const ver = await page.evaluate(async () => ({ shown: document.getElementById('appVersion').textContent, meta: (await (await fetch('sivex.json')).json()).version }));
+    assert(ver.shown === 'v' + ver.meta, 'Versionsanzeige passt nicht: ' + JSON.stringify(ver));
     // falsche Maßlösung an der Bürette → Rückmeldung, Bürette bleibt leer
     assert((await F.chooseTitrant(page, 'HCl')) === 'wrong', 'falsche Maßlösung nicht erkannt');
     assert(!(await F.labState(page)).filled, 'Bürette trotz falscher Maßlösung gefüllt');
     assert(/passt nicht zu dieser Probe/.test(await page.$eval('.step[data-step="start"]', (e) => e.innerText)), 'Rückmeldung im Bedienfeld fehlt');
-    // automatische Erfassung: Kurve wächst ohne Klick auf „Messwert übernehmen“
+    // Live-Kurve: wächst während der Zugabe, ohne Übernehmen und ohne Warten
     assert((await F.chooseTitrant(page, 'NaOH')) === 'ok', 'richtige Maßlösung nicht akzeptiert');
     await F.prepare(page);
-    await F.setDose(page, 1); await F.act(page, 'dose');
-    await F.waitFor(page, () => Halbtitration.App.activeSeries().points.some((p) => p.v === 1 && p.stable));
+    await F.setDose(page, 2); await F.act(page, 'dose');
+    await F.waitFor(page, () => Halbtitration.App.activeSeries().points.some((p) => p.v === 2));
+    const live = await page.evaluate(() => Halbtitration.App.activeSeries().points.map((p) => p.v));
+    assert(live.length >= 40 && Math.max(...live.slice(1).map((v, i) => v - live[i])) <= 0.051, 'Kurve nicht je Tropfen aufgezeichnet: ' + live.length);
     await F.act(page, 'repeat'); await F.confirm(page);
     // Geschlossene Frage: falsch → Tipp → Rückmeldung bleibt bei der Frage
     await F.openStep(page, 'half');
@@ -209,7 +225,7 @@ const scenarios = {
     const sp = await page.$eval('.step[data-step="deep"]', (e) => e.innerText);
     assert(/Schematische Reihenfolge/.test(sp) && !/geringen Anteilen/.test(sp) && /erscheinen nach der Abgabe/.test(sp), 'Speziesdarstellung irreführend: ' + sp.slice(0, 200));
     const r = await coreRun(page, {
-      exp: 'phosphoric', titrant: 'NaOH', eqs: [10, 20], vEnd: 26, markers: [10, 20], halves: [5, 15], shots: '3-phosphorsaeure',
+      exp: 'phosphoric', titrant: 'NaOH', eqs: [10, 20], vEnd: 26, markers: [10, 20], halves: [5, 15], shots: '3-phosphorsaeure', classic: true,
       pk: (pHs) => [['pKs1', de(pHs[0]), 'ok'], ['pKs2', de(pHs[1]), 'ok']],
       causes: ['approx'],
     });
@@ -285,9 +301,10 @@ const scenarios = {
     // Halbtitration, pH, pK
     await F.newSample(page, 'half');
     await F.prepare(page);
-    await F.waitStable(page); await F.waitPoint(page);
+    await F.waitPoint(page);
     await F.doseTo(page, 10, 2); await F.doseTo(page, 12, 0.5);
     const pH = await page.evaluate(() => Halbtitration.App.activeSeries().points.slice(-1)[0].pH);
+    assert((await page.evaluate(() => Halbtitration.Tasks.measureSeries(1).kind)) === 'half', 'Halbtitration am Ziel wird nicht ausgewertet');
     await F.openStep(page, 'measure');
     assert((await F.fillField(page, 'phhalf1', de(pH))).current === 'ok', 'pH nicht ok');
     await F.openStep(page, 'result');
@@ -299,23 +316,24 @@ const scenarios = {
     assert((await field(page, 'pk_pKs1')) === 'stale' && (await field(page, 'phhalf1')) === 'stale', 'pH-Änderung entwertet pK nicht');
     await page.fill('[data-field="phhalf1"] input', de(pH));
     await page.dispatchEvent('[data-field="phhalf1"] input', 'input');
-    // Reihe wechseln: neue Halbtitrationsreihe → alter Nachweis gilt nicht mehr
+    // Reihe wechseln: neue Halbtitration ohne Ziel → ausgewertet wird wieder die vollständige Titration, alter Nachweis veraltet
     await F.newSample(page, 'half');
     await F.prepare(page);
-    await F.waitStable(page); await F.waitPoint(page);
+    await F.waitPoint(page);
     assert((await field(page, 'phhalf1')) === 'stale', 'Reihenwechsel entwertet den Nachweis nicht');
-    // Abgabe bewertet aktuelle Daten: in neuer Reihe kein Punkt am Ziel → blockiert
+    assert((await page.evaluate(() => Halbtitration.Tasks.measureSeries(1).kind)) === 'survey', 'Ohne Ziel in der Halbtitration nicht auf die Kurve zurückgefallen');
+    // Abgabe bewertet aktuelle Daten: ein pH, der nicht auf der Kurve liegt → blockiert
+    await F.openStep(page, 'measure');
+    await F.fillField(page, 'phhalf1', '2,00'); // liegt nirgends auf der Kurve (Start bei pH 3,04)
     await F.openStep(page, 'result');
     await F.act(page, 'submit');
     await page.waitForSelector('#modal:not([hidden])');
     const block = await page.$eval('#modalBody', (e) => e.innerText);
-    assert(/gehört zu keinem protokollierten Messpunkt/.test(block), 'Abgabe ohne aktuellen Nachweis nicht blockiert: ' + block);
+    assert(/gehört zu keinem Messwert deiner Kurve/.test(block), 'Abgabe ohne aktuellen Nachweis nicht blockiert: ' + block);
     await page.click('#modalActions .lk-btn.primary');
-    // zurück zur Reihe mit Nachweis: Messreihe wiederholen verwirft die leere
-    await F.act(page, 'repeat'); await F.confirm(page);
-    await page.evaluate(() => { const e = Halbtitration.App.es(); e.evalHalf = e.series.filter((s) => s.kind === 'half')[0].id; });
+    // richtiger Wert von der Kurve der vollständigen Titration
     await F.openStep(page, 'measure');
-    await F.fillField(page, 'phhalf1', de(pH));
+    assert((await F.fillField(page, 'phhalf1', de(pH))).current === 'ok', 'pH von der Kurve nicht bestätigt');
     await F.openStep(page, 'result');
     await F.fillField(page, 'pk_pKs1', de(pH));
     await F.act(page, 'submit');
@@ -339,7 +357,7 @@ const scenarios = {
     await F.act(page, 'submit');
     await page.waitForSelector('#modal:not([hidden])');
     const txt = await page.$eval('#modalBody', (e) => e.innerText);
-    assert(/Zielvolumen/.test(txt) && /Halbtitrations-Messreihe/.test(txt), 'Abgabe ohne Messreihe nicht verhindert');
+    assert(/Zielvolumen/.test(txt) && /Messkurve/.test(txt), 'Abgabe ohne Messreihe nicht verhindert');
     await page.click('#modalActions .lk-btn:not(.primary)'); // Musterlösung ansehen
     await page.waitForSelector('.step[data-step="result"] .lk-note.info');
     const st = await page.evaluate(() => ({ sub: Halbtitration.App.es().submission, sol: !!Halbtitration.App.es().solution, series: Halbtitration.App.es().series.reduce((n, s) => n + s.points.length, 0) }));
@@ -351,7 +369,7 @@ const scenarios = {
     await F.chooseTitrant(page, 'NaOH');
     await F.newSample(page, 'half');
     await F.prepare(page);
-    await F.waitStable(page); await F.waitPoint(page);
+    await F.waitPoint(page);
     await F.doseTo(page, 10, 2);
     await F.setDose(page, 2); await F.act(page, 'dose'); // bis 12 mL
     await F.setDose(page, 0.5); await F.act(page, 'dose'); // gleich weiter: überschießen auf 12,50 mL
@@ -367,7 +385,13 @@ const scenarios = {
     await F.fillField(page, 'vhalf1', '12,00');
     await F.openStep(page, 'measure');
     const m = await F.fillField(page, 'phhalf1', de(p.pH));
-    assert(m.current === 'measured-note' && /12,50 mL statt/.test(m.message), 'Zielabweichung nicht ausgewiesen: ' + JSON.stringify(m));
+    // im flachen Pufferbereich haben Nachbarwerte denselben pH: ausgewiesen wird der dem Ziel nächste (12,05–12,50 mL)
+    assert(m.current === 'measured-note' && /mL statt am eigenen Zielvolumen 12,00 mL/.test(m.message) && m.point.v > 12.04 && m.point.v <= 12.5, 'Zielabweichung nicht ausgewiesen: ' + JSON.stringify(m));
+    // Markierungen: nach der Musterlösung freigegeben; Vorführmodus über ?markierungen=1
+    assert(!!(await page.$('#chkMarks')) && !!(await page.evaluate(() => Halbtitration.App.chart.guides)), 'Markierungen nach der Musterlösung nicht freigegeben');
+    await page.uncheck('#chkMarks');
+    assert(!(await page.evaluate(() => Halbtitration.App.chart.guides)), 'Markierungen lassen sich nicht ausblenden');
+    await page.check('#chkMarks');
     await F.openStep(page, 'result');
     assert((await F.fillField(page, 'pk_pKs1', de(p.pH))).current === 'ok', 'richtige Rechnung aus ungenauer Messung nicht erkannt');
     await F.act(page, 'submit');
@@ -376,7 +400,7 @@ const scenarios = {
     assert(/neben dem Zielvolumen/.test(fl), 'Mangel nicht gekennzeichnet: ' + fl);
     await page.click('#modalActions .lk-btn.primary');
     const sb = await page.evaluate(() => Halbtitration.App.es().submission);
-    assert(sb && sb.flags.length >= 1 && sb.stages[1].v === 12.5, 'Ungenaue echte Messung nicht angenommen');
+    assert(sb && sb.flags.length >= 1 && sb.stages[1].v > 12.04 && sb.stages[1].v <= 12.5, 'Ungenaue echte Messung nicht angenommen');
     return { errors: page.__errors };
   },
 
@@ -386,16 +410,16 @@ const scenarios = {
     await fresh(page);
     await F.chooseTitrant(page, 'NaOH');
     await F.prepare(page, { stir: false });
-    await F.waitStable(page); await F.waitPoint(page);
+    await F.waitPoint(page);
     await F.setDose(page, 2); await F.act(page, 'dose');
     await F.waitSettled(page);
+    // 0.4.0: didaktisch vereinfacht – auch ohne Rühren sofort durchmischt, die Kurve läuft mit
     const still = await F.labState(page);
-    assert(!still.stable && still.unmixed > 0.5, 'Ohne Rühren sofort stabil');
+    assert(still.stable && still.unmixed === 0, 'Anzeige wartet noch auf Durchmischung');
     const nStill = await page.evaluate(() => Halbtitration.App.activeSeries().points.length);
-    assert(nStill === 1, 'Ohne stabile Anzeige wurde ein Punkt erzeugt');
+    assert(nStill >= 30, 'Kurve wächst ohne Rühren nicht mit: ' + nStill);
     await shot(page, '7-ohne-ruehren');
     await page.click('.measure [data-action="stir"]');
-    await F.waitPoint(page);
     // neue Probe: Bürette und Kalibrierung bleiben, Reihen bleiben
     await F.newSample(page, 'half');
     const keep = await page.evaluate(() => ({ cal: Halbtitration.App.lab().calibration, filled: Halbtitration.App.lab().burette.filled, n: Halbtitration.App.es().series.length, btn: !!document.querySelector('[data-action="prep-burette"]:not([disabled])') }));
@@ -433,7 +457,7 @@ const scenarios = {
     await F.chooseTitrant(p3, 'NaOH');
     await p3.waitForSelector('.toast.show');
     await F.prepare(p3);
-    await F.waitStable(p3); await F.waitPoint(p3);
+    await F.waitPoint(p3);
     assert((await p3.evaluate(() => Halbtitration.App.activeSeries().points.length)) === 1, 'Ohne Speicher nicht bedienbar');
     return { errors: page.__errors.concat(p2.__errors, p3.__errors) };
   },
@@ -444,7 +468,7 @@ const scenarios = {
     await fresh(page);
     await F.chooseTitrant(page, 'NaOH');
     await F.prepare(page, { indicator: 'phenolphthalein' });
-    await F.waitStable(page); await F.waitPoint(page);
+    await F.waitPoint(page);
     await F.doseTo(page, 22, 2);
     await F.doseTo(page, 23.8, 0.2);
     await page.evaluate(() => { Halbtitration.App.lab().timeScale = 1; });
@@ -460,6 +484,7 @@ const scenarios = {
     assert(frames.some((f) => f.plumes > 0), 'Keine Mischschliere');
     assert(frames.some((f) => f.wave > 0.2), 'Kein Oberflächenimpuls');
     assert(frames[frames.length - 1].delivered > frames[0].delivered, 'Volumen steigt nicht schrittweise');
+    assert((await page.evaluate(() => { const p = Halbtitration.App.activeSeries().points; return p[p.length - 1].v; })) > 23.8, 'Kurve folgt den Tropfen nicht in Echtzeit');
     await page.waitForTimeout(1500);
     await F.act(page, 'stir');
     await page.waitForTimeout(6000);

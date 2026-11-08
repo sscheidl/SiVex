@@ -1,8 +1,8 @@
-# Bedienung (ab 0.2.0)
+# Bedienung (ab 0.2.0, Stand 0.4.0)
 
 Die App startet direkt im Labor:
 
-- **Kopfzeile:** Hefteintrag, Bericht, Zurücksetzen und Bedienfeld ein/aus.
+- **Kopfzeile:** App-Titel mit Versionsnummer (z. B. `v0.4.0`), Hefteintrag, Bericht, Zurücksetzen und Bedienfeld ein/aus.
 - **Laborbühne (links):** Titrierstand und Titrationskurve stehen nebeneinander, darunter die Dosierleiste.
 - **Trennlinie:** Sie lässt sich mit Maus, Finger oder Pfeiltasten verschieben; ein Doppelklick stellt die Standardbreite wieder her.
 - **Bedienfeld (rechts):** Reiter **Aufgabe · Ergebnisse · Hefteintrag**.
@@ -39,19 +39,20 @@ Der nächste offene Schritt ist blau hervorgehoben. Erledigte Schritte erscheine
 
 ### Messen
 
-Die Anzeige zeigt V zugegeben, den Bürettenstand (digital abgelesen) und den pH-Wert mit Status (stabil, misst, Zugabe, ohne Rühren).
+Die Anzeige zeigt V zugegeben, den Bürettenstand (digital abgelesen) und den pH-Wert (Status „misst“, sobald die Elektrode eingetaucht ist).
 
 - **Dosiermenge:** 1 Tropfen (0,05 mL) bis 2,00 mL, dann **Zugeben** (Taste **D**).
 - **Hahn öffnen/schließen:** kontinuierlicher Fluss (Taste **H** oder Antippen des Hahns im Bild); die Tropfgeschwindigkeit stellst du am Schieberegler ein.
-- **Messpunkte entstehen automatisch** (ab 0.2.2), sobald die Anzeige stabil ist: beim Eintauchen der Elektrode (Startpunkt bei 0 mL), nach jeder Zugabe bzw. nach dem Schließen des Hahns und nach dem Ein-/Ausschalten des Rührers. Die Kurve wächst beim Titrieren mit. Ein neuer Wert beim gleichen Volumen ersetzt den alten.
-- Ohne Rühren mischt die Lösung nur langsam; der Punkt entsteht dann erst später und kann als „nicht durchmischt“ gekennzeichnet sein.
+- **Die Kurve zeichnet sich live** (ab 0.4.0) wie bei einer pH-Sonde am Messwerterfassungssystem: ab dem Eintauchen der Elektrode (Startwert bei 0 mL) ein Messwert je angekommenem Tropfen, auch bei offenem Hahn. Es gibt kein Übernehmen und kein Warten auf eine stabile Anzeige; die Lösung gilt als sofort durchmischt.
 - **Rührer** (links in der Messzeile), **Endpunkt notieren** (nur mit Indikator), **Zielmarke** (nur bei der Halbtitration). Ein automatischer Stopp am Ziel erfolgt nicht.
 
 ### Kurve
 
-- **Volumenachse:** 0–50 mL (Bürettenskala) oder **Messbereich**, auf 5 mL gerundet.
+- **Achsen:** fest 0–50 mL (Bürettenskala) und pH 0–14.
+- **Ablesen:** Antippen der Kurve zeigt unter dem Diagramm V und pH des nächsten Messwerts; in der Nähe einer orangen Zielmarke rastet die Auswahl auf ihr ein.
 - **Marker ÄP:** erscheint, sobald eine Titrationskurve vorliegt. Antippen oder Ziehen setzt den Marker; die Pfeiltasten verschieben ihn um 0,05 mL (mit Umschalt um 0,5 mL). „Fertig“ beendet den Markermodus.
-- **Nach der Abgabe:** Modellreferenz, Literatur-pKₛ und Näherungswerte. Bei Ammoniak erscheint auf der pH-Achse nur pKₛ(NH₄⁺), kein pK_B.
+- **Nach der Abgabe** (oder der Musterlösung): **Markierungen** – Pufferbereich je Stufe (pH ≈ pKₛ ± 1), Äquivalenzpunkt(e), Halbäquivalenzpunkt(e) mit pKₛ bzw. bei Ammoniak pKₛ(NH₄⁺) und pK_B –, dazu Modellreferenz, Literatur-pKₛ und Näherungswerte. Bei Ammoniak erscheint auf der pH-Achse nur pKₛ(NH₄⁺), kein pK_B.
+- **Vorführen:** `index.html?markierungen=1` zeigt die Markierungen ohne Abgabe (für die Lehrkraft am Beamer).
 
 ## Aufgabe (Schritte)
 
@@ -61,11 +62,11 @@ Der jeweils nächste offene Schritt ist aufgeklappt. Alle Schritte lassen sich j
 2. **Titrationskurve und Äquivalenzpunkt:** Marker setzen oder V(ÄP) eintragen. Die Prüfung erfolgt an deiner eigenen Kurve: Liegt der Marker im steilsten Abschnitt? Freiwillig kannst du V(ÄP) mit der Stöchiometrie kontrollieren, mit absoluter und relativer Abweichung und benannter Referenz.
 3. **Halber Umsatz:** wenige geschlossene Fragen; bei mehrprotonigen Säuren auch zur zweiten Stufe.
 4. **Zielvolumen berechnen:** Rechenbasis wählen (eigener ÄP, berechnet oder bei Stufe 2 abgeleitet) und V(HÄP) eintragen.
-5. **Gezielt halbtitrieren:** frische Probe, Zielmarke, selbst dosieren, pH-Wert am HÄP aus der eigenen Messreihe eintragen.
+5. **pH am Halbäquivalenzpunkt ablesen:** an der eigenen Kurve bei V(HÄP) (Zielmarke antippen) und eintragen. Freiwillige Kontrolle: **klassische Halbtitration** mit frischer Probe gezielt bis zum Zielvolumen; erreicht sie das Ziel, wird sie ausgewertet.
 6. **Warum gilt das? (MWG):** ein Trainer in Schritten. Jeder Schritt erscheint erst, wenn der vorige gelöst ist. Die Henderson-Hasselbalch-Gleichung gibt es als Vertiefung.
 7. **Eigenen pK-Wert bestimmen und abgeben:**
-   - Die Abgabe setzt ein eigenes Zielvolumen und einen protokollierten Messpunkt der Halbtitration voraus.
-   - Mängel werden gekennzeichnet, etwa neben dem Ziel, zu früh abgelesen, nicht durchmischt oder Rechnung unpassend.
+   - Die Abgabe setzt ein eigenes Zielvolumen und einen Messwert der ausgewerteten Kurve voraus.
+   - Mängel werden gekennzeichnet, etwa Messwert neben dem Ziel oder Rechnung unpassend.
    - **Lösung anzeigen** zeigt die Musterlösung. Sie wird als „Musterlösung angesehen“ gespeichert und zählt nicht als eigener Versuch.
 8. **Vergleichen und deuten** (nach Abgabe): Literaturwert, ΔpK mit Vorzeichen und eine knappe Fehlerdeutung zum Ankreuzen. Die Rückmeldung stammt aus den eigenen Daten.
 

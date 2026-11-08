@@ -41,7 +41,7 @@
       legacySubmission: null, // aus 0.1.0 übernommen, ohne Nachweis
       solution: null, // {at}: Musterlösung bewusst angefordert
       reflection: { causes: [], text: '', checked: false },
-      view: { band: true, model: false, lit: false, approx: false, alpha: false, xMode: 'capacity' },
+      view: { band: true, model: false, lit: false, approx: false, alpha: false, marks: true },
       open: {},
     };
   }

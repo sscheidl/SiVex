@@ -1,4 +1,27 @@
-# Testbericht Halbtitrationslabor 0.3.0
+# Testbericht Halbtitrationslabor 0.4.0
+
+## 0.4.0 (08.11.2026) – Live-Kurve, feste Achsen, Markierungen
+
+Umgebung wie unten: Windows 11 Pro, Node.js 24.22.1, Microsoft Edge über Playwright 1.56.1 (headless), Tablet-Größen nur emuliert. Browserabläufe gegen den Build `dist/halbtitration/` (Labkit 0.2.0), Paketprüfung gegen die frisch entpackten ZIPs. Rohdaten: `tests/e2e/results.json`, `tests/e2e/packages-results.json`, Screenshots in `docs/screenshots/`.
+
+| Prüffall | Status | Nachweis |
+| --- | --- | --- |
+| Unit-Tests | **PASS** 38/38 | `npm test`; neu: Anzeige sofort ohne Ansprechzeit (auch ohne Rühren), ein Messwert-Ereignis je Tropfen im Zeitraffer, Ablesen am Nachbarwert gilt als am Zielvolumen; frühere Messkette als Option `instant: false` weiter geprüft |
+| Live-Kurve: 2 mL ergeben Startwert + 40 Messwerte, Abstand ≤ 0,05 mL, ohne Übernehmen | **PASS** | E1, Paketprüfung (41 Messwerte) |
+| Ohne Rühren: sofort durchmischt, Kurve läuft mit | **PASS** | E7, `7-ohne-ruehren.png` |
+| Kurve folgt den Tropfen in Echtzeit (1×) | **PASS** | E8 |
+| Volumenachse fest 0–50 mL, kein Umschalter | **PASS** | E1 |
+| Versionsanzeige `v0.4.0` = `sivex.json`; `npm run package` bricht bei Abweichung ab | **PASS** | E1, `scripts/package.mjs` |
+| pH am HÄP an der eigenen Kurve abgelesen (Antippen der Zielmarke, Einrasten) – Essigsäure, Ammoniak, Glycin | **PASS** | E1, E2, E4, `*-2-abgelesen.png` |
+| Klassische Halbtitration als freiwillige Kontrolle wird ausgewertet, wenn sie das Ziel erreicht (Phosphorsäure, Essigsäure) | **PASS** | E3, E5 |
+| Neue Halbtitration ohne Ziel → Auswertung fällt auf die vollständige Titration zurück, alter Nachweis veraltet; pH abseits der Kurve blockiert die Abgabe | **PASS** | E5 |
+| Markierungen erst nach Abgabe bzw. Musterlösung, abschaltbar; je Stufe Pufferbereich, ÄP, HÄP mit pK | **PASS** | E1–E4, E6, `*-3b-markierungen.png` |
+| Browserabnahme E1–E9 | **PASS** 9/9 | `node tests/e2e/run.mjs` |
+| Paketprüfung (Struktur, HTTP, SCORM-Test-LMS, `file://`) | **PASS** 4/4 | `node tests/e2e/packages.mjs` |
+| Pakete reproduzierbar (zweimal gebaut, gleiche SHA-256) | **PASS** | `release/SHA256SUMS.txt` |
+| iPad-Safari, mebis-Import | **HOLD – unverified** | nicht auf echten Geräten geprüft |
+
+---
 
 ## Nachtrag 0.3.0 (30.10.2026) – iPad- und Bedienregeln
 

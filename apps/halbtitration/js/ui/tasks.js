@@ -1,17 +1,20 @@
 /*
  * Aufgabe, Selbstkontrolle und Ergebnisse (ab 0.2.0)
  * -------------------------------------------------
- * Schritte je Versuch: Auftrag → Titrationskurve und ÄP → halber Umsatz →
- * Zielvolumen → gezielte Halbtitration → MWG-Begründung → eigener pK und
- * Abgabe → Vergleich; dazu eine freiwillige Vertiefung.
+ * Schritte je Versuch: Auftrag → vollständige Titration und ÄP → halber
+ * Umsatz → Zielvolumen (HÄP) → pH am HÄP an der eigenen Kurve ablesen
+ * (klassische Halbtitration mit frischer Probe als freiwillige Kontrolle,
+ * ab 0.4.0) → MWG-Begründung → eigener pK und Abgabe → Vergleich; dazu eine
+ * freiwillige Vertiefung.
  *
  * Prüfstatus: Jede Prüfung speichert eine Signatur ihrer Grundlagen
  * (Eingabe, Rechenbasis, Messreihe, Messpunkte). Weicht die aktuelle
  * Signatur ab, gilt das Ergebnis als veraltet („erneut prüfen“); eine
  * frühere grüne Bestätigung erscheint dann nicht mehr.
  *
- * Abgabe: nur mit eigenem Zielvolumen und einem protokollierten Messpunkt
- * der gewählten Halbtitrationsreihe; Mängel werden gekennzeichnet, nicht
+ * Abgabe: nur mit eigenem Zielvolumen und einem Messwert der ausgewerteten
+ * Kurve (Halbtitration, falls sie das Ziel erreicht, sonst die vollständige
+ * Titration); Mängel werden gekennzeichnet, nicht
  * versteckt. „Lösung anzeigen“ ist davon getrennt und wird als solche
  * gespeichert.
  */
@@ -38,6 +41,31 @@
   function latest(kind) { return e().series.filter(function (s) { return s.kind === kind && s.points.length; }).slice(-1)[0] || null; }
   function survey() { const s = seriesById(e().evalSurvey); return s && s.kind === 'survey' ? s : latest('survey'); }
   function half() { const s = seriesById(e().evalHalf); return s && s.kind === 'half' ? s : latest('half'); }
+
+  /** Eigene Zielvolumina V(HÄP) je Stufe (für die Zielmarken im Diagramm) */
+  function targets() {
+    const out = [];
+    for (let j = 1; j <= x().stages; j++) { const v = num('vhalf' + j); if (Number.isFinite(v) && v > 0) out.push(v); }
+    return out;
+  }
+
+  function reaches(s, v) { return !!s && s.points.length > 0 && s.points.some(function (p) { return p.v >= v - 0.025; }) && s.points[0].v <= v + 0.025; }
+
+  /**
+   * Messreihe, an der der pH am HÄP einer Stufe abgelesen wird (ab 0.4.0): eine
+   * freiwillige Halbtitration, wenn sie das Zielvolumen erreicht, sonst die
+   * Kurve der vollständigen Titration.
+   */
+  function measureSeries(stage) {
+    const v = num('vhalf' + stage);
+    const h = half();
+    const s = survey();
+    if (Number.isFinite(v)) {
+      if (reaches(h, v)) return h;
+      if (reaches(s, v)) return s;
+    }
+    return s || h;
+  }
 
   function num(id) {
     const f = e().fields[id];
@@ -93,7 +121,7 @@
     let m;
     if ((m = /^eqm(\d)$/.exec(id))) return input(id) + '|' + pointsSig(survey());
     if ((m = /^vhalf(\d)$/.exec(id))) { const b = basisValues(Number(m[1])); return input(id) + '|' + b.kind + ':' + b.v1 + ':' + b.v2; }
-    if ((m = /^phhalf(\d)$/.exec(id))) return input(id) + '|' + pointsSig(half()) + '|' + num('vhalf' + m[1]);
+    if ((m = /^phhalf(\d)$/.exec(id))) return input(id) + '|' + pointsSig(measureSeries(Number(m[1]))) + '|' + num('vhalf' + m[1]);
     if ((m = /^pk_(.+)$/.exec(id))) return input(id) + '|' + num('phhalf' + task(m[1]).stage);
     if ((m = /^dpk_(.+)$/.exec(id))) return input(id) + '|' + num('pk_' + m[1]);
     if ((m = /^dph_(.+)$/.exec(id))) { const ms = measuredAt(m[1]); return input(id) + '|' + num('th_' + m[1]) + '|' + (ms ? ms.pH : '-'); }
@@ -113,7 +141,7 @@
       return Ev.checkEqMarker(s ? s.points : [], p.value, ex.direction);
     }
     if ((m = /^vhalf(\d)$/.exec(id))) return Ev.checkHalfVolume(Number(m[1]), raw, basisValues(Number(m[1])));
-    if ((m = /^phhalf(\d)$/.exec(id))) { const s = half(); return Ev.checkMeasuredPH(raw, s ? s.points : [], num('vhalf' + m[1])); }
+    if ((m = /^phhalf(\d)$/.exec(id))) { const s = measureSeries(Number(m[1])); return Ev.checkMeasuredPH(raw, s ? s.points : [], num('vhalf' + m[1])); }
     if ((m = /^pk_(.+)$/.exec(id))) { const t = task(m[1]); return Ev.checkPK(t, raw, num('phhalf' + t.stage)); }
     if ((m = /^th_(.+)$/.exec(id))) return Ev.checkTheoryPH(theoryPoint(m[1]), raw);
     if ((m = /^dpk_(.+)$/.exec(id))) return Ev.checkDifference(raw, num('pk_' + m[1]), Ev.literatureValue(ex, m[1]));
@@ -212,7 +240,7 @@
     if ((m = /^vhalf(\d)$/.exec(id))) return { basis: basisValues(Number(m[1])) };
     if ((m = /^phhalf(\d)$/.exec(id))) {
       const target = num('vhalf' + m[1]);
-      const s = half();
+      const s = measureSeries(Number(m[1]));
       let point = null;
       if (s && s.points.length && Number.isFinite(target)) point = s.points.reduce(function (b, p) { return Math.abs(p.v - target) < Math.abs(b.v - target) ? p : b; });
       return { point: point };
@@ -301,7 +329,7 @@
   // ------------------------------------------------------------ Abgabe und Musterlösung
 
   function stageEvidence(j) {
-    const s = half();
+    const s = measureSeries(j);
     const tf = current('vhalf' + j);
     return Ev.evidence({ target: num('vhalf' + j), targetStatus: tf.status, points: s ? s.points : [], seriesId: s ? s.id : null, pHRaw: input('phhalf' + j) });
   }
@@ -324,7 +352,7 @@
     tasks.forEach(function (t) { if (!Number.isFinite(num('pk_' + t.key))) blocking.push('Trage ' + t.label + ' ein.'); });
     A.save();
     if (blocking.length) {
-      const v = await A.modal('Noch kein eigenes Versuchsergebnis', '<p>Abgeben kannst du einen pK-Wert, der aus deiner eigenen Halbtitration stammt. Es fehlt:</p><ul>' + blocking.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul><p class="lk-muted">Ungenaue Messungen oder falsche Rechnungen darfst du abgeben – sie werden gekennzeichnet. Ohne eigenen Versuch kannst du stattdessen bewusst die Musterlösung ansehen.</p>', [{ label: 'Zurück', value: null, primary: true }, { label: 'Musterlösung ansehen', value: 'solution' }]);
+      const v = await A.modal('Noch kein eigenes Versuchsergebnis', '<p>Abgeben kannst du einen pK-Wert, der aus deiner eigenen Messkurve stammt. Es fehlt:</p><ul>' + blocking.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul><p class="lk-muted">Ungenaue Messungen oder falsche Rechnungen darfst du abgeben – sie werden gekennzeichnet. Ohne eigenen Versuch kannst du stattdessen bewusst die Musterlösung ansehen.</p>', [{ label: 'Zurück', value: null, primary: true }, { label: 'Musterlösung ansehen', value: 'solution' }]);
       A.refresh();
       if (v === 'solution') await showSolution(true);
       return;
@@ -332,12 +360,12 @@
     const flags = [];
     for (let j = 1; j <= ex.stages; j++) stages[j].flags.forEach(function (f) { flags.push((ex.stages > 1 ? 'Stufe ' + j + ': ' : '') + f); });
     tasks.forEach(function (t) { if (st.fields['pk_' + t.key].status !== 'ok') flags.push(t.label + ': Rechnung passt nicht zum gemessenen pH-Wert'); });
-    const text = (flags.length ? '<p><strong>Deine Abgabe wird gekennzeichnet:</strong></p><ul>' + flags.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p>Messpunkt am Zielvolumen, stabil und durchmischt; Rechnung passend.</p>') +
+    const text = (flags.length ? '<p><strong>Deine Abgabe wird gekennzeichnet:</strong></p><ul>' + flags.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p>Messwert am Zielvolumen; Rechnung passend.</p>') +
       '<p>Nach der Abgabe erscheinen Literaturwert und Modellreferenz. Dein abgegebener Wert bleibt unverändert gespeichert; spätere Korrekturen werden getrennt angezeigt.</p>';
     if (!(await A.confirmBox('Eigenes Ergebnis abgeben?', text, 'Abgeben'))) { A.refresh(); return; }
     const values = {};
     tasks.forEach(function (t) { values[t.key] = num('pk_' + t.key); });
-    const snap = { at: Date.now(), values: values, flags: flags, stages: {}, series: half().id };
+    const snap = { at: Date.now(), values: values, flags: flags, stages: {}, series: measureSeries(1).id };
     for (let j = 1; j <= ex.stages; j++) {
       const p = stages[j].point;
       snap.stages[j] = { target: num('vhalf' + j), v: p.v, pH: num('phhalf' + j), stable: !!p.stable, homogeneous: p.homogeneous !== false, stirred: p.stirred !== false };
@@ -433,8 +461,8 @@
     h += stepHtml('start', 1, 'Auftrag und Maßlösung', res.start, b, { openDefault: def('start') });
 
     // 2 Kurve und ÄP
-    b = '<p>Titriere die Probe bis deutlich über den Sprung; die Messpunkte entstehen automatisch. Im Sprung lohnen sich kleine Zugaben. Der Sprung zeigt ' + (ex.stages > 1 ? 'die Äquivalenzpunkte' : 'den Äquivalenzpunkt') + ' – markiere ' + (ex.stages > 1 ? 'sie' : 'ihn') + ' an deiner Kurve.</p>';
-    b += '<p class="lk-muted">' + (s1 ? esc(A.seriesLabel(s1)) + ': ' + s1.points.length + ' Messpunkte bis ' + fmt(Math.max.apply(null, s1.points.map(function (p) { return p.v; })), 2) + ' mL' : 'Noch keine vollständige Titration.') + '</p>';
+    b = '<p>Titriere die Probe bis deutlich über den Sprung – die Kurve zeichnet sich dabei selbst. Der Sprung zeigt ' + (ex.stages > 1 ? 'die Äquivalenzpunkte' : 'den Äquivalenzpunkt') + ' – markiere ' + (ex.stages > 1 ? 'sie' : 'ihn') + ' an deiner Kurve.</p>';
+    b += '<p class="lk-muted">' + (s1 ? esc(A.seriesLabel(s1)) + ': Kurve bis ' + fmt(Math.max.apply(null, s1.points.map(function (p) { return p.v; })), 2) + ' mL' : 'Noch keine vollständige Titration.') + '</p>';
     b += '<div class="lk-row"><button type="button" class="lk-btn small" data-action="chart-marker" data-marker="eq1"' + (s1 ? '' : ' disabled') + '>ÄP' + (ex.stages > 1 ? ' 1' : '') + ' im Diagramm markieren</button>' + (ex.stages > 1 ? '<button type="button" class="lk-btn small" data-action="chart-marker" data-marker="eq2"' + (s1 ? '' : ' disabled') + '>ÄP 2 markieren</button>' : '') + '</div>';
     b += fieldHtml('eqm1', 'V(ÄP' + (ex.stages > 1 ? ',1' : '') + ') aus deiner Kurve', 'mL', 'Marker antippen/ziehen oder Wert eintragen.');
     if (ex.stages > 1) b += fieldHtml('eqm2', 'V(ÄP,2) aus deiner Kurve', 'mL', ex.id === 'glycine' ? 'Zeigt deine Kurve hier keinen deutlichen Sprung, wähle beim Zielvolumen „abgeleitet“.' : '');
@@ -454,17 +482,22 @@
       b += '<div class="field"><label for="basis' + j + '">Rechenbasis</label><select id="basis' + j + '" data-basis="half' + j + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (st.basis['half' + j] === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select><div class="sub">' + basisText(j, basisValues(j)) + '</div></div>';
       b += fieldHtml('vhalf' + j, 'Zielvolumen V(HÄP' + (ex.stages > 1 ? ',' + j : '') + ')', 'mL');
     }
-    b = '<p>Für die Halbtitration wählst du ' + (ex.stages > 1 ? 'je Stufe die Mitte zwischen zwei Äquivalenzpunkten – für die erste Stufe das halbe Äquivalenzvolumen deiner vollständigen Titration.' : 'das halbe Äquivalenzvolumen deiner vollständigen Titration.') + '</p>' + b;
+    b = '<p>Der Halbäquivalenzpunkt liegt ' + (ex.stages > 1 ? 'je Stufe in der Mitte zwischen zwei Äquivalenzpunkten – an der ersten Stufe beim halben Äquivalenzvolumen deiner vollständigen Titration.' : 'beim halben Äquivalenzvolumen deiner vollständigen Titration.') + '</p>' + b;
     h += stepHtml('target', 4, 'Zielvolumen berechnen', res.target, b, { openDefault: def('target') });
 
-    // 5 Halbtitration
-    b = '<p>Setze eine <strong>frische, gleich große Probe</strong> an und dosiere selbst bis zu deinem Zielvolumen. Bei stabiler Anzeige wird der Messpunkt automatisch aufgenommen. Es wird nicht automatisch gestoppt – überschreitest du das Ziel, setze eine neue Probe an.</p>';
-    b += '<div class="lk-row"><button type="button" class="lk-btn small primary" data-action="new-sample" data-kind="half">Frische Probe für die Halbtitration</button>';
+    // 5 pH am HÄP ablesen (ab 0.4.0 an der eigenen Kurve; klassische Halbtitration freiwillig)
+    b = '<p>Lies an deiner Kurve den pH-Wert bei deinem Zielvolumen ab: Tippe im Diagramm auf die orange Zielmarke – unter dem Diagramm erscheinen V und pH des Messwerts.</p>';
+    for (let j = 1; j <= ex.stages; j++) {
+      const ms = measureSeries(j);
+      b += fieldHtml('phhalf' + j, 'pH am HÄP' + (ex.stages > 1 ? ' ' + j : ''), '', ms ? 'Wert aus: ' + esc(A.seriesLabel(ms)) : 'Noch keine Messkurve.');
+    }
+    b += details('halfrun', 'Kontrolle: klassische Halbtitration (freiwillig)') + '<p>Setze eine <strong>frische, gleich große Probe</strong> an und titriere gezielt nur bis zu deinem Zielvolumen. Dann liegen Säure und korrespondierende Base im Verhältnis 1 : 1 vor – der pH-Wert im Kolben ist der pH am HÄP. Erreicht diese Messreihe das Zielvolumen, wird sie für die Auswertung verwendet. Es wird nicht automatisch gestoppt – überschreitest du das Ziel, setze eine neue Probe an.</p>';
+    b += '<div class="lk-row"><button type="button" class="lk-btn small" data-action="new-sample" data-kind="half">Frische Probe für die Halbtitration</button>';
     for (let j = 1; j <= ex.stages; j++) if (Number.isFinite(num('vhalf' + j))) b += '<button type="button" class="lk-btn small" data-action="set-target" data-v="' + num('vhalf' + j) + '">Zielmarke ' + fmt(num('vhalf' + j), 2) + ' mL setzen</button>';
     b += '</div>';
-    b += '<p class="lk-muted">' + (s2 ? esc(A.seriesLabel(s2)) + ': ' + s2.points.map(function (p) { return fmt(p.v, 2) + ' mL → pH ' + fmt(p.pH, 2) + (p.stable && p.homogeneous !== false ? '' : ' (nicht stabil)'); }).slice(-4).join(' · ') : 'Noch keine Halbtitration.') + '</p>';
-    for (let j = 1; j <= ex.stages; j++) b += fieldHtml('phhalf' + j, 'Gemessener pH am HÄP' + (ex.stages > 1 ? ' ' + j : ''), '', 'Wert aus deiner Halbtitrations-Messreihe');
-    h += stepHtml('measure', 5, 'Gezielt halbtitrieren', res.measure, b, { openDefault: def('measure') });
+    if (s2) { const lp = s2.points[s2.points.length - 1]; b += '<p class="lk-muted">' + esc(A.seriesLabel(s2)) + ': ' + (lp ? 'bis ' + fmt(lp.v, 2) + ' mL, zuletzt pH ' + fmt(lp.pH, 2) : 'noch keine Messwerte') + '</p>'; }
+    b += '</details>';
+    h += stepHtml('measure', 5, 'pH am Halbäquivalenzpunkt ablesen', res.measure, b, { openDefault: def('measure') });
 
     // 6 Warum? MWG
     b = '<p>Begründe am bekannten Massenwirkungsgesetz, warum dein gemessener pH-Wert ' + (ex.id === 'ammonia' ? 'zur Basenkonstante führt' : 'den pKₛ-Wert liefert') + '.</p><p class="eq">' + (ex.id === 'ammonia' ? 'NH₃ + H₂O ⇌ NH₄⁺ + OH⁻' : C.PAIRS[ex.id][0][0] + ' + H₂O ⇌ H₃O⁺ + ' + C.PAIRS[ex.id][0][1]) + '</p>';
@@ -532,7 +565,7 @@
     let h = '<div class="lk-note ' + (sb.flags.length ? 'warn' : 'ok') + '"><strong>Abgegeben</strong> am ' + new Date(sb.at).toLocaleString('de-DE') + ' (unveränderliche Momentaufnahme): ' + Ev.pkTasks(ex).map(function (t) { return esc(t.label) + ' = ' + fmt(sb.values[t.key], 2); }).join(', ') + '.';
     Object.keys(sb.stages).forEach(function (j) {
       const q = sb.stages[j];
-      h += '<br>' + (ex.stages > 1 ? 'Stufe ' + j + ': ' : '') + 'Ziel ' + fmt(q.target, 2) + ' mL, gemessen bei ' + fmt(q.v, 2) + ' mL, pH ' + fmt(q.pH, 2) + (q.stable && q.homogeneous ? ' (stabil)' : ' (nicht stabil/durchmischt)') + '.';
+      h += '<br>' + (ex.stages > 1 ? 'Stufe ' + j + ': ' : '') + 'Ziel ' + fmt(q.target, 2) + ' mL, gemessen bei ' + fmt(q.v, 2) + ' mL, pH ' + fmt(q.pH, 2) + (q.stable && q.homogeneous ? '' : ' (nicht stabil/durchmischt)') + '.';
     });
     if (sb.flags.length) h += '<br><strong>Gekennzeichnet:</strong> ' + sb.flags.map(esc).join('; ') + '.';
     return h + '</div>';
@@ -689,7 +722,7 @@
         h += (ex.stages > 1 ? '<p class="rstage">Stufe ' + j + '</p>' : '') + '<dl class="rgrid">' +
           '<dt>ÄP</dt><dd>' + mL(eqv) + (Number.isFinite(eqv) ? ' <span class="badge ' + (eqSrc === 'abgeleitet' ? 'der' : 'meas') + '">' + eqSrc + '</span>' : '') + '</dd>' +
           '<dt>Ziel / Messung</dt><dd>' + (q ? mL(q.target) + ' / ' + mL(q.v) : mL(f('vhalf' + j)) + ' / –') + '</dd>' +
-          '<dt>pH am HÄP</dt><dd>' + (q ? fmt(q.pH, 2) + ' <span class="badge' + (q.stable && q.homogeneous ? ' meas">stabil' : ' warn">nicht stabil') + '</span>' : '–') + '</dd>';
+          '<dt>pH am HÄP</dt><dd>' + (q ? fmt(q.pH, 2) + (q.stable && q.homogeneous ? '' : ' <span class="badge warn">nicht stabil</span>') : '–') + '</dd>';
         tasks.filter(function (t) { return t.stage === j; }).forEach(function (t) {
           const L = Ev.literatureValue(ex, t.key);
           const corr = sb && Number.isFinite(f('pk_' + t.key)) && Math.abs(f('pk_' + t.key) - sb.values[t.key]) > 0.0049;
@@ -713,12 +746,12 @@
   // ------------------------------------------------------------ Export und Bericht
 
   function csvText() {
-    const rows = ['Versuch;Messreihe;Zweck;V(Maßlösung) / mL;pH;Status;Indikator;Endpunkt V / mL'];
+    const rows = ['Versuch;Messreihe;Zweck;V(Maßlösung) / mL;pH;Indikator;Endpunkt V / mL'];
     Chem.EXPERIMENT_IDS.forEach(function (id) {
       const ex = Chem.experiment(id);
       A.state.exps[id].series.forEach(function (s) {
         s.points.forEach(function (p) {
-          rows.push([ex.title, s.no, s.kind === 'survey' ? 'vollständige Titration' : 'Halbtitration', fmt(p.v, 2), fmt(p.pH, 2), p.stable && p.homogeneous !== false ? 'stabil' : 'nicht stabil', Ind.get(s.indicator || 'none').name, s.endpoint ? fmt(s.endpoint.v, 2) : ''].join(';'));
+          rows.push([ex.title, s.no, s.kind === 'survey' ? 'vollständige Titration' : 'Halbtitration', fmt(p.v, 2), fmt(p.pH, 2), Ind.get(s.indicator || 'none').name, s.endpoint ? fmt(s.endpoint.v, 2) : ''].join(';'));
         });
       });
     });
@@ -749,7 +782,7 @@
     if (img) h += '<section><h2>Titrationskurve</h2><img src="' + img + '" alt="Titrationskurve"></section>';
     h += '<section><h2>Messdaten</h2><div class="cols2">';
     st.series.forEach(function (s) {
-      h += '<p><strong>' + esc(A.seriesLabel(s)) + '</strong>' + (s.endpoint ? ' – Endpunkt bei ' + fmt(s.endpoint.v, 2) + ' mL' : '') + '</p><table><tr><th>V / mL</th><th>pH</th><th>Status</th></tr>' + s.points.map(function (p) { return '<tr><td>' + fmt(p.v, 2) + '</td><td>' + fmt(p.pH, 2) + '</td><td>' + (p.stable && p.homogeneous !== false ? 'stabil' : 'nicht stabil') + '</td></tr>'; }).join('') + '</table>';
+      h += '<p><strong>' + esc(A.seriesLabel(s)) + '</strong>' + (s.endpoint ? ' – Endpunkt bei ' + fmt(s.endpoint.v, 2) + ' mL' : '') + '</p><table><tr><th>V / mL</th><th>pH</th></tr>' + reportRows(s.points).map(function (p) { return '<tr><td>' + fmt(p.v, 2) + '</td><td>' + fmt(p.pH, 2) + '</td></tr>'; }).join('') + '</table>';
     });
     h += '</div></section><section><h2>Rechnungen</h2><table><tr><th>Größe</th><th>Eingabe</th><th>Prüfung</th></tr>';
     fields.forEach(function (fl) {
@@ -767,6 +800,16 @@
     } else h += '<section><h2>Referenzen</h2><p>Literaturwerte und Modellreferenz sind noch nicht freigegeben.</p></section>';
     document.getElementById('report').innerHTML = A.subs(h);
     setTimeout(function () { global.print(); }, 60);
+  }
+
+  /** Messtabelle im Bericht: höchstens ein Wert je 0,5 mL, im Sprung (ΔpH ≥ 0,3) jeder; der letzte immer */
+  function reportRows(points) {
+    const out = [];
+    points.forEach(function (p, i) {
+      const prev = out[out.length - 1];
+      if (!prev || i === points.length - 1 || p.v - prev.v >= 0.5 - 1e-9 || Math.abs(p.pH - prev.pH) >= 0.3) out.push(p);
+    });
+    return out;
   }
 
   function statusText(s) {
@@ -865,6 +908,8 @@
     renderTask: renderTask,
     renderResults: renderResults,
     checkField: checkField,
+    targets: targets,
+    measureSeries: measureSeries,
     onAction: onAction,
     onChange: onChange,
     onInput: onInput,

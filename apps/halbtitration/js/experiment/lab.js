@@ -15,10 +15,13 @@
  * reading – Bürettenstand (Meniskus); wächst mit jeder Abgabe um dasselbe
  * Volumen; Nachfüllen senkt nur den Stand, nicht dispensed (keine Sprünge).
  *
- * Messkette: Die Elektrode sieht den vermischten Teil der Lösung
- * (Zusammensetzung bei delivered − unmixed). Die Anzeige folgt diesem Wert
- * mit einer Ansprechzeit (Verzögerung 1. Ordnung). „Stabil“ meldet das
- * Gerät wie ein reales pH-Meter über die Drift der Anzeige.
+ * Messkette (ab 0.4.0 didaktisch vereinfacht, instant = true): Jeder
+ * angekommene Tropfen ist sofort vermischt, die Anzeige zeigt sofort den
+ * pH-Wert der Lösung – wie eine pH-Sonde am Messwerterfassungssystem, deren
+ * Kurve beim Titrieren mitläuft. Mit instant = false (nur Unit-Tests) gilt das
+ * frühere Modell: Die Elektrode sieht den vermischten Teil der Lösung
+ * (delivered − unmixed), die Anzeige folgt mit einer Ansprechzeit, „stabil“
+ * meldet das Gerät über die Drift der Anzeige.
  */
 (function (global) {
   'use strict';
@@ -44,6 +47,7 @@
     stableHold: 2.0, // s ruhige Anzeige bis „stabil“
     pipetteTime: 2.4, // s Pipettieren
     waterTime: 1.8, // s Wasser zugeben
+    instant: true, // 0.4.0: sofort vermischt, Anzeige ohne Ansprechzeit
   };
 
   /** Fließgeschwindigkeit für eine Einzelzugabe: kleine Mengen langsam, große zügig */
@@ -63,7 +67,7 @@
         capacity: o.capacity, flaskMax: o.flaskMax, dropVolume: o.dropVolume, minFlow: o.minFlow, maxFlow: o.maxFlow,
         releaseDelay: o.releaseDelay, fallTime: o.fallTime, mixTauStirred: o.mixTauStirred,
         mixTauStill: o.mixTauStill, sensorTau: o.sensorTau, driftLimit: o.driftLimit,
-        stableHold: o.stableHold, pipetteTime: o.pipetteTime, waterTime: o.waterTime,
+        stableHold: o.stableHold, pipetteTime: o.pipetteTime, waterTime: o.waterTime, instant: !!o.instant,
       });
       this.timeScale = 1;
       this._listeners = {};
@@ -175,7 +179,7 @@
     get meterReady() { return this.calibration >= 2 && this.electrodeIn && !this.calRunning; }
 
     /** Anzeige stabil (Drift unter dem Grenzwert für stableHold Sekunden) */
-    get stable() { return this.meterReady && this.quietTime >= this.stableHold; }
+    get stable() { return this.meterReady && (this.instant || this.quietTime >= this.stableHold); }
 
     /** Angezeigter pH-Wert, auf die Geräteauflösung 0,01 gerundet */
     get displayPH() {
@@ -185,6 +189,9 @@
 
     /** Abgegebenes Volumen in der Ableseauflösung der Bürette (0,01 mL) */
     get addedRounded() { return Math.round(this.dispensed * 100) / 100; }
+
+    /** In der Lösung angekommenes Volumen (0,01 mL) – x-Wert des Messpunkts zur aktuellen Anzeige */
+    get deliveredRounded() { return Math.round(this.delivered * 100) / 100; }
 
     // ---------- Vorbereitung ----------
 
@@ -253,7 +260,7 @@
       if (!this.sampleReady) return { ok: false, reason: 'sample' };
       if (!this.waterReady) return { ok: false, reason: 'depth' };
       this.electrodeIn = true;
-      this.sensor = 7.0; // Elektrode kommt aus dem Spülwasser
+      this.sensor = this.instant ? this.bulkState.pH : 7.0; // sonst: Elektrode kommt aus dem Spülwasser
       this.quietTime = 0;
       this._emit('prep', { action: 'electrode' });
       return { ok: true };
@@ -420,11 +427,13 @@
       }
 
       // 3) Fallende Tropfen
+      let landed = false;
       for (let i = this.drops.length - 1; i >= 0; i--) {
         const d = this.drops[i];
         d.t += dt;
         if (d.t >= this.fallTime) {
           this.drops.splice(i, 1);
+          landed = true;
           this.delivered += d.vol;
           this.unmixed += d.vol;
           this._settle();
@@ -433,7 +442,8 @@
       }
       this._settle();
 
-      // 4) Durchmischung
+      // 4) Durchmischung (0.4.0: sofort)
+      if (this.instant) this.unmixed = 0;
       if (this.unmixed > 0) {
         const tau = this.stirrer ? this.mixTauStirred : this.mixTauStill;
         this.unmixed *= Math.exp(-dt / tau);
@@ -441,7 +451,10 @@
       }
 
       // 5) Messkette
-      if (this.meterReady) {
+      if (this.meterReady && this.instant) {
+        this.sensor = this.bulkState.pH;
+        this.quietTime = this.stableHold;
+      } else if (this.meterReady) {
         const target = this.bulkState.pH;
         if (this.sensor === null) this.sensor = target;
         const prev = this.sensor;
@@ -452,6 +465,8 @@
       } else {
         this.quietTime = 0;
       }
+      // Messwert nach angekommenen Tropfen (Live-Aufzeichnung, auch im Zeitraffer je Tropfen)
+      if (landed && this.meterReady) this._emit('reading', { v: this.deliveredRounded, pH: this.displayPH });
     }
 
     _release(vol) {
@@ -522,7 +537,7 @@
       this.electrodeIn = !!s.electrodeIn && this.calibration >= 2 && this.waterReady;
       this.dispensed = Math.max(0, Number(s.dispensed) || 0);
       this.delivered = this.dispensed;
-      this.unmixed = Math.max(0, Number(s.unmixed) || 0);
+      this.unmixed = this.instant ? 0 : Math.max(0, Number(s.unmixed) || 0);
       this.sensor = this.electrodeIn ? this.bulkState.pH : null;
     }
 

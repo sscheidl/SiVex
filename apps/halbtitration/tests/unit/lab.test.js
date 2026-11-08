@@ -5,8 +5,8 @@ const assert = require('node:assert/strict');
 const C = require('../../js/model/chemistry.js');
 const Lab = require('../../js/experiment/lab.js');
 
-function ready(id) {
-  const l = new Lab(C.experiment(id));
+function ready(id, opts) {
+  const l = new Lab(C.experiment(id), opts);
   l.pipetteSample(); l.simulate(3);
   l.addWater(); l.simulate(3);
   l.rinseBurette(); l.fillBurette(0.4); l.purgeTip(0.15);
@@ -56,15 +56,18 @@ test('Bürettenende wird nicht überschritten', () => {
   assert.ok(Math.abs(l.dispensed - (50 - 0.55)) < 1e-6);
 });
 
-test('Ohne Rühren keine sofort homogene, stabile Anzeige', () => {
-  const still = ready('acetic');
+// Bis 0.3.0 Standard, ab 0.4.0 nur noch als Option (instant: false)
+const REAL = { instant: false };
+
+test('Realistische Messkette: ohne Rühren keine sofort homogene, stabile Anzeige', () => {
+  const still = ready('acetic', REAL);
   still.setStirrer(false);
   still.simulate(10);
   still.addVolume(2); still.simulate(3);
   assert.equal(still.isSettled, true);
   assert.ok(still.unmixed > 1, 'unvermischter Anteil bleibt');
   assert.equal(still.homogeneous, false);
-  const stirred = ready('acetic');
+  const stirred = ready('acetic', REAL);
   stirred.simulate(25);
   stirred.addVolume(2); stirred.simulate(3);
   stirred.simulate(15);
@@ -74,8 +77,8 @@ test('Ohne Rühren keine sofort homogene, stabile Anzeige', () => {
   assert.ok(Math.abs(still.sensor - stirred.sensor) > 0.02, 'ohne Rühren weicht die Anzeige ab');
 });
 
-test('Sensor hat eine Ansprechzeit; „stabil“ erst nach ruhiger Anzeige', () => {
-  const l = ready('acetic');
+test('Realistische Messkette: Ansprechzeit; „stabil“ erst nach ruhiger Anzeige', () => {
+  const l = ready('acetic', REAL);
   l.simulate(25);
   assert.equal(l.stable, true);
   l.addVolume(1);
@@ -88,6 +91,38 @@ test('Sensor hat eine Ansprechzeit; „stabil“ erst nach ruhiger Anzeige', () 
   const r = l.reading();
   assert.equal(r.v, 1);
   assert.equal(r.stable, true);
+});
+
+test('0.4.0: Anzeige folgt sofort dem angekommenen Volumen, auch ohne Rühren', () => {
+  const l = ready('acetic');
+  l.setStirrer(false);
+  assert.equal(l.stable, true, 'nach dem Eintauchen sofort ablesbar');
+  assert.equal(l.displayPH, Math.round(C.state(l.exp, 0).pH * 100) / 100);
+  l.setFlowRate(0.5); l.openValve();
+  let seen = 0;
+  for (let i = 0; i < 240; i++) {
+    l.update(1 / 60);
+    assert.equal(l.unmixed, 0);
+    assert.equal(l.stable, true);
+    assert.ok(Math.abs(l.sensor - C.state(l.exp, l.delivered).pH) < 1e-12, 'Anzeige = pH der Lösung mit dem angekommenen Volumen');
+    if (l.delivered > 0) seen++;
+  }
+  assert.ok(seen > 100, 'Tropfen kommen während des Fließens an');
+  l.closeValve(); l.simulate(1);
+  assert.equal(l.deliveredRounded, l.addedRounded);
+});
+
+test('0.4.0: je angekommenem Tropfen ein Messwert-Ereignis, auch im Zeitraffer', () => {
+  const l = ready('acetic');
+  l.timeScale = 25;
+  const got = [];
+  l.on('reading', (r) => got.push(r));
+  l.addVolume(2);
+  l.simulate(2, 1 / 60);
+  assert.equal(got.length, 40, '2 mL in Tropfen zu 0,05 mL');
+  assert.equal(got[got.length - 1].v, 2);
+  for (let i = 1; i < got.length; i++) assert.ok(got[i].v - got[i - 1].v <= 0.051);
+  assert.ok(got.every((r) => Math.abs(r.pH - Math.round(C.state(l.exp, r.v).pH * 100) / 100) < 0.011));
 });
 
 test('Speichern und Wiederherstellen ohne versteckte Sprünge', () => {

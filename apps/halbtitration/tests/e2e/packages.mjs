@@ -102,11 +102,11 @@ async function smoke(dir, url, label, wrapper) {
   await F.chooseExp(frame, 'glycine');
   await F.chooseTitrant(frame, 'NaOH');
   await F.prepare(frame);
-  await F.waitStable(frame);
   await F.waitPoint(frame);
   await F.doseAndTake(frame, 2);
+  // ab 0.4.0 Live-Kurve: Startwert + ein Messwert je Tropfen (2 mL = 40 Tropfen)
   const n = await frame.evaluate(() => Halbtitration.App.activeSeries().points.length);
-  assert(n === 2, label + ': Messung im entpackten Paket nicht möglich');
+  assert(n === 41, label + ': Messung im entpackten Paket nicht möglich (' + n + ' Messwerte)');
   await frame.click('.lk-tabs [data-tab="results"]');
   const lms = wrapper ? await page.evaluate(() => window.__lms) : null;
   await ctx.close();
