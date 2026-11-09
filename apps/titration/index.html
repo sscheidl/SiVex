@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0b1016">
+  <meta name="description" content="Virtuelles Titrierlabor: Säure-Base-Titration (HCl, NaOH, Essigsäure, Ammoniak) mit berechnetem pH-Verlauf.">
+  <title>Titrierlabor · Säure-Base-Titration</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app" id="app" data-phase="setup">
+
+    <!-- Kopfzeile -->
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M13 3h6v9l7.5 13.2A3 3 0 0 1 23.9 30H8.1a3 3 0 0 1-2.6-4.8L13 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M9 22h14l2.2 3.8A1.5 1.5 0 0 1 23.9 28H8.1a1.5 1.5 0 0 1-1.3-2.2z" fill="currentColor" opacity=".55"/>
+        </svg>
+        <div>
+          <div class="brand-title">Titrierlabor</div>
+          <div class="brand-sub">Säure-Base-Titration · starke und schwache Säuren und Basen</div>
+        </div>
+      </div>
+
+      <nav class="stepper" aria-label="Versuchsphasen">
+        <button class="step" data-step="setup" type="button"><span class="step-num">1</span><span class="step-label">Vorbereitung</span></button>
+        <span class="step-line"></span>
+        <button class="step" data-step="titration" type="button"><span class="step-num">2</span><span class="step-label">Durchführung</span></button>
+        <span class="step-line"></span>
+        <button class="step" data-step="evaluation" type="button"><span class="step-num">3</span><span class="step-label">Auswertung</span></button>
+      </nav>
+
+      <div class="top-actions">
+        <div class="mode-switch" role="group" aria-label="Anzeigemodus">
+          <button type="button" class="mode-btn is-active" data-mode="student">Schüler</button>
+          <button type="button" class="mode-btn" data-mode="teacher">Lehrkraft</button>
+        </div>
+        <button type="button" class="icon-btn" id="btnHelp" aria-label="Kurzanleitung">?</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Linke Seite: Labor und Diagramm -->
+      <section class="stage" aria-label="Laboraufbau">
+        <div class="lab-wrap">
+          <canvas id="labCanvas" aria-label="Virtueller Titrationsaufbau mit Bürette, Erlenmeyerkolben und Magnetrührer"></canvas>
+          <div class="teacher-badge" id="teacherBadge" hidden>Lehrkraftmodus</div>
+          <div class="toast-area" id="toastArea" aria-live="polite"></div>
+        </div>
+
+        <div class="chart-drawer" id="chartDrawer" hidden>
+          <div class="chart-head">
+            <div class="chart-title">Titrationskurve <span class="chart-sub" id="chartSub">pH-Wert über zugegebenem Volumen</span></div>
+            <div class="chart-tools">
+              <div class="seg seg-sm" role="group" aria-label="Diagrammmodus">
+                <button type="button" class="seg-btn is-active" data-chartmode="read">Ablesen</button>
+                <button type="button" class="seg-btn" data-chartmode="mark">ÄP markieren</button>
+              </div>
+              <button type="button" class="chip-btn" id="btnDerivative" aria-pressed="false">1. Ableitung</button>
+              <button type="button" class="chip-btn icon" id="btnZoomIn" aria-label="Vergrößern">+</button>
+              <button type="button" class="chip-btn icon" id="btnZoomOut" aria-label="Verkleinern">−</button>
+              <button type="button" class="chip-btn" id="btnZoomReset">Gesamt</button>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas id="chartCanvas" aria-label="Titrationskurve"></canvas>
+          </div>
+          <div class="chart-foot" id="chartFoot">Tippe auf die Kurve, um Messpunkte abzulesen.</div>
+        </div>
+      </section>
+
+      <!-- Verschiebbare Trennleiste -->
+      <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Breite der Steuerleiste ändern" tabindex="0" title="Ziehen, um die Breite zu ändern · Doppelklick: Standard">
+        <span class="splitter-grip"></span>
+      </div>
+
+      <!-- Rechte Seite: Steuerung -->
+      <aside class="panel" aria-label="Steuerung und Messwerte">
+
+        <!-- Phase 1: Vorbereitung -->
+        <div class="phase" data-phase-panel="setup">
+          <div class="start-block">
+            <button type="button" class="btn btn-primary btn-lg" id="btnStart">Experiment starten</button>
+            <div class="warnings" id="setupWarnings"></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Probelösung <small>im Erlenmeyerkolben</small></h2>
+            <div class="seg seg-grid" role="group" aria-label="Probelösung">
+              <button type="button" class="seg-btn is-active" data-sample="acid"><b>HCl</b> Salzsäure <em>stark</em></button>
+              <button type="button" class="seg-btn" data-sample="base"><b>NaOH</b> Natronlauge <em>stark</em></button>
+              <button type="button" class="seg-btn" data-sample="weakAcid"><b>CH₃COOH</b> Essigsäure <em>schwach</em></button>
+              <button type="button" class="seg-btn" data-sample="weakBase"><b>NH₃</b> Ammoniaklösung <em>schwach</em></button>
+            </div>
+            <p class="note" id="reactionNote"></p>
+
+            <label class="field">
+              <span class="field-label">Volumen V(Probelösung)</span>
+              <span class="input-wrap">
+                <button type="button" class="nudge" data-nudge="vSample" data-delta="-5" aria-label="Volumen verringern">−</button>
+                <input type="text" inputmode="decimal" id="inVSample" value="25,00" autocomplete="off">
+                <span class="unit">mL</span>
+                <button type="button" class="nudge" data-nudge="vSample" data-delta="5" aria-label="Volumen erhöhen">+</button>
+              </span>
+              <span class="field-hint">5 bis 50 mL (Vollpipette)</span>
+              <span class="field-error" data-error="vSample"></span>
+            </label>
+
+            <div class="field">
+              <span class="field-label">Konzentration c(Probelösung)</span>
+              <div class="seg seg-sm" role="group" aria-label="Konzentration der Probelösung">
+                <button type="button" class="seg-btn is-active" data-cmode="hidden">Unbekannt (Zufall)</button>
+                <button type="button" class="seg-btn" data-cmode="given">Vorgeben</button>
+              </div>
+              <div class="cmode-hidden">
+                <p class="note">Die Konzentration wird zufällig erzeugt und bleibt bis zur Auswertung verborgen. Genau sie bestimmst du durch die Titration.</p>
+              </div>
+              <div class="cmode-given" hidden>
+                <span class="input-wrap">
+                  <input type="text" inputmode="decimal" id="inCSample" value="0,100" autocomplete="off">
+                  <span class="unit">mol/L</span>
+                </span>
+                <span class="field-hint">0,01 bis 0,5 mol/L</span>
+                <span class="field-error" data-error="cSample"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Maßlösung <small>in der Bürette (50 mL)</small></h2>
+            <div class="titrant-chip" id="titrantChip"><b>NaOH</b> Natronlauge</div>
+            <label class="field">
+              <span class="field-label">Konzentration c(Maßlösung)</span>
+              <span class="input-wrap">
+                <input type="text" inputmode="decimal" id="inCTitrant" value="0,100" autocomplete="off">
+                <span class="unit">mol/L</span>
+              </span>
+              <span class="field-hint">0,01 bis 0,5 mol/L · genau bekannt</span>
+              <span class="field-error" data-error="cTitrant"></span>
+            </label>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Indikator</h2>
+            <div class="indicator-list" id="indicatorList" role="radiogroup" aria-label="Indikator"></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Messtechnik</h2>
+            <label class="switch-row"><input type="checkbox" id="optElectrode" checked><span class="switch"></span><span>pH-Elektrode einsetzen <small>Messwerte für die Titrationskurve</small></span></label>
+            <label class="switch-row"><input type="checkbox" id="optStirrer" checked><span class="switch"></span><span>Magnetrührer einschalten</span></label>
+          </div>
+
+        </div>
+
+        <!-- Phase 2: Durchführung -->
+        <div class="phase" data-phase-panel="titration" hidden>
+          <div class="readouts">
+            <div class="readout">
+              <span class="readout-label">Verbrauch <span class="nowrap">V(Maßlösung)</span></span>
+              <span class="readout-value"><span id="roVolume">0,00</span><small>mL</small></span>
+              <span class="readout-sub" id="roRemaining">Rest: 50,00 mL</span>
+            </div>
+            <div class="readout" id="roPhBox">
+              <span class="readout-label">pH-Wert (Elektrode)</span>
+              <span class="readout-value"><span id="roPH">–</span></span>
+              <span class="readout-sub" id="roPhSub">25 °C</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Bürettenhahn</h2>
+            <button type="button" class="valve-btn" id="btnValve" aria-pressed="false">
+              <span class="valve-led"></span><span class="valve-text">Hahn öffnen</span>
+            </button>
+            <label class="field">
+              <span class="field-label">Tropfgeschwindigkeit <b id="rateLabel">2 Tropfen/s</b></span>
+              <input type="range" id="inRate" min="0" max="100" value="38" aria-label="Tropfgeschwindigkeit">
+              <span class="range-scale"><span>langsam</span><span>zügiger Strahl</span></span>
+            </label>
+            <p class="note">In der Nähe des Farbumschlags langsam stellen und den Hahn nach einzelnen Tropfen schließen.</p>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Endpunkt</h2>
+            <button type="button" class="btn btn-accent" id="btnEndpoint">Farbumschlag – Endpunkt notieren</button>
+            <p class="note" id="endpointNote">Notiere das Volumen, sobald die Farbe dauerhaft umschlägt.</p>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Ansicht</h2>
+            <div class="toggle-grid">
+              <button type="button" class="toggle" id="tgChart" aria-pressed="false">pH-Kurve anzeigen</button>
+              <button type="button" class="toggle" id="tgElectrode" aria-pressed="true">pH-Elektrode</button>
+              <button type="button" class="toggle" id="tgStirrer" aria-pressed="true">Magnetrührer</button>
+              <button type="button" class="toggle" id="tgLens" aria-pressed="true">Ablese-Lupe</button>
+              <button type="button" class="toggle" id="tgDisplay" aria-pressed="true">pH-Anzeige</button>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-ghost" id="btnRestart">Neu befüllen</button>
+            <button type="button" class="btn btn-primary" id="btnToEval">Zur Auswertung</button>
+          </div>
+        </div>
+
+        <!-- Phase 3: Auswertung -->
+        <div class="phase" data-phase-panel="evaluation" hidden>
+          <div class="card">
+            <h2 class="card-title">Messwerte</h2>
+            <dl class="facts" id="evalFacts"></dl>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Volumen der Maßlösung bis zum Endpunkt</h2>
+            <span class="input-wrap">
+              <input type="text" inputmode="decimal" id="inVUsed" placeholder="z. B. 24,95" autocomplete="off">
+              <span class="unit">mL</span>
+            </span>
+            <span class="field-error" data-error="vUsed"></span>
+            <div class="btn-row tight">
+              <button type="button" class="chip-btn" id="btnUseNoted">Notierten Endpunkt übernehmen</button>
+              <button type="button" class="chip-btn" id="btnUseMarker" disabled>Markierten ÄP übernehmen</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Berechnung</h2>
+            <div class="formula" aria-label="Formel">
+              <div class="formula-row"><span id="formulaN">n(Probe) = n(Maßlösung)</span><span class="formula-note">Stoffmengenverhältnis 1 : 1</span></div>
+              <div class="formula-row main">
+                <span>c(Probe) =</span>
+                <span class="frac"><span>c(Maßlösung) · V(Maßlösung)</span><span>V(Probelösung)</span></span>
+              </div>
+            </div>
+            <label class="field">
+              <span class="field-label">Dein Ergebnis c(Probelösung)</span>
+              <span class="input-wrap">
+                <input type="text" inputmode="decimal" id="inCStudent" placeholder="z. B. 0,1000" autocomplete="off">
+                <span class="unit">mol/L</span>
+              </span>
+              <span class="field-error" data-error="cStudent"></span>
+            </label>
+            <button type="button" class="btn btn-primary" id="btnCheck">Ergebnis prüfen</button>
+            <div class="teacher-solution" id="teacherSolution" hidden></div>
+          </div>
+
+          <div class="result" id="resultBox" hidden></div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-ghost" id="btnRevealEq">Theor. ÄP einblenden</button>
+            <button type="button" class="btn btn-ghost" id="btnRepeat">Wiederholen</button>
+          </div>
+          <button type="button" class="btn btn-ghost wide" id="btnNew">Neuer Versuch (neue Konfiguration)</button>
+        </div>
+
+        <!-- Lehrkraft-Informationen (alle Phasen) -->
+        <div class="card teacher-card" id="teacherCard" hidden>
+          <h2 class="card-title">Lehrkraft-Info <small>nicht für Schüler sichtbar</small></h2>
+          <dl class="facts" id="teacherFacts"></dl>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Kurzanleitung -->
+  <div class="modal" id="helpModal" hidden role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-card">
+      <h2 id="helpTitle">Kurzanleitung</h2>
+      <p class="warning warn" id="helpValveNote" hidden>Der Bürettenhahn wurde geschlossen. Öffne ihn nach dem Lesen wieder.</p>
+      <ol class="help-list">
+        <li><b>Vorbereitung:</b> Probelösung, Volumen, Maßlösung und Indikator wählen. Standard: Die Konzentration der Probe ist unbekannt.</li>
+        <li><b>Durchführung:</b> Den blauen Hahn antippen (oder „Hahn öffnen“). Die Tropfgeschwindigkeit stellst du mit dem Regler ein. Kurz vor dem Umschlag langsam tropfen lassen und den Hahn rechtzeitig schließen.</li>
+        <li>Beobachte den Indikator. Ändert sich die Farbe trotz Rühren dauerhaft – je nach Titrationsrichtung erscheint, verschwindet oder wechselt sie –, ist der <b>Endpunkt</b> erreicht: „Endpunkt notieren“ schließt den Hahn und notiert das Volumen, sobald der letzte Tropfen angekommen ist.</li>
+        <li>Optional: <b>pH-Kurve anzeigen</b>. Die Kurve entsteht Punkt für Punkt aus den Messwerten der Elektrode.</li>
+        <li><b>Auswertung:</b> Äquivalenzpunkt in der Kurve markieren, Konzentration berechnen, eingeben und prüfen lassen.</li>
+      </ol>
+      <p class="note">Tastatur: <kbd>Leertaste</kbd> Hahn auf/zu. Die pH-Anzeige lässt sich am Messgerät (Ein/Aus-Taste) oder unter „Ansicht“ ausschalten. Die Breite der Steuerleiste lässt sich an der Trennlinie verschieben.</p>
+      <p class="note">Beim Öffnen dieser Hilfe und beim Verlassen der Seite wird ein offener Bürettenhahn geschlossen.</p>
+      <p class="note">Modell: 25 °C, ideal verdünnte Lösung, K<sub>W</sub> = 1,0 · 10<sup>−14</sup>, pK<sub>S</sub>(CH₃COOH) = 4,75, pK<sub>S</sub>(NH₄⁺) = 9,25. Der pH-Wert wird für jedes zugegebene Volumen aus der Ladungsbilanz berechnet.</p>
+      <button type="button" class="btn btn-primary" id="btnHelpClose">Verstanden</button>
+    </div>
+  </div>
+
+  <script src="js/model/chemistry.js"></script>
+  <script src="js/model/indicators.js"></script>
+  <script src="js/model/config.js"></script>
+  <script src="js/model/evaluation.js"></script>
+  <script src="js/experiment/experiment.js"></script>
+  <script src="js/view/geometry.js"></script>
+  <script src="js/view/lab-renderer.js"></script>
+  <script src="js/view/chart.js"></script>
+  <script src="js/ui/app.js"></script>
+</body>
+</html>
