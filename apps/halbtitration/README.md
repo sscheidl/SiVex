@@ -48,7 +48,7 @@ docs/           CHEMIE.md, BEDIENUNG.md, TESTBERICHT.md, UEBERNAHME.md, screensh
 
 ## Herkunft
 
-Laboraufbau, Tropfen, Meniskus, Ablese-Lupe und Schlieren stammen aus **TitraLab 3** (`apps/titration/release/SiVex-Titration-Claude-v3-web.zip`). Die App-Hülle stammt aus dem **SiVex-Labkit**, Build- und Serverskripte stammen aus Pufferfish. Einzelheiten stehen in [`docs/UEBERNAHME.md`](docs/UEBERNAHME.md). Einen Service Worker gibt es nicht, daher auch keine Cache-Kollision mit TitraLab 3.
+Laboraufbau, Tropfen, Meniskus, Ablese-Lupe und Schlieren stammen aus **TitraLab 3** (`apps/titration/`, seit 3.1.0 entpackt; damals `release/SiVex-Titration-Claude-v3-web.zip`). Die App-Hülle stammt aus dem **SiVex-Labkit**, Build- und Serverskripte stammen aus Pufferfish. Einzelheiten stehen in [`docs/UEBERNAHME.md`](docs/UEBERNAHME.md). Einen Service Worker gibt es nicht, daher auch keine Cache-Kollision mit TitraLab 3.
 
 ## Bekannte Grenzen
 

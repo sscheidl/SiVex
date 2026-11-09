@@ -1,2 +1,2 @@
-c4ca06a4d7e8ce672715575e8d282ee5d9ddcacb16cc9ed574b337fdf246c70e  SiVex-Titration-Claude-v3-mebis-SCORM12.zip
-45a4b60c8540291680ceab8a0c5456bdcc056d526e94d8e4dbc765f688a6530f  SiVex-Titration-Claude-v3-web.zip
+bfe076e8778e32e6f6f60940c9cddaa8f4867f32a80622a378ab93187731b3ad  titration-3.2.1-web.zip
+f431543546f5a27ddb400fa3b195915d4928076d733b089509b802d13c88b347  titration-3.2.1-scorm12.zip

@@ -19,6 +19,7 @@ SiVex-Simulationen sollen im mebis-Kurs unmittelbar im Browser starten, ohne Dow
 - **PASS (durch Lehrkraft bestätigt, 23.10.2026):** TitraLab 3 und Redoxlabor (auch 1.3.1) laufen auf einem iPad mit Safari (iPadOS 26.6.2): funktionsfähig, bedienbar und lesbar. Zusätzlich in Edge und Firefox (jeweils aktuell) unter Windows 11 bestätigt. Beim Redoxlabor werden einige Grafikfehler getrennt behoben.
 - **PASS (durch Lehrkraft bestätigt, 23.10.2026):** Redoxlabor 1.3.1 als SCORM-Paket in mebis getestet; läuft auf dem iPad. Für das Redoxlabor sind laut Lehrkraft keine weiteren Tests erforderlich.
 - **OPEN (TitraLab 3):** Verwaltete Schul-iPads mit Lerngruppe sowie das Fenster-/Tab-Verhalten von „Neues Fenster“ auf dem iPad sind noch nicht abschließend verifiziert.
+- **BEFUND (TitraLab 3, iPad-Test der Lehrkraft):** Für die zuschaltbare Titrationskurve unter dem Laboraufbau blieb zu wenig Raum (pH-Achse stark gestaucht). Behoben in 3.1.0 (Kurve rechts neben der Apparatur, Maximieren); am 09.11.2026 von der Lehrkraft auf dem iPad bestätigt (gut lesbar, Fenster verschiebbar, hell/dunkel gelungen). mebis-Import von 3.1.0/3.2.0 steht aus.
 
 Diese Befunde nicht mit einer vollständigen mebis- oder iPad-Freigabe gleichsetzen.
 

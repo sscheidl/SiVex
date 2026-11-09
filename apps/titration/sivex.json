@@ -1,7 +1,7 @@
 {
   "id": "chemie/titration",
-  "title": "TitraLab 3 (Claude) – Virtuelle Säure-Base-Titration",
-  "description": "Ausgewählte Titrationssimulation. Funktionsfähiges SCORM-1.2-Release vorhanden; Import der Laufzeitdateien nach GitHub ausstehend.",
+  "title": "TitraLab 3 – Virtuelle Säure-Base-Titration",
+  "description": "Säure-Base-Titration von HCl, NaOH, Essigsäure und Ammoniak mit Indikator, pH-Elektrode und berechneter Titrationskurve; Auswertung mit Fehleranalyse. In mebis und auf dem iPad im Einsatz.",
   "subject": "Chemie",
   "topics": [
     "Säure-Base-Chemie",
@@ -13,6 +13,6 @@
     12,
     13
   ],
-  "version": "3",
-  "status": "planned"
+  "version": "3.2.1",
+  "status": "prototype"
 }

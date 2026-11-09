@@ -28,8 +28,7 @@ Festgelegt am 23.10.2026 nach dem Praxistest von TitraLab 3, Redoxlabor und Tren
 
 Die Darstellung von Flüssigkeiten im TitraLab 3 ist der Maßstab: fallende **Tropfen**, Flüssigkeitsspiegel mit **Meniskus** (z. B. im Erlenmeyerkolben) und die Darstellung der **Glasgefäße**. Neue Apps übernehmen diesen Lösungsansatz, statt eigene Varianten zu entwickeln.
 
-- **Referenz:** `apps/titration/release/SiVex-Titration-Claude-v3-web.zip` → `titration/js/view/lab-renderer.js` (Gefäße, Flüssigkeit, Meniskus, Tropfen) und `titration/js/view/geometry.js`
-- Der TitraLab-Quellcode ist noch nicht entpackt eingecheckt (siehe `apps/titration/README.md`). Die Übernahme wird einfacher, sobald der geplante Import erledigt ist; das TitraLab selbst wird dafür nicht verändert.
+- **Referenz:** `apps/titration/js/view/lab-renderer.js` (Gefäße, Flüssigkeit, Meniskus, Tropfen), `geometry.js` und `theme.js` (Paletten für helles und dunkles Schema); seit 3.1.0 entpackt im Repository.
 - Flüssigkeitsmenge, Spiegelhöhe und Tropfen hängen weiterhin ausschließlich vom Modellzustand ab.
 
 ### Verschiebbare Trennlinie zwischen Labor und Bedienfeld
