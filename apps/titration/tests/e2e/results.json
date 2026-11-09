@@ -1,60 +1,60 @@
 {
-  "date": "2026-11-09T14:13:27.047Z",
+  "date": "2026-11-09T14:23:50.823Z",
   "root": "dist/titration",
   "results": [
     {
       "id": "E1",
       "title": "Start: Version in der Kopfzeile, dunkles Schema als Standard, keine Fehler",
       "ok": true,
-      "ms": 570
+      "ms": 686
     },
     {
       "id": "E2",
       "title": "Farbschema: umschalten, speichern, nach Neuladen erhalten; Canvas folgt",
       "ok": true,
-      "ms": 896
+      "ms": 872
     },
     {
       "id": "E3",
       "title": "iPad quer: Kurve rechts neben der Apparatur, volle Höhe, Trennlinie sichtbar",
       "ok": true,
-      "ms": 1346
+      "ms": 1652
     },
     {
       "id": "E4",
       "title": "Trennlinie Apparatur/Kurve: ziehen, speichern, Doppelklick setzt zurück",
       "ok": true,
-      "ms": 1353
+      "ms": 1550
     },
     {
       "id": "E5",
       "title": "Kurve maximieren: Apparatur ausgeblendet, Kurve füllt die Bühne; zurück",
       "ok": true,
-      "ms": 1863
+      "ms": 2300
     },
     {
       "id": "E6",
       "title": "iPad hoch (< 900 px): Kurve unter der Apparatur, Trennlinie ausgeblendet",
       "ok": true,
-      "ms": 1944
+      "ms": 2162
     },
     {
       "id": "E7",
       "title": "Ablauf bis zur Auswertung: Ergebnis prüfen (hell), Kurve breiter in der Auswertung",
       "ok": true,
-      "ms": 2372
+      "ms": 2720
     },
     {
       "id": "E9",
       "title": "Grünphase bei Bromthymolblau: letzter Tropfen in Echtzeit, Kolben wird grün, Hinweis in der Auswertung",
       "ok": true,
-      "ms": 7470
+      "ms": 7510
     },
     {
       "id": "E8",
       "title": "Lehrkraftmodus und Kurzanleitung (dunkel, Desktop)",
       "ok": true,
-      "ms": 1667
+      "ms": 1552
     }
   ]
 }

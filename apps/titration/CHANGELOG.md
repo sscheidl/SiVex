@@ -1,10 +1,17 @@
 # Änderungen
 
+## 3.2.1 – 09.11.2026
+
+Korrektur nach Rückmeldung der Lehrkraft zu 3.2.0: Ungeduldiges Auf- und Zudrehen des Hahns erzeugte Knicke und Stufen in der Messkurve, weil jeder Zwischenstand der nachlaufenden Anzeige aufgezeichnet wurde.
+
+- **Messkurve wieder glatt:** Je angekommenem Tropfen wird der eingeschwungene pH aufgezeichnet (wie 3.1 – so, wie man real wartet, bis die Anzeige steht). Kolben, Messgerät und der pulsierende Live-Punkt im Diagramm zeigen weiterhin die träge Anzeige; der Live-Punkt gleitet auf die Kurve. Die Kurve ist damit unabhängig von der Hahnbedienung identisch mit der Modellkurve, und der Äquivalenzpunkt aus der Kurve verschiebt sich auch bei schnellem Tropfen nicht mehr.
+- Tests: Unit-Test „ungeduldige Bedienung“ (Strahl auf/zu im Wechsel → Kurve monoton, jeder Punkt auf der Modellkurve); 28/28, E1–E9.
+
 ## 3.2.0 – 09.11.2026
 
 Rückmeldung der Lehrkraft nach dem iPad-Test von 3.1.0 (Lesbarkeit, Trennlinien und Farbschema bestätigt): Bei stark/stark sprang die Indikatorfarbe innerhalb eines Tropfens von Gelb nach Blau – im Schülerversuch bleibt die Lösung bei Bromthymolblau einige Sekunden grün, und wer langsam titriert, hat Zeit, den Endpunkt zu notieren.
 
-- **Durchmischung (sichtbarer pH):** Indikatorfarbe und Elektrodenanzeige folgen dem berechneten Gleichgewichts-pH jetzt mit einer Zeitkonstante – 3 s mit Rührer, 8 s ohne (`Experiment.pHMeasured`, `DEFAULTS.mixTauStirred/mixTauStill`). Am Äquivalenzpunkt durchläuft die Lösung dadurch sichtbar die Mischfarbe (BTB: Grün ≈ 1,5–2 s mit, ≈ 4–5 s ohne Rührer); ein zügiger Strahl überfährt den Umschlag. Die Chemie bleibt ideal (carbonatfrei): Modellkurve der Lehrkraft, Äquivalenzpunkt und Auswertung sind unverändert. Die Messkurve zeichnet den gemessenen pH; beim Einschwingen steigt der letzte Punkt an Ort und Stelle (kein doppeltes Volumen, Ableitung bleibt endlich). Anzeige-Untertitel „mischt sich …“ bzw. „ohne Rühren – langsam“ während des Einschwingens; Lehrkraft-Info zeigt pH (Modell, durchmischt) und pH (Anzeige/Farbe). Der Rührer bekommt damit eine spürbare Funktion.
+- **Durchmischung (sichtbarer pH):** Indikatorfarbe und Elektrodenanzeige folgen dem berechneten Gleichgewichts-pH jetzt mit einer Zeitkonstante – 3 s mit Rührer, 8 s ohne (`Experiment.pHMeasured`, `DEFAULTS.mixTauStirred/mixTauStill`). Am Äquivalenzpunkt durchläuft die Lösung dadurch sichtbar die Mischfarbe (BTB: Grün ≈ 1,5–2 s mit, ≈ 4–5 s ohne Rührer); ein zügiger Strahl überfährt den Umschlag. Die Chemie bleibt ideal (carbonatfrei): Modellkurve der Lehrkraft, Äquivalenzpunkt und Auswertung sind unverändert. Die Messkurve zeichnete in 3.2.0 den gemessenen pH (in 3.2.1 zurückgenommen, siehe oben). Anzeige-Untertitel „mischt sich …“ bzw. „ohne Rühren – langsam“ während des Einschwingens; Lehrkraft-Info zeigt pH (Modell, durchmischt) und pH (Anzeige/Farbe). Der Rührer bekommt damit eine spürbare Funktion.
 - **Kurzer Hinweis in der Auswertung** (Karte „Messwerte“): Mischfarbe durch Verteilen des letzten Tropfens; im Realversuch hält das Grün oft länger (Carbonat in der Natronlauge, CO₂ aus der Luft) – das Modell rechnet ohne beides. Bewusst kein Carbonat-Schalter und keine Schulter in der Kurve: Puffer sind Thema von Halbtitrationslabor und Pufferfish.
 - Kurzanleitung ergänzt; Service-Worker-Cache `titrierlabor-v6`.
 - Tests: 28 Unit-Tests (neu: Experiment – Verzögerung der Anzeige, Grünfenster mit/ohne Rührer, Punkt-Aktualisierung, langsam vs. Strahl, Volumenbuchhaltung), Browserabnahme E1–E9 (neu E9: Grünphase in Echtzeit mit Screenshot, Hinweis in der Auswertung).

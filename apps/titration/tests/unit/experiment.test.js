@@ -57,18 +57,32 @@ test('Rührer zur Laufzeit umschaltbar; Zeitkonstanten aus den Vorgaben', () => 
   assert.equal(exp.mixTau, Experiment.DEFAULTS.mixTauStill);
 });
 
-test('Messkurve: beim Einschwingen wird der letzte Punkt aktualisiert, nicht verdoppelt', () => {
+test('Messkurve: ein eingeschwungener Punkt je Tropfen, unabhängig von der Hahnbedienung', () => {
   const exp = nearEquivalence();
   exp.addVolume(0.05);
-  exp.simulate(2);
+  exp.simulate(1.0); // Tropfen gelandet, Anzeige noch im Einschwingen
   const n = exp.points.length;
   const last = exp.points[n - 1];
   assert.ok(Math.abs(last.v - 25.02) < 1e-6, 'Punkt beim neuen Volumen');
-  exp.simulate(2);
+  assert.ok(Math.abs(last.pH - exp.pH) < 1e-9, 'Punkt trägt den eingeschwungenen Wert, nicht die nachlaufende Anzeige');
+  assert.ok(exp.pHMeasured < exp.pH - 1, 'Anzeige hinkt noch nach');
+  exp.simulate(10);
   assert.equal(exp.points.length, n, 'keine weiteren Punkte beim gleichen Volumen');
-  assert.ok(exp.points[n - 1].pH > last.pH - 1e-9, 'Punkt steigt an Ort und Stelle');
-  // Ableitung bleibt endlich
-  for (const d of Chem.derivative(exp.points)) assert.ok(Number.isFinite(d.slope));
+  assert.ok(Math.abs(exp.points[n - 1].pH - last.pH) < 1e-12, 'Punkt bleibt unverändert');
+  // Ungeduldige Bedienung: Strahl auf, zu, auf – Kurve bleibt monoton und ohne Stufen
+  const rough = new Experiment(CFG, { electrode: true });
+  for (let k = 0; k < 6; k++) {
+    rough.setFlowRate(k % 2 ? 1.0 : 0.02);
+    rough.openValve(); rough.simulate(k % 2 ? 3 : 2); rough.closeValve(); rough.simulate(1.5);
+  }
+  const pts = rough.points;
+  assert.ok(pts.length > 20);
+  for (let i = 1; i < pts.length; i++) {
+    assert.ok(pts[i].v > pts[i - 1].v, 'Volumen steigt');
+    assert.ok(pts[i].pH >= pts[i - 1].pH - 1e-9, `pH fällt bei ${pts[i].v} mL`);
+    assert.ok(Math.abs(pts[i].pH - Chem.phAt(CFG, pts[i].v)) < 1e-9, 'jeder Punkt liegt auf der Modellkurve');
+  }
+  for (const d of Chem.derivative(pts)) assert.ok(Number.isFinite(d.slope));
 });
 
 test('Langsam titriert: Endpunkt im grünen Fenster liegt am ÄP; schneller Strahl überfährt ihn', () => {

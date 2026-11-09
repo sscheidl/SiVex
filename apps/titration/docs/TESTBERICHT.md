@@ -1,20 +1,20 @@
-# Testbericht TitraLab 3 – Version 3.2.0
+# Testbericht TitraLab 3 – Version 3.2.1
 
-## 3.2.0 (09.11.2026) – Durchmischung / sichtbarer pH
+## 3.2.0 / 3.2.1 (09.11.2026) – Durchmischung / sichtbarer pH
 
-Umgebung wie 3.1.0 (Linux-Container, Node.js 22.23.4, Chromium über Playwright 1.63, Tablet-Größen emuliert). Alle Prüfungen erneut ausgeführt.
+Umgebung wie 3.1.0 (Linux-Container, Node.js 22.23.4, Chromium über Playwright 1.63, Tablet-Größen emuliert). Alle Prüfungen für 3.2.1 erneut ausgeführt. Befund der Lehrkraft zu 3.2.0 (Knicke/Stufen in der Kurve bei ungeduldiger Hahnbedienung) in 3.2.1 behoben.
 
 | Prüffall | Status | Nachweis |
 | --- | --- | --- |
 | Unit-Tests (Chemie, Konfiguration, Auswertung, Farbschema, Experiment) | **PASS** 28/28 | `npm test` |
 | Letzter Tropfen HCl/NaOH mit BTB: Gleichgewichts-pH springt 4,2 → 9,6, Anzeige folgt verzögert, schwingt exakt ein | **PASS** | `tests/unit/experiment.test.js` |
 | Grünfenster pH 6–7,6: mit Rührer 1–3 s, ohne Rührer 3–8 s, ohne > 2× mit | **PASS** (1,75 s / 4,7 s) | Unit |
-| Messkurve: Punkt beim gleichen Volumen wird aktualisiert, Ableitung endlich | **PASS** | Unit |
+| Messkurve: je Tropfen ein eingeschwungener Punkt; Strahl auf/zu im Wechsel → Kurve monoton, jeder Punkt auf der Modellkurve, Ableitung endlich | **PASS** | Unit |
 | Langsam: Endpunkt im Grün = letzter Tropfen (25,02 mL); Strahl 1 mL/s bis Grün erkannt: > 25,3 mL (übertitriert) | **PASS** | Unit |
 | Echtzeit im Browser: Kolben gelb → grün (Anzeige 7,1, „mischt sich …“) → blau; Hinweis in der Auswertung | **PASS** | E9, `10-btb-gruenphase-desktop.png` |
 | Regressions E1–E8 (Layout, Trennlinien, Farbschema, Ablauf, Lehrkraft) | **PASS** 8/8 | `node tests/e2e/run.mjs` |
 | Pakete reproduzierbar, Build-Prüfung | **PASS** | `release/SHA256SUMS.txt`, `npm run build` |
-| iPad-Safari (3.2.0), mebis-Import | **HOLD – unverified** | 3.1.0 von der Lehrkraft auf dem iPad bestätigt (Lesbarkeit, Trennlinien, Farbschema); 3.2.0 und mebis stehen aus |
+| iPad-Safari (3.2.x), mebis-Import | **HOLD – unverified** | 3.1.0 von der Lehrkraft auf dem iPad bestätigt (Lesbarkeit, Trennlinien, Farbschema); 3.2.0 kurz geprüft (Grünphase ja, Kurve mit Stufen → 3.2.1); 3.2.1 und mebis stehen aus |
 
 ---
 

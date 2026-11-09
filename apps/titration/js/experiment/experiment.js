@@ -25,6 +25,11 @@
  *                Indikators (z. B. Grün bei Bromthymolblau), bei langsamer
  *                Zugabe bleibt Zeit, den Endpunkt zu notieren; schnelle
  *                Zugabe überfährt den Umschlag. Die Chemie bleibt ideal.
+ * Die Messkurve (points) enthält je angekommenem Tropfen den
+ * eingeschwungenen Wert – wie beim realen Protokollieren, bei dem man
+ * wartet, bis die Anzeige steht. So bleibt die Kurve auch dann glatt,
+ * wenn der Hahn ungeduldig auf- und zugedreht wird; nur der Live-Punkt
+ * im Diagramm zeigt die aktuelle (nachlaufende) Anzeige.
  */
 (function (global) {
   'use strict';
@@ -242,20 +247,12 @@
       return this.endpoint;
     }
 
-    /**
-     * Messpunkt (V, gemessener pH) aufzeichnen. Ein Punkt beim gleichen
-     * Volumen wird aktualisiert statt verdoppelt – so steigt die Kurve beim
-     * Einschwingen der Anzeige an Ort und Stelle.
-     */
+    /** Messpunkt (V, eingeschwungener pH) aufzeichnen – ein Punkt je Volumen */
     recordPoint() {
       const s = this.state;
       const last = this.points[this.points.length - 1];
-      if (last && Math.abs(last.v - s.vTitrant) < EPS) {
-        last.pH = this.pHMeasured;
-        last.t = this.time;
-        return;
-      }
-      this.points.push({ v: s.vTitrant, pH: this.pHMeasured, t: this.time });
+      if (last && Math.abs(last.v - s.vTitrant) < EPS) return;
+      this.points.push({ v: s.vTitrant, pH: s.pH, t: this.time });
     }
 
     /**
@@ -336,7 +333,6 @@
       if (Math.abs(target - this.pHMeasured) > this.mixSettle) {
         this.pHMeasured += (target - this.pHMeasured) * (1 - Math.exp(-dt / this.mixTau));
         if (Math.abs(target - this.pHMeasured) <= this.mixSettle) this.pHMeasured = target;
-        if (this.electrode) this.recordPoint();
       }
     }
 

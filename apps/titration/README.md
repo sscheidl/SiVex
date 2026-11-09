@@ -6,11 +6,11 @@ Virtuelle Titration von Salzsäure, Natronlauge, Essigsäure und Ammoniaklösung
 | --- | --- |
 | ![Kurve neben der Apparatur, dunkel](docs/screenshots/03-ipad-quer-kurve-rechts.png) | ![Kurve neben der Apparatur, hell](docs/screenshots/04-ipad-quer-kurve-rechts-hell.png) |
 
-**Version 3.2.0** (prototype – 3.1.0 von der Lehrkraft auf dem iPad bestätigt, mebis-Import und 3.2.0 stehen aus; [Änderungen](CHANGELOG.md), [Testbericht](docs/TESTBERICHT.md)). Version 3.0 („Claude V3“) ist in mebis und auf dem iPad im Einsatz.
+**Version 3.2.1** – von der Lehrkraft auf dem iPad geprüft und für den Unterricht ab 10.11.2026 übernommen; der mebis-Import von 3.2.1 wird beim ersten Einsatz bestätigt, danach Status `ready` ([Änderungen](CHANGELOG.md), [Testbericht](docs/TESTBERICHT.md)).
 
 ## Download
 
-**[⬇ SCORM 1.2 (titration-3.2.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.2.0-scorm12.zip)** · [⬇ Web-ZIP (titration-3.2.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.2.0-web.zip) · Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
+**[⬇ SCORM 1.2 (titration-3.2.1-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.2.1-scorm12.zip)** · [⬇ Web-ZIP (titration-3.2.1-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.2.1-web.zip) · Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
 In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“. Webserver: Web-ZIP entpacken und den Ordner `titration/` per HTTPS bereitstellen; die App läuft nach dem ersten Laden auch offline (Service Worker).
 
@@ -39,7 +39,7 @@ tests/unit          node --test
 tests/e2e           Playwright-Abnahme mit Screenshots
 ```
 
-Modell: 25 °C, ideal verdünnt, carbonatfrei, K_W = 1,0·10⁻¹⁴, pKₛ(CH₃COOH) = 4,75, pKₛ(NH₄⁺) = 9,25; starke Säure/Base geschlossen (quadratische Gleichung), schwache Komponente per Bisektion in lg c(H₃O⁺). Indikatorfarbe und Elektrodenanzeige folgen dem Gleichgewichts-pH mit Zeitkonstante 3 s (Rührer an) bzw. 8 s (aus); die Modellkurve der Lehrkraft bleibt ideal. Die Laborgrafik (Glas, Meniskus, Tropfen, verschiebbare Trennlinie) ist Referenz für die übrigen Apps, siehe [`docs/QUALITY.md`](../../docs/QUALITY.md).
+Modell: 25 °C, ideal verdünnt, carbonatfrei, K_W = 1,0·10⁻¹⁴, pKₛ(CH₃COOH) = 4,75, pKₛ(NH₄⁺) = 9,25; starke Säure/Base geschlossen (quadratische Gleichung), schwache Komponente per Bisektion in lg c(H₃O⁺). Indikatorfarbe und Elektrodenanzeige folgen dem Gleichgewichts-pH mit Zeitkonstante 3 s (Rührer an) bzw. 8 s (aus); die Messkurve enthält je Tropfen den eingeschwungenen Wert und bleibt damit glatt. Die Laborgrafik (Glas, Meniskus, Tropfen, verschiebbare Trennlinie) ist Referenz für die übrigen Apps, siehe [`docs/QUALITY.md`](../../docs/QUALITY.md).
 
 ## Entwicklung
 

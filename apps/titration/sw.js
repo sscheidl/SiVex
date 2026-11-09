@@ -10,7 +10,7 @@
  *   Verzeichnisses (Scope dieses Service Workers).
  */
 const CACHE_PREFIX = 'titrierlabor-';
-const CACHE = CACHE_PREFIX + 'v6'; // 3.2.0
+const CACHE = CACHE_PREFIX + 'v7'; // 3.2.1
 const FILES = [
   './',
   'index.html',
