@@ -65,6 +65,45 @@ test('Fokus (0.2.0): Auswahllisten nur nach Tastaturbedienung erneut fokussieren
   const s2 = el('select');
   assert.equal(core.restoreFocus(s2), true, 'nach Tastatur: Fokus zurück, damit man weiterarbeiten kann');
   assert.equal(core.restoreFocus(null), false);
-  assert.equal(core.VERSION, '0.2.0');
+  assert.equal(core.VERSION, '0.3.0');
   core.noteInput('pointer');
+});
+
+// ---------------------------------------------------------------- 0.3.0: Lernweg-Mechanik und Diagramm
+const learn = require('../js/learn.js');
+const chart = require('../js/chart.js');
+
+test('Lernweg: Lückentext, Einfachwahl, Mehrfachwahl und Zuordnung werden feldweise geprüft', () => {
+  const step = {
+    id: 's', n: 1, short: 'S', title: 'T', intro: '', hints: ['a', 'b', 'c'], solution: 'x',
+    paragraphs: [['A ', learn.gap('g1', { x: 'X', y: 'Y' }, 'x', { y: 'nein' }), ' B']],
+    questions: [
+      { id: 'q1', type: 'one', legend: '', options: { a: 'A', b: 'B' }, correct: 'b', misc: { a: 'falsch' } },
+      { id: 'q2', type: 'many', legend: '', options: { a: 'A', b: 'B', c: 'C' }, correct: ['a', 'c'] },
+      { id: 'q3', type: 'assign', legend: '', options: { l: 'links', r: 'rechts' }, rows: [{ id: 'r1', label: '', correct: 'l' }, { id: 'r2', label: '', correct: 'r' }] }
+    ]
+  };
+  assert.equal(learn.fields(step).length, 5);
+  const g = learn.grade(step, { g1: 'y', q1: 'b', q2: ['a'], 'q3.r1': 'l', 'q3.r2': '' });
+  assert.equal(g.correct, 2);
+  assert.equal(g.total, 5);
+  assert.equal(g.fields.g1.feedback, 'nein');
+  assert.equal(g.fields.q1.ok, true);
+  assert.match(g.fields.q2.feedback, /fehlt noch eine/);
+  assert.equal(g.fields['q3.r2'].status, 'empty');
+  assert.deepEqual(learn.solutionAnswers(step), { g1: 'x', q1: 'b', q2: ['a', 'c'], 'q3.r1': 'l', 'q3.r2': 'r' });
+  assert.ok(learn.grade(step, learn.solutionAnswers(step)).allCorrect);
+  assert.equal(learn.complete(step, { g1: 'x' }), false);
+  const st = { step: 's', steps: learn.freshState([step]) };
+  const html = learn.taskHtml([step], st);
+  assert.match(html, /Antworten prüfen/);
+  assert.match(html, /name="q3.r1"/);
+});
+
+test('Diagramm: schöne Achsenteilung und deutsche Zahlen', () => {
+  assert.equal(chart.niceStep(100, 5), 20);
+  assert.equal(chart.niceStep(1, 4), 0.2);
+  assert.equal(chart.niceStep(37, 10), 5);
+  assert.equal(chart.fmtDe(0.5), '0,5');
+  assert.equal(chart.fmtDe(0), '0');
 });

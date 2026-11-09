@@ -1,0 +1,2 @@
+5956efefb1e13f1c508d447601faf41d1290b450ffde1649d8b69cf80c52da00  ester-gleichgewicht-0.1.0-web.zip
+14d396346b7a80a6b4b37a9556c0f39c4776cd09505a769248347cb9e879b9e8  ester-gleichgewicht-0.1.0-scorm12.zip

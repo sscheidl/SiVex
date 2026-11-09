@@ -1,0 +1,86 @@
+/* ============================================================
+   Stechheber – app-eigener Stil (auf Basis von labkit.css 0.3.0)
+   Bühne: links die Apparatur (Stoffebene, blau gerahmt), rechts
+   Diagramm mit Balkenpaar und Q/K-Anzeige, darunter die Zeitsteuerung.
+   Nichts liegt über dem Bild. Gemeinsames Gerüst der Gleichgewichts-Reihe
+   (docs/GLEICHGEWICHT-PLANUNG.md, G1–G4, G8).
+   ============================================================ */
+:root { --panel-w: clamp(300px, 28vw, 400px); }
+[hidden] { display: none !important; }
+html, body { font-size: 16px; }
+.lk-btn.small { font-size: 15.5px; }
+.lk-card h2 { font-size: 19px; }
+.lk-card h3 { font-size: 16.5px; }
+.lk-notebook h2 { font-size: 21px; }
+.brandmark { width: 34px; height: 34px; flex: 0 0 34px; }
+.lk-brand > div { min-width: 0; overflow: hidden; }
+.lk-brand .ver { font-size: 12px; color: #aab6c4; font-weight: 600; }
+
+/* ---------- Bühne ---------- */
+.lk-stage { overflow: hidden; background: var(--bg); }
+.viewrow { flex: 1 1 auto; min-height: 260px; display: flex; gap: 10px; margin: 10px 10px 0; }
+.stagewrap { position: relative; flex: 0 0 44%; min-width: 0; border-radius: var(--radius); overflow: hidden; background: linear-gradient(#f7fafc, #e9eff5); }
+.stagewrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.levelTag { position: absolute; top: 8px; left: 8px; z-index: 1; }
+.chartcol { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.chartwrap { flex: 1 1 auto; min-height: 140px; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.chartwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.chartfoot { flex: 0 0 auto; display: flex; gap: 8px; min-height: 120px; }
+.barswrap { flex: 0 0 170px; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.barswrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.qbox { flex: 1 1 auto; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; font-size: 15px; }
+.qrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.qrow b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.qrow.eq b { color: var(--ok); }
+.qlab { color: var(--text-2); display: inline-flex; align-items: center; gap: 4px; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.05; font-size: 13px; vertical-align: middle; }
+.frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 3px; }
+.qnote { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.qnote b { color: var(--ok); }
+
+.ctrlbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 10px; }
+.ctrlbar .hint { font-size: 14px; margin-left: auto; color: var(--text-2); font-weight: 600; }
+.lk-seg.light { background: var(--surface); border-color: var(--line-2); }
+.lk-seg.light button { color: var(--text-2); min-height: var(--touch); min-width: 44px; padding: 0 12px; font-size: 15px; }
+.lk-seg.light button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+#btnRun { min-width: 92px; }
+
+/* ---------- Bedienfeld ---------- */
+.sl { display: block; margin: 8px 0 10px; }
+.sl > span { display: block; font-size: 14.5px; color: var(--text-2); margin-bottom: 2px; }
+.sl output { font-weight: 700; color: var(--text); }
+.sl input[type="range"] { width: 100%; height: 36px; margin: 0; }
+.lk-muted.small { font-size: 13.5px; margin: 0; }
+table.res { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+table.res th, table.res td { padding: 6px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+table.res th { font-size: 13.5px; color: var(--text-2); }
+table.res td:last-child { font-variant-numeric: tabular-nums; }
+table.analogy td:last-child { font-variant-numeric: normal; }
+.lk-card ul { margin: 4px 0 0; padding-left: 20px; }
+.lk-card li { margin: 4px 0; }
+
+/* ---------- Schmale Bildschirme ---------- */
+@media (max-width: 980px) {
+  .viewrow { flex-direction: column; }
+  .stagewrap { flex: 0 0 300px; }
+  .chartwrap { min-height: 180px; }
+}
+@media (max-width: 899px) {
+  .lk-stage { overflow: visible; }
+  .viewrow { min-height: 0; }
+  .stagewrap { flex: 0 0 280px; }
+}
+
+/* ---------- Druck ---------- */
+.print-only { display: none; }
+@media print {
+  body > .lk-app { display: none; }
+  .print-only { display: block; font: 12pt/1.4 var(--font); color: #000; }
+  .print-only h1 { font-size: 18pt; margin: 0 0 8pt; }
+  .print-only table { width: 100%; border-collapse: collapse; margin: 6pt 0; }
+  .print-only th, .print-only td { border: 1px solid #888; padding: 4pt 6pt; height: 18pt; }
+}
+
+/* vier Reiter passen auch in ein 300 px breites Bedienfeld */
+.lk-tabs { flex-wrap: wrap; }
+.lk-tabs button { padding: 0 8px; font-size: 15px; }

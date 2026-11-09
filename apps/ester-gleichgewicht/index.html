@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Estergleichgewicht – SiVex</title>
+  <meta name="description" content="Esterbildung und chemisches Gleichgewicht: Ethansäure + Ethanol ⇌ Ester + Wasser auf der Stoffebene (Stoffmengen, Kurven, Tabelle) und auf der Teilchenebene (Zusammenstöße), Katalysator, Q und K (Chemie Jgst. 10–13).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b2430'/%3E%3Ccircle cx='24' cy='34' r='11' fill='%23d9502f'/%3E%3Ccircle cx='40' cy='34' r='10' fill='%23e8863a'/%3E%3Ccircle cx='32' cy='34' r='17' fill='none' stroke='%2357a0ee' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="labkit/css/labkit.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="lk-app">
+    <header class="lk-head">
+      <div class="lk-brand">
+        <svg class="brandmark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+          <circle cx="15" cy="21" r="7" fill="#d9502f"/><circle cx="25" cy="21" r="6.5" fill="#e8863a"/><circle cx="20" cy="21" r="11" fill="none" stroke="#57a0ee" stroke-width="2"/>
+        </svg>
+        <div><b>Estergleichgewicht</b> <span class="ver">0.1.0</span><br><small>Esterbildung und chemisches Gleichgewicht · Chemie 10–13</small></div>
+      </div>
+      <button type="button" class="lk-btn small" id="btnNotebook">Hefteintrag</button>
+      <button type="button" class="lk-btn small" id="btnPanel" aria-expanded="true" aria-controls="panel">Bedienfeld</button>
+    </header>
+    <main class="lk-main" id="main">
+      <section class="lk-stage" id="stage" aria-label="Simulation">
+        <div class="viewbar">
+          <div class="lk-seg light" id="views" role="group" aria-label="Ansicht wählen">
+            <button type="button" data-view="both" aria-pressed="true">Beide Ebenen</button>
+            <button type="button" data-view="matter" aria-pressed="false">Stoffebene</button>
+            <button type="button" data-view="particles" aria-pressed="false">Teilchenebene</button>
+          </div>
+          <span class="bridge lk-muted">Die glatte Kurve ist der Mittelwert über unvorstellbar viele Teilchen – die Teilchenansicht zeigt Einzelereignisse.</span>
+        </div>
+        <div class="viewrow" id="viewrow">
+          <div class="lk-frame matter levelwrap" id="matterWrap">
+            <span class="lk-level matter levelTag">Stoffebene – messbar</span>
+            <canvas id="matter" role="img" aria-label="Kolben mit Reaktionsgemisch und Mengenbalken der vier Stoffe"></canvas>
+          </div>
+          <div class="lk-frame particles levelwrap" id="particleWrap">
+            <span class="lk-level particles levelTag">Teilchenebene – Modell</span>
+            <canvas id="particles" role="img" aria-label="Kasten mit 40 schematischen Teilchen, die zusammenstoßen und reagieren"></canvas>
+          </div>
+        </div>
+        <div class="legend" id="legend" aria-label="Legende der Teilchen"></div>
+        <div class="chartrow">
+          <div class="chartwrap"><canvas id="chart" role="img" aria-label="Diagramm: Stoffmengen über der Zeit"></canvas></div>
+          <div class="chartfoot">
+            <div class="barswrap"><canvas id="bars" role="img" aria-label="Balkenpaar: erfolgreiche Zusammenstöße pro 10 Sekunden auf der Teilchenebene"></canvas></div>
+            <div class="qbox" id="qbox" aria-live="off"></div>
+          </div>
+        </div>
+        <div class="ctrlbar">
+          <button type="button" class="lk-btn" id="btnStep">1 Tag</button>
+          <button type="button" class="lk-btn primary" id="btnRun" aria-pressed="false">Start</button>
+          <div class="lk-seg light" id="speed" role="group" aria-label="Tempo">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="3" aria-pressed="false">3×</button>
+            <button type="button" data-speed="10" aria-pressed="false">10×</button>
+          </div>
+          <button type="button" class="lk-btn" id="btnCat" aria-pressed="false">Katalysator: aus</button>
+          <button type="button" class="lk-btn" id="btnRestart">Neu starten</button>
+        </div>
+      </section>
+      <div class="lk-splitter" id="splitter" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Breite des Bedienfelds ändern (Pfeiltasten, Doppelklick setzt zurück)" aria-valuemin="300" aria-valuemax="620"><span class="lk-splitter-grip"></span></div>
+      <aside class="lk-panel" id="panel" aria-label="Bedienfeld">
+        <div class="lk-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-experiment" data-tab="experiment" aria-selected="true">Versuch</button>
+          <button type="button" role="tab" id="tab-task" data-tab="task" aria-selected="false">Aufgabe</button>
+          <button type="button" role="tab" id="tab-table" data-tab="table" aria-selected="false">Tabelle</button>
+          <button type="button" role="tab" id="tab-model" data-tab="model" aria-selected="false">Modell</button>
+          <button type="button" role="tab" id="tab-notebook" data-tab="notebook" aria-selected="false">Hefteintrag</button>
+        </div>
+        <div id="panelBody" class="lk-section" role="tabpanel"></div>
+      </aside>
+    </main>
+  </div>
+  <div class="print-only" id="printArea"></div>
+  <script src="labkit/js/core.js"></script>
+  <script src="labkit/js/splitter.js"></script>
+  <script src="labkit/js/scorm.js"></script>
+  <script src="labkit/js/chart.js"></script>
+  <script src="labkit/js/learn.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

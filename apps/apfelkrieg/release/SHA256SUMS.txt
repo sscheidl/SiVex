@@ -1,0 +1,2 @@
+7d5ac4c5606c28221e33c7caa95dd7ae4b724e8f2ac7d7292d34d6cb2d8688d1  apfelkrieg-0.1.0-web.zip
+ef3773f0e0ab2d9da07e9b460c003cf4ec7da69c6cf7860078b24a7eb2fb0ef1  apfelkrieg-0.1.0-scorm12.zip

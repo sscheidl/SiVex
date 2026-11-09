@@ -1,0 +1,2 @@
+75153cd098933622e5d9da694c9230b43190279dbdb8bde42f0eec2a78d1db28  stechheber-0.1.0-web.zip
+5f2fb7fc24363cd3c8b84fcb12fff82a64bf622881e1cbe3ffd6be87525d52b6  stechheber-0.1.0-scorm12.zip

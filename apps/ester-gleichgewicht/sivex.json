@@ -1,13 +1,8 @@
 {
   "id": "chemie/ester-gleichgewicht",
-  "title": "Esterbildung und chemisches Gleichgewicht",
-  "description": "Teilchenmodell, Konzentrationsdiagramme und Gleichgewichtsverschiebung.",
+  "title": "Estergleichgewicht – Esterbildung und chemisches Gleichgewicht",
+  "description": "Ethansäure + Ethanol ⇌ Ester + Wasser: Stoffmengenkurven, Tabelle und Teilchenmodell mit Zusammenstößen; Katalysator; Q und K (MWG).",
   "subject": "Chemie",
-  "grades": [
-    10,
-    11,
-    12,
-    13
-  ],
-  "status": "planned"
+  "grades": [10, 11, 12, 13],
+  "status": "prototype"
 }

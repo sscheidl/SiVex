@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stechheber – SiVex</title>
+  <meta name="description" content="Modellexperiment Stechheber zum chemischen Gleichgewicht: zwei Zylinder, zwei Rohre, Wasser wandert hin und zurück – dynamisches Gleichgewicht auf der Stoffebene (Chemie Jgst. 10–13).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231b2430'/%3E%3Crect x='12' y='30' width='16' height='24' rx='2' fill='%2357a0ee'/%3E%3Crect x='36' y='22' width='16' height='32' rx='2' fill='%2357a0ee'/%3E%3Crect x='18' y='8' width='5' height='30' fill='%23eef3f8'/%3E%3Crect x='42' y='8' width='3' height='30' fill='%23eef3f8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="labkit/css/labkit.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="lk-app">
+    <header class="lk-head">
+      <div class="lk-brand">
+        <svg class="brandmark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+          <rect x="6" y="18" width="11" height="16" rx="1.5" fill="#57a0ee"/><rect x="23" y="12" width="11" height="22" rx="1.5" fill="#57a0ee"/>
+          <rect x="10" y="4" width="3.5" height="20" fill="#eef3f8"/><rect x="27" y="4" width="2.2" height="20" fill="#eef3f8"/>
+        </svg>
+        <div><b>Stechheber</b> <span class="ver">0.1.0</span><br><small>Modell zum chemischen Gleichgewicht · Chemie 10–13</small></div>
+      </div>
+      <button type="button" class="lk-btn small" id="btnNotebook">Hefteintrag</button>
+      <button type="button" class="lk-btn small" id="btnPanel" aria-expanded="true" aria-controls="panel">Bedienfeld</button>
+    </header>
+    <main class="lk-main" id="main">
+      <section class="lk-stage" id="stage" aria-label="Versuch">
+        <div class="viewrow" id="viewrow">
+          <div class="lk-frame matter stagewrap" id="stageWrap">
+            <span class="lk-level matter levelTag">Stoffebene – Modell</span>
+            <canvas id="stage-canvas" role="img" aria-label="Zwei Standzylinder A und B mit Wasser und zwei Rohren a und b"></canvas>
+          </div>
+          <div class="chartcol">
+            <div class="chartwrap"><canvas id="chart" role="img" aria-label="Diagramm: Volumen in A und B über den Zyklen"></canvas></div>
+            <div class="chartfoot">
+              <div class="barswrap"><canvas id="bars" role="img" aria-label="Balkenpaar: übertragenes Volumen im letzten Zyklus"></canvas></div>
+              <div class="qbox" id="qbox" aria-live="off"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ctrlbar">
+          <button type="button" class="lk-btn" id="btnStep">Zyklus</button>
+          <button type="button" class="lk-btn primary" id="btnRun" aria-pressed="false">Start</button>
+          <div class="lk-seg light" id="speed" role="group" aria-label="Tempo">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="3" aria-pressed="false">3×</button>
+            <button type="button" data-speed="10" aria-pressed="false">10×</button>
+          </div>
+          <button type="button" class="lk-btn" id="btnRestart">Neu starten</button>
+          <span class="hint" id="hint" aria-live="off">Ein Zyklus: eintauchen · heben · tauschen · ablassen</span>
+        </div>
+      </section>
+      <div class="lk-splitter" id="splitter" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Breite des Bedienfelds ändern (Pfeiltasten, Doppelklick setzt zurück)" aria-valuemin="300" aria-valuemax="620"><span class="lk-splitter-grip"></span></div>
+      <aside class="lk-panel" id="panel" aria-label="Bedienfeld">
+        <div class="lk-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-experiment" data-tab="experiment" aria-selected="true">Versuch</button>
+          <button type="button" role="tab" id="tab-task" data-tab="task" aria-selected="false">Aufgabe</button>
+          <button type="button" role="tab" id="tab-model" data-tab="model" aria-selected="false">Modell</button>
+          <button type="button" role="tab" id="tab-notebook" data-tab="notebook" aria-selected="false">Hefteintrag</button>
+        </div>
+        <div id="panelBody" class="lk-section" role="tabpanel"></div>
+      </aside>
+    </main>
+  </div>
+  <div class="print-only" id="printArea"></div>
+  <script src="labkit/js/core.js"></script>
+  <script src="labkit/js/splitter.js"></script>
+  <script src="labkit/js/scorm.js"></script>
+  <script src="labkit/js/chart.js"></script>
+  <script src="labkit/js/learn.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "id": "chemie/stechheber",
+  "title": "Stechheber – Modellexperiment zum chemischen Gleichgewicht",
+  "description": "Zwei Zylinder, zwei Rohre: Wasser wandert hin und zurück, bis sich ein dynamisches Gleichgewicht einstellt. Stoffebene, Diagramm, Q und K.",
+  "subject": "Chemie",
+  "grades": [10, 11, 12, 13],
+  "status": "prototype"
+}

@@ -16,8 +16,11 @@ SiVex ist eine Sammlung interaktiver naturwissenschaftlicher Lernanwendungen fü
 | [**Halbtitrationslabor**](apps/halbtitration/) – pKₛ- und pK_B-Werte | prototype 0.4.1 · Q13 eA | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/halbtitration/release/halbtitration-0.4.1-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/halbtitration/release/halbtitration-0.4.1-web.zip) · [Testbericht](apps/halbtitration/docs/TESTBERICHT.md) |
 | [**Pufferfish**](apps/pufferfish/) – Warum bleibt der pH fast gleich? Puffer untersuchen, berechnen, herstellen | prototype 0.3.0 · Q13 eA · nicht für den Unterricht freigegeben (iPad, mebis, fachliche Prüfung stehen aus) | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/pufferfish/release/pufferfish-0.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/pufferfish/release/pufferfish-0.3.0-web.zip) · [Testbericht](apps/pufferfish/docs/TESTBERICHT.md) |
 | [**Aggregatzustände**](apps/aggregatzustaende/) – Teilchenmodell, Schmelz- und Siedetemperatur | prototype 0.3.0 · Jgst. 8/9 · in mebis auf dem iPad getestet · fachliche Prüfung steht aus | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/aggregatzustaende/release/aggregatzustaende-0.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/aggregatzustaende/release/aggregatzustaende-0.3.0-web.zip) · [Testbericht](apps/aggregatzustaende/docs/TESTBERICHT.md) |
+| [**Stechheber**](apps/stechheber/) – Modellexperiment zum chemischen Gleichgewicht (Stoffebene) | prototype 0.1.0 · Jgst. 10–13 · Erstentwurf, Schritt 1 von 3 · iPad, mebis und fachliche Prüfung stehen aus | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/stechheber/release/stechheber-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/stechheber/release/stechheber-0.1.0-web.zip) · [Testbericht](apps/stechheber/docs/TESTBERICHT.md) |
+| [**Apfelkrieg**](apps/apfelkrieg/) – Modell zum chemischen Gleichgewicht (Teilchenebene, Zufall) | prototype 0.1.0 · Jgst. 10–13 · Erstentwurf, Schritt 1 von 3 · iPad, mebis und fachliche Prüfung stehen aus | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/apfelkrieg/release/apfelkrieg-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/apfelkrieg/release/apfelkrieg-0.1.0-web.zip) · [Testbericht](apps/apfelkrieg/docs/TESTBERICHT.md) |
+| [**Estergleichgewicht**](apps/ester-gleichgewicht/) – Esterbildung, Stoff- und Teilchenebene, Katalysator, MWG | prototype 0.1.0 · Jgst. 10–13 · Erstentwurf, Schritt 1 von 3 · iPad, mebis und fachliche Prüfung stehen aus | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/ester-gleichgewicht/release/ester-gleichgewicht-0.1.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/ester-gleichgewicht/release/ester-gleichgewicht-0.1.0-web.zip) · [Testbericht](apps/ester-gleichgewicht/docs/TESTBERICHT.md) |
 
-In Planung: [Esterbildung und chemisches Gleichgewicht](apps/ester-gleichgewicht/).
+Die drei Gleichgewichts-Apps bilden eine Reihe (Stechheber → Apfelkrieg → Estergleichgewicht) mit gemeinsamen Kriterien und drei Entwicklungsschritten je App: [Planung](docs/GLEICHGEWICHT-PLANUNG.md).
 
 ## Vorschau
 
@@ -30,6 +33,10 @@ In Planung: [Esterbildung und chemisches Gleichgewicht](apps/ester-gleichgewicht
 | [![Halbtitrationslabor](apps/halbtitration/docs/screenshots/9-messbetrieb-desktop-1440x900.png)](apps/halbtitration/) | [![Pufferfish](apps/pufferfish/docs/screenshots/01-start-versuch1.png)](apps/pufferfish/) |
 | **Trennverfahren** | **Aggregatzustände** |
 | [![Trennverfahren](apps/trennverfahren/docs/screenshots/03-v2-filtriert.png)](apps/trennverfahren/) | [![Aggregatzustände](apps/aggregatzustaende/docs/screenshots/51-wasser-verdampft.png)](apps/aggregatzustaende/) |
+| **Stechheber** | **Apfelkrieg** |
+| [![Stechheber](apps/stechheber/docs/screenshots/ipad-run.png)](apps/stechheber/) | [![Apfelkrieg](apps/apfelkrieg/docs/screenshots/ipad-run.png)](apps/apfelkrieg/) |
+| **Estergleichgewicht** | |
+| [![Estergleichgewicht](apps/ester-gleichgewicht/docs/screenshots/ipad-run.png)](apps/ester-gleichgewicht/) | |
 
 ## Einsatz im Unterricht
 
@@ -40,7 +47,7 @@ Es werden keine Noten, Antworten oder personenbezogenen Daten übertragen.
 
 ## Aufbau des Repositorys
 
-Je Experiment ein Verzeichnis unter `apps/` mit Quellcode, Tests, Dokumentation und dem aktuellen Release im Ordner `release/` (Prüfsummen in `SHA256SUMS.txt`). Auf `main` liegt nur der jeweils aktuelle Stand; frühere Versionen sind über die Git-Historie und Tags erreichbar. Gemeinsame Bausteine der Trenn-Apps stehen in [`shared/labkit/`](shared/labkit/).
+Je Experiment ein Verzeichnis unter `apps/` mit Quellcode, Tests, Dokumentation und dem aktuellen Release im Ordner `release/` (Prüfsummen in `SHA256SUMS.txt`). Auf `main` liegt nur der jeweils aktuelle Stand; frühere Versionen sind über die Git-Historie und Tags erreichbar. Gemeinsame Bausteine der Trenn- und Gleichgewichts-Apps stehen in [`shared/labkit/`](shared/labkit/).
 
 Weitere Dokumentation: [Architektur](docs/ARCHITECTURE.md) · [Qualitätsregeln](docs/QUALITY.md) · [mebis-Konzept](docs/MEBIS.md)
 

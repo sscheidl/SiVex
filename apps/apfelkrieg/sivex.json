@@ -1,0 +1,8 @@
+{
+  "id": "chemie/apfelkrieg",
+  "title": "Apfelkrieg – Modell zum chemischen Gleichgewicht",
+  "description": "Großvater und Enkel werfen Äpfel über den Zaun: Zufall, Schwankungen und ein dynamisches Gleichgewicht auf der Teilchenebene. Diagramm, Q und K.",
+  "subject": "Chemie",
+  "grades": [10, 11, 12, 13],
+  "status": "prototype"
+}
