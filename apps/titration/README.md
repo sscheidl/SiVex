@@ -6,7 +6,7 @@ Virtuelle Titration von Salzsäure, Natronlauge, Essigsäure und Ammoniaklösung
 | --- | --- |
 | ![Kurve neben der Apparatur, dunkel](docs/screenshots/03-ipad-quer-kurve-rechts.png) | ![Kurve neben der Apparatur, hell](docs/screenshots/04-ipad-quer-kurve-rechts-hell.png) |
 
-**Version 3.2.1** – von der Lehrkraft auf dem iPad geprüft und für den Unterricht ab 10.11.2026 übernommen; der mebis-Import von 3.2.1 wird beim ersten Einsatz bestätigt, danach Status `ready` ([Änderungen](CHANGELOG.md), [Testbericht](docs/TESTBERICHT.md)).
+**Version 3.2.1 – ready.** Von der Lehrkraft auf dem iPad geprüft und am 09.11.2026 für den Unterricht freigegeben (Einsatz ab 10.11.2026; [Änderungen](CHANGELOG.md), [Testbericht](docs/TESTBERICHT.md)).
 
 ## Download
 

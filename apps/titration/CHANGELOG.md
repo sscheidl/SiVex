@@ -2,6 +2,8 @@
 
 ## 3.2.1 – 09.11.2026
 
+Status **ready**: von der Lehrkraft auf dem iPad geprüft und am 09.11.2026 für den Unterricht freigegeben.
+
 Korrektur nach Rückmeldung der Lehrkraft zu 3.2.0: Ungeduldiges Auf- und Zudrehen des Hahns erzeugte Knicke und Stufen in der Messkurve, weil jeder Zwischenstand der nachlaufenden Anzeige aufgezeichnet wurde.
 
 - **Messkurve wieder glatt:** Je angekommenem Tropfen wird der eingeschwungene pH aufgezeichnet (wie 3.1 – so, wie man real wartet, bis die Anzeige steht). Kolben, Messgerät und der pulsierende Live-Punkt im Diagramm zeigen weiterhin die träge Anzeige; der Live-Punkt gleitet auf die Kurve. Die Kurve ist damit unabhängig von der Hahnbedienung identisch mit der Modellkurve, und der Äquivalenzpunkt aus der Kurve verschiebt sich auch bei schnellem Tropfen nicht mehr.

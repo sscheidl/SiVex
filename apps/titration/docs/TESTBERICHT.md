@@ -14,7 +14,8 @@ Umgebung wie 3.1.0 (Linux-Container, Node.js 22.23.4, Chromium über Playwright 
 | Echtzeit im Browser: Kolben gelb → grün (Anzeige 7,1, „mischt sich …“) → blau; Hinweis in der Auswertung | **PASS** | E9, `10-btb-gruenphase-desktop.png` |
 | Regressions E1–E8 (Layout, Trennlinien, Farbschema, Ablauf, Lehrkraft) | **PASS** 8/8 | `node tests/e2e/run.mjs` |
 | Pakete reproduzierbar, Build-Prüfung | **PASS** | `release/SHA256SUMS.txt`, `npm run build` |
-| iPad-Safari (3.2.x), mebis-Import | **HOLD – unverified** | 3.1.0 von der Lehrkraft auf dem iPad bestätigt (Lesbarkeit, Trennlinien, Farbschema); 3.2.0 kurz geprüft (Grünphase ja, Kurve mit Stufen → 3.2.1); 3.2.1 und mebis stehen aus |
+| iPad-Safari | **PASS (Lehrkraft, 09.11.2026)** | 3.1.0: Lesbarkeit, Trennlinien, Farbschema; 3.2.0: Grünphase ja, Kurve mit Stufen → behoben in 3.2.1; Freigabe für den Unterricht ab 10.11.2026 |
+| mebis-Import 3.2.1 | **HOLD** | wird beim ersten Einsatz bestätigt (Manifest `sco` wie bei den übrigen, in mebis laufenden Apps) |
 
 ---
 
