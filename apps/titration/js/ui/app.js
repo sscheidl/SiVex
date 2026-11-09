@@ -188,7 +188,7 @@
   // ---------- Experiment ----------
 
   function buildExperiment(config, preview) {
-    const exp = new NS.Experiment(config, { electrode: preview ? false : state.setup.electrode });
+    const exp = new NS.Experiment(config, { electrode: preview ? false : state.setup.electrode, stirring: state.setup.stirrer });
     exp.setFlowRate(rateFromSlider(Number($('#inRate').value)));
     state.exp = exp;
     state.config = config;
@@ -277,6 +277,7 @@
     state.setup.stirrer = !state.setup.stirrer;
     $('#optStirrer').checked = state.setup.stirrer;
     renderer.setOptions({ stirrer: state.setup.stirrer });
+    if (state.exp) state.exp.setStirring(state.setup.stirrer);
     setPressed($('#tgStirrer'), state.setup.stirrer);
   }
 
@@ -399,7 +400,7 @@
     }
     chart.setData({
       points: exp.points,
-      current: exp.electrode && !evalPhase ? { v: exp.delivered, pH: exp.pH } : null,
+      current: exp.electrode && !evalPhase ? { v: exp.delivered, pH: exp.pHMeasured } : null,
       indicator: cfg.indicator,
       teacherCurve: state.teacher ? state.teacherCurve : null,
       revealedEq: revealed,
@@ -675,7 +676,8 @@
       ['Ergebnis (ÄP aus Messkurve)', curve.ok && !unknown ? fmt(cFromVolume(curve.v), 4) + ' mol/L' : 'Sprung nicht erfasst'],
       ['sep'],
       ['V im Kolben angekommen', fmt(exp.delivered, 3) + ' mL'],
-      ['pH (Modell)', fmt(st.pH, 3)],
+      ['pH (Modell, durchmischt)', fmt(st.pH, 3)],
+      ['pH (Anzeige/Farbe)', fmt(exp.pHMeasured, 3)],
       ['c(H₃O⁺)', st.cH3O.toExponential(3).replace('.', ',') + ' mol/L'],
       ['c(OH⁻)', st.cOH.toExponential(3).replace('.', ',') + ' mol/L'],
     ];
@@ -716,7 +718,7 @@
     let sub;
     if (!exp.electrode) { ph = '–'; sub = 'Elektrode nicht eingesetzt'; }
     else if (!state.meterDisplay) { ph = 'aus'; sub = 'Anzeige ausgeschaltet'; }
-    else { ph = fmt(exp.pH, 2); sub = '25 °C · Glaselektrode'; }
+    else { ph = fmt(exp.pHMeasured, 2); sub = exp.isMixed ? '25 °C · Glaselektrode' : (exp.stirring ? '25 °C · mischt sich …' : '25 °C · ohne Rühren – langsam'); }
     if (lastRO.ph !== ph) {
       $('#roPH').textContent = ph;
       $('#roPhBox').classList.toggle('off', ph === '–' || ph === 'aus');

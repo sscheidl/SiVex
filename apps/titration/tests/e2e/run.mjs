@@ -251,6 +251,56 @@ try {
     await page.context().close();
   });
 
+  await run('E9', 'Grünphase bei Bromthymolblau: letzter Tropfen in Echtzeit, Kolben wird grün, Hinweis in der Auswertung', async () => {
+    const page = await newPage(browser, DESKTOP);
+    await fresh(page);
+    // HCl 0,1 M, 25 mL, vorgegebene Konzentration, BTB – bis ≈ 24,95 mL im Zeitraffer, dann zwei Tropfen in Echtzeit
+    await page.click('[data-sample="acid"]');
+    await page.click('[data-cmode="given"]');
+    await page.fill('#inCSample', '0,1');
+    await page.click('#indicatorList [data-indicator="bromothymolBlue"]');
+    await page.click('#btnStart');
+    await page.waitForSelector('[data-phase-panel="titration"]:not([hidden])');
+    await page.evaluate(() => {
+      const app = Titrierlabor.app; const exp = app.state.exp;
+      exp.flowRate = 1; exp.openValve();
+      let g = 0; while (exp.dispensed < 24.90 && g++ < 100000) app.tick(0.05);
+      exp.closeValve(); for (let i = 0; i < 80; i++) app.tick(0.05);
+      while (!exp.isMixed) app.tick(0.05);
+    });
+    const pxColor = () => page.evaluate(() => {
+      // Farbe der Lösung im Kolben: Mitte der Flüssigkeit, aus dem Canvas
+      const r = Titrierlabor.app.renderer; const c = r.color;
+      return c ? [Math.round(c[0]), Math.round(c[1]), Math.round(c[2])] : null;
+    });
+    const before = await pxColor();
+    assert(before && before[0] > before[2], 'vor dem Tropfen nicht gelb: ' + before);
+    const meas0 = await page.evaluate(() => Titrierlabor.app.state.exp.pHMeasured);
+    assert(meas0 < 4.5, 'pH vor dem Tropfen: ' + meas0);
+    // Ein Tropfen in Echtzeit (Hahn kurz öffnen bei langsamster Stellung)
+    await page.evaluate(() => Titrierlabor.app.state.exp.addVolume(0.12)); // 24,90 → 25,02 mL: über den ÄP
+    await page.waitForFunction(() => { const e = Titrierlabor.app.state.exp; return e.pHMeasured > 6.85 && e.pHMeasured < 7.3; }, null, { timeout: 8000 });
+    await page.waitForTimeout(250); // optische Glättung der Farbe (0,2 s)
+    const mid = await pxColor();
+    const meas1 = await page.evaluate(() => [Titrierlabor.app.state.exp.pHMeasured, Titrierlabor.app.state.exp.pH]);
+    assert(meas1[1] > 9, 'Gleichgewichts-pH nach dem Tropfen: ' + meas1[1]);
+    assert(mid[1] > mid[0] && mid[1] > mid[2], 'Lösung im Umschlag nicht grün: ' + mid);
+    const shown = await page.textContent('#roPH');
+    assert(/^[67],/.test(shown), 'Anzeige folgt nicht der Farbe: ' + shown);
+    await shot(page, '10-btb-gruenphase-desktop');
+    await page.waitForFunction(() => Titrierlabor.app.state.exp.pHMeasured > 8.2, null, { timeout: 12000 });
+    const after = await pxColor();
+    assert(after[2] > after[0], 'danach nicht blau: ' + after);
+    await page.click('#btnEndpoint');
+    await page.waitForTimeout(300);
+    await page.click('#btnToEval');
+    await page.waitForSelector('[data-phase-panel="evaluation"]:not([hidden])');
+    const note = await page.textContent('#mixNote');
+    assert(note.includes('Mischfarbe') && note.includes('Carbonat'), 'Hinweis fehlt');
+    assert(page.__errors.length === 0, 'Fehler: ' + page.__errors.join(' | '));
+    await page.context().close();
+  });
+
   await run('E8', 'Lehrkraftmodus und Kurzanleitung (dunkel, Desktop)', async () => {
     const page = await newPage(browser, DESKTOP);
     await fresh(page);

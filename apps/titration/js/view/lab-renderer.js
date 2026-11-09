@@ -248,7 +248,7 @@
       // Farbe der Gesamtlösung: Zielwert aus berechnetem pH, sichtbare Durchmischung
       const target = this._bulkColor();
       if (!this.color) this.color = target.slice();
-      const tau = this.opts.stirrer ? 0.3 : 1.4;
+      const tau = 0.2; // kurze optische Glättung; die eigentliche Durchmischung modelliert das Experiment
       const k = 1 - Math.exp(-dt / tau);
       for (let i = 0; i < 4; i++) this.color[i] = lerp(this.color[i], target[i], k);
 
@@ -274,7 +274,8 @@
     /** [r, g, b, alpha] der Gesamtlösung aus dem berechneten pH-Wert */
     _bulkColor() {
       const exp = this.exp;
-      return this._liquidRGBA(Ind.solutionColor(this.opts.indicator, exp.pH, this._indicatorConc()));
+      // Sichtbarer pH (Durchmischung, siehe Experiment.pHMeasured) statt Gleichgewichts-pH
+      return this._liquidRGBA(Ind.solutionColor(this.opts.indicator, exp.pHMeasured, this._indicatorConc()));
     }
 
     /** Indikatorkonzentration: konstante Stoffmenge, verdünnt durch die zugegebene Maßlösung */
@@ -1214,7 +1215,7 @@
       roundRect(ctx, dx, dy, dw, dh, 6);
       ctx.fill();
 
-      const pH = this.exp.pH;
+      const pH = this.exp.pHMeasured;
       const displayOn = this.opts.meterDisplay !== false;
       if (displayOn) {
       ctx.fillStyle = '#9dffc8';

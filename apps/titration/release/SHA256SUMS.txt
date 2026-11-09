@@ -1,2 +1,2 @@
-b71ac188b055ce8f34cf97d980079b9ae63c68973469ff62e292daae2ee04e3c  titration-3.1.0-web.zip
-ba03e85da2da74db2553e61f1273f402bb6f04f4d5a60648a7b8f7b1910d3883  titration-3.1.0-scorm12.zip
+df8a9cb5535177720cedf6341d39f11e5ed8fd2084c96aac0510dc83f0140f76  titration-3.2.0-web.zip
+1d6de05ad3cd4565d201488377bf3d0fab60ff01b9faf0c632d67afb60d7d9dd  titration-3.2.0-scorm12.zip

@@ -13,6 +13,18 @@
  * Grafik und Chemie lesen beide aus diesem Objekt, dadurch sind sie
  * synchron: Ein Tropfen verändert den pH-Wert genau in dem Moment, in
  * dem er die Flüssigkeitsoberfläche erreicht.
+ *
+ * Zwei pH-Werte (seit 3.2.0):
+ *   pH         – Gleichgewichts-pH der vollständig durchmischten Lösung
+ *                (Ladungsbilanz, Grundlage von Modellkurve und Auswertung)
+ *   pHMeasured – „sichtbarer“ pH: Indikatorfarbe und Elektrodenanzeige
+ *                folgen dem Gleichgewicht mit einer Zeitkonstante
+ *                (Durchmischung des Tropfens, Ansprechzeit der Elektrode;
+ *                mit Rührer ≈ 3 s, ohne ≈ 8 s). Am Äquivalenzpunkt
+ *                durchläuft die Lösung dadurch sichtbar die Mischfarbe des
+ *                Indikators (z. B. Grün bei Bromthymolblau), bei langsamer
+ *                Zugabe bleibt Zeit, den Endpunkt zu notieren; schnelle
+ *                Zugabe überfährt den Umschlag. Die Chemie bleibt ideal.
  */
 (function (global) {
   'use strict';
@@ -30,6 +42,9 @@
     maxFlow: 1.2, // mL/s (Hahn ganz offen)
     releaseDelay: 0.22, // s bis ein Resttropfen nach dem Schließen abfällt
     fallTime: 0.32, // s Fallzeit Spitze → Oberfläche (wird von der Grafik aktualisiert)
+    mixTauStirred: 3.0, // s Zeitkonstante, mit der Farbe und Anzeige dem Gleichgewicht folgen (Rührer an)
+    mixTauStill: 8.0, // s dito ohne Rührer
+    mixSettle: 0.005, // pH-Differenz, ab der die Anzeige als eingeschwungen gilt
   };
 
   /** Fließgeschwindigkeit für eine Einzelzugabe: kleine Mengen langsam, große zügig */
@@ -52,6 +67,10 @@
       this.maxFlow = o.maxFlow;
       this.releaseDelay = o.releaseDelay;
       this.fallTime = o.fallTime;
+      this.mixTauStirred = o.mixTauStirred;
+      this.mixTauStill = o.mixTauStill;
+      this.mixSettle = o.mixSettle;
+      this.stirring = o.stirring !== false;
 
       this.dispensed = 0;
       this.delivered = 0;
@@ -68,6 +87,7 @@
       this.time = 0;
       this._listeners = {};
       this._stateCache = null;
+      this.pHMeasured = this.pH; // Startlösung ist durchmischt
       if (this.electrode) this.recordPoint();
     }
 
@@ -121,6 +141,12 @@
     }
 
     get pH() { return this.state.pH; }
+
+    /** Zeitkonstante der Durchmischung in s (abhängig vom Rührer) */
+    get mixTau() { return this.stirring ? this.mixTauStirred : this.mixTauStill; }
+
+    /** Ist die Anzeige (Farbe, Elektrode) auf das Gleichgewicht eingeschwungen? */
+    get isMixed() { return Math.abs(this.pH - this.pHMeasured) <= this.mixSettle; }
 
     // ---------- Bedienung ----------
 
@@ -187,6 +213,8 @@
       if (this.electrode) this.recordPoint();
     }
 
+    setStirring(on) { this.stirring = !!on; }
+
     /** Ist alles ausgeflossene Volumen im Kolben angekommen (Hahn zu, kein Tropfen unterwegs)? */
     get isSettled() {
       return !this.isFlowing && this.hanging === 0 && this.drops.length === 0;
@@ -214,11 +242,20 @@
       return this.endpoint;
     }
 
+    /**
+     * Messpunkt (V, gemessener pH) aufzeichnen. Ein Punkt beim gleichen
+     * Volumen wird aktualisiert statt verdoppelt – so steigt die Kurve beim
+     * Einschwingen der Anzeige an Ort und Stelle.
+     */
     recordPoint() {
       const s = this.state;
       const last = this.points[this.points.length - 1];
-      if (last && Math.abs(last.v - s.vTitrant) < EPS) return;
-      this.points.push({ v: s.vTitrant, pH: s.pH, t: this.time });
+      if (last && Math.abs(last.v - s.vTitrant) < EPS) {
+        last.pH = this.pHMeasured;
+        last.t = this.time;
+        return;
+      }
+      this.points.push({ v: s.vTitrant, pH: this.pHMeasured, t: this.time });
     }
 
     /**
@@ -293,6 +330,14 @@
       }
       this._settle();
       if (this.pendingEndpoint && this.isSettled) this._recordEndpoint();
+
+      // 4) Durchmischung: Farbe und Elektrodenanzeige folgen dem Gleichgewichts-pH
+      const target = this.pH;
+      if (Math.abs(target - this.pHMeasured) > this.mixSettle) {
+        this.pHMeasured += (target - this.pHMeasured) * (1 - Math.exp(-dt / this.mixTau));
+        if (Math.abs(target - this.pHMeasured) <= this.mixSettle) this.pHMeasured = target;
+        if (this.electrode) this.recordPoint();
+      }
     }
 
     _release(vol) {

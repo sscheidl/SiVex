@@ -4,7 +4,7 @@
 
 ```text
 apps/
-  titration/          # TitraLab 3.1.0 (prototype) – Säure-Base-Titration; Quellcode seit 3.1.0 entpackt, Referenz für Glas und Flüssigkeiten
+  titration/          # TitraLab 3.2.0 (prototype) – Säure-Base-Titration; Quellcode seit 3.1.0 entpackt, Referenz für Glas und Flüssigkeiten
   redoxlabor/
   trennverfahren/     # Trennverfahren 0.4.0 (prototype) auf Basis des Labkits
   chromatographie/    # Papierchromatographie 0.3.0 (prototype) auf Basis des Labkits
