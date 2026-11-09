@@ -1,30 +1,54 @@
-# TitraLab 3 (Claude)
+# TitraLab 3 – Virtuelle Säure-Base-Titration
 
-Virtuelle Säure-Base-Titration für SiVex.
+Virtuelle Titration von Salzsäure, Natronlauge, Essigsäure und Ammoniaklösung mit Indikator (Phenolphthalein, Bromthymolblau, Methylorange), pH-Elektrode und Titrationskurve. Der pH-Wert wird für jedes zugegebene Volumen aus der Ladungsbilanz berechnet; die Auswertung prüft die eigene Konzentrationsberechnung und benennt typische Fehler (Einheiten, vertauschte Volumina, Über- oder Untertitration). Jgst. 10–13.
 
-![TitraLab 3 – Titrierlabor](docs/titralab3-screenshot.png)
+| dunkel (Standard) | hell |
+| --- | --- |
+| ![Kurve neben der Apparatur, dunkel](docs/screenshots/03-ipad-quer-kurve-rechts.png) | ![Kurve neben der Apparatur, hell](docs/screenshots/04-ipad-quer-kurve-rechts-hell.png) |
+
+**Version 3.1.0** (prototype – auf dem iPad noch nicht geprüft; [Änderungen](CHANGELOG.md), [Testbericht](docs/TESTBERICHT.md)). Version 3.0 („Claude V3“) ist in mebis und auf dem iPad im Einsatz.
 
 ## Download
 
-**[⬇ SCORM-1.2-Paket herunterladen (SiVex-Titration-Claude-v3-mebis-SCORM12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-mebis-SCORM12.zip)** · [⬇ Web-Version (SiVex-Titration-Claude-v3-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/SiVex-Titration-Claude-v3-web.zip)
+**[⬇ SCORM 1.2 (titration-3.1.0-scorm12.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.1.0-scorm12.zip)** · [⬇ Web-ZIP (titration-3.1.0-web.zip)](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.1.0-web.zip) · Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt)
 
-In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“.
+In mebis: Kurs → „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“ → ZIP hochladen → Darstellung „Neues Fenster“. Webserver: Web-ZIP entpacken und den Ordner `titration/` per HTTPS bereitstellen; die App läuft nach dem ersten Laden auch offline (Service Worker).
 
-Webserver: Web-ZIP entpacken und den Ordner `titration/` per HTTPS bereitstellen. Prüfsummen: [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt).
+Das Release 3.0 (`SiVex-Titration-Claude-v3-*.zip`) liegt in der Git-Historie (Stand vor dem Branch `feature/titration-3.1`).
 
-**Einzige ausgewählte Titrationsversion: TitraLab 3 von Claude.** Die frühere Codex-Variante TitraLab 2 wurde verworfen und gehört nicht zum Projektbestand.
+## Bedienung
 
-## Aktueller Stand
+1. **Vorbereitung:** Probelösung, Volumen (5–50 mL), Maßlösung (0,01–0,5 mol/L), Indikator, pH-Elektrode und Rührer wählen. Standard: Die Konzentration der Probe ist unbekannt (zufällig, Äquivalenzpunkt zwischen 12 und 42 mL).
+2. **Durchführung:** Hahn antippen oder „Hahn öffnen“, Tropfgeschwindigkeit regeln, beim Farbumschlag „Endpunkt notieren“. Optional **pH-Kurve anzeigen** – sie steht rechts neben der Apparatur (im Hochformat darunter), die Trennlinie dazwischen ist verschiebbar, ⤢ zeigt die Kurve allein in voller Größe.
+3. **Auswertung:** Endpunkt oder in der Kurve markierten Äquivalenzpunkt übernehmen, c(Probe) berechnen, eingeben, prüfen lassen. Lehrkraftmodus zeigt verdeckte Werte, theoretische Kurve und Indikatoreignung.
 
-- Das funktionsfähige SCORM-1.2-Release liegt im Repository unter [`release/`](release/) (Download siehe oben).
-- Im Release enthalten: `index.html`, CSS, lesbare JavaScript-Module, Grafiken, Service Worker und `imsmanifest.xml`.
-- Alle 10 JavaScript-Dateien haben den Syntaxcheck bestanden.
-- Die praktische Einbindung in mebis und die Darstellung in einem separaten Browserfenster wurden bestätigt.
-- Von der Lehrkraft am 23.10.2026 auf einem **iPad mit Safari (iPadOS 26.6.2)** sowie in **Edge** und **Firefox** (jeweils aktuell, Windows 11) geprüft: grundsätzlich funktionsfähig und lauffähig, bedienbar und gut erkennbar. Offen bleibt ein Test auf verwalteten Schul-iPads mit einer Lerngruppe.
-- Der Anwendungscode ist vollständig im SCORM-Paket enthalten; als entpackter Quellcode (`titralab3/`) ist er noch nicht eingecheckt.
+☀/☾ in der Kopfzeile schaltet zwischen dunklem Schema (wie bisher) und hellem Schema (wie die übrigen SiVex-Apps) um; Wahl, Breite der Steuerleiste und der Kurve werden lokal im Browser gemerkt. Es werden keine Daten übertragen.
 
-## Vorgesehener Quellcode-Import
+## Aufbau
 
-`apps/titration/` bleibt die kanonische Anwendung. Die aus dem SCORM-Release rekonstruierte Ausgabe soll zunächst in `apps/titration/titralab3/` abgelegt werden. Dort muss sie mit `index.html` und ihren relativen Ressourcen lauffähig sein.
+```
+index.html          Oberfläche (eine Seite, drei Phasen)
+css/styles.css      Stil mit CSS-Variablen für beide Farbschemata
+js/model/           Chemie (Ladungsbilanz), Indikatoren, Konfiguration, Auswertung – ohne DOM, in Node testbar
+js/experiment/      Zeitverhalten: Hahn, Tropfen, Fallzeit, Endpunkt
+js/view/            Laborgrafik (Canvas), Diagramm, Geometrie, Farbpaletten (theme.js)
+js/ui/app.js        Ablaufsteuerung, Bedienfeld, Trennlinien, Farbschema
+sw.js               Offline-Cache (nur eigenes Verzeichnis)
+scripts/            serve (Entwicklung), build (Kopie + Prüfung), package (ZIPs + SHA-256)
+tests/unit          node --test
+tests/e2e           Playwright-Abnahme mit Screenshots
+```
 
-Die ursprüngliche lokale Entwicklungshistorie und nicht im Release enthaltene Hilfsdateien können nur aus weiteren Backups wiederhergestellt werden.
+Modell: 25 °C, ideal verdünnt, K_W = 1,0·10⁻¹⁴, pKₛ(CH₃COOH) = 4,75, pKₛ(NH₄⁺) = 9,25; starke Säure/Base geschlossen (quadratische Gleichung), schwache Komponente per Bisektion in lg c(H₃O⁺). Die Laborgrafik (Glas, Meniskus, Tropfen, verschiebbare Trennlinie) ist Referenz für die übrigen Apps, siehe [`docs/QUALITY.md`](../../docs/QUALITY.md).
+
+## Entwicklung
+
+```
+npm test            Unit-Tests
+npm run build       dist/titration/ mit Prüfung (keine externen Ressourcen, Service Worker vollständig)
+npm run package     release/titration-<version>-{web,scorm12}.zip + SHA256SUMS.txt (reproduzierbar)
+npm run test:e2e    Browserabnahme gegen dist/ (benötigt playwright, z. B. npm install)
+npm start           Entwicklungsserver auf Port 8080
+```
+
+Versionsnummer an drei Stellen gleich halten: `package.json`, `sivex.json`, Kopfzeile in `index.html` (`npm run package` prüft das).

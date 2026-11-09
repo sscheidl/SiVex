@@ -12,6 +12,7 @@
   const Ind = NS.Indicators;
   const Cfg = NS.Config;
   const Eval = NS.Evaluation;
+  const Theme = NS.Theme;
   const fmt = Cfg.formatNumber;
 
   const $ = function (sel, root) { return (root || document).querySelector(sel); };
@@ -19,6 +20,7 @@
 
   const app = $('#app');
   const PANEL_KEY = 'titrierlabor.panelWidth';
+  const CHART_KEY = 'titrierlabor.chartWidth';
 
   const state = {
     phase: 'setup',
@@ -34,6 +36,7 @@
     hiddenConcentration: true,
     exp: null,
     showChart: false,
+    chartMax: false,
     lens: true,
     meterDisplay: true,
     valveUsed: false,
@@ -348,8 +351,34 @@
   function setChart(on) {
     state.showChart = on;
     $('#chartDrawer').hidden = !on;
+    $('.stage').classList.toggle('has-chart', on);
+    if (!on) setChartMax(false);
     setPressed($('#tgChart'), on);
     $('#tgChart').textContent = on ? 'pH-Kurve ausblenden' : 'pH-Kurve anzeigen';
+    chart.dirty = true;
+  }
+
+  /** Kurve allein in voller Größe (Apparatur ausgeblendet) */
+  function setChartMax(on) {
+    state.chartMax = on;
+    $('.stage').classList.toggle('chart-max', on);
+    const b = $('#btnChartMax');
+    setPressed(b, on);
+    b.textContent = on ? '⤡' : '⤢';
+    b.setAttribute('aria-label', on ? 'Kurve neben der Apparatur zeigen' : 'Kurve maximieren');
+    b.title = on ? 'Kurve wieder neben der Apparatur zeigen' : 'Kurve maximieren (Apparatur ausblenden)';
+    chart.dirty = true;
+  }
+
+  // ---------- Farbschema ----------
+
+  function applyTheme(name, save) {
+    Theme.set(name, save);
+    const light = Theme.name === 'light';
+    const b = $('#btnTheme');
+    b.textContent = light ? '☾' : '☀';
+    b.setAttribute('aria-pressed', light ? 'true' : 'false');
+    b.setAttribute('aria-label', light ? 'Dunkles Farbschema' : 'Helles Farbschema');
     chart.dirty = true;
   }
 
@@ -751,6 +780,66 @@
     if (saved) setPanelWidth(saved, false);
   }
 
+  /** Breite der Kurve neben der Apparatur (nur im Querformat wirksam) */
+  function setChartWidth(w, save) {
+    const stage = $('.stage');
+    const rect = stage.getBoundingClientRect();
+    const max = Math.max(300, rect.width - 320); // der Apparatur bleiben mindestens 320 px
+    const width = Math.round(Math.min(max, Math.max(300, w)));
+    stage.style.setProperty('--chart-w', width + 'px');
+    stage.classList.add('chart-custom');
+    $('#stageSplitter').setAttribute('aria-valuenow', String(width));
+    chart.dirty = true;
+    if (save) {
+      try { global.localStorage.setItem(CHART_KEY, String(width)); } catch (e) { /* ohne Speicher */ }
+    }
+  }
+
+  function resetChartWidth() {
+    const stage = $('.stage');
+    stage.style.removeProperty('--chart-w');
+    stage.classList.remove('chart-custom');
+    chart.dirty = true;
+    try { global.localStorage.removeItem(CHART_KEY); } catch (e) { /* ohne Speicher */ }
+  }
+
+  function bindStageSplitter() {
+    const sp = $('#stageSplitter');
+    let dragging = false;
+    sp.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      sp.classList.add('is-dragging');
+      document.body.classList.add('is-resizing');
+      try { sp.setPointerCapture(e.pointerId); } catch (err) { /* ignorieren */ }
+      e.preventDefault();
+    });
+    sp.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      const rect = $('.stage').getBoundingClientRect();
+      setChartWidth(rect.right - e.clientX - 6, false);
+    });
+    const end = function () {
+      if (!dragging) return;
+      dragging = false;
+      sp.classList.remove('is-dragging');
+      document.body.classList.remove('is-resizing');
+      const cur = $('#chartDrawer').getBoundingClientRect().width;
+      if (cur) setChartWidth(cur, true);
+    };
+    sp.addEventListener('pointerup', end);
+    sp.addEventListener('pointercancel', end);
+    sp.addEventListener('dblclick', resetChartWidth);
+    sp.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const cur = $('#chartDrawer').getBoundingClientRect().width;
+      setChartWidth(cur + (e.key === 'ArrowLeft' ? 24 : -24), true);
+    });
+    let saved = null;
+    try { saved = parseFloat(global.localStorage.getItem(CHART_KEY)); } catch (e) { /* ohne Speicher */ }
+    if (saved) setChartWidth(saved, false);
+  }
+
   // ---------- Initialisierung ----------
 
   const renderer = new NS.LabRenderer($('#labCanvas'));
@@ -964,6 +1053,9 @@
     global.addEventListener('pagehide', closeValveForInterruption);
 
     bindSplitter();
+    bindStageSplitter();
+    $('#btnChartMax').addEventListener('click', function () { setChartMax(!state.chartMax); });
+    $('#btnTheme').addEventListener('click', function () { applyTheme(Theme.name === 'dark' ? 'light' : 'dark', true); });
   }
 
   /** Schließt den Hahn bei einer Unterbrechung. Liefert true, wenn er offen war. */
@@ -1005,6 +1097,7 @@
     if (state.teacher && teacherTimer > 0.25) { teacherTimer = 0; updateTeacher(); }
   }
 
+  applyTheme(Theme.saved(), false);
   buildIndicatorList();
   bind();
   $('#rateLabel').textContent = rateText(rateFromSlider(Number($('#inRate').value)));
@@ -1018,5 +1111,5 @@
   }
 
   // Für Konsole und automatisierte Browsertests
-  NS.app = { state: state, renderer: renderer, chart: chart, setPhase: setPhase, startExperiment: startExperiment, tick: function (dt) { frame(state.exp, dt); } };
+  NS.app = { state: state, renderer: renderer, chart: chart, setPhase: setPhase, startExperiment: startExperiment, setChart: setChart, setChartMax: setChartMax, setTheme: applyTheme, tick: function (dt) { frame(state.exp, dt); } };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -18,6 +18,8 @@
   const L = G.LAYOUT;
   const B = L.burette;
   const Ind = NS.Indicators;
+  /** aktuelle Farbpalette (hell/dunkel), siehe theme.js */
+  function T() { return NS.Theme.palette; }
 
   const FONT = '"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif';
   const MONO = '"Cascadia Mono", "SF Mono", Menlo, Consolas, monospace';
@@ -63,6 +65,7 @@
         teacher: false,
       };
       this.view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 1, h: 1 };
+      this.bgTheme = null; // Schema, mit dem der Hintergrund zuletzt gezeichnet wurde
 
       // Animationszustand (rein visuell)
       this.time = 0;
@@ -115,7 +118,7 @@
       const dpr = Math.min(2, global.devicePixelRatio || 1);
       const w = Math.max(1, Math.round(rect.width));
       const h = Math.max(1, Math.round(rect.height));
-      if (w === this.view.w && h === this.view.h && dpr === this.view.dpr) return;
+      if (w === this.view.w && h === this.view.h && dpr === this.view.dpr && this.bgTheme === T().name) return;
       this.canvas.width = Math.round(w * dpr);
       this.canvas.height = Math.round(h * dpr);
       const vbW = VIEW_BOX.x1 - VIEW_BOX.x0;
@@ -130,6 +133,7 @@
         oy: (h - vbH * scale) / 2 - VIEW_BOX.y0 * scale,
       };
       this._renderBackground();
+      this.bgTheme = T().name;
     }
 
     /** Bildschirm- (CSS-Pixel relativ zur Canvas) → Weltkoordinaten */
@@ -328,8 +332,8 @@
 
       // Wand
       const wall = ctx.createLinearGradient(0, 0, 0, H);
-      wall.addColorStop(0, '#16202b');
-      wall.addColorStop(1, '#0c1219');
+      wall.addColorStop(0, T().wall0);
+      wall.addColorStop(1, T().wall1);
       ctx.fillStyle = wall;
       ctx.fillRect(0, 0, W, H);
 
@@ -340,7 +344,7 @@
       const wy1 = (v.h - v.oy) / v.scale;
 
       // Fliesenraster, sehr dezent
-      ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+      ctx.strokeStyle = T().tile;
       ctx.lineWidth = 1;
       for (let x = Math.floor(wx0 / 70) * 70; x < wx1; x += 70) {
         ctx.beginPath(); ctx.moveTo(x, wy0); ctx.lineTo(x, L.benchY); ctx.stroke();
@@ -351,23 +355,23 @@
 
       // Weiches Licht hinter dem Aufbau
       const glow = ctx.createRadialGradient(500, 560, 30, 500, 560, 620);
-      glow.addColorStop(0, 'rgba(120,170,230,0.20)');
-      glow.addColorStop(0.5, 'rgba(80,120,180,0.07)');
+      glow.addColorStop(0, T().glow0);
+      glow.addColorStop(0.5, T().glow1);
       glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow;
       ctx.fillRect(wx0, wy0, wx1 - wx0, wy1 - wy0);
 
       // Laborbank
       const bench = ctx.createLinearGradient(0, L.benchY, 0, wy1);
-      bench.addColorStop(0, '#3a4757');
-      bench.addColorStop(0.04, '#283341');
-      bench.addColorStop(1, '#10161d');
+      bench.addColorStop(0, T().bench0);
+      bench.addColorStop(0.04, T().bench1);
+      bench.addColorStop(1, T().bench2);
       ctx.fillStyle = bench;
       ctx.fillRect(wx0, L.benchY, wx1 - wx0, wy1 - L.benchY);
-      ctx.fillStyle = 'rgba(200,225,255,0.22)';
+      ctx.fillStyle = T().benchEdge;
       ctx.fillRect(wx0, L.benchY, wx1 - wx0, 1.2);
       const benchGlow = ctx.createRadialGradient(500, L.benchY, 10, 500, L.benchY, 420);
-      benchGlow.addColorStop(0, 'rgba(140,180,230,0.16)');
+      benchGlow.addColorStop(0, T().benchGlow);
       benchGlow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = benchGlow;
       ctx.fillRect(wx0, L.benchY, wx1 - wx0, 120);
@@ -426,7 +430,7 @@
       ctx.translate(x, y);
       ctx.scale(1, ry / rx);
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-      g.addColorStop(0, 'rgba(0,0,0,' + a + ')');
+      g.addColorStop(0, 'rgba(0,0,0,' + (a * T().shadow).toFixed(3) + ')');
       g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(0, 0, rx, 0, Math.PI * 2); ctx.fill();
@@ -501,13 +505,13 @@
       glass.addColorStop(1, 'rgba(210,230,255,0.28)');
       ctx.fillStyle = glass;
       ctx.fillRect(x - oh, B.top, 2 * oh, yBottom - B.top);
-      ctx.strokeStyle = 'rgba(225,238,255,0.65)';
+      ctx.strokeStyle = T().glass;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x - oh, B.top); ctx.lineTo(x - oh, yBottom);
       ctx.moveTo(x + oh, B.top); ctx.lineTo(x + oh, yBottom);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(225,238,255,0.22)';
+      ctx.strokeStyle = T().glassIn;
       ctx.beginPath();
       ctx.moveTo(x - ih, B.top + 2); ctx.lineTo(x - ih, yBottom);
       ctx.moveTo(x + ih, B.top + 2); ctx.lineTo(x + ih, yBottom);
@@ -520,11 +524,11 @@
       hl.addColorStop(1, 'rgba(255,255,255,0.0)');
       ctx.fillStyle = hl;
       ctx.fillRect(x - oh + 3, B.top, 2.2, yBottom - B.top);
-      ctx.globalAlpha = 0.35;
+      ctx.globalAlpha = 0.35 * T().highlight;
       ctx.fillRect(x + oh - 4.5, B.top, 1.2, yBottom - B.top);
       ctx.globalAlpha = 1;
       // Oberer Rand
-      ctx.strokeStyle = 'rgba(230,240,255,0.8)';
+      ctx.strokeStyle = T().glassRim;
       ctx.lineWidth = 1.4;
       ctx.beginPath();
       ctx.ellipse(x, B.top, oh, 2.2, 0, 0, Math.PI * 2);
@@ -559,7 +563,7 @@
           ctx.stroke();
         }
       };
-      drawTicks('rgba(240,246,252,0.92)');
+      drawTicks(T().tick);
       // Auf dem weißen Schellbachstreifen erscheinen die Striche dunkel
       ctx.save();
       ctx.beginPath();
@@ -569,7 +573,7 @@
       ctx.restore();
 
       // Beschriftung
-      ctx.fillStyle = 'rgba(235,242,250,0.95)';
+      ctx.fillStyle = T().scaleText;
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'right';
       const step = detail ? 1 : 5;
@@ -580,14 +584,14 @@
       }
       if (!detail) {
         ctx.font = '600 11px ' + FONT;
-        ctx.fillStyle = 'rgba(200,215,232,0.75)';
+        ctx.fillStyle = T().scaleSub;
         ctx.fillText('mL', x - ih - 8, B.zeroY - 15);
         ctx.save();
         ctx.translate(x + ih + 12, B.zeroY + 150);
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = 'center';
         ctx.font = '500 10.5px ' + FONT;
-        ctx.fillStyle = 'rgba(200,215,232,0.6)';
+        ctx.fillStyle = T().scaleSub2;
         ctx.fillText('50 mL  ·  Klasse AS  ·  20 °C', 0, 0);
         ctx.restore();
       }
@@ -610,7 +614,7 @@
       ctx.lineTo(x - 4, y - 4);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = 'rgba(225,238,255,0.6)';
+      ctx.strokeStyle = T().glass;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x - oh, yTop); ctx.lineTo(x - 7, y - 6);
@@ -630,7 +634,7 @@
       ctx.lineTo(x - 5, t0);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = 'rgba(225,238,255,0.65)';
+      ctx.strokeStyle = T().glass;
       ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.fillRect(x - 3.6, y + 10, 1.1, t0 - y - 8);
@@ -643,7 +647,7 @@
       ctx.fillStyle = body;
       roundRect(ctx, x - 30, y - 10, 60, 20, 9);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(230,240,255,0.7)';
+      ctx.strokeStyle = T().glassRim;
       ctx.stroke();
       // Flüssigkeit in der Bohrung, wenn offen
       if (open) {
@@ -701,7 +705,7 @@
       g.addColorStop(1, 'rgba(120,170,230,0.55)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(235,245,255,0.6)';
+      ctx.strokeStyle = T().dropEdge;
       ctx.lineWidth = 0.6;
       ctx.stroke();
       ctx.restore();
@@ -718,7 +722,7 @@
         const w = 0.8 + q * 1.6;
         const g = ctx.createLinearGradient(x - w, 0, x + w, 0);
         g.addColorStop(0, 'rgba(150,195,245,0.35)');
-        g.addColorStop(0.5, 'rgba(235,245,255,0.55)');
+        g.addColorStop(0.5, T().stream);
         g.addColorStop(1, 'rgba(150,195,245,0.35)');
         ctx.fillStyle = g;
         ctx.beginPath();
@@ -882,18 +886,18 @@
       ctx.restore();
 
       // Spritzer
-      ctx.fillStyle = 'rgba(225,240,255,0.7)';
+      ctx.fillStyle = T().splash;
       for (const p of this.splashes) {
         ctx.beginPath(); ctx.arc(p.x, p.y, 1.3, 0, Math.PI * 2); ctx.fill();
       }
 
       // Vorderes Glas: Konturen und Glanzlichter
       this._flaskPath(ctx, 0);
-      ctx.strokeStyle = 'rgba(225,238,255,0.70)';
+      ctx.strokeStyle = T().glass;
       ctx.lineWidth = 1.5;
       ctx.stroke();
       this._flaskPath(ctx, L.flask.glass);
-      ctx.strokeStyle = 'rgba(225,238,255,0.22)';
+      ctx.strokeStyle = T().glassIn;
       ctx.lineWidth = 1;
       ctx.stroke();
       this._flaskHighlights(ctx);
@@ -910,6 +914,7 @@
       const br = f.baseRadius * s;
       // linker Glanzstreifen entlang der Kegelwand
       ctx.save();
+      ctx.globalAlpha = T().highlight;
       const g = ctx.createLinearGradient(0, coneTop, 0, bottom);
       g.addColorStop(0, 'rgba(255,255,255,0.0)');
       g.addColorStop(0.25, 'rgba(255,255,255,0.38)');
@@ -923,7 +928,7 @@
       ctx.lineTo(x - br + 16, bottom - 18);
       ctx.closePath();
       ctx.fill();
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.5 * T().highlight;
       ctx.beginPath();
       ctx.moveTo(x + nr + 9, coneTop + 30);
       ctx.lineTo(x + nr + 12, coneTop + 30);
@@ -931,13 +936,14 @@
       ctx.lineTo(x + br - 14, bottom - 22);
       ctx.closePath();
       ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = T().highlight;
       // Hals-Glanz
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.fillRect(x - nr + 3, G.flaskTopInnerY, 2, coneTop - G.flaskTopInnerY - 8);
       // Randwulst
       const top = G.flaskTopInnerY - 6;
-      ctx.strokeStyle = 'rgba(235,245,255,0.85)';
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = T().glassRim2;
       ctx.lineWidth = 2.2;
       ctx.beginPath();
       ctx.ellipse(x, top, nr + 7, 3.2, 0, 0, Math.PI * 2);
@@ -955,8 +961,8 @@
       // Näherungsmarken (wie auf echten Erlenmeyerkolben) aus der Kolbengeometrie
       const x = L.flask.x;
       ctx.save();
-      ctx.strokeStyle = 'rgba(240,246,252,0.75)';
-      ctx.fillStyle = 'rgba(240,246,252,0.75)';
+      ctx.strokeStyle = T().flaskMark;
+      ctx.fillStyle = T().flaskMark;
       ctx.lineWidth = 1;
       ctx.font = '600 11px ' + FONT;
       ctx.textBaseline = 'middle';
@@ -970,10 +976,10 @@
       });
       // Emaille-Schreibfeld
       const y = G.flaskSurfaceY(10) - 6;
-      ctx.fillStyle = 'rgba(240,246,252,0.10)';
+      ctx.fillStyle = T().flaskField;
       roundRect(ctx, x - 66, y - 8, 42, 16, 2);
       ctx.fill();
-      ctx.fillStyle = 'rgba(240,246,252,0.65)';
+      ctx.fillStyle = T().flaskFieldText;
       ctx.font = '600 9px ' + FONT;
       ctx.fillText('100 mL', x - 62, y);
       ctx.restore();
@@ -1117,7 +1123,7 @@
       ctx.fill();
 
       // Kabel zum Messgerät
-      ctx.strokeStyle = '#11161c';
+      ctx.strokeStyle = T().cable;
       ctx.lineWidth = 4;
       ctx.lineCap = 'round';
       ctx.beginPath();
@@ -1150,7 +1156,7 @@
       g.addColorStop(1, 'rgba(200,225,250,0.40)');
       ctx.fillStyle = g;
       ctx.fillRect(ex - 6, y0, 12, y1 - y0);
-      ctx.strokeStyle = 'rgba(225,238,255,0.55)';
+      ctx.strokeStyle = T().glass;
       ctx.lineWidth = 0.8;
       ctx.strokeRect(ex - 6, y0, 12, y1 - y0);
       // Ableitelement (Silberdraht)
@@ -1174,7 +1180,7 @@
       g.addColorStop(1, 'rgba(160,200,240,0.55)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(ex, yBulb, 7.5, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(225,238,255,0.6)';
+      ctx.strokeStyle = T().glass;
       ctx.lineWidth = 0.8;
       ctx.stroke();
     }
@@ -1279,8 +1285,13 @@
       const h = 28 + lines.length * 20;
       // side 'right': x ist die rechte Kante des Etiketts
       if (side === 'right') x -= w;
+      // Etikett im sichtbaren Ausschnitt halten (schmale Bühne neben der Kurve)
+      const v = this.view;
+      const wx0 = -v.ox / v.scale;
+      const wx1 = (v.w - v.ox) / v.scale;
+      x = clamp(x, wx0 + 8, Math.max(wx0 + 8, wx1 - w - 8));
       // Leitlinie
-      ctx.strokeStyle = 'rgba(140,190,240,0.45)';
+      ctx.strokeStyle = T().tagLine;
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -1289,21 +1300,21 @@
       ctx.lineTo(ax, ay);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(140,190,240,0.9)';
+      ctx.fillStyle = T().tagDot;
       ctx.beginPath(); ctx.arc(ax, ay, 2.5, 0, Math.PI * 2); ctx.fill();
 
-      ctx.fillStyle = 'rgba(14,22,32,0.82)';
+      ctx.fillStyle = T().tagBg;
       roundRect(ctx, x, y, w, h, 8);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(140,190,240,0.30)';
+      ctx.strokeStyle = T().tagBorder;
       ctx.stroke();
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
       ctx.font = '700 12px ' + FONT;
-      ctx.fillStyle = 'rgba(120,200,255,0.95)';
+      ctx.fillStyle = T().tagTitle;
       ctx.fillText(title.toUpperCase(), x + 13, y + 19);
       ctx.font = '600 15.5px ' + FONT;
-      ctx.fillStyle = '#e8eef5';
+      ctx.fillStyle = T().tagText;
       lines.forEach(function (l, i) { ctx.fillText(l, x + 13, y + 40 + i * 20); });
       ctx.restore();
     }
@@ -1319,7 +1330,7 @@
       const oh = B.innerHalf + B.wall;
 
       // Verbindungslinien
-      ctx.strokeStyle = 'rgba(140,190,240,0.35)';
+      ctx.strokeStyle = T().lensLine;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(B.x + oh + 1, yM - 5);
@@ -1327,7 +1338,7 @@
       ctx.moveTo(B.x + oh + 1, yM + 5);
       ctx.lineTo(cx - R * 0.8, cy + R * 0.6);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(140,190,240,0.7)';
+      ctx.strokeStyle = T().lensLine2;
       ctx.strokeRect(B.x - oh - 3, yM - 6, 2 * oh + 6, 12);
 
       ctx.save();
@@ -1335,8 +1346,8 @@
       ctx.arc(cx, cy, R, 0, Math.PI * 2);
       ctx.clip();
       const bg = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy, R);
-      bg.addColorStop(0, '#24313f');
-      bg.addColorStop(1, '#121a23');
+      bg.addColorStop(0, T().lensBg0);
+      bg.addColorStop(1, T().lensBg1);
       ctx.fillStyle = bg;
       ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R);
       ctx.translate(cx, cy);
@@ -1356,7 +1367,7 @@
       ctx.strokeStyle = 'rgba(255,255,255,0.18)';
       ctx.lineWidth = 5;
       ctx.beginPath(); ctx.arc(cx, cy, R - 8, Math.PI * 1.1, Math.PI * 1.45); ctx.stroke();
-      ctx.fillStyle = 'rgba(200,215,232,0.8)';
+      ctx.fillStyle = T().lensCaption;
       ctx.font = '600 12px ' + FONT;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
@@ -1366,15 +1377,15 @@
     _drawHints(ctx) {
       if (this.opts.hintStopcock) {
         const t = this.reduceMotion ? 0.35 : (this.time % 1.6) / 1.6;
-        ctx.strokeStyle = 'rgba(90,200,255,' + (0.7 * (1 - t)).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(' + T().hintRing + ',' + (0.7 * (1 - t)).toFixed(3) + ')';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(B.x, B.stopcockY, 30 + t * 28, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.fillStyle = 'rgba(14,22,32,0.85)';
+        ctx.fillStyle = T().hintBg;
         roundRect(ctx, B.x + 62, B.stopcockY - 16, 124, 32, 16);
         ctx.fill();
-        ctx.fillStyle = '#bfe6ff';
+        ctx.fillStyle = T().hintText;
         ctx.font = '600 13.5px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -1383,7 +1394,7 @@
       if (this.reduceMotion) return;
       for (const tp of this.taps) {
         const t = tp.age / 0.6;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.6 * (1 - t)).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(' + T().tapRing + ',' + (0.6 * (1 - t)).toFixed(3) + ')';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(tp.x, tp.y, 20 + t * 30, 0, Math.PI * 2);

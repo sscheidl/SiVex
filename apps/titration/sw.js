@@ -10,7 +10,7 @@
  *   Verzeichnisses (Scope dieses Service Workers).
  */
 const CACHE_PREFIX = 'titrierlabor-';
-const CACHE = CACHE_PREFIX + 'v4';
+const CACHE = CACHE_PREFIX + 'v5'; // 3.1.0
 const FILES = [
   './',
   'index.html',
@@ -20,6 +20,7 @@ const FILES = [
   'js/model/indicators.js',
   'js/model/config.js',
   'js/model/evaluation.js',
+  'js/view/theme.js',
   'js/experiment/experiment.js',
   'js/view/geometry.js',
   'js/view/lab-renderer.js',

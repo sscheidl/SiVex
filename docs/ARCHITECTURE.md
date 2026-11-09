@@ -4,8 +4,7 @@
 
 ```text
 apps/
-  titration/
-    titralab3/        # geplanter Import des Claude-V3-Releases
+  titration/          # TitraLab 3.1.0 (prototype) – Säure-Base-Titration; Quellcode seit 3.1.0 entpackt, Referenz für Glas und Flüssigkeiten
   redoxlabor/
   trennverfahren/     # Trennverfahren 0.4.0 (prototype) auf Basis des Labkits
   chromatographie/    # Papierchromatographie 0.3.0 (prototype) auf Basis des Labkits
@@ -38,4 +37,4 @@ Verzeichnisse werden **nach Experiment**, nicht nach Fach oder Jahrgangsstufe an
 
 ## Status
 
-Die Quellcode-Dateien des TitraLab-3-Releases müssen noch auf GitHub importiert werden. Das aktuell eingecheckte Experimentverzeichnis enthält daher nur Dokumentation und Metadaten.
+Der Quellcode von TitraLab 3 liegt seit Version 3.1.0 (09.11.2026) entpackt unter `apps/titration/` – mit Build, Paketierung und Tests wie bei den übrigen Apps. Das Release 3.0 („Claude V3“, nur als ZIP) ist über die Git-Historie erreichbar. TitraLab nutzt das Labkit nicht; es bietet seit 3.1.0 zusätzlich zum dunklen ein helles Farbschema in den Labkit-Farben.

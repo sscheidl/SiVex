@@ -51,7 +51,7 @@ Die Build- und Paketskripte beider Fassungen gehen auf die des Redoxlabors zurü
 
 ## Gestalterische Vorbilder
 
-- **Flüssigkeiten, Tropfen, Meniskus, Glasgefäße:** TitraLab 3 (`apps/titration/release/SiVex-Titration-Claude-v3-web.zip` → `titration/js/view/lab-renderer.js`, `geometry.js`)
+- **Flüssigkeiten, Tropfen, Meniskus, Glasgefäße:** TitraLab 3 (`apps/titration/js/view/lab-renderer.js`, `geometry.js`; helle Palette in `theme.js`)
 - **Verschiebbare Trennlinie Labor | Bedienfeld:** TitraLab 3 (`titration/js/ui/app.js` → `bindSplitter`, `titration/css/styles.css` → `.splitter`)
 
 Siehe [Eindrücke der Lehrkraft](../../docs/reviews/trennlabor-eindruecke-lehrkraft.md), G-03 und G-04.

@@ -1,5 +1,5 @@
 // Minimaler statischer Webserver ohne Abhängigkeiten (nur für Entwicklung und Tests).
-// Im Quellstand wird /labkit/ auf shared/labkit/ abgebildet; im Build liegt der Baukasten in dist/.
+// (TitraLab 3 nutzt kein Labkit; die /labkit/-Abbildung bleibt für Gleichheit mit den anderen Apps erhalten.)
 // Aufruf: node scripts/serve.mjs [verzeichnis] [port]
 import http from 'node:http';
 import fs from 'node:fs';
@@ -35,5 +35,5 @@ export function serve(dir = root, p = port) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  serve().then(() => console.log(`Halbtitrationslabor läuft auf http://localhost:${port}/  (Verzeichnis: ${root})`));
+  serve().then(() => console.log(`TitraLab 3 läuft auf http://localhost:${port}/  (Verzeichnis: ${root})`));
 }

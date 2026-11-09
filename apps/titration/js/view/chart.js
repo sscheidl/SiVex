@@ -27,6 +27,9 @@
     return m * p;
   }
 
+  /** aktuelle Farbpalette (hell/dunkel), siehe theme.js */
+  function T() { return NS.Theme.palette; }
+
   class TitrationChart {
     constructor(canvas, callbacks) {
       this.canvas = canvas;
@@ -272,7 +275,7 @@
       ctx.beginPath();
       ctx.rect(p.x, p.y, p.w, p.h);
       ctx.clip();
-      ctx.fillStyle = 'rgba(255,255,255,0.02)';
+      ctx.fillStyle = T().plotBg;
       ctx.fillRect(p.x, p.y, p.w, p.h);
       this._drawIndicatorBand(ctx, p);
       this._drawEquivalence(ctx, p);
@@ -288,7 +291,7 @@
       this._drawCurrent(ctx, p);
 
       if (!this.points.length) {
-        ctx.fillStyle = 'rgba(200,215,232,0.75)';
+        ctx.fillStyle = T().emptyText;
         ctx.font = '500 13px ' + FONT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -308,12 +311,13 @@
       g.addColorStop(1, 'rgba(' + Math.round(cb.r) + ',' + Math.round(cb.g) + ',' + Math.round(cb.b) + ',0.22)');
       ctx.fillStyle = g;
       ctx.fillRect(p.x, y0, p.w, y1 - y0);
-      ctx.fillStyle = 'rgba(220,230,240,0.6)';
+      ctx.fillStyle = T().bandText;
       ctx.font = '600 11.5px ' + FONT;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'top';
-      ctx.fillText('Umschlagsbereich ' + ind.name + ' (pH ' + fmt(ind.range[0], 1) + '–' + fmt(ind.range[1], 1) + ')',
-        p.x + p.w - 6, y0 + 3);
+      // Auf schmalen Diagrammen (Kurve neben der Apparatur) ohne das Wort „Umschlagsbereich“
+      const label = (p.w < 420 ? '' : 'Umschlagsbereich ') + ind.name + ' (pH ' + fmt(ind.range[0], 1) + '–' + fmt(ind.range[1], 1) + ')';
+      ctx.fillText(label, p.x + p.w - 6, y0 + 3);
     }
 
     _drawEquivalence(ctx, p) {
@@ -322,25 +326,25 @@
       if (eq.region) {
         const x0 = this._vToX(eq.region[0]);
         const x1 = this._vToX(eq.region[1]);
-        ctx.fillStyle = 'rgba(61,245,138,0.08)';
+        ctx.fillStyle = 'rgba(' + T().eq + ',0.08)';
         ctx.fillRect(x0, p.y, Math.max(2, x1 - x0), p.h);
       }
       const x = this._vToX(eq.v);
-      ctx.strokeStyle = 'rgba(61,245,138,0.9)';
+      ctx.strokeStyle = 'rgba(' + T().eq + ',0.9)';
       ctx.setLineDash([6, 4]);
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(x, p.y); ctx.lineTo(x, p.y + p.h); ctx.stroke();
       // pH-Wert am Äquivalenzpunkt (bei schwachen Säuren/Basen ≠ 7)
       if (Number.isFinite(eq.pH)) {
         const y = this._phToY(eq.pH);
-        ctx.strokeStyle = 'rgba(61,245,138,0.45)';
+        ctx.strokeStyle = 'rgba(' + T().eq + ',0.45)';
         ctx.beginPath(); ctx.moveTo(p.x, y); ctx.lineTo(p.x + p.w, y); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = '#3df58a';
+        ctx.fillStyle = 'rgb(' + T().eq + ')';
         ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
       }
       ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(61,245,138,0.95)';
+      ctx.fillStyle = 'rgba(' + T().eq + ',0.95)';
       ctx.font = '700 12px ' + FONT;
       ctx.textAlign = x > p.x + p.w - 190 ? 'right' : 'left';
       ctx.textBaseline = 'top';
@@ -350,10 +354,10 @@
       if (eq.half) {
         const hx = this._vToX(eq.half.v);
         const hy = this._phToY(eq.half.pH);
-        ctx.strokeStyle = 'rgba(255,200,90,0.8)';
+        ctx.strokeStyle = T().half;
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = 'rgba(255,210,120,0.95)';
+        ctx.fillStyle = T().halfText;
         ctx.font = '700 12px ' + FONT;
         ctx.textAlign = 'left';
         ctx.textBaseline = eq.half.pH > 7 ? 'top' : 'bottom';
@@ -365,22 +369,22 @@
       ctx.lineWidth = 1;
       for (let pH = 0; pH <= 14; pH++) {
         const y = Math.round(this._phToY(pH)) + 0.5;
-        ctx.strokeStyle = pH === 7 ? 'rgba(255,255,255,0.0)' : 'rgba(255,255,255,' + (pH % 2 ? 0.035 : 0.07) + ')';
+        ctx.strokeStyle = pH === 7 ? 'rgba(0,0,0,0)' : (pH % 2 ? T().grid1 : T().grid2);
         ctx.beginPath(); ctx.moveTo(p.x, y); ctx.lineTo(p.x + p.w, y); ctx.stroke();
       }
       const step = niceStep(r[1] - r[0], Math.max(4, Math.floor(p.w / 70)));
       for (let v = Math.ceil(r[0] / step) * step; v <= r[1] + 1e-9; v += step) {
         const x = Math.round(this._vToX(v)) + 0.5;
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.strokeStyle = T().gridV;
         ctx.beginPath(); ctx.moveTo(x, p.y); ctx.lineTo(x, p.y + p.h); ctx.stroke();
       }
       // Neutralpunkt
       const y7 = this._phToY(7);
-      ctx.strokeStyle = 'rgba(160,190,220,0.45)';
+      ctx.strokeStyle = T().neutral;
       ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(p.x, y7); ctx.lineTo(p.x + p.w, y7); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(160,190,220,0.7)';
+      ctx.fillStyle = T().neutralText;
       ctx.font = '600 11.5px ' + FONT;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
@@ -388,14 +392,14 @@
     }
 
     _drawAxes(ctx, p, r) {
-      ctx.strokeStyle = 'rgba(220,230,240,0.55)';
+      ctx.strokeStyle = T().axis;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(p.x + 0.5, p.y);
       ctx.lineTo(p.x + 0.5, p.y + p.h + 0.5);
       ctx.lineTo(p.x + p.w, p.y + p.h + 0.5);
       ctx.stroke();
-      ctx.fillStyle = 'rgba(220,230,240,0.85)';
+      ctx.fillStyle = T().axisText;
       ctx.font = '600 12.5px ' + FONT;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
@@ -408,7 +412,7 @@
         ctx.fillText(fmt(v, dec), this._vToX(v), p.y + p.h + 6);
       }
       ctx.font = '700 12px ' + FONT;
-      ctx.fillStyle = 'rgba(160,200,240,0.95)';
+      ctx.fillStyle = T().axisTitle;
       ctx.textAlign = 'right';
       ctx.fillText('V(Maßlösung) in mL', p.x + p.w, p.y + p.h + 21);
       ctx.save();
@@ -422,7 +426,7 @@
 
     _drawTeacherCurve(ctx) {
       if (!this.teacherCurve) return;
-      ctx.strokeStyle = 'rgba(255,190,90,0.55)';
+      ctx.strokeStyle = T().teacher;
       ctx.setLineDash([5, 4]);
       ctx.lineWidth = 1.4;
       ctx.beginPath();
@@ -439,7 +443,7 @@
       const pts = this._sorted();
       if (!pts.length) return;
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = 'rgba(76,201,240,0.25)';
+      ctx.strokeStyle = T().dataGlow;
       ctx.lineWidth = 6;
       ctx.beginPath();
       pts.forEach(function (pt, i) {
@@ -448,14 +452,14 @@
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }, this);
       ctx.stroke();
-      ctx.strokeStyle = '#4cc9f0';
+      ctx.strokeStyle = T().data;
       ctx.lineWidth = 2;
       ctx.stroke();
       const r = this.range();
       const visible = pts.filter(function (pt) { return pt.v >= r[0] && pt.v <= r[1]; }).length;
       const pxPer = p.w / Math.max(1, visible);
       if (pxPer > 5) {
-        ctx.fillStyle = '#d8f5ff';
+        ctx.fillStyle = T().dataDot;
         for (const pt of pts) {
           ctx.beginPath();
           ctx.arc(this._vToX(pt.v), this._phToY(pt.pH), pxPer > 12 ? 2.6 : 1.8, 0, Math.PI * 2);
@@ -471,8 +475,8 @@
       for (const q of d) max = Math.max(max, Math.abs(q.slope));
       if (max <= 0) return;
       const yBase = p.y + p.h;
-      ctx.fillStyle = 'rgba(167,139,250,0.20)';
-      ctx.strokeStyle = 'rgba(167,139,250,0.9)';
+      ctx.fillStyle = 'rgba(' + T().deriv + ',0.20)';
+      ctx.strokeStyle = 'rgba(' + T().deriv + ',0.9)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(this._vToX(d[0].v), yBase);
@@ -490,7 +494,7 @@
       // rechte Achse
       ctx.restore();
       ctx.save();
-      ctx.fillStyle = 'rgba(167,139,250,0.95)';
+      ctx.fillStyle = 'rgba(' + T().deriv + ',0.95)';
       ctx.font = '600 11.5px ' + FONT;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
@@ -517,10 +521,10 @@
       if (x < p.x - 1 || x > p.x + p.w + 1) return;
       const still = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const t = still ? 0.4 : (performance.now() % 1400) / 1400;
-      ctx.fillStyle = 'rgba(76,201,240,' + (0.35 * (1 - t)).toFixed(3) + ')';
+      ctx.fillStyle = 'rgba(' + T().dataPulse + ',' + (0.35 * (1 - t)).toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(x, y, 5 + t * 12, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#4cc9f0';
+      ctx.strokeStyle = T().data;
       ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       if (!still) this.dirty = true; // Pulsieren
@@ -532,7 +536,7 @@
       if (!pt) return;
       const x = this._vToX(pt.v);
       const y = this._phToY(pt.pH);
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.strokeStyle = T().cursor;
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -540,19 +544,19 @@
       ctx.moveTo(p.x, y); ctx.lineTo(p.x + p.w, y);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = T().cursorDot;
       ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
-      this._tooltip(ctx, p, x, y, ['V = ' + fmt(pt.v, 2) + ' mL', 'pH = ' + fmt(pt.pH, 2)], 'rgba(14,22,32,0.92)', '#e8eef5');
+      this._tooltip(ctx, p, x, y, ['V = ' + fmt(pt.v, 2) + ' mL', 'pH = ' + fmt(pt.pH, 2)], T().tooltipBg, T().tooltipFg);
     }
 
     _drawMarker(ctx, p) {
       if (!this.marker) return;
       const x = this._vToX(this.marker.v);
       const y = this._phToY(this.marker.pH);
-      ctx.strokeStyle = '#ffb547';
+      ctx.strokeStyle = T().marker;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(x, p.y); ctx.lineTo(x, p.y + p.h); ctx.stroke();
-      ctx.fillStyle = '#ffb547';
+      ctx.fillStyle = T().marker;
       ctx.beginPath();
       ctx.moveTo(x, y - 8); ctx.lineTo(x + 8, y); ctx.lineTo(x, y + 8); ctx.lineTo(x - 8, y);
       ctx.closePath(); ctx.fill();
@@ -573,7 +577,7 @@
       if (tx + w > p.x + p.w) tx = x - w - 12;
       if (ty < p.y) ty = y + 12;
       ctx.fillStyle = bg;
-      ctx.strokeStyle = 'rgba(140,190,240,0.4)';
+      ctx.strokeStyle = T().tooltipBorder;
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(tx, ty, w, h, 6); else ctx.rect(tx, ty, w, h);
       ctx.fill();
