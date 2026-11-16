@@ -14,7 +14,7 @@
 (function (root) {
   'use strict';
   const FL = root.FL, C = FL.chem, G = FL.geometry, M = FL.model, GHS = FL.ghs, LK = root.LK;
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.1';
   const KEY = 'sivex.faellungslabor.session.v1';
   const PREF = 'sivex.faellungslabor.prefs';
   const $ = (id) => document.getElementById(id);
@@ -31,11 +31,11 @@
 
   const lab = M.create(saved && saved.lab);
   const canvas = $('lab');
-  const renderer = new FL.LabRenderer(canvas, lab);
+  const renderer = new FL.LabRenderer(canvas, lab, $('fx'));
   const reduce = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  renderer.reduceMotion = !!(reduce && reduce.matches);
-  if (reduce && reduce.addEventListener) reduce.addEventListener('change', (e) => { renderer.reduceMotion = e.matches; document.body.classList.toggle('reduce-motion', e.matches); });
-  document.body.classList.toggle('reduce-motion', renderer.reduceMotion);
+  function applyMotion(on) { renderer.reduceMotion = on; lab.setReducedMotion(on); document.body.classList.toggle('reduce-motion', on); }
+  applyMotion(!!(reduce && reduce.matches));
+  if (reduce && reduce.addEventListener) reduce.addEventListener('change', (e) => applyMotion(e.matches));
 
   let dirty = false;
   function save() { dirty = true; }
@@ -138,13 +138,17 @@
     if (key === hitsKey) return;
     hitsKey = key;
     let html = '';
+    const L = lab.layout(), info = [];
     keys.forEach((k) => {
-      const x = lab.bottlePos(k);
-      const a = renderer.toScreen(x - G.BOTTLE.w / 2 - 4, G.SHELF_Y - G.BOTTLE.h - G.BOTTLE.neckH - G.PIPETTE_LEN);
-      const b = renderer.toScreen(x + G.BOTTLE.w / 2 + 4, G.SHELF_Y);
-      const w = Math.max(44, b.x - a.x), h = Math.max(44, b.y - a.y);
+      const bt = L.bottles[k], x = bt.x;
+      const a = renderer.toScreen(x, G.SHELF_Y - bt.h - G.BOTTLE.neckH - G.PIPETTE_LEN);
+      const b = renderer.toScreen(x, G.SHELF_Y);
+      const w = bt.wpx + 4, h = Math.max(44, b.y - a.y);
       const held = st.pip.key === k && st.pip.tab === st.tab;
-      html += `<button type="button" class="hit bottle" data-bottle="${k}" aria-pressed="${held}" aria-label="${esc((held ? 'Pipette zurückstellen: ' : 'Pipette aufnehmen: ') + solName(k))}" style="left:${(a.x + b.x) / 2 - w / 2}px;top:${b.y - h}px;width:${w}px;height:${h}px"></button>`;
+      html += `<button type="button" class="hit bottle" data-bottle="${k}" aria-pressed="${held}" aria-label="${esc((held ? 'Pipette zurückstellen: ' : 'Pipette aufnehmen: ') + solName(k))}" style="left:${b.x - w / 2}px;top:${b.y - h}px;width:${w}px;height:${h}px"></button>`;
+      // Infoleiste unten auf dem Etikett: Piktogramme + i; öffnet die Karte mit Konzentration und Gefahrstoffhinweisen
+      const picts = (GHS.LABELS[k] || { pict: [] }).pict, ps = L.compact ? 15 : 18;
+      info.push(`<button type="button" class="hit binfo" data-info="${k}" aria-label="${esc('Infokarte: ' + solName(k) + ' – Konzentration und Gefahrstoffkennzeichnung')}" style="left:${b.x - bt.wpx / 2}px;top:${b.y - 2 - 26}px;width:${bt.wpx}px;height:44px"><span class="strip">${picts.map((c) => `<img src="${GHS.dataUri(c)}" width="${ps}" height="${ps}" alt="">`).join('')}<span class="i" aria-hidden="true">i</span></span></button>`);
     });
     for (let i = 0; i < tb.visible; i++) {
       const x = lab.tubePos(i);
@@ -153,6 +157,8 @@
       const w = Math.max(44, b.x - a.x), h = Math.max(44, b.y - a.y);
       html += `<button type="button" class="hit tube" data-slot="${i}" aria-label="${esc(tubeLabel(i))}" style="left:${(a.x + b.x) / 2 - w / 2}px;top:${a.y}px;width:${w}px;height:${h}px"></button>`;
     }
+    // Infoleisten vor der Pipette: die aufgenommene Pipette liegt sichtbar und bedienbar obenauf
+    html += info.join('');
     const p = st.pip;
     if (p.key && p.tab === st.tab && (p.phase === 'held' || p.phase === 'over')) {
       const a = renderer.toScreen(p.x - 16, p.y - G.PIPETTE_LEN - 40), b = renderer.toScreen(p.x + 16, p.y - 30);
@@ -168,23 +174,34 @@
     const st = lab.state, tb = lab.tab(), keys = M.TABS[st.tab].bottles, v = renderer.view;
     const texts = [];
     for (let i = 0; i < tb.visible; i++) { const t = tb.tubes[i]; texts.push(t.ansatz || '', t.sample || '', t.V.toFixed(3), t.log.agDrops, t.log.nh3dilV.toFixed(2), t.log.nh3concV.toFixed(2), t.log.waterV.toFixed(2)); }
-    const key = [st.tab, tb.visible, v.scale, v.ox, v.oy, v.w, v.h].join('|') + '#' + texts.join(',');
+    const key = [st.tab, tb.visible, v.scale, v.ox, v.oy, v.w, v.h, st.pour ? st.pour.slot : ''].join('|') + '#' + texts.join(',');
     if (key === labelsKey) return;
     labelsKey = key;
     let html = '';
-    const bw = Math.max(44, G.bottleGap(keys.length, v.worldW) * v.scale - 8);
+    const L = lab.layout(), sy = renderer.toScreen(0, G.SHELF_Y).y;
     keys.forEach((k) => {
-      // Etikett ist auf die Bühne gezeichnet; hier nur die bedienbare, unsichtbare Fläche (Infokarte)
-      const s = C.SOLUTIONS[k];
-      const p = renderer.toScreen(lab.bottlePos(k), G.SHELF_Y + 18);
-      html += `<button type="button" class="blabel" data-info="${k}" style="left:${p.x - bw / 2}px;top:${p.y - 4}px;width:${bw}px;height:${Math.max(44, 42)}px" aria-label="${esc('Informationen und Gefahrstoffkennzeichnung: ' + s.name + ', ' + FL.render.shelfText(k).join(' '))}"></button>`;
+      // Etikett in festen Bildschirmpixeln: Formel groß, Name, Zusatz – ohne Konzentration (die steht in der Infokarte)
+      const bt = L.bottles[k], tx = FL.render.bottleText(k), x = renderer.toScreen(bt.x, 0).x;
+      const big = tx.f ? `<span class="f">${esc(tx.f)}</span>` : '';
+      const name = tx.n ? `<span class="n${tx.f ? '' : ' big'}">${esc(tx.n)}</span>` : '';
+      const q = tx.q ? `<span class="q">${esc(tx.q)}</span>` : '';
+      html += `<div class="bcard${L.compact ? ' compact' : ''}${k === 'agno3' ? ' brown' : ''}" data-card="${k}" aria-hidden="true" style="left:${x - bt.wpx / 2}px;top:${sy - 2 - bt.hpx}px;width:${bt.wpx}px;height:${bt.hpx}px">${big}${name}${q}</div>`;
     });
+    // Gruppenüberschriften unter dem Regal
+    L.groups.forEach((g) => {
+      const a = Math.max(2, renderer.toScreen(g.x0, 0).x - 9), b = Math.min(v.w - 2, renderer.toScreen(g.x1, 0).x + 9);
+      html += `<div class="ghead${L.compact ? ' compact' : ''}" data-group="${esc(g.title)}" style="left:${a}px;width:${b - a}px;top:${renderer.toScreen(0, G.SHELF_Y + 16).y + 2}px">${esc(L.compact ? g.short : g.title)}</div>`;
+    });
+    // Silberabfall-Behälter
+    const wx = renderer.toScreen(G.wasteX(tb.visible, v.worldW), G.BENCH);
+    html += `<div class="wlabel" data-waste="1" style="left:${wx.x - 50}px;top:${wx.y + 3}px;width:100px"><b>Silberabfälle</b><span>Sammelbehälter</span></div>`;
     for (let i = 0; i < tb.visible; i++) {
       const t = tb.tubes[i];
       const p = renderer.toScreen(lab.tubePos(i), G.BENCH);
       const w = Math.max(96, G.TUBE_GAP * v.scale - 4);
       let inner;
-      if (!(t.V > 0)) inner = `<b>Glas ${i + 1}</b><span class="lk-muted">leer</span>`;
+      if (lab.pourBusy(st.tab, i)) inner = `<b>Glas ${i + 1}${t.ansatz ? ' · ' + esc(t.ansatz) : ''}</b><span>wird ausgegossen …</span>`;
+      else if (!(t.V > 0)) inner = `<b>Glas ${i + 1}</b><span class="lk-muted">leer</span>`;
       else {
         const s = C.SOLUTIONS[t.sample];
         const extra = [];
@@ -197,8 +214,10 @@
       html += `<div class="tlabel${tb.sel === i ? ' sel' : ''}" style="left:${p.x - w / 2}px;top:${p.y + 3}px;width:${w}px">${inner}</div>`;
     }
     labels.innerHTML = html;
+    // Sicherung für abweichende Systemschriften: passt ein Etikett nicht, Zusatzzeilen etwas enger setzen
+    labels.querySelectorAll('.bcard').forEach((c) => { if (c.scrollHeight > c.clientHeight + 1 || c.scrollWidth > c.clientWidth + 1) c.classList.add('tight'); });
   }
-  labels.addEventListener('click', (e) => { const b = e.target.closest('[data-info]'); if (b) ui.ghsCard(b.dataset.info); });
+  hits.addEventListener('click', (e) => { const b = e.target.closest('[data-info]'); if (b) ui.ghsCard(b.dataset.info); });
 
   // ---------------------------------------------------------------- Eingaben an Flaschen und Gläsern
   let lastKeyAct = 0;
@@ -248,7 +267,8 @@
     const w = renderer.toWorld(px - r.left, py - r.top);
     const tb = lab.tab();
     for (let i = 0; i < tb.visible; i++) if (Math.abs(w.x - lab.tubePos(i)) < G.TUBE_R + 26 && w.y > G.RIM_Y - 120 && w.y < G.BENCH) return { slot: i, w };
-    for (const k of M.TABS[lab.state.tab].bottles) if (Math.abs(w.x - lab.bottlePos(k)) < G.BOTTLE.w / 2 + 12 && w.y > G.SHELF_Y - G.BOTTLE.h - 80 && w.y < G.SHELF_Y + 12) return { bottle: k, w };
+    const L = lab.layout();
+    for (const k of M.TABS[lab.state.tab].bottles) { const bt = L.bottles[k]; if (Math.abs(w.x - bt.x) < bt.w / 2 + 4 && w.y > G.SHELF_Y - bt.h - 80 && w.y < G.SHELF_Y + 12) return { bottle: k, w }; }
     return { w };
   }
   hits.addEventListener('pointerdown', (e) => {
@@ -297,9 +317,9 @@
     let html = '', h = '';
     if (!d.key) {
       html = '<span class="who">Keine Pipette in der Hand.</span>';
-      h = 'Tippe eine Flasche an, um ihre Pipette aufzunehmen. Das Etikett darunter zeigt Gefahrstoffhinweise.';
+      h = 'Tippe eine Flasche an, um ihre Pipette aufzunehmen. ⓘ unten auf dem Etikett: Konzentration und Gefahrstoffhinweise.';
     } else {
-      const name = solName(d.key), short = d.key === 'tap' ? 'Leitungswasser' : d.key === 'mineral' ? 'Mineralwasser' : FL.render.shelfText(d.key)[0];
+      const name = solName(d.key), short = FL.render.shortText(d.key);
       html = `<span class="who" title="${esc('Pipette: ' + name)}"><span class="bulb" style="background:${FL.render.BULB[d.key]}"></span><span>Pipette <b>${esc(short)}</b>${d.over != null ? ` → Glas ${d.over + 1}` : ''}</span></span>`;
       if (d.sample) h = `Tippe ein leeres Reagenzglas an – die Pipette gibt ${d.vol} mL Probe ab.`;
       else if (d.over == null) h = 'Tippe das Reagenzglas an, in das du zugeben möchtest.';
@@ -339,9 +359,35 @@
   $('btnRinse').addEventListener('click', () => {
     const tb = lab.tab();
     if (tb.sel == null) { toast('Tippe zuerst ein Reagenzglas an.'); return; }
-    const t = tb.tubes[tb.sel], id = t.ansatz;
-    if (lab.rinse(tb.sel)) { toast(`Glas ${tb.sel + 1} gespült – Ansatz ${id} ist beendet und bleibt in der Ergebnisübersicht.`); save(); }
+    if (lab.state.pour) { toast('Bitte warten – ein Glas wird gerade ausgegossen.'); return; }
+    const slot = tb.sel, t = tb.tubes[slot], id = t.ansatz;
+    if (lab.rinse(slot)) { toast(`Glas ${slot + 1} wird in den Silberabfall ausgegossen – Ansatz ${id} bleibt in der Ergebnisübersicht.`); save(); }
     else toast('Das Reagenzglas ist schon leer.');
+  });
+  // „− Glas“: gewähltes Glas aus dem Ständer nehmen; gefüllt nur nach Rückfrage (dann ausgießen)
+  function removeSelected(confirmed) {
+    const tb = lab.tab();
+    if (tb.sel == null) { toast('Tippe zuerst das Reagenzglas an, das du wegnehmen möchtest.'); return; }
+    if (lab.state.pour) { toast('Bitte warten – ein Glas wird gerade ausgegossen.'); return; }
+    const slot = tb.sel, t = tb.tubes[slot];
+    const r = lab.removeTube(slot, confirmed);
+    if (r === 'min') toast('Mindestens ein Reagenzglas bleibt im Ständer.');
+    else if (r === 'confirm') {
+      ui.openModal(`<h2 id="modalTitle">Glas ${slot + 1} ausgießen und wegnehmen?</h2><p>In Glas ${slot + 1} ist noch ${esc(C.fmt(t.V, 2))} mL (Ansatz ${esc(t.ansatz)}). Der Inhalt kommt in den Silberabfall, das Glas wird aus dem Ständer genommen. Ansatz ${esc(t.ansatz)} bleibt in der Ergebnisübersicht.</p><div class="lk-row end"><button type="button" class="lk-btn" data-m="close">Abbrechen</button><button type="button" class="lk-btn danger" data-m="removeYes" data-slot="${slot}">Ausgießen und wegnehmen</button></div>`);
+    } else if (r === true) {
+      toast(confirmed ? `Glas ${slot + 1} wird ausgegossen und dann weggenommen.` : `Leeres Glas ${slot + 1} weggenommen.`);
+      save();
+    }
+  }
+  $('btnRemoveTube').addEventListener('click', () => removeSelected(false));
+  $('modal').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-m="removeYes"]');
+    if (!b) return;
+    ui.closeModal();
+    const tb = lab.tab();
+    if (tb.sel !== +b.dataset.slot) tb.sel = +b.dataset.slot;
+    removeSelected(true);
+    $('btnRemoveTube').focus();
   });
   $('btnAddTube').addEventListener('click', () => {
     if (lab.addTube()) { toast('Weiteres leeres Reagenzglas im Ständer.'); save(); }
@@ -356,6 +402,10 @@
     $('btnShake').setAttribute('aria-label', tb.sel != null ? `Glas ${tb.sel + 1} schwenken` : 'Schwenken (zuerst ein Glas antippen)');
     $('btnRinse').setAttribute('aria-label', tb.sel != null ? `Glas ${tb.sel + 1} spülen` : 'Glas spülen (zuerst ein Glas antippen)');
     $('btnAddTube').disabled = tb.visible >= M.TABS[st.tab].maxTubes;
+    // „− Glas“ bleibt bedienbar (Hinweis bei fehlender Auswahl/Minimum), wirkt aber gedämpft
+    const rm = $('btnRemoveTube'), canRm = tb.sel != null && tb.visible > 1 && !st.pour;
+    rm.classList.toggle('soft-off', !canRm);
+    rm.setAttribute('aria-label', tb.sel != null ? `Glas ${tb.sel + 1} aus dem Ständer nehmen` : 'Glas wegnehmen (zuerst ein Glas antippen)');
   }
 
   // ---------------------------------------------------------------- Hauptschleife
@@ -369,6 +419,8 @@
       else if (e.type === 'forbidden') showForbidden(e);
       else if (e.type === 'full') toast(e.text);
       else if (e.type === 'toast') toast(e.text);
+      else if (e.type === 'removed') { for (const k of Object.keys(renderer.fx)) if (k.indexOf(e.tab) === 0) delete renderer.fx[k]; hitsKey = ''; labelsKey = ''; save(); }
+      else if (e.type === 'poured') { if (e.tab === lab.state.tab) delete renderer.fx[e.tab + e.slot]; save(); }
     }
     renderer.frame(dt);
     layoutHits(); updateTubeAria(); layoutLabels(); renderDeck(); syncControls(); ui.tick();
@@ -378,6 +430,7 @@
 
   syncPart();
   ui.render();
+  if (ui.state.migrated) { delete ui.state.migrated; save(); setTimeout(() => toast('Gespeicherte Antworten aus Version 1.0 übernommen – die Antwortmöglichkeiten sind jetzt gemischt.', 5000), 300); }
   root.requestAnimationFrame((t) => { last = t; loop(t); });
 
   // Zugriff für Tests (nur lesen) und Fehlersuche

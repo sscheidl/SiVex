@@ -16,10 +16,20 @@
   };
   const STEPS = { main: T.STEPS, control: T.CONTROL_STEPS };
 
+  /** Startwert für das Mischen: neu je Durchgang; über „#seed=…“ in der Adresse festlegbar (Prüfungen). */
+  function hashSeed(offset) {
+    try { const m = /[#&]seed=(\d+)/.exec(root.location.hash || ''); if (m) return (Number(m[1]) + (offset || 0)) >>> 0; } catch (e) { /* ohne Adresse */ }
+    return null;
+  }
+  function freshLearn(p) {
+    const steps = STEPS[p];
+    const fixed = hashSeed(p === 'main' ? 0 : 1);
+    return { v: 2, seed: fixed != null ? fixed : T.newSeed(), step: steps[0].id, steps: LL.freshState(steps) };
+  }
   function freshState() {
     return {
       ptab: { main: 'guide', control: 'guide' },
-      learn: { main: { step: T.STEPS[0].id, steps: LL.freshState(T.STEPS) }, control: { step: T.CONTROL_STEPS[0].id, steps: LL.freshState(T.CONTROL_STEPS) } },
+      learn: { main: freshLearn('main'), control: freshLearn('control') },
       records: { main: [], control: [] }, drafts: {}, uid: 1
     };
   }
@@ -29,8 +39,20 @@
     for (const p of ['main', 'control']) {
       if (s.ptab && PTABS[p].some(([k]) => k === s.ptab[p])) f.ptab[p] = s.ptab[p];
       const L = s.learn && s.learn[p];
-      if (L && L.steps) for (const st of STEPS[p]) if (L.steps[st.id]) f.learn[p].steps[st.id] = Object.assign(LL.freshStep(), L.steps[st.id], { confirmSolution: false });
+      // Antworten aus 1.0.0 (Buchstaben) werden auf die fachlichen IDs abgebildet und neu bewertet
+      const legacy = L && L.v !== 2;
+      if (L && L.steps) for (const st of STEPS[p]) if (L.steps[st.id]) {
+        const ss = Object.assign(LL.freshStep(), L.steps[st.id], { confirmSolution: false });
+        if (legacy) {
+          const m = T.migrateAnswers(ss.answers);
+          ss.answers = m.answers;
+          if (ss.graded) ss.graded = T.grade(st, ss.answers);
+          if (m.changed) f.migrated = true;
+        }
+        f.learn[p].steps[st.id] = ss;
+      }
       if (L && STEPS[p].some((x) => x.id === L.step)) f.learn[p].step = L.step;
+      if (L && L.v === 2 && Number.isInteger(L.seed) && L.seed >= 0) f.learn[p].seed = L.seed >>> 0;
       if (s.records && Array.isArray(s.records[p])) f.records[p] = s.records[p].filter((r) => r && r.ansatz);
     }
     if (s.drafts && typeof s.drafts === 'object') f.drafts = s.drafts;
@@ -90,7 +112,9 @@
           <p class="lk-muted small">Ammoniaklösung gehört erst zu einem Ansatz, der schon Silbernitratlösung enthält.</p></div>
           <div class="lk-card"><h3>Gut zu wissen</h3>
           <ul class="small"><li>Ein Tropfen ist im Modell 0,050 mL. Jedes Reagenzglas fasst 20 mL.</li>
-          <li><b>Spülen</b> beendet nur den Ansatz im gewählten Glas; er bleibt in der Ergebnisübersicht. Der Lernstand bleibt erhalten.</li>
+          <li><b>Spülen</b> gießt das gewählte Glas in den Behälter „Silberabfälle“ aus und beendet nur diesen Ansatz; er bleibt in der Ergebnisübersicht. <b>− Glas</b> nimmt ein Glas aus dem Ständer (gefüllt erst nach Rückfrage).</li>
+          <li>Dieselbe Probe darfst du nachgeben, eine andere Probe nicht.</li>
+          <li>Konzentrationen und Gefahrstoffhinweise: ⓘ unten auf dem Flaschenetikett antippen.</li>
           <li>Zeiten für Mischen und Absetzen sind für die Beobachtung gewählt, keine Messwerte.</li>
           <li>Hintergrund hell/dunkel ändert nur die Darstellung.</li></ul></div>
           ${resetHtml()}`;
@@ -157,10 +181,12 @@
       const pr = T.progress(steps, L);
       let html = '';
       if (p === 'main') html += `<p class="progress" role="status">Pflichtschritte gelöst: <b>${pr.done} von ${pr.total}</b> · Schritt 4 (Ammoniak) ist eine Erweiterung.</p>`;
-      html += `<div class="tasks${p === 'main' && L.step === 'gleich' ? ' eqs' : ''}">${LL.taskHtml(steps, L)}</div>`;
+      // Anzeige mit der für diesen Durchgang gemischten Reihenfolge; Bewertung über dieselben IDs
+      html += `<div class="tasks${p === 'main' && L.step === 'gleich' ? ' eqs' : ''}">${LL.taskHtml(steps.map((st) => T.view(st, L.seed)), L)}</div>`;
       const ss = L.steps[L.step];
       if (p === 'main' && L.step === 'nh3') html += `<details class="lk-card more"><summary>Vertiefung: Warum löst sich der Niederschlag?</summary><p>Ammoniakmoleküle binden gelöste Silberionen zum Diamminsilber(I)-Ion:</p><p class="eqline">Ag⁺(aq) + 2 NH₃(aq) → [Ag(NH₃)₂]⁺(aq)</p><p>Dadurch sinkt die Konzentration freier Silberionen, und Feststoff kann sich lösen. Je schwerer löslich der Niederschlag ist, desto mehr Ammoniak ist nötig – bei Silberiodid reicht auch konzentrierte Ammoniaklösung nicht.</p></details>`;
       if (p === 'control' && ss && ((ss.graded && ss.graded.allCorrect) || ss.solution)) html += `<div class="lk-card statement"><h3>Auswertung</h3><p>${esc(T.CONTROL_STATEMENT)}</p></div>`;
+      html += `<div class="lk-row round"><button type="button" class="lk-btn small" data-act="newRound">Neuer Durchgang …</button><span class="small lk-muted">löscht die Antworten dieses Teils und mischt die Antworten neu</span></div>`;
       if (p === 'control') html += `<details class="lk-card more"><summary>Für Interessierte: andere Anionen und Ansäuern</summary><p>Neben Halogenidionen können auch andere Anionen, z. B. Carbonationen, mit Silberionen schwer lösliche Stoffe bilden. In der Analytik säuert man eine Probe deshalb vorher mit verdünnter Salpetersäure an: Carbonat wird dabei zerstört, Silberhalogenide bleiben bestehen. In diesem Labor wird nicht angesäuert.</p></details>`;
       return html;
     }
@@ -273,6 +299,7 @@
       else if (act === 'solutionNo') { ss.confirmSolution = false; render(); }
       else if (act === 'hideSolution') { ss.solution = false; render(); opts.save(); }
       else if (act === 'resetAll') confirmReset();
+      else if (act === 'newRound') openModal(`<h2 id="modalTitle">Neuer Durchgang?</h2><p>Alle Antworten im Teil „${p === 'main' ? 'Fällungsreaktionen' : 'Kontrollversuche'}“ werden gelöscht, die Antwortmöglichkeiten neu gemischt. Versuche und Beobachtungen bleiben erhalten.</p><div class="lk-row end"><button type="button" class="lk-btn" data-m="close">Abbrechen</button><button type="button" class="lk-btn primary" data-m="newRoundYes">Neu beginnen</button></div>`);
       else if (act === 'copyNb') copyNotebook();
       else if (act === 'printNb') printNotebook();
     });
@@ -298,6 +325,7 @@
       const m = b.dataset.m;
       if (m === 'close') closeModal();
       else if (m === 'resetYes') { closeModal(); opts.resetAll(); }
+      else if (m === 'newRoundYes') { const p = part(); S.learn[p] = freshLearn(p); closeModal(); showTab('tasks'); opts.save(); opts.toast('Neuer Durchgang – Antworten neu gemischt.'); }
       else if (m === 'copyNb') copyNotebook();
       else if (m === 'printNb') printNotebook();
     });
@@ -322,6 +350,7 @@
         : `<p><b>Keine Gefahrenpiktogramme</b> – ${s.kind === 'water' || s.water ? 'kein Gefahrstoff.' : 'die Lösung ist in dieser Konzentration nicht kennzeichnungspflichtig.'}</p>`;
       openModal(`<h2 id="modalTitle">${esc(s.name)}</h2>
         <p class="formula">${esc(s.formula)} · ${esc(L.form)}</p>
+        ${s.c != null ? `<p class="conc"><b>Konzentration:</b> ${esc(s.label)}</p>` : ''}
         ${hazard}
         ${L.protect ? `<p><b>Schutz:</b> ${esc(L.protect)}</p>` : ''}
         ${L.note ? `<p class="small">${esc(L.note)}</p>` : ''}
@@ -357,5 +386,5 @@
     };
   }
 
-  FL.ui = { create, freshState, sanitize, addsText, PTABS };
+  FL.ui = { create, freshState, freshLearn, sanitize, addsText, PTABS };
 })(typeof self !== 'undefined' ? self : this);

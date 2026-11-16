@@ -6,7 +6,7 @@
   --accent: #2f6db3;
   --accent-2: #24568f;
   --accent-soft: #e6eef8;
-  --panel-w: clamp(330px, 30vw, 420px);
+  --panel-w: clamp(300px, 28vw, 420px);
   --stage-bg: #0f161e;
   --deck-bg: #18222d;
   --deck-text: #e6edf4;
@@ -37,8 +37,49 @@ body { background: var(--bg); }
 .hit { position: absolute; pointer-events: auto; background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer; border-radius: 10px; touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .hit:focus-visible { outline: 3px solid #5ac8ff; outline-offset: 1px; }
 .hit.pip { cursor: grab; }
-.blabel { position: absolute; pointer-events: auto; background: transparent; border: 0; border-radius: 8px; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.blabel:focus-visible { outline: 3px solid #5ac8ff; outline-offset: 1px; }
+canvas.fx { pointer-events: none; }
+/* Flaschenetikett in festen Bildschirmpixeln (1.1.0): Formel groß, Name, Zusatz – ohne Konzentration */
+.bcard {
+  position: absolute; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 3px 2px 26px; border-radius: 6px; background: #fbfaf4; color: #17212c; border: 1px solid rgba(40, 60, 80, .35);
+  text-align: center; line-height: 1.12; overflow: hidden; pointer-events: none; -webkit-hyphens: manual; hyphens: manual;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+}
+.bcard .f { font-size: 18px; font-weight: 700; letter-spacing: .01em; line-height: 1.15; }
+.bcard .n { font-size: 14px; font-weight: 600; overflow-wrap: normal; }
+.bcard .n.big { font-size: 15px; font-weight: 700; margin-top: 2px; }
+.bcard .q { font-size: 14px; font-weight: 800; color: #0d3c73; margin-top: 1px; letter-spacing: -.025em; }
+.bcard.compact { padding: 3px 2px 22px; }
+.bcard.tight .n, .bcard.tight .q { font-size: 13px; letter-spacing: -.03em; }
+.bcard.compact .n { display: none; }
+.bcard.compact .n.big { display: block; font-size: 13px; }
+.bcard.compact .q { font-size: 13px; line-height: 1.05; }
+.binfo { border-radius: 0 0 6px 6px; }
+.binfo .strip {
+  position: absolute; left: 1px; right: 1px; top: 0; height: 24px; display: flex; align-items: center; justify-content: center; gap: 1px;
+  border-top: 1px solid rgba(40, 60, 80, .18); background: rgba(240, 244, 248, .9); border-radius: 0 0 5px 5px;
+}
+.binfo .strip img { display: block; }
+.binfo .i {
+  display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 3px; border-radius: 50%;
+  background: #2f6db3; color: #fff; font: 700 12px Georgia, serif;
+}
+.ghead {
+  position: absolute; box-sizing: border-box; text-align: center; font-size: 12px; font-weight: 700; line-height: 1.15;
+  color: var(--deck-text); opacity: .92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+  border-top: 2px solid rgba(160, 190, 220, .45); padding-top: 2px;
+}
+:root[data-theme="light"] .ghead { border-top-color: rgba(60, 92, 124, .45); }
+.ghead.compact { font-size: 11.5px; }
+.wlabel {
+  position: absolute; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; padding: 2px 4px; border-radius: 6px;
+  background: #fff7d6; color: #3b2a00; border: 1px solid #b08a1e; font-size: 11px; text-align: center; line-height: 1.15; pointer-events: none;
+}
+.wlabel b { font-size: 13px; }
+.tubebtns { display: inline-flex; gap: 4px; }
+.deck-row.util { gap: 6px 6px; }
+.deck-row.util .lk-btn.small { padding-left: 8px; padding-right: 8px; }
+.lk-btn.soft-off { opacity: .55; }
 .tlabel {
   position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0;
   font-size: 11.5px; line-height: 1.18; color: var(--deck-text); padding: 2px 3px; border-radius: 6px;
@@ -87,8 +128,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 .deck .lk-btn:disabled { opacity: .45; }
 
 /* ---------- Bedienfeld ---------- */
-.lk-tabs { flex-wrap: nowrap; gap: 0; padding: 8px 4px 0; }
-.lk-tabs button { flex: 1 1 auto; min-width: 0; padding: 0 5px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lk-tabs { flex-wrap: wrap; gap: 2px 0; padding: 8px 4px 0; }
+.lk-tabs button { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: 14px; white-space: normal; line-height: 1.15; }
 .steps-list { padding-left: 20px; margin: 4px 0; }
 .steps-list li { margin: 6px 0; }
 .small { font-size: 13.5px; }
@@ -154,3 +195,5 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 .lk-form fieldset { min-width: 0; }
 .lk-form legend { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .lk-panel { overflow-x: hidden; }
+.deck-row.util .lk-seg.light button { padding-left: 7px; padding-right: 7px; }
+.deck-row.util .grp { gap: 6px; }

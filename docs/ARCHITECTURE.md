@@ -15,7 +15,7 @@ apps/
   stechheber/         # Stechheber 0.1.0 (prototype) – Gleichgewichts-Reihe 1/3, Stoffebene (Modell)
   apfelkrieg/         # Apfelkrieg 0.1.0 (prototype) – Gleichgewichts-Reihe 2/3, Teilchenebene (Modell, Zufall)
   ester-gleichgewicht/ # Estergleichgewicht 0.1.0 (prototype) – Gleichgewichts-Reihe 3/3, beide Ebenen, K = 4
-  faellungslabor/     # Fällungslabor 1.0.0 (prototype) – Silberhalogenide, Ammoniakprüfung, unabhängige Kontrollversuche; Labkit-Hülle, Glas/Tropfen nach TitraLab 3; zusätzlich Einzeldatei-HTML
+  faellungslabor/     # Fällungslabor 1.1.0 (prototype) – Silberhalogenide, Ammoniakprüfung, unabhängige Kontrollversuche; Labkit-Hülle, Glas/Tropfen nach TitraLab 3; zusätzlich Einzeldatei-HTML
   _template/
 shared/
   labkit/             # gemeinsamer Baukasten: Look, Bedienlogik, Diagramm (chart.js) und Lernweg-Mechanik (learn.js)

@@ -1,0 +1,841 @@
+{
+  "methode": "Berechnete Schriftgröße und Zeilenbox im Browser (CSS-px), Bühnenausschnitt je Format/Hintergrund/Versuchsteil",
+  "vorher_1_0_0": {
+    "1024x768-dark": {
+      "scale": 0.5170833333333333,
+      "flaschenname_css_px": 6.2,
+      "formel_leiste_css_px": 12.5
+    },
+    "1024x768-light": {
+      "scale": 0.5170833333333333,
+      "flaschenname_css_px": 6.2,
+      "formel_leiste_css_px": 12.5
+    },
+    "1180x820-dark": {
+      "scale": 0.5704166666666667,
+      "flaschenname_css_px": 6.8,
+      "formel_leiste_css_px": 12.5
+    },
+    "1180x820-light": {
+      "scale": 0.5704166666666667,
+      "flaschenname_css_px": 6.8,
+      "formel_leiste_css_px": 12.5
+    },
+    "820x1180-dark": {
+      "scale": 0.5622115384615385,
+      "flaschenname_css_px": 6.7,
+      "formel_leiste_css_px": 12.5
+    },
+    "820x1180-light": {
+      "scale": 0.5622115384615385,
+      "flaschenname_css_px": 6.7,
+      "formel_leiste_css_px": 12.5
+    }
+  },
+  "nachher_1_1_0": {
+    "1024x768-dark-main": {
+      "scale": 0.5096063362609786,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nabr",
+          "text": "NaBr Natriumbromid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nai",
+          "text": "NaI Natriumiodid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3dil",
+          "text": "NH₃ Ammoniak verdünnt",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3conc",
+          "text": "NH₃ Ammoniak konzentriert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1024x768-dark-control": {
+      "scale": 0.5096063362609786,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "tap",
+          "text": "Leitungswasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "mineral",
+          "text": "Mineralwasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1024x768-light-main": {
+      "scale": 0.5096063362609786,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nabr",
+          "text": "NaBr Natriumbromid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nai",
+          "text": "NaI Natriumiodid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3dil",
+          "text": "NH₃ Ammoniak verdünnt",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3conc",
+          "text": "NH₃ Ammoniak konzentriert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1024x768-light-control": {
+      "scale": 0.5096063362609786,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "tap",
+          "text": "Leitungswasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "mineral",
+          "text": "Mineralwasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1180x820-dark-main": {
+      "scale": 0.5748510037641155,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nabr",
+          "text": "NaBr Natriumbromid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nai",
+          "text": "NaI Natriumiodid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3dil",
+          "text": "NH₃ Ammoniak verdünnt",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3conc",
+          "text": "NH₃ Ammoniak konzentriert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1180x820-dark-control": {
+      "scale": 0.5748510037641155,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "tap",
+          "text": "Leitungswasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "mineral",
+          "text": "Mineralwasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1180x820-light-main": {
+      "scale": 0.5748510037641155,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nabr",
+          "text": "NaBr Natriumbromid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nai",
+          "text": "NaI Natriumiodid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3dil",
+          "text": "NH₃ Ammoniak verdünnt",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3conc",
+          "text": "NH₃ Ammoniak konzentriert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "1180x820-light-control": {
+      "scale": 0.5748510037641155,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "tap",
+          "text": "Leitungswasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "mineral",
+          "text": "Mineralwasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "820x1180-dark-main": {
+      "scale": 0.5648133626097867,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nabr",
+          "text": "NaBr Natriumbromid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nai",
+          "text": "NaI Natriumiodid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3dil",
+          "text": "NH₃ Ammoniak verdünnt",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3conc",
+          "text": "NH₃ Ammoniak konzentriert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "820x1180-dark-control": {
+      "scale": 0.5648133626097867,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "tap",
+          "text": "Leitungswasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "mineral",
+          "text": "Mineralwasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "820x1180-light-main": {
+      "scale": 0.5648133626097867,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nabr",
+          "text": "NaBr Natriumbromid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nai",
+          "text": "NaI Natriumiodid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3dil",
+          "text": "NH₃ Ammoniak verdünnt",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "nh3conc",
+          "text": "NH₃ Ammoniak konzentriert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    },
+    "820x1180-light-control": {
+      "scale": 0.5648133626097867,
+      "etiketten": [
+        {
+          "key": "nacl",
+          "text": "NaCl Natriumchlorid",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "water",
+          "text": "H₂O Wasser destilliert",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "tap",
+          "text": "Leitungswasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "mineral",
+          "text": "Mineralwasser Probe",
+          "formel_px": null,
+          "name_px": 15,
+          "zusatz_px": 14,
+          "zeilenhoehe_name_px": 20,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        },
+        {
+          "key": "agno3",
+          "text": "AgNO₃ Silbernitrat",
+          "formel_px": 18,
+          "name_px": 14,
+          "zusatz_px": null,
+          "zeilenhoehe_name_px": 19,
+          "breite_px": 90,
+          "eng_gesetzt": false
+        }
+      ],
+      "abstand_in_gruppe_px": 6,
+      "abstand_zwischen_gruppen_px": 18
+    }
+  }
+}

@@ -7,6 +7,12 @@
  * lokale Wolken am Eintreffpunkt, verteilte Trübung mit Absetzfront und Bodensatz – Menge, Dichte und
  * Lage kommen ausschließlich aus dem Modellzustand (model.js). Der Renderer liest nur.
  * Lesbare Texte (Etiketten, Volumina) liegen als HTML über der Bühne (app.js).
+ *
+ * 1.1.0: Zwei Ebenen. Die Grundebene (canvas#lab) zeigt Regal, Flaschen, Ständer, Gläser und den
+ * Silberabfall-Behälter; darüber liegen die HTML-Etiketten. Die Bewegungsebene (canvas#fx) darüber
+ * zeigt alles, was sich bewegt: aufgenommene Pipette, Tropfen, Strahl, Spritzer und das Ausgießen.
+ * So verdeckt kein Etikett eine Pipette. Die Flaschen werden in Bildschirmpixeln bemessen
+ * (G.bottleLayout), damit Name und Formel in fester Schriftgröße lesbar bleiben.
  */
 (function (root) {
   'use strict';
@@ -43,8 +49,9 @@
   const BULB = { agno3: '#3a3f46', nacl: '#c43d3d', nabr: '#c76a1d', nai: '#9a7a12', nh3dil: '#2f78c4', nh3conc: '#1d4f8a', water: '#5f8f5a', tap: '#5f8f5a', mineral: '#3f7f8f' };
 
   class LabRenderer {
-    constructor(canvas, lab) {
+    constructor(canvas, lab, fxCanvas) {
       this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.lab = lab;
+      this.fxCanvas = fxCanvas || null; this.fxCtx = fxCanvas ? fxCanvas.getContext('2d') : null;
       this.view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 0, h: 0, worldW: 1000 };
       this.theme = 'dark'; this.reduceMotion = false; this.fx = {}; this.splashes = []; this.time = 0; this.bg = null;
     }
@@ -56,19 +63,25 @@
       const r = this.canvas.getBoundingClientRect();
       const dpr = Math.min(2.5, root.devicePixelRatio || 1);
       const w = Math.max(1, r.width), h = Math.max(1, r.height);
-      const tab = this.lab.tab();
-      const minW = G.minWidth(M.TABS[this.lab.state.tab].bottles.length, tab.visible);
-      const key = [w, h, dpr, minW, tab.visible, this.lab.state.tab].join('|');
+      const tab = this.lab.tab(), tabId = this.lab.state.tab;
+      const minW = G.minWidth(M.TABS[tabId].bottles.length, tab.visible);
+      const key = [w, h, dpr, minW, tab.visible, tabId].join('|');
       if (key === this._key) return false;
       this._key = key;
       this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
-      const visH = G.BENCH + 18 - G.TOP_Y; // vom Hütchen der aufgenommenen Pipette bis knapp unter die Tischkante
-      const sH = Math.max(0.15, (h - STRIP) / visH), sW = w / minW;
+      if (this.fxCanvas) { this.fxCanvas.width = this.canvas.width; this.fxCanvas.height = this.canvas.height; }
+      // Weltbreite × Maßstab = Bühnenbreite in Pixeln: davon hängt ab, ob das volle Etikett passt
+      const compact = w < G.shelfPx(tabId, false);
+      const hp = (compact ? G.LABEL_PX.hCompact : G.LABEL_PX.h) + 12;
+      // feste Pixelhöhe der Flaschen + Weltstrecke vom Hütchen der aufgenommenen Pipette bis knapp unter die Tischkante
+      const worldSpan = G.BENCH + 18 - G.SHELF_Y + G.ABOVE_BOTTLE;
+      const sH = Math.max(0.15, (h - STRIP - hp) / worldSpan), sW = w / minW;
       const scale = Math.min(sH, sW);
-      const used = visH * scale;
-      const oy = (h - STRIP - used) / (sW < sH ? 2 : 1) - G.TOP_Y * scale;
-      Object.assign(this.view, { w, h, dpr, scale, ox: 0, oy, worldW: w / scale });
-      this.lab.setWorldWidth(w / scale);
+      const top = G.topY(scale, compact);
+      const used = (G.BENCH + 18 - top) * scale;
+      const oy = (h - STRIP - used) / (sW < sH ? 2 : 1) - top * scale;
+      Object.assign(this.view, { w, h, dpr, scale, ox: 0, oy, worldW: w / scale, compact });
+      this.lab.setWorldWidth(w / scale, scale);
       this.bg = null;
       return true;
     }
@@ -99,6 +112,7 @@
       this.time += dt;
       const st = this.lab.state;
       for (let slot = 0; slot < this.lab.tab().visible; slot++) {
+        if (this.pouringSlot() === slot) continue;
         const f = this.tubeFx(st.tab, slot);
         const h = f.h, v = f.v;
         const sub = Math.max(2, Math.ceil(dt / 0.004)), sdt = dt / sub;
@@ -121,18 +135,28 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       if (!this.bg) this.renderBackground();
       ctx.drawImage(this.bg, 0, 0);
-      ctx.setTransform(v.scale * v.dpr, 0, 0, v.scale * v.dpr, v.ox * v.dpr, v.oy * v.dpr);
-      const st = this.lab.state, tb = this.lab.tab();
+      const T = [v.scale * v.dpr, 0, 0, v.scale * v.dpr, v.ox * v.dpr, v.oy * v.dpr];
+      ctx.setTransform(...T);
+      const tb = this.lab.tab();
+      // Bewegungsebene leeren (ohne eigene Ebene wird alles in die Grundebene gezeichnet)
+      let top = ctx;
+      if (this.fxCtx) { top = this.fxCtx; top.setTransform(1, 0, 0, 1, 0, 0); top.clearRect(0, 0, this.fxCanvas.width, this.fxCanvas.height); top.setTransform(...T); }
       this.drawBottles(ctx);
-      this.drawShelfLabels(ctx);
       this.drawRack(ctx, false);
-      for (let i = 0; i < tb.visible; i++) this.drawTube(ctx, tb.tubes[i], i, tb.sel === i);
+      const ps = this.pouringSlot();
+      for (let i = 0; i < tb.visible; i++) if (i !== ps) this.drawTube(ctx, tb.tubes[i], i, tb.sel === i);
       this.drawRack(ctx, true);
-      this.drawDrops(ctx);
-      this.drawPipette(ctx);
-      ctx.fillStyle = this.P.splash;
-      for (const p of this.splashes) { ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2); ctx.fill(); }
-      void st;
+      this.drawWaste(ctx);
+      if (ps != null) this.drawPour(top);
+      this.drawDrops(top);
+      this.drawPipette(top);
+      top.fillStyle = this.P.splash;
+      for (const p of this.splashes) { top.beginPath(); top.arc(p.x, p.y, 1.6, 0, Math.PI * 2); top.fill(); }
+    }
+    /** Glas, das gerade sichtbar ausgegossen wird (bei reduzierter Bewegung bleibt es im Ständer). */
+    pouringSlot() {
+      const st = this.lab.state, pr = st.pour;
+      return pr && pr.tab === st.tab && !st.reduced ? pr.slot : null;
     }
 
     renderBackground() {
@@ -173,55 +197,127 @@
     // ------------------------------------------------------------ Flaschen und Pipetten
     drawBottles(ctx) {
       const st = this.lab.state, keys = M.TABS[st.tab].bottles, B = G.BOTTLE, P = this.P;
+      const L = this.lab.layout();
       keys.forEach((key) => {
-        const x = this.lab.bottlePos(key), y = G.SHELF_Y;
+        const b = L.bottles[key], x = b.x, y = G.SHELF_Y, bw = b.w, bh = b.h;
         const brown = key === 'agno3';
-        // Körper
-        const bx = x - B.w / 2, by = y - B.h;
-        ctx.fillStyle = P.shadow; ctx.beginPath(); ctx.ellipse(x, y + 2, B.w / 2 + 4, 5, 0, 0, Math.PI * 2); ctx.fill();
-        const g = ctx.createLinearGradient(bx, 0, bx + B.w, 0);
+        // Körper (das Etikett mit Name, Formel und Piktogrammen liegt als HTML darüber)
+        const bx = x - bw / 2, by = y - bh, rad = Math.min(12, bw * 0.14);
+        ctx.fillStyle = P.shadow; ctx.beginPath(); ctx.ellipse(x, y + 2, bw / 2 + 4, 5, 0, 0, Math.PI * 2); ctx.fill();
+        const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
         const tint = brown ? [120, 62, 18] : [200, 222, 240];
         g.addColorStop(0, rgba(tint, brown ? 0.85 : 0.28)); g.addColorStop(0.5, rgba(tint, brown ? 0.6 : 0.10)); g.addColorStop(1, rgba(tint, brown ? 0.9 : 0.30));
-        ctx.fillStyle = g; rr(ctx, bx, by, B.w, B.h, 12); ctx.fill();
-        // Inhalt (klar), Füllstand 70 %
-        const ly = by + B.h * 0.3;
+        ctx.fillStyle = g; rr(ctx, bx, by, bw, bh, rad); ctx.fill();
         ctx.fillStyle = brown ? 'rgba(200,150,90,0.30)' : rgba(P.liquid, 0.28);
-        rr(ctx, bx + 4, ly, B.w - 8, by + B.h - ly - 4, 9); ctx.fill();
-        ctx.strokeStyle = brown ? 'rgba(90,45,10,0.9)' : P.glass; ctx.lineWidth = 2; rr(ctx, bx, by, B.w, B.h, 12); ctx.stroke();
+        rr(ctx, bx + 3, by + bh * 0.06, bw - 6, bh * 0.92, rad * 0.8); ctx.fill();
+        ctx.strokeStyle = brown ? 'rgba(90,45,10,0.9)' : P.glass; ctx.lineWidth = 2; rr(ctx, bx, by, bw, bh, rad); ctx.stroke();
         // Hals
         ctx.fillStyle = brown ? 'rgba(110,58,18,0.85)' : rgba(tint, 0.25);
         ctx.fillRect(x - B.neck / 2, by - B.neckH, B.neck, B.neckH + 2);
         ctx.strokeStyle = brown ? 'rgba(90,45,10,0.9)' : P.glass; ctx.lineWidth = 1.6; ctx.strokeRect(x - B.neck / 2, by - B.neckH, B.neck, B.neckH + 2);
-        // Papieretikett auf der Flasche: Name und GHS-Piktogramme der konkreten Lösung
-        ctx.fillStyle = 'rgba(250,248,240,0.95)'; rr(ctx, bx + 6, by + 22, B.w - 12, 62, 4); ctx.fill();
-        ctx.fillStyle = '#1f2a36'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        const s = C.SOLUTIONS[key];
-        const lines = labelLines(key, s);
-        ctx.font = `700 12px ${FONT}`; ctx.fillText(lines[0], x, by + 33, B.w - 16);
-        ctx.font = `600 11px ${FONT}`; if (lines[1]) ctx.fillText(lines[1], x, by + 46, B.w - 16);
-        const picts = (root.FL.ghs.LABELS[key] || { pict: [] }).pict;
-        const ps = 22, pw = picts.length * (ps + 1);
-        picts.forEach((code, i) => { const im = pictImage(code); if (im.complete && im.naturalWidth) ctx.drawImage(im, x - pw / 2 + i * (ps + 1), by + 56, ps, ps); });
         // Pipette in der Flasche (wenn nicht aufgenommen)
         const p = st.pip;
-        if (!(p.key === key && p.tab === st.tab)) this.drawPipetteAt(ctx, key, G.pipetteRest(x).x, G.pipetteRest(x).y, 0, false);
+        if (!(p.key === key && p.tab === st.tab)) { const r = this.lab.restPos(key); this.drawPipetteAt(ctx, key, r.x, r.y, 0, false); }
       });
     }
 
-    /** Etikettenleiste unter dem Regal: Formel und Konzentration in gleichbleibender Bildschirmgröße. */
-    drawShelfLabels(ctx) {
-      const st = this.lab.state, keys = M.TABS[st.tab].bottles, k = 1 / this.view.scale;
-      const w = G.bottleGap(keys.length, this.view.worldW) - 8 * k, h = 34 * k, y = G.SHELF_Y + 18;
-      keys.forEach((key) => {
-        const x = this.lab.bottlePos(key), t = shelfText(key);
-        ctx.fillStyle = 'rgba(255,255,255,0.95)'; rr(ctx, x - w / 2, y, w, h, 6 * k); ctx.fill();
-        ctx.strokeStyle = 'rgba(40,60,80,0.35)'; ctx.lineWidth = k; ctx.stroke();
-        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#17212c';
-        ctx.font = `700 ${12.5 * k}px ${FONT}`; ctx.fillText(t[0], x - w / 2 + 6 * k, y + 15 * k, w - 26 * k);
-        ctx.fillStyle = '#3d4b5a'; ctx.font = `500 ${11 * k}px ${FONT}`; ctx.fillText(t[1], x - w / 2 + 6 * k, y + 29 * k, w - 10 * k);
-        ctx.fillStyle = '#2f6db3'; ctx.beginPath(); ctx.arc(x + w / 2 - 11 * k, y + 11 * k, 7.5 * k, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = `700 ${11 * k}px Georgia, serif`; ctx.fillText('i', x + w / 2 - 11 * k, y + 15 * k);
-      });
+    // ------------------------------------------------------------ Silberabfall und Ausgießen
+    wastePos() {
+      const tb = this.lab.tab(), W = G.WASTE;
+      const x = G.wasteX(tb.visible, this.view.worldW);
+      return { x, top: G.BENCH - W.h, w: W.w, h: W.h };
+    }
+    /** Sammelbehälter für Silberabfälle auf dem Tisch (Becherglas mit Ausguss); Inhalt aus dem Modell. */
+    drawWaste(ctx) {
+      const P = this.P, w = this.wastePos(), tb = this.lab.tab(), ws = tb.waste || { V: 0, solid: 0 };
+      const x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, y0 = w.top, y1 = G.BENCH - 2;
+      ctx.fillStyle = P.shadow; ctx.beginPath(); ctx.ellipse(w.x, G.BENCH + 2, w.w / 2 + 6, 6, 0, 0, Math.PI * 2); ctx.fill();
+      const path = () => { ctx.beginPath(); ctx.moveTo(x0 - 8, y0 - 6); ctx.lineTo(x0, y0 + 8); ctx.lineTo(x0, y1 - 10); ctx.quadraticCurveTo(x0, y1, x0 + 10, y1); ctx.lineTo(x1 - 10, y1); ctx.quadraticCurveTo(x1, y1, x1, y1 - 10); ctx.lineTo(x1, y0); };
+      path(); ctx.fillStyle = 'rgba(170,205,245,0.10)'; ctx.fill();
+      if (ws.V > 0.001) {
+        const f = Math.min(0.82, 0.06 + ws.V / 90), ly = y1 - (y1 - y0 - 10) * f;
+        const turb = ws.solid > 0 ? clamp(0.25 + ws.solid * 400, 0.25, 0.75) : 0;
+        ctx.fillStyle = rgba(P.liquid, 0.30); ctx.fillRect(x0 + 2, ly, w.w - 4, y1 - ly - 1);
+        if (turb) { ctx.fillStyle = rgba([226, 224, 214], turb * 0.7); ctx.fillRect(x0 + 2, ly + 4, w.w - 4, y1 - ly - 5); }
+        ctx.strokeStyle = this.theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(40,80,120,0.45)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(x0 + 2, ly); ctx.lineTo(x1 - 2, ly); ctx.stroke();
+      }
+      path(); ctx.strokeStyle = P.glass; ctx.lineWidth = 2.2; ctx.stroke();
+      ctx.strokeStyle = P.rim; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 - 8, y0 - 6); ctx.lineTo(x0 + 4, y0 - 2); ctx.moveTo(x1 - 4, y0); ctx.lineTo(x1 + 2, y0); ctx.stroke();
+    }
+    /**
+     * Lage des ausgegossenen Glases: Anheben, zum Behälter führen und kippen, ausgießen, aufrichten,
+     * zurückstellen (beim Entfernen: am Behälter ausblenden). Zeitachse wie im Modell (st.pour).
+     */
+    pourPose(pr) {
+      const k = clamp(pr.t / pr.dur, 0, 1), R = G.TUBE_R + G.WALL;
+      const x0 = this.lab.tubePos(pr.slot), w = this.wastePos();
+      const TH = 112 * Math.PI / 180, c = Math.cos(TH), sn = Math.sin(TH);
+      const lift = G.RIM_Y - 120;
+      // Lippe (rechte Randecke nach dem Kippen) über der Öffnung des Behälters
+      const lipX = w.x - 8, lipY = w.top - 110;
+      const px = lipX - R * c, py = lipY - R * sn;
+      const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+      let x = x0, y = G.RIM_Y, a = 0, alpha = 1, phase = 'lift';
+      if (k < 0.1) { y = lerp(G.RIM_Y, lift, ease(k / 0.1)); }
+      else if (k < 0.26) { const u = ease((k - 0.1) / 0.16); x = lerp(x0, px, u); y = lerp(lift, py, u); a = TH * u; phase = 'tilt'; }
+      else if (k < 0.72) { x = px; y = py; a = TH; phase = 'pour'; }
+      else if (pr.remove) { const u = (k - 0.72) / 0.28; x = px; y = py; a = TH * (1 - 0.25 * ease(u)); alpha = 1 - ease(clamp(u / 0.8, 0, 1)); phase = 'fade'; }
+      else if (k < 0.84) { const u = ease((k - 0.72) / 0.12); x = lerp(px, x0, u); y = lerp(py, lift, u); a = TH * (1 - u); phase = 'back'; }
+      else { y = lerp(lift, G.RIM_Y, ease((k - 0.84) / 0.16)); phase = 'down'; }
+      return { k, x, y, a, alpha, phase, x0, lip: { x: x + R * Math.cos(a), y: y + R * Math.sin(a) }, w };
+    }
+    /** Innenraum des Glases als Polygon (Weltkoordinaten bei aufrechtem Glas an Stelle x). */
+    cavity(x) {
+      const R = G.TUBE_R, B = G.INNER_BOTTOM, pts = [[x - R, G.RIM_Y], [x - R, B - R]];
+      for (let i = 1; i < 18; i++) { const an = Math.PI - (i / 18) * Math.PI; pts.push([x + R * Math.cos(an), B - R + R * Math.sin(an)]); }
+      pts.push([x + R, B - R], [x + R, G.RIM_Y]);
+      return pts;
+    }
+    drawPour(ctx) {
+      const st = this.lab.state, pr = st.pour, tb = this.lab.tab(), t = tb.tubes[pr.slot], P = this.P;
+      if (!t) return;
+      const q = this.pourPose(pr), R = G.TUBE_R;
+      const ca = Math.cos(q.a), sa = Math.sin(q.a);
+      const tf = (p) => [q.x + (p[0] - q.x0) * ca - (p[1] - G.RIM_Y) * sa, q.y + (p[0] - q.x0) * sa + (p[1] - G.RIM_Y) * ca];
+      ctx.save(); ctx.globalAlpha = q.alpha;
+      // Flüssigkeit: gleiche Querschnittsfläche wie im aufrechten Glas, Oberfläche waagrecht
+      if (t.V > 0.005) {
+        const up = this.cavity(q.x0), A0 = polyArea(clipBelow(up, G.surfaceY(t.V)));
+        const poly = up.map(tf);
+        let lo = Math.min(...poly.map((p) => p[1])), hi = Math.max(...poly.map((p) => p[1]));
+        for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (polyArea(clipBelow(poly, m)) > A0) lo = m; else hi = m; }
+        const liq = clipBelow(poly, (lo + hi) / 2);
+        if (liq.length > 2) {
+          ctx.beginPath(); liq.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath();
+          ctx.fillStyle = rgba(P.liquid, Math.max(0.3, P.liquidA * 2)); ctx.fill();
+          const pig = this.pigment(t), op = t.susp > 0 ? M.turbidity(t.susp / Math.max(0.05, t.V) * 1e6) : 0;
+          if (op > 0) { ctx.fillStyle = rgba(pig, op); ctx.fill(); }
+        }
+      }
+      // Glas
+      ctx.save();
+      ctx.translate(q.x, q.y); ctx.rotate(q.a); ctx.translate(-q.x0, -G.RIM_Y);
+      this.tubePath(ctx, q.x0, 0); ctx.strokeStyle = P.glass; ctx.lineWidth = 1.8; ctx.stroke();
+      this.tubePath(ctx, q.x0, G.WALL); ctx.strokeStyle = P.glassIn; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = P.rim; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.ellipse(q.x0, G.RIM_Y, R + G.WALL + 3, 4, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(q.x0 - R + 7, G.RIM_Y + 14, 4, G.INNER_BOTTOM - G.RIM_Y - 50);
+      ctx.restore();
+      // Strahl von der Lippe in die Öffnung des Behälters, solange das Modell ausgießt
+      if (q.phase === 'pour' && t.V > 0.005 && q.k > 0.25 && q.k < 0.7) {
+        const y1 = q.w.top + 30, x1 = q.w.x - 4;
+        const pig = this.pigment(t), op = t.susp > 0 ? M.turbidity(t.susp / Math.max(0.05, t.V) * 1e6) : 0;
+        const wdt = 3 + 3 * Math.min(1, t.V / 4);
+        ctx.fillStyle = op > 0.05 ? rgba(pig, 0.5 + op * 0.4) : P.stream;
+        ctx.beginPath(); ctx.moveTo(q.lip.x - wdt, q.lip.y); ctx.lineTo(q.lip.x + wdt * 0.6, q.lip.y);
+        ctx.quadraticCurveTo(x1 + wdt * 0.4, q.lip.y + 20, x1 + wdt * 0.4, y1); ctx.lineTo(x1 - wdt * 0.4, y1);
+        ctx.quadraticCurveTo(x1 - wdt * 0.4, q.lip.y + 24, q.lip.x - wdt, q.lip.y); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
+    pigment(t) {
+      return t.model === 'water' ? (C.WATER[C.SOLUTIONS[t.sample] && C.SOLUTIONS[t.sample].water] || {}).pigment || [236, 234, 226] : C.PIGMENT[t.halide] || [240, 240, 240];
     }
 
     /** Pipette mit Spitze bei (x, y): Glasschaft und Gummihütchen. */
@@ -401,7 +497,7 @@
 
     /** Niederschlag: Bodensatz, Schwebe mit Absetzfront, Wolken – alles aus dem Modellzustand. */
     drawSolid(ctx, t, x, surf, f) {
-      const pig = t.model === 'water' ? (C.WATER[C.SOLUTIONS[t.sample] && C.SOLUTIONS[t.sample].water] || {}).pigment || [236, 234, 226] : C.PIGMENT[t.halide] || [240, 240, 240];
+      const pig = this.pigment(t);
       const P = this.P, R = G.TUBE_R, dark = this.theme === 'dark';
       const total = M.solidTotal(t);
       if (!(total > 0)) return;
@@ -457,16 +553,32 @@
     }
   }
 
-  const PICT = {};
-  function pictImage(code) {
-    if (!PICT[code]) { const im = new Image(); im.src = root.FL.ghs.dataUri(code); PICT[code] = im; }
-    return PICT[code];
+  /** Teil des Polygons unterhalb der Waagrechten y = lv (Weltkoordinaten: größeres y = tiefer). */
+  function clipBelow(poly, lv) {
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length], ina = a[1] >= lv, inb = b[1] >= lv;
+      if (ina) out.push(a);
+      if (ina !== inb) { const u = (lv - a[1]) / (b[1] - a[1]); out.push([a[0] + (b[0] - a[0]) * u, lv]); }
+    }
+    return out;
   }
-  function shelfText(key) {
+  function polyArea(p) { let s = 0; for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s) / 2; }
+  /**
+   * Flaschenetikett (HTML, app.js): Formel groß, Name, Zusatz (verdünnt/konzentriert/destilliert).
+   * Keine Konzentrationsangaben auf der Bühne – die stehen in der Infokarte.
+   */
+  const SH = '\u00ad';
+  function bottleText(key) {
     return {
-      agno3: ['AgNO₃', '0,100 mol/L'], nacl: ['NaCl', '0,100 mol/L'], nabr: ['NaBr', '0,100 mol/L'], nai: ['NaI', '0,100 mol/L'],
-      nh3dil: ['NH₃ verd.', '2,0 mol/L'], nh3conc: ['NH₃ konz.', 'w = 25 %'], water: ['H₂O', 'destilliert'], tap: ['Leitungs-', 'wasser'], mineral: ['Mineral-', 'wasser']
-    }[key] || [key, ''];
+      nacl: { f: 'NaCl', n: 'Natrium' + SH + 'chlorid' }, nabr: { f: 'NaBr', n: 'Natrium' + SH + 'bromid' }, nai: { f: 'NaI', n: 'Natrium' + SH + 'iodid' },
+      agno3: { f: 'AgNO₃', n: 'Silber' + SH + 'nitrat' }, nh3dil: { f: 'NH₃', n: 'Ammoniak', q: 'verdünnt' }, nh3conc: { f: 'NH₃', n: 'Ammoniak', q: 'konzen' + SH + 'triert' },
+      water: { f: 'H₂O', n: 'Wasser', q: 'destilliert' }, tap: { f: '', n: 'Leitungs' + SH + 'wasser', q: 'Probe' }, mineral: { f: '', n: 'Mineral' + SH + 'wasser', q: 'Probe' }
+    }[key] || { f: key, n: '' };
+  }
+  /** Kurzbezeichnung (Bedienleiste, Protokoll). */
+  function shortText(key) {
+    return { agno3: 'AgNO₃', nacl: 'NaCl', nabr: 'NaBr', nai: 'NaI', nh3dil: 'NH₃ verdünnt', nh3conc: 'NH₃ konzentriert', water: 'H₂O dest.', tap: 'Leitungswasser', mineral: 'Mineralwasser' }[key] || key;
   }
   function shade(c, k) { return [c[0] * k, c[1] * k, c[2] * k]; }
   function makeSpecks(seed) {
@@ -474,21 +586,7 @@
     const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
     return Array.from({ length: 70 }, () => ({ u: rnd(), v: rnd(), w: 0.4 + rnd(), p: rnd() * 6.28 }));
   }
-  function labelLines(key, s) {
-    switch (key) {
-      case 'agno3': return ['Silber-', 'nitrat'];
-      case 'nacl': return ['Natrium-', 'chlorid'];
-      case 'nabr': return ['Natrium-', 'bromid'];
-      case 'nai': return ['Natrium-', 'iodid'];
-      case 'nh3dil': return ['Ammoniak', 'verdünnt'];
-      case 'nh3conc': return ['Ammoniak', 'konz.'];
-      case 'water': return ['Wasser', 'dest.'];
-      case 'tap': return ['Leitungs-', 'wasser'];
-      case 'mineral': return ['Mineral-', 'wasser'];
-      default: return [s ? s.name : key, ''];
-    }
-  }
 
   (root.FL = root.FL || {}).LabRenderer = LabRenderer;
-  root.FL.render = { STRIP, PAL, BULB, labelLines, shelfText };
+  root.FL.render = { STRIP, PAL, BULB, bottleText, shortText, clipBelow, polyArea };
 })(typeof self !== 'undefined' ? self : this);

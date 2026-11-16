@@ -1,0 +1,244 @@
+{
+  "date": "2026-11-16T19:28:33.436Z",
+  "version": "1.1.1",
+  "browser": "msedge 157.0.4341.60",
+  "emulated": "Chromium-Desktop; Touch per Playwright-Emulation; kein echtes iPad",
+  "target": "release/faellungslabor-1.1.1-web.zip (frisch entpackt, HTTP)",
+  "results": [
+    {
+      "id": "FK01",
+      "title": "Etiketten größer, gruppiert, NH₃ eindeutig – Tabletformate hell/dunkel, beide Versuchsteile",
+      "status": "PASS",
+      "detail": "Name min. 14 px (vorher 6.2 px), Formel 18 px; 12 Ansichten",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-1024x768-dark.png",
+        "docs/screenshots/nachher-1.1.0-1024x768-dark-kontrolle.png",
+        "docs/screenshots/nachher-1.1.0-1024x768-light.png",
+        "docs/screenshots/nachher-1.1.0-1024x768-light-kontrolle.png",
+        "docs/screenshots/nachher-1.1.0-1180x820-dark.png",
+        "docs/screenshots/nachher-1.1.0-1180x820-dark-kontrolle.png",
+        "docs/screenshots/nachher-1.1.0-1180x820-light.png",
+        "docs/screenshots/nachher-1.1.0-1180x820-light-kontrolle.png",
+        "docs/screenshots/nachher-1.1.0-820x1180-dark.png",
+        "docs/screenshots/nachher-1.1.0-820x1180-dark-kontrolle.png",
+        "docs/screenshots/nachher-1.1.0-820x1180-light.png",
+        "docs/screenshots/nachher-1.1.0-820x1180-light-kontrolle.png",
+        "docs/evidence/FK01-etiketten.json"
+      ],
+      "viewport": "1024×768, 1180×820, 820×1180",
+      "input": "Maus",
+      "ms": 4923
+    },
+    {
+      "id": "FK02",
+      "title": "Flasche, Pipette und Trefferfläche deckungsgleich; alle Infokarten erreichbar (Maus und Touch)",
+      "status": "PASS",
+      "detail": "12 Flaschen (Etikett, Pipette, Infoleiste) deckungsgleich",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Touch (emuliert)",
+      "ms": 4888
+    },
+    {
+      "id": "FK03",
+      "title": "„− Glas“: gewähltes leeres Glas weg, +/− bis zu den Grenzen, mindestens eines bleibt; beide Teile, Reload",
+      "status": "PASS",
+      "detail": "Hinweis ohne Auswahl, gezielt entfernt, 1…6 bzw. 1…4, Reload, Tastatur",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Maus, Tastatur",
+      "ms": 3500
+    },
+    {
+      "id": "FK04",
+      "title": "Gefülltes Glas: Rückfrage, Abbrechen ändert nichts, Bestätigen gießt aus und entfernt; Protokoll erhalten",
+      "status": "PASS",
+      "detail": "Abbrechen neutral; Bestätigen: ausgegossen, entfernt, A1 1× archiviert, A2 bleibt",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-glas-entfernen-rueckfrage.png"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 4584
+    },
+    {
+      "id": "FK05",
+      "title": "Entfernen während gedrückter Dosierung: Dosierung stoppt, keine Geistertropfen, kein falscher Ansatz",
+      "status": "PASS",
+      "detail": "Dosierung gestoppt (2 Tropfen archiviert), keine Geistertropfen",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Maus + zweiter Finger (Skript-Klick)",
+      "ms": 3012
+    },
+    {
+      "id": "FK05b",
+      "title": "Während ein gefülltes Glas zum Entfernen ausgegossen wird, in ein anderes Glas tropfen: Tropfen bleiben in ihrem Ansatz",
+      "status": "PASS",
+      "detail": "Halten über A2 während des Ausgießens und Aufrückens: A2 7 Tropfen, A3 0, A1 archiviert ohne AgNO₃; Pipette über A2",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.1-glas-entfernen-waehrend-dosierung.png"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 4218
+    },
+    {
+      "id": "FK06",
+      "title": "Gleiche Probe nach AgNO₃ erneut zugeben – Cl, Br, I; Mengen, Volumen, Revision; Kapazität",
+      "status": "PASS",
+      "detail": "nacl rev 45→85, nabr rev 45→85, nai rev 45→85; andere Probe gesperrt; Grenze 19.25 mL",
+      "evidence": [
+        "docs/evidence/FK06-gleiche-probe.json"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 15313
+    },
+    {
+      "id": "FK07",
+      "title": "Gleiche Probe nach NH₃: erlaubt, Bilanzen und Gleichgewicht konsistent (ggf. neue Fällung)",
+      "status": "PASS",
+      "detail": "AgCl nach 2. Probe: Feststoff 0.0 % (Gleichgewicht 0.0 %)",
+      "evidence": [
+        "docs/evidence/FK07-nach-nh3.json"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 17528
+    },
+    {
+      "id": "FK08",
+      "title": "Ungültig bleibt ungültig: andere Probe, NH₃ vor AgNO₃, Reagenz in leeres Glas, Umfüllen, volles Glas",
+      "status": "PASS",
+      "detail": "6 ungültige Vorgänge abgewiesen; berechtigte Zugaben laufen",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 11192
+    },
+    {
+      "id": "FK09",
+      "title": "AgCl/NH₃ verd. und AgBr/NH₃ konz.: sichtbarer Beginn ≤ 2 s, klar ≤ 10 s (1×, ab Ende der Zugabe)",
+      "status": "PASS",
+      "detail": "AgCl verd. 0/1/2/5/10 s: 0.85→0.64→0.47→0.16→0.00 (vorher 0/2/5/10/20 s: 0.97→0.85→0.70→0.50→0.22); AgCl geschwenkt: 0.73→0.29→0.10→0.00→0.00; AgBr konz. geschwenkt: 0.46→0.18→0.05→0.00→0.00",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-nh3-agcl-bodensatz-0s.png",
+        "docs/screenshots/nachher-1.1.0-nh3-agcl-bodensatz-1s.png",
+        "docs/screenshots/nachher-1.1.0-nh3-agcl-bodensatz-2s.png",
+        "docs/screenshots/nachher-1.1.0-nh3-agcl-bodensatz-5s.png",
+        "docs/screenshots/nachher-1.1.0-nh3-agcl-bodensatz-10s.png",
+        "docs/screenshots/nachher-1.1.0-nh3-agcl-geschwenkt-2s.png",
+        "docs/evidence/FK09-aufloesen.json"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 54888
+    },
+    {
+      "id": "FK10",
+      "title": "Zu wenig NH₃ lässt Rest; AgBr/verd. beständig; AgI bleibt; Wasser ist kein Ersatz; Konstanten unverändert",
+      "status": "PASS",
+      "detail": "Rest AgCl 0.66, AgBr 1.00, AgI 0.999, Wasser 1.0000",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-nh3-grenzfaelle.png",
+        "docs/evidence/FK10-grenzfaelle.json"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 33437
+    },
+    {
+      "id": "FK11",
+      "title": "Spülen: Anheben, Kippen über beschrifteten Silberabfall, Strahl trifft die Öffnung, leer zurück; zustandsgekoppelt, 1× archiviert",
+      "status": "PASS",
+      "detail": "2.4 s; Winkel 112/112/112°, Strahl sichtbar, Abfall 2.30 mL; Bewegungsebene danach leer",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-ausgiessen-1.png",
+        "docs/screenshots/nachher-1.1.0-ausgiessen-2.png",
+        "docs/screenshots/nachher-1.1.0-ausgiessen-3.png",
+        "docs/screenshots/nachher-1.1.0-ausgiessen-4.png",
+        "docs/screenshots/nachher-1.1.0-ausgiessen-5.png",
+        "docs/screenshots/nachher-1.1.0-ausgiessen-6.png",
+        "docs/screenshots/nachher-1.1.0-ausgiessen-7.png",
+        "docs/evidence/FK11-ausgiessen.json"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 3826
+    },
+    {
+      "id": "FK12",
+      "title": "Ausgießen bei Mehrfachklick, Pause, Tabwechsel, Fokusverlust, Reload und reduzierter Bewegung stabil",
+      "status": "PASS",
+      "detail": "Mehrfachklick, Pause (angehalten), Tabwechsel, Fokusverlust, Reload, paralleles Entfernen, reduzierte Bewegung",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 29221
+    },
+    {
+      "id": "FK13",
+      "title": "Bühne ohne Konzentrationsangaben; genaue Werte in der Infokarte; Modellwerte unverändert",
+      "status": "PASS",
+      "detail": "keine Konzentration auf der Bühne; 6 Infokarten mit Konzentration; Modell {\"agno3\":0.1,\"nacl\":0.1,\"nabr\":0.1,\"nai\":0.1,\"nh3dil\":2,\"nh3conc\":13.3}",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-infokarte-nh3-konz.png"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 1045
+    },
+    {
+      "id": "FK14",
+      "title": "Antworten je Durchgang gemischt (Startwerte über #seed); Bewertung über fachliche IDs",
+      "status": "PASS",
+      "detail": "9 Fragen, 5 Startwerte, Position „full“ in eqCl: 1,1,4,4,1",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-aufgaben-gemischt-seed42.png",
+        "docs/evidence/FK14-reihenfolgen.json"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 4972
+    },
+    {
+      "id": "FK15",
+      "title": "Reihenfolge bleibt beim Antworten, Prüfen, Hilfe, Reiter-/Teilwechsel und Reload; „Neuer Durchgang“ mischt neu",
+      "status": "PASS",
+      "detail": "Startwert 1822878870 stabil; neuer Durchgang → 2550138334",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 1950
+    },
+    {
+      "id": "FK16",
+      "title": "Sitzung aus 1.0.0 (Buchstaben-Antworten) wird übernommen und richtig bewertet; Speicherfehler abgefangen",
+      "status": "PASS",
+      "detail": "Buchstaben → IDs (eq/Mehrfachauswahl), Bewertung erhalten, Hinweis einmal; kaputter/gesperrter Speicher ok",
+      "evidence": [
+        "docs/screenshots/nachher-1.1.0-migration-1-0.png"
+      ],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 1933
+    },
+    {
+      "id": "FK19",
+      "title": "1.1.1 in App, Metadaten, Manifest und Paketen; SHA256SUMS aktuell; nur aktuelle Version in release/",
+      "status": "PASS",
+      "detail": "4 Dateien in release/, Prüfsummen stimmen, Paket = Quellstand",
+      "evidence": [],
+      "viewport": "1180×820",
+      "input": "Maus",
+      "ms": 11
+    },
+    {
+      "id": "FK-NET",
+      "title": "Netzwerk und Konsole über alle FK-Szenarien",
+      "status": "PASS",
+      "detail": "510 Anfragen, extern 0, Fehler 0"
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 {
   "helligkeitOben": {
-    "suspendiert": 0.5742932352941177,
-    "abgesetzt": 0.2521630996732026,
-    "geschwenkt": 0.7062524460784313
+    "suspendiert": 0.5804927623990772,
+    "abgesetzt": 0.2548704714532872,
+    "geschwenkt": 0.7085324149365629
   },
   "feststoff_mol": {
     "start": 0.00005999999999999551,
-    "abgesetzt": 0.00005999999999999247,
-    "geschwenkt": 0.00005999999999999247
+    "abgesetzt": 0.000059999999999995414,
+    "geschwenkt": 0.000059999999999995414
   }
 }

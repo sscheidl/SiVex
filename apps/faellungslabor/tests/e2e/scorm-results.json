@@ -1,11 +1,11 @@
 {
-  "date": "2026-11-16T12:12:45.189Z",
-  "version": "1.0.0",
-  "browser": "chrome 153.0.8010.12",
+  "date": "2026-11-16T19:29:16.406Z",
+  "version": "1.1.1",
+  "browser": "msedge 157.0.4341.60",
   "artefakte": {
-    "html": "faellungslabor-1.0.0.html",
-    "web": "faellungslabor-1.0.0-web.zip",
-    "scorm": "faellungslabor-1.0.0-scorm12.zip"
+    "html": "faellungslabor-1.1.1.html",
+    "web": "faellungslabor-1.1.1-web.zip",
+    "scorm": "faellungslabor-1.1.1-scorm12.zip"
   },
   "results": [
     {
@@ -33,7 +33,7 @@
       "id": "P04",
       "fl": "FL26",
       "status": "PASS",
-      "detail": "Einzeldatei: Stile, Skripte und Piktogramme eingebettet, kein Verweis auf weitere Dateien – 202.4 KiB",
+      "detail": "Einzeldatei: Stile, Skripte und Piktogramme eingebettet, kein Verweis auf weitere Dateien – 237.1 KiB",
       "evidence": []
     },
     {

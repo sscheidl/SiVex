@@ -39,10 +39,10 @@ test('Mehrfachauswahl: nur die exakte Menge ist richtig; leer und „alles“ be
 
 test('Zuordnungen und Einfachauswahl: konkrete Rückmeldung je Feld, Korrektur möglich', () => {
   const s = step('ionen');
-  let g = T.grade(s, { 'rolle.ag': 'fest', 'rolle.x': 'fest', 'rolle.na': 'fest', 'rolle.no3': 'zus', aussagen: ['a', 'b'] });
+  let g = T.grade(s, { 'rolle.ag': 'fest', 'rolle.x': 'fest', 'rolle.na': 'fest', 'rolle.no3': 'zus', aussagen: ['zuschauerGeloest', 'feststoffIonen'] });
   assert.equal(g.allCorrect, false);
   assert.match(g.fields['rolle.na'].feedback, /Na⁺ bleibt gelöst/);
-  g = T.grade(s, { 'rolle.ag': 'fest', 'rolle.x': 'fest', 'rolle.na': 'zus', 'rolle.no3': 'zus', aussagen: ['a', 'b'] });
+  g = T.grade(s, { 'rolle.ag': 'fest', 'rolle.x': 'fest', 'rolle.na': 'zus', 'rolle.no3': 'zus', aussagen: ['zuschauerGeloest', 'feststoffIonen'] });
   assert.equal(g.allCorrect, true);
   const sol = LL.solutionAnswers(s);
   assert.equal(T.grade(s, sol).allCorrect, true);
@@ -97,4 +97,63 @@ test('Fortschritt: nur Pflichtschritte des Hauptteils; Ammoniak optional; Kontro
 
 test('Verbindliche Aussage der Kontroll-Auswertung wörtlich', () => {
   assert.equal(T.CONTROL_STATEMENT, 'Leitungs- und Mineralwasser enthalten verschiedene gelöste Ionen. Bei Zugabe von Silbernitratlösung können mehrere schwer lösliche Silberverbindungen entstehen. Der Niederschlag kann deshalb ein Stoffgemisch sein. Welche Ionen darin enthalten sind, lässt sich mit diesem Versuch allein nicht eindeutig feststellen.');
+});
+
+// ------------------------------------------------------------------ 1.1.0: zufällige Reihenfolge (FK14–FK16)
+test('FK14: Mischen mit festen Startwerten – richtige Antworten an unterschiedlichen Positionen, Bewertung über IDs', () => {
+  const all = [...T.STEPS, ...T.CONTROL_STEPS];
+  for (const s of all) for (const q of s.questions.filter((x) => x.type !== 'assign')) {
+    const firstCorrect = new Set();
+    for (const seed of [1, 7, 42, 1234, 98765, 4242424242]) {
+      const v = T.view(s, seed).questions.find((x) => x.id === q.id);
+      const keys = Object.keys(v.options);
+      assert.deepEqual([...keys].sort(), Object.keys(q.options).sort(), 'gleiche IDs');
+      for (const k of keys) assert.equal(v.options[k], q.options[k], 'Text gehört zur ID');
+      const corr = [].concat(q.correct);
+      firstCorrect.add(keys.findIndex((k) => corr.includes(k)));
+      // Bewertung unabhängig von der Anzeige: richtig, teilweise, falsch, leer, alles
+      const g = (a) => T.grade(s, { [q.id]: a }).fields[q.id];
+      assert.equal(g(q.type === 'many' ? corr : q.correct).ok, true);
+      assert.equal(g(q.type === 'many' ? [] : '').ok, false);
+      if (q.type === 'many') {
+        assert.equal(g(keys).ok, false, 'alles gewählt');
+        assert.equal(g([corr[0]]).partial, true, 'teilweise');
+      } else assert.equal(g(keys.find((k) => k !== q.correct)).ok, false, 'falsch');
+    }
+    assert.ok(firstCorrect.size >= 2, q.id + ': richtige Antwort nicht immer an derselben Stelle');
+  }
+});
+
+test('FK14: Gleichungen werden als Ganzes umgestellt, nie innerhalb einer Gleichung', () => {
+  const s = T.STEPS.find((x) => x.id === 'gleich');
+  for (const seed of [3, 99, 2026]) for (const q of T.view(s, seed).questions) {
+    assert.equal(q.options.full, s.questions.find((x) => x.id === q.id).options.full);
+    assert.match(q.options.full, /^Na⁺\(aq\) \+ (Cl|Br|I)⁻\(aq\) \+ Ag⁺\(aq\) \+ NO₃⁻\(aq\) → Ag(Cl|Br|I)\(s\) \+ Na⁺\(aq\) \+ NO₃⁻\(aq\)$/);
+  }
+});
+
+test('FK15: Reihenfolge stabil für denselben Startwert; neuer Startwert mischt neu; Fisher-Yates gleichverteilt', () => {
+  const s = T.STEPS[0];
+  const a = JSON.stringify(T.view(s, 555).questions.map((q) => Object.keys(q.options)));
+  for (let i = 0; i < 5; i++) assert.equal(JSON.stringify(T.view(s, 555).questions.map((q) => Object.keys(q.options))), a);
+  const others = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => JSON.stringify(T.view(s, seed).questions.map((q) => Object.keys(q.options)))));
+  assert.ok(others.size >= 6, 'verschiedene Durchgänge ergeben verschiedene Anordnungen');
+  const r = T.rng(11), n = 60000, c = {};
+  for (let i = 0; i < n; i++) { const k = T.shuffle([0, 1, 2], r).join(''); c[k] = (c[k] || 0) + 1; }
+  assert.equal(Object.keys(c).length, 6);
+  for (const v of Object.values(c)) assert.ok(Math.abs(v - n / 6) < 0.03 * n / 6, 'gleichverteilt: ' + JSON.stringify(c));
+  const seeds = new Set(Array.from({ length: 50 }, () => T.newSeed()));
+  assert.ok(seeds.size > 45, 'neue Startwerte unterscheiden sich');
+});
+
+test('FK16: Antworten aus 1.0.0 (Buchstaben) werden auf dieselben fachlichen Aussagen abgebildet', () => {
+  const m = T.migrateAnswers({ ablauf: ['a', 'b', 'c', 'd'], aussagen: ['a', 'c'], eqCl: 'c', eqBr: 'd', eqI: 'a', schluss: ['e'], pos: 'a', neg: 'b', wasser: ['c'], 'farbe.nacl': 'weiss' });
+  assert.deepEqual(m.answers.ablauf, ['wolke', 'verteilt', 'absetzen', 'aufwirbeln']);
+  assert.deepEqual(m.answers.aussagen, ['zuschauerGeloest', 'naImFeststoff']);
+  assert.equal(m.answers.eqCl, 'full'); assert.equal(m.answers.eqBr, 'full'); assert.equal(m.answers.eqI, 'full');
+  assert.deepEqual(m.answers.schluss, ['silberGeloest']); assert.equal(m.answers.pos, 'zeigtWirkung'); assert.equal(m.answers.neg, 'reagenzAllein');
+  assert.deepEqual(m.answers.wasser, ['beweistChlorid']); assert.equal(m.answers['farbe.nacl'], 'weiss');
+  // Zuordnung der Inhalte: 1.0.0-Text unter Buchstabe c von „ablauf“ ist derselbe Text wie unter „absetzen“
+  assert.match(T.STEPS[0].questions[1].options.absetzen, /setzt sich der Niederschlag ab/);
+  assert.equal(T.migrateAnswers({ ablauf: ['wolke'] }).changed, 0, 'neue IDs bleiben unverändert');
 });

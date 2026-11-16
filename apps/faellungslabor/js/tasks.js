@@ -37,11 +37,12 @@
     formula: 'Das ist eine Gleichung mit Salzformeln. Gelöste Salze liegen als Ionen vor – schreibe die Ionen einzeln.',
     spect: 'Die Zuschauerionen Na⁺ und NO₃⁻ verschwinden nicht – sie stehen auch rechts, gelöst.'
   };
-  function eqQuestion(h, order) {
+  /** Gleichungsfrage: Optionen tragen fachliche IDs (full, net, …); die Anzeigereihenfolge wird je Durchgang gemischt. */
+  function eqQuestion(h, ids) {
     const X = SUB[h];
     const options = {}, misc = {};
-    order.forEach((k, i) => { const key = String.fromCharCode(97 + i); options[key] = EQ[k](X); if (EQ_FB[k]) misc[key] = EQ_FB[k]; });
-    return { id: 'eq' + h, type: 'one', legend: `Wähle eine richtige Antwort: vollständige Ionengleichung für ${NAMES[h]} + Silbernitratlösung`, options, misc, correct: String.fromCharCode(97 + order.indexOf('full')), equation: true };
+    ids.forEach((k) => { options[k] = EQ[k](X); if (EQ_FB[k]) misc[k] = EQ_FB[k]; });
+    return { id: 'eq' + h, type: 'one', legend: `Wähle eine richtige Antwort: vollständige Ionengleichung für ${NAMES[h]} + Silbernitratlösung`, options, misc, correct: 'full', equation: true };
   }
 
   // ------------------------------------------------------------------ Hauptteil
@@ -62,17 +63,17 @@
         {
           id: 'ablauf', type: 'many', legend: 'Wähle alle zutreffenden Aussagen.',
           options: {
-            a: 'Wo ein Tropfen Silbernitratlösung auftrifft, entsteht sofort eine Trübung (Wolke).',
-            b: 'Die Trübung verteilt sich nach und nach in der Lösung.',
-            c: 'Lässt man das Reagenzglas stehen, setzt sich der Niederschlag ab; darüber wird die Flüssigkeit klarer.',
-            d: 'Beim Schwenken wird der abgesetzte Niederschlag wieder aufgewirbelt.',
-            e: 'Beim Schwenken löst sich der Niederschlag auf.',
-            f: 'Die Probelösungen sind schon vor der Zugabe trüb.'
+            wolke: 'Wo ein Tropfen Silbernitratlösung auftrifft, entsteht sofort eine Trübung (Wolke).',
+            verteilt: 'Die Trübung verteilt sich nach und nach in der Lösung.',
+            absetzen: 'Lässt man das Reagenzglas stehen, setzt sich der Niederschlag ab; darüber wird die Flüssigkeit klarer.',
+            aufwirbeln: 'Beim Schwenken wird der abgesetzte Niederschlag wieder aufgewirbelt.',
+            schwenkenLoest: 'Beim Schwenken löst sich der Niederschlag auf.',
+            vorherTrueb: 'Die Probelösungen sind schon vor der Zugabe trüb.'
           },
-          correct: ['a', 'b', 'c', 'd'],
+          correct: ['wolke', 'verteilt', 'absetzen', 'aufwirbeln'],
           misc: {
-            e: 'Schwenken verteilt den Feststoff nur – die Menge bleibt gleich; beim Stehenlassen setzt er sich wieder ab.',
-            f: 'Die Natriumhalogenidlösungen sind klar und farblos; die Trübung entsteht erst mit Silbernitratlösung.'
+            schwenkenLoest: 'Schwenken verteilt den Feststoff nur – die Menge bleibt gleich; beim Stehenlassen setzt er sich wieder ab.',
+            vorherTrueb: 'Die Natriumhalogenidlösungen sind klar und farblos; die Trübung entsteht erst mit Silbernitratlösung.'
           }
         }
       ],
@@ -100,17 +101,17 @@
         {
           id: 'aussagen', type: 'many', legend: 'Wähle alle zutreffenden Aussagen.',
           options: {
-            a: 'Nach der Fällung sind Na⁺- und NO₃⁻-Ionen weiterhin in der Flüssigkeit gelöst.',
-            b: 'Der Niederschlag besteht aus Silberionen und Halogenidionen.',
-            c: 'Natriumionen sind ein Bestandteil des Niederschlags.',
-            d: 'Nach der Fällung sind keine Ionen mehr in der Flüssigkeit.',
-            e: 'In der Natriumchloridlösung liegen NaCl-Moleküle vor.'
+            zuschauerGeloest: 'Nach der Fällung sind Na⁺- und NO₃⁻-Ionen weiterhin in der Flüssigkeit gelöst.',
+            feststoffIonen: 'Der Niederschlag besteht aus Silberionen und Halogenidionen.',
+            naImFeststoff: 'Natriumionen sind ein Bestandteil des Niederschlags.',
+            keineIonen: 'Nach der Fällung sind keine Ionen mehr in der Flüssigkeit.',
+            naclMolekuele: 'In der Natriumchloridlösung liegen NaCl-Moleküle vor.'
           },
-          correct: ['a', 'b'],
+          correct: ['zuschauerGeloest', 'feststoffIonen'],
           misc: {
-            c: 'Na⁺ bleibt gelöst – im Niederschlag ist kein Natrium.',
-            d: 'Die Zuschauerionen (und ein Überschuss an Ag⁺ oder Halogenidionen) bleiben gelöst.',
-            e: 'Ein gelöstes Salz liegt als einzelne, von Wasser umhüllte Ionen vor (Na⁺(aq), Cl⁻(aq)), nicht als Moleküle.'
+            naImFeststoff: 'Na⁺ bleibt gelöst – im Niederschlag ist kein Natrium.',
+            keineIonen: 'Die Zuschauerionen (und ein Überschuss an Ag⁺ oder Halogenidionen) bleiben gelöst.',
+            naclMolekuele: 'Ein gelöstes Salz liegt als einzelne, von Wasser umhüllte Ionen vor (Na⁺(aq), Cl⁻(aq)), nicht als Moleküle.'
           }
         }
       ],
@@ -152,16 +153,16 @@
         {
           id: 'schluss', type: 'many', legend: 'Wähle alle zutreffenden Aussagen.',
           options: {
-            a: 'Ob sich ein Niederschlag löst, hängt auch davon ab, wie viel Ammoniaklösung zugegeben wird.',
-            b: 'Mit der Ammoniakprobe lassen sich Niederschläge unterscheiden, die ähnlich aussehen.',
-            c: 'Beide Ammoniaklösungen wirken auf alle drei Niederschläge gleich.',
-            d: 'Der Niederschlag verschwindet nur, weil die Ammoniaklösung den Ansatz verdünnt.',
-            e: 'Das Silber ist nach dem Auflösen weiterhin in der Lösung vorhanden.'
+            menge: 'Ob sich ein Niederschlag löst, hängt auch davon ab, wie viel Ammoniaklösung zugegeben wird.',
+            unterscheiden: 'Mit der Ammoniakprobe lassen sich Niederschläge unterscheiden, die ähnlich aussehen.',
+            gleicheWirkung: 'Beide Ammoniaklösungen wirken auf alle drei Niederschläge gleich.',
+            nurVerduennung: 'Der Niederschlag verschwindet nur, weil die Ammoniaklösung den Ansatz verdünnt.',
+            silberGeloest: 'Das Silber ist nach dem Auflösen weiterhin in der Lösung vorhanden.'
           },
-          correct: ['a', 'b', 'e'],
+          correct: ['menge', 'unterscheiden', 'silberGeloest'],
           misc: {
-            c: 'Vergleiche die gleich angesetzten Paare: Verdünnte und konzentrierte Lösung wirken verschieden.',
-            d: 'Gibt man dieselbe Menge destilliertes Wasser zu, bleibt der Niederschlag bestehen.'
+            gleicheWirkung: 'Vergleiche die gleich angesetzten Paare: Verdünnte und konzentrierte Lösung wirken verschieden.',
+            nurVerduennung: 'Gibt man dieselbe Menge destilliertes Wasser zu, bleibt der Niederschlag bestehen.'
           }
         }
       ],
@@ -184,36 +185,36 @@
         {
           id: 'pos', type: 'one', legend: 'Wähle eine richtige Antwort: Wozu dient die Positivkontrolle mit Natriumchloridlösung?',
           options: {
-            a: 'Sie zeigt, dass die Silbernitratlösung wirkt und wie die Fällung aussieht, wenn sicher Chloridionen vorhanden sind.',
-            b: 'Sie beweist, dass jede Trübung von Chloridionen stammt.',
-            c: 'Sie liefert den Chloridgehalt des Leitungswassers.'
+            zeigtWirkung: 'Sie zeigt, dass die Silbernitratlösung wirkt und wie die Fällung aussieht, wenn sicher Chloridionen vorhanden sind.',
+            beweistChlorid: 'Sie beweist, dass jede Trübung von Chloridionen stammt.',
+            chloridgehalt: 'Sie liefert den Chloridgehalt des Leitungswassers.'
           },
-          correct: 'a',
-          misc: { b: 'Sie zeigt nur, wie eine Chloridfällung aussieht – andere Ionen können ebenfalls Trübungen erzeugen.', c: 'Die Positivkontrolle enthält kein Leitungswasser; sie ist eine bekannte Vergleichsprobe.' }
+          correct: 'zeigtWirkung',
+          misc: { beweistChlorid: 'Sie zeigt nur, wie eine Chloridfällung aussieht – andere Ionen können ebenfalls Trübungen erzeugen.', chloridgehalt: 'Die Positivkontrolle enthält kein Leitungswasser; sie ist eine bekannte Vergleichsprobe.' }
         },
         {
           id: 'neg', type: 'one', legend: 'Wähle eine richtige Antwort: Wozu dient die Blindprobe mit destilliertem Wasser?',
           options: {
-            a: 'Sie zeigt, dass destilliertes Wasser Chloridionen enthält.',
-            b: 'Sie zeigt, dass Silbernitratlösung mit Wasser allein keine Trübung erzeugt.',
-            c: 'Ohne Blindprobe wirkt die Silbernitratlösung nicht.'
+            chloridImWasser: 'Sie zeigt, dass destilliertes Wasser Chloridionen enthält.',
+            reagenzAllein: 'Sie zeigt, dass Silbernitratlösung mit Wasser allein keine Trübung erzeugt.',
+            ohneBlindNicht: 'Ohne Blindprobe wirkt die Silbernitratlösung nicht.'
           },
-          correct: 'b',
-          misc: { a: 'Die Blindprobe bleibt klar – sie enthält keine Ionen, die mit Silberionen einen Niederschlag bilden.', c: 'Die Silbernitratlösung wirkt auch ohne Blindprobe; die Blindprobe dient dem Vergleich.' }
+          correct: 'reagenzAllein',
+          misc: { chloridImWasser: 'Die Blindprobe bleibt klar – sie enthält keine Ionen, die mit Silberionen einen Niederschlag bilden.', ohneBlindNicht: 'Die Silbernitratlösung wirkt auch ohne Blindprobe; die Blindprobe dient dem Vergleich.' }
         },
         {
           id: 'wasser', type: 'many', legend: 'Wähle alle zutreffenden Aussagen zu Leitungs- und Mineralwasser.',
           options: {
-            a: 'Die Proben enthalten gelöste Ionen, die mit Silberionen schwer lösliche Stoffe bilden.',
-            b: 'Der Niederschlag kann ein Stoffgemisch sein.',
-            c: 'Die Trübung beweist eindeutig, dass das Wasser Chloridionen enthält.',
-            d: 'Jedes Leitungswasser wird genauso stark trüb wie diese Probe.',
-            e: 'Welche Ionen den Niederschlag bilden, lässt sich mit diesem Versuch allein nicht eindeutig feststellen.'
+            ionenFaellbar: 'Die Proben enthalten gelöste Ionen, die mit Silberionen schwer lösliche Stoffe bilden.',
+            gemisch: 'Der Niederschlag kann ein Stoffgemisch sein.',
+            beweistChlorid: 'Die Trübung beweist eindeutig, dass das Wasser Chloridionen enthält.',
+            jedesWasser: 'Jedes Leitungswasser wird genauso stark trüb wie diese Probe.',
+            nichtEindeutig: 'Welche Ionen den Niederschlag bilden, lässt sich mit diesem Versuch allein nicht eindeutig feststellen.'
           },
-          correct: ['a', 'b', 'e'],
+          correct: ['ionenFaellbar', 'gemisch', 'nichtEindeutig'],
           misc: {
-            c: 'Auch andere Ionen bilden mit Silberionen schwer lösliche Stoffe. Eine Trübung allein ist kein eindeutiger Chloridnachweis.',
-            d: 'Die Probe ist ein Modell; die Zusammensetzung von Wasser ist je nach Ort und Quelle verschieden.'
+            beweistChlorid: 'Auch andere Ionen bilden mit Silberionen schwer lösliche Stoffe. Eine Trübung allein ist kein eindeutiger Chloridnachweis.',
+            jedesWasser: 'Die Probe ist ein Modell; die Zusammensetzung von Wasser ist je nach Ort und Quelle verschieden.'
           }
         }
       ],
@@ -253,6 +254,49 @@
     return nb.blocks.reduce((s, b) => s + (b.kind === 'eq' ? LL.words(b.legend || '') : LL.words(b.text)), 0);
   }
 
+
+  // ------------------------------------------------------------------ Zufällige Reihenfolge je Durchgang (1.1.0)
+  /** FNV-1a über Zeichenkette → 32 bit. */
+  function hash(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+  /** Mulberry32: kleiner, reproduzierbarer Zufallsgenerator (Werte in [0, 1)). */
+  function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  /** Fisher-Yates (Durstenfeld): jede Permutation gleich wahrscheinlich; kein sort() mit Zufallsvergleich. */
+  function shuffle(arr, rnd) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  /** Neuer Durchgang: zufälliger Startwert (crypto, sonst Math.random). */
+  function newSeed() {
+    try { const c = (typeof self !== 'undefined' && self.crypto) || (typeof globalThis !== 'undefined' && globalThis.crypto); if (c && c.getRandomValues) return c.getRandomValues(new Uint32Array(1))[0] >>> 0; } catch (e) { /* ohne crypto */ }
+    return Math.floor(Math.random() * 4294967296) >>> 0;
+  }
+  /** Anzeigereihenfolge der Antwort-IDs einer Frage – allein aus Startwert und Frage-ID bestimmt (stabil bis zum neuen Durchgang). */
+  function order(seed, q) { return shuffle(Object.keys(q.options), rng(hash((seed >>> 0) + ':' + q.id))); }
+  /** Darstellungskopie eines Schritts mit gemischten Optionen; Bewertung bleibt über dieselben IDs. Gleichungen bleiben unverändert in sich. */
+  function view(step, seed) {
+    const s = Object.assign({}, step);
+    s.questions = step.questions.map((q) => {
+      const o = {};
+      for (const k of order(seed, q)) o[k] = q.options[k];
+      return Object.assign({}, q, { options: o });
+    });
+    return s;
+  }
+
+  /**
+   * Antworten aus Version 1.0.0 (Buchstaben a, b, c … in fester Reihenfolge) auf fachliche IDs abbilden.
+   * Zuordnungsfragen (farbe, rolle, loes) hatten schon fachliche IDs und bleiben unverändert.
+   */
+  const MIGRATE_1_0 = {"ablauf": {"a": "wolke", "b": "verteilt", "c": "absetzen", "d": "aufwirbeln", "e": "schwenkenLoest", "f": "vorherTrueb"}, "aussagen": {"a": "zuschauerGeloest", "b": "feststoffIonen", "c": "naImFeststoff", "d": "keineIonen", "e": "naclMolekuele"}, "schluss": {"a": "menge", "b": "unterscheiden", "c": "gleicheWirkung", "d": "nurVerduennung", "e": "silberGeloest"}, "pos": {"a": "zeigtWirkung", "b": "beweistChlorid", "c": "chloridgehalt"}, "neg": {"a": "chloridImWasser", "b": "reagenzAllein", "c": "ohneBlindNicht"}, "wasser": {"a": "ionenFaellbar", "b": "gemisch", "c": "beweistChlorid", "d": "jedesWasser", "e": "nichtEindeutig"}, "eqCl": {"a": "net", "b": "charge", "c": "full", "d": "state", "e": "solid"}, "eqBr": {"a": "formula", "b": "state", "c": "net", "d": "full", "e": "solid"}, "eqI": {"a": "full", "b": "spect", "c": "charge", "d": "net", "e": "state"}};
+  function migrateAnswers(answers) {
+    const out = {};
+    let changed = 0;
+    for (const [k, v] of Object.entries(answers || {})) {
+      const m = MIGRATE_1_0[k];
+      if (!m) { out[k] = v; continue; }
+      if (Array.isArray(v)) { out[k] = v.map((x) => m[x] || x); changed += v.some((x) => m[x]) ? 1 : 0; }
+      else if (typeof v === 'string') { out[k] = m[v] || v; changed += m[v] ? 1 : 0; }
+    }
+    return { answers: out, changed };
+  }
+
   // ------------------------------------------------------------------ Prüfung
   /**
    * Prüfung wie LK.learn.grade, aber mit konkreter Rückmeldung je angekreuzter Aussage:
@@ -288,5 +332,5 @@
     return { done, total: req.length };
   }
 
-  return { STEPS, CONTROL_STEPS, CONTROL_STATEMENT, EQ, EQ_FB, OBS, NOTEBOOK, CONTROL_SUMMARY, notebookWords, grade, progress, required };
+  return { STEPS, CONTROL_STEPS, CONTROL_STATEMENT, EQ, EQ_FB, OBS, NOTEBOOK, CONTROL_SUMMARY, notebookWords, grade, progress, required, hash, rng, shuffle, newSeed, order, view, migrateAnswers, MIGRATE_1_0 };
 });

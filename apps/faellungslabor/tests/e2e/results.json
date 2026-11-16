@@ -1,9 +1,9 @@
 {
-  "date": "2026-11-16T12:11:55.055Z",
-  "version": "1.0.0",
-  "browser": "chrome 153.0.8010.12",
+  "date": "2026-11-16T19:25:12.097Z",
+  "version": "1.1.1",
+  "browser": "msedge 157.0.4341.60",
   "emulated": "Chromium-Desktop; Touch per Playwright-Emulation (hasTouch, CDP-Touch); kein echtes iPad",
-  "target": "release/faellungslabor-1.0.0-web.zip (frisch entpackt, HTTP)",
+  "target": "release/faellungslabor-1.1.1-web.zip (frisch entpackt, HTTP)",
   "results": [
     {
       "id": "E01",
@@ -16,7 +16,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 655
+      "ms": 1029
     },
     {
       "id": "E02",
@@ -30,14 +30,14 @@
       ],
       "viewport": "1180×820",
       "input": "Touch (emuliert)",
-      "ms": 2296
+      "ms": 1893
     },
     {
       "id": "E03",
       "fl": "FL03, FL04, FL06",
       "title": "Drei Fällungen selbst durchgeführt: Tropfen im Flug, lokale Wolke, Verteilung; Farben unterscheidbar",
       "status": "PASS",
-      "detail": "Gelbanteil 0.010 / 0.128 / 0.264",
+      "detail": "Gelbanteil 0.009 / 0.126 / 0.263",
       "evidence": [
         "docs/screenshots/03a-tropfen-im-flug.png",
         "docs/screenshots/03b-wolke-am-eintreffpunkt.png",
@@ -48,7 +48,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 20957
+      "ms": 16567
     },
     {
       "id": "E04",
@@ -59,7 +59,7 @@
       "evidence": [],
       "viewport": "1440×900",
       "input": "Touch (emuliert), Maus, Tastatur",
-      "ms": 5669
+      "ms": 4349
     },
     {
       "id": "E05",
@@ -73,14 +73,14 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 13131
+      "ms": 7776
     },
     {
       "id": "E06",
       "fl": "FL07",
       "title": "Absetzen mit klarer werdendem Überstand, Schwenken suspendiert wieder; Feststoffmenge erhalten",
       "status": "PASS",
-      "detail": "Helligkeit oben 0.574 → 0.252 → 0.706",
+      "detail": "Helligkeit oben 0.580 → 0.255 → 0.709",
       "evidence": [
         "docs/screenshots/06a-suspendiert.png",
         "docs/screenshots/06b-setzt-sich-ab.png",
@@ -91,7 +91,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 22822
+      "ms": 18567
     },
     {
       "id": "E07",
@@ -104,7 +104,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 14374
+      "ms": 9514
     },
     {
       "id": "E08",
@@ -117,14 +117,14 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 13239
+      "ms": 9846
     },
     {
       "id": "E09",
       "fl": "FL10",
       "title": "AgCl: zu wenig verdünnte NH₃ lässt Rest, ausreichende Menge löst sichtbar fortschreitend",
       "status": "PASS",
-      "detail": "Rest 0.66, Verlauf 0.50→0.43→0.37→0.33",
+      "detail": "Rest 0.66, Verlauf 0.35→0.29→0.23→0.18",
       "evidence": [
         "docs/screenshots/09a-agcl-nh3-0-5ml-beginn.png",
         "docs/screenshots/09b-agcl-rest-bei-zu-wenig-nh3.png",
@@ -136,7 +136,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 32633
+      "ms": 26192
     },
     {
       "id": "E10",
@@ -149,7 +149,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 20761
+      "ms": 15416
     },
     {
       "id": "E11",
@@ -162,7 +162,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 18135
+      "ms": 13186
     },
     {
       "id": "E12",
@@ -176,14 +176,14 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 5609
+      "ms": 3768
     },
     {
       "id": "E13",
       "fl": "FL14, FL15, FL16",
       "title": "Kontrollteil zuerst nutzbar; positiv trüb, Blindprobe klar, Alltagswasser plausibel trüb; Zustände getrennt",
       "status": "PASS",
-      "detail": "Helligkeit K1–K4 0.71 / 0.25 / 0.46 / 0.51",
+      "detail": "Helligkeit K1–K4 0.71 / 0.26 / 0.46 / 0.51",
       "evidence": [
         "docs/screenshots/13a-kontrollen-trueb-verteilt.png",
         "docs/screenshots/13b-kontrolle-auswertung.png",
@@ -191,7 +191,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 12132
+      "ms": 7313
     },
     {
       "id": "E14",
@@ -206,7 +206,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 12523
+      "ms": 7945
     },
     {
       "id": "E15",
@@ -219,7 +219,7 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 5741
+      "ms": 4202
     },
     {
       "id": "E16",
@@ -233,14 +233,14 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 938
+      "ms": 738
     },
     {
       "id": "E17",
       "fl": "FL21",
       "title": "Hintergrundwechsel ändert keine Chemie, Mengen oder Zeit; Niederschläge auf beiden Hintergründen erkennbar",
       "status": "PASS",
-      "detail": "Farbabstand Bodensatz/Überstand min. 0.137",
+      "detail": "Farbabstand Bodensatz/Überstand min. 0.135",
       "evidence": [
         "docs/screenshots/17a-hintergrund-dunkel.png",
         "docs/screenshots/17b-hintergrund-hell.png",
@@ -248,14 +248,14 @@
       ],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 18141
+      "ms": 13424
     },
     {
       "id": "E18",
       "fl": "FL23",
       "title": "Formate 1024×768, 1180×820, 1440×900, 1920×1080, 820×1180: Labor groß, Bedienung erreichbar, nichts abgeschnitten; Splitter",
       "status": "PASS",
-      "detail": "1024×768: Glas 79×277 px; 1180×820: Glas 87×306 px; 1440×900: Glas 99×350 px; 1920×1080: Glas 127×449 px; 820×1180: Glas 85×302 px",
+      "detail": "1024×768: Glas 77×273 px; 1180×820: Glas 87×308 px; 1440×900: Glas 103×362 px; 1920×1080: Glas 137×483 px; 820×1180: Glas 86×303 px",
       "evidence": [
         "docs/screenshots/18-format-1024x768.png",
         "docs/screenshots/18-format-1180x820.png",
@@ -266,7 +266,7 @@
       ],
       "viewport": "1024×768, 1180×820, 1440×900, 1920×1080, 820×1180",
       "input": "Maus, Tastatur, Touch (emuliert, CDP)",
-      "ms": 13445
+      "ms": 9263
     },
     {
       "id": "E19",
@@ -277,7 +277,7 @@
       "evidence": [],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 6590
+      "ms": 5336
     },
     {
       "id": "E20",
@@ -288,7 +288,7 @@
       "evidence": [],
       "viewport": "1440×900",
       "input": "Maus",
-      "ms": 19573
+      "ms": 21348
     },
     {
       "id": "E21",

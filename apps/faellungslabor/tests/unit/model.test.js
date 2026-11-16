@@ -267,6 +267,8 @@ test('Spülen beendet den Ansatz (archiviert); neue Probe erhält eine neue Kenn
   sample(L, 'nacl', 0); reagent(L, 'agno3', 0); dropsN(L, 2);
   L.returnPipette(); idle(L);
   assert.ok(L.rinse(0));
+  assert.equal(L.tab().archive.length, 1, 'archiviert beim Start des Ausgießens');
+  idle(L);
   assert.equal(L.tube(0).V, 0);
   assert.equal(L.tab().archive.length, 1);
   assert.equal(L.tab().archive[0].ansatz, 'A1');
