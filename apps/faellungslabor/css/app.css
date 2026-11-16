@@ -1,0 +1,156 @@
+/* ============================================================
+   Fällungslabor – app-eigener Stil (auf Basis von labkit.css)
+   Hell/dunkel wirkt auf Bühne und Kontrastschirm; Bedienfeld bleibt hell lesbar.
+   ============================================================ */
+:root {
+  --accent: #2f6db3;
+  --accent-2: #24568f;
+  --accent-soft: #e6eef8;
+  --panel-w: clamp(330px, 30vw, 420px);
+  --stage-bg: #0f161e;
+  --deck-bg: #18222d;
+  --deck-text: #e6edf4;
+  --deck-line: #2c3a49;
+}
+:root[data-theme="light"] {
+  --stage-bg: #e9eef3;
+  --deck-bg: #f6f8fa;
+  --deck-text: #17212c;
+  --deck-line: #d0d9e2;
+}
+body { background: var(--bg); }
+
+/* ---------- Kopfzeile ---------- */
+.lk-head { gap: 10px; flex-wrap: nowrap; }
+.logo { width: 34px; height: 34px; flex: 0 0 34px; }
+.ver { font-size: 12px; color: #aab6c4; margin-left: 4px; font-weight: 600; }
+.parts { display: flex; gap: 4px; background: var(--head-2); border: 1px solid #3a4757; border-radius: 10px; padding: 2px; }
+.parts button { border: 0; background: transparent; color: #c9d3de; min-height: 44px; padding: 0 14px; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.parts button[aria-selected="true"] { background: #eef3f8; color: var(--head); }
+.lk-head .lk-btn { white-space: nowrap; min-height: 44px; }
+
+/* ---------- Bühne ---------- */
+.lk-stage { overflow: hidden; background: var(--stage-bg); }
+.canvas-wrap { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.hits, .labels { position: absolute; inset: 0; pointer-events: none; }
+.hit { position: absolute; pointer-events: auto; background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer; border-radius: 10px; touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.hit:focus-visible { outline: 3px solid #5ac8ff; outline-offset: 1px; }
+.hit.pip { cursor: grab; }
+.blabel { position: absolute; pointer-events: auto; background: transparent; border: 0; border-radius: 8px; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.blabel:focus-visible { outline: 3px solid #5ac8ff; outline-offset: 1px; }
+.tlabel {
+  position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0;
+  font-size: 11.5px; line-height: 1.18; color: var(--deck-text); padding: 2px 3px; border-radius: 6px;
+}
+.tlabel b { font-size: 13px; }
+.tlabel .adds { font-size: 11px; opacity: .85; }
+.tlabel span { white-space: normal; }
+.tlabel.sel { outline: 2px dashed #5ac8ff; outline-offset: 1px; }
+:root[data-theme="light"] .tlabel.sel { outline-color: var(--accent); }
+.tlabel .lk-muted { color: inherit; opacity: .7; }
+
+/* Verbotszeichen: kurz, dezent, mit Text */
+.forbid {
+  position: absolute; z-index: 5; display: flex; align-items: center; gap: 8px; max-width: min(360px, 90%);
+  padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .97); color: #17212c; border: 2px solid #c62f3a;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .25); font-size: 14px; pointer-events: none;
+}
+.forbid[hidden] { display: none; }
+.forbid svg { width: 34px; height: 34px; flex: 0 0 34px; }
+.forbid b { display: block; }
+.forbid span { display: block; font-size: 13px; color: #3d4b5a; }
+.forbid.wiggle svg { animation: fl-wiggle .5s ease-in-out 2; }
+@keyframes fl-wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+body.reduce-motion .forbid.wiggle svg { animation: none; }
+
+.msgband { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; justify-content: center; pointer-events: none; z-index: 4; }
+.toast { max-width: min(560px, 92%); padding: 8px 14px; border-radius: 10px; background: rgba(23, 33, 44, .92); color: #fff; font-size: 14px; opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: none; }
+
+/* ---------- Bedienleiste ---------- */
+.deck { flex: 0 0 auto; background: var(--deck-bg); color: var(--deck-text); border-top: 1px solid var(--deck-line); padding: 6px 10px 4px; }
+.deck-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-height: 44px; }
+.deck-row + .deck-row { margin-top: 4px; }
+.deck .who { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; margin-right: auto; min-width: 0; flex: 1 1 8em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.deck .who > span:last-child, .deck .who b { overflow: hidden; text-overflow: ellipsis; }
+.deck .bulb { width: 12px; height: 18px; border-radius: 6px 6px 4px 4px; display: inline-block; border: 1px solid rgba(255, 255, 255, .4); flex: 0 0 auto; }
+.deck .lk-btn { min-height: 44px; }
+.deck .lk-btn:not(.primary) { background: var(--surface); color: var(--text); }
+.dropbtn { min-width: 110px; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.deck .grp { display: inline-flex; align-items: center; gap: 6px; }
+.deck .glabel { font-size: 13px; opacity: .8; }
+.lk-seg.light { background: var(--surface); border-color: var(--line-2); }
+.lk-seg.light button { color: var(--text-2); min-height: 44px; min-width: 44px; }
+.lk-seg.light button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.deck-hint { margin: 2px 0 2px; font-size: 13px; opacity: .85; min-height: 1.2em; }
+.deck .lk-btn:disabled { opacity: .45; }
+
+/* ---------- Bedienfeld ---------- */
+.lk-tabs { flex-wrap: nowrap; gap: 0; padding: 8px 4px 0; }
+.lk-tabs button { flex: 1 1 auto; min-width: 0; padding: 0 5px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steps-list { padding-left: 20px; margin: 4px 0; }
+.steps-list li { margin: 6px 0; }
+.small { font-size: 13.5px; }
+.lk-card.danger { border-color: #eeb4b8; }
+.lk-btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+.adds { font-size: 14px; }
+.notefield { display: block; font-weight: 600; margin: 4px 0 10px; }
+.notefield textarea { display: block; width: 100%; margin-top: 4px; padding: 8px; border: 1px solid var(--line-2); border-radius: 8px; font-weight: 400; resize: vertical; }
+.overview { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+.overview .rec { border-top: 1px solid var(--line); padding: 8px 0; overflow-wrap: anywhere; }
+.overview .rec:first-child { border-top: 0; }
+.overview .rec-h { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; margin-bottom: 2px; }
+.overview .rec-h .st { font-size: 12.5px; }
+.overview .rec.changed .st, .overview .rec.old .st { color: var(--warn); }
+.overview .rec.cur .st { color: var(--ok); }
+.progress { margin: 0 0 10px; font-size: 14px; }
+.tasks .lk-opt span { overflow-wrap: anywhere; }
+.tasks.eqs .lk-opt span { font-size: 16px; line-height: 1.5; }
+.more summary { cursor: pointer; font-weight: 700; min-height: 32px; }
+.eqline { font-size: 17px; text-align: center; background: var(--surface-2); padding: 6px; border-radius: 6px; }
+.statement { border-color: #a9d8bb; background: var(--ok-soft); }
+.lk-notebook .nb-tag { margin: 0 0 4px; font-size: 12.5px; font-weight: 700; color: var(--warn); text-transform: uppercase; letter-spacing: .03em; }
+.lk-notebook .eq { font-size: 17px; }
+.lk-notebook .eq .legend { font-family: var(--font); font-size: 14px; }
+
+/* ---------- Dialog ---------- */
+.modal { position: fixed; inset: 0; z-index: 20; background: rgba(10, 16, 22, .55); display: grid; place-items: center; padding: 12px; }
+.modal[hidden] { display: none; }
+.modal-card { background: var(--surface); color: var(--text); border-radius: 14px; max-width: 560px; width: 100%; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; padding: 16px 18px; box-shadow: 0 20px 50px rgba(0, 0, 0, .35); }
+.modal-card h2 { margin: 0 0 6px; font-size: 19px; }
+.modal-card .formula { color: var(--text-2); margin: 0 0 10px; }
+.modal-card .picts { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0; }
+.modal-card figure { margin: 0; text-align: center; font-size: 12px; width: 84px; }
+.modal-card figure img { display: block; margin: 0 auto 2px; }
+.modal-card .hsatz { padding-left: 18px; }
+.modal-card .signal { margin: 4px 0; }
+
+/* ---------- Druck ---------- */
+.print-only { display: none; }
+@media print {
+  .lk-app, .modal { display: none !important; }
+  .print-only { display: block; padding: 10mm; }
+  body { overflow: visible; background: #fff; }
+}
+
+/* ---------- Schmale Bildschirme und Hochformat ---------- */
+@media (max-width: 899px) {
+  .lk-stage { height: min(78vh, 760px); min-height: 460px; }
+  .lk-head { flex-wrap: wrap; height: auto; padding: 6px 10px; }
+  .parts { order: 3; width: 100%; }
+  .parts button { flex: 1 1 0; }
+}
+@media (max-width: 1180px) {
+  .lk-brand small { display: none; }
+}
+@media (max-width: 1040px) {
+  .lk-head { gap: 6px; padding: 0 8px; }
+  .lk-head .lk-btn.small { padding: 0 8px; font-size: 13px; }
+  .parts button { padding: 0 10px; }
+}
+
+/* Formulare im schmalen Bedienfeld: Fieldsets dürfen schmaler als ihr Inhalt werden */
+.lk-form fieldset { min-width: 0; }
+.lk-form legend { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
+.lk-panel { overflow-x: hidden; }

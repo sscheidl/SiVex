@@ -1,0 +1,301 @@
+{
+  "date": "2026-11-16T12:11:55.055Z",
+  "version": "1.0.0",
+  "browser": "chrome 153.0.8010.12",
+  "emulated": "Chromium-Desktop; Touch per Playwright-Emulation (hasTouch, CDP-Touch); kein echtes iPad",
+  "target": "release/faellungslabor-1.0.0-web.zip (frisch entpackt, HTTP)",
+  "results": [
+    {
+      "id": "E01",
+      "fl": "FL01",
+      "title": "Start: Titel, Version, beide Versuchsteile, keine Fehler, keine externen Anfragen",
+      "status": "PASS",
+      "detail": "15 Anfragen, alle lokal",
+      "evidence": [
+        "docs/screenshots/01-start-1440x900.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 655
+    },
+    {
+      "id": "E02",
+      "fl": "FL02, FL22",
+      "title": "Vorratslösungen korrekt beschriftet; GHS-Karten je Lösung per Tippen, lesbar, schließbar",
+      "status": "PASS",
+      "detail": "7 + 2 Karten geprüft (Touch-Emulation)",
+      "evidence": [
+        "docs/screenshots/02-ghs-karte-agno3.png",
+        "docs/screenshots/02-ghs-karte-nh3conc.png"
+      ],
+      "viewport": "1180×820",
+      "input": "Touch (emuliert)",
+      "ms": 2296
+    },
+    {
+      "id": "E03",
+      "fl": "FL03, FL04, FL06",
+      "title": "Drei Fällungen selbst durchgeführt: Tropfen im Flug, lokale Wolke, Verteilung; Farben unterscheidbar",
+      "status": "PASS",
+      "detail": "Gelbanteil 0.010 / 0.128 / 0.264",
+      "evidence": [
+        "docs/screenshots/03a-tropfen-im-flug.png",
+        "docs/screenshots/03b-wolke-am-eintreffpunkt.png",
+        "docs/screenshots/03c-wolke-breitet-sich-aus.png",
+        "docs/screenshots/03d-truebung-verteilt.png",
+        "docs/screenshots/03e-drei-faellungen-abgesetzt.png",
+        "docs/evidence/E03-farben.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 20957
+    },
+    {
+      "id": "E04",
+      "fl": "FL04, FL24",
+      "title": "Tippen = 1 Tropfen (Maus, Touch, Tastatur), Halten = begrenzte Folge, Loslassen beendet; keine Doppelauslösung",
+      "status": "PASS",
+      "detail": "Halten 2 s → 6 Tropfen, Leertaste 1,3 s → 4",
+      "evidence": [],
+      "viewport": "1440×900",
+      "input": "Touch (emuliert), Maus, Tastatur",
+      "ms": 5669
+    },
+    {
+      "id": "E05",
+      "fl": "FL05",
+      "title": "Füllstand steigt mit dem Volumen; Zugabe stoppt bei 20 mL mit „Reagenzglas ist voll“",
+      "status": "PASS",
+      "detail": "V = 20.000 mL",
+      "evidence": [
+        "docs/screenshots/05a-strahl-dosierhilfe.png",
+        "docs/screenshots/05b-reagenzglas-voll.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 13131
+    },
+    {
+      "id": "E06",
+      "fl": "FL07",
+      "title": "Absetzen mit klarer werdendem Überstand, Schwenken suspendiert wieder; Feststoffmenge erhalten",
+      "status": "PASS",
+      "detail": "Helligkeit oben 0.574 → 0.252 → 0.706",
+      "evidence": [
+        "docs/screenshots/06a-suspendiert.png",
+        "docs/screenshots/06b-setzt-sich-ab.png",
+        "docs/screenshots/06c-abgesetzt.png",
+        "docs/screenshots/06d-schwenken-laeuft.png",
+        "docs/screenshots/06e-nach-dem-schwenken.png",
+        "docs/evidence/E06-ueberstand.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 22822
+    },
+    {
+      "id": "E07",
+      "fl": "FL08, FL06",
+      "title": "Nullzugabe, 1 und viele Tropfen, Probenvolumen 1/3 mL, Silberüberschuss; Trübung mengenabhängig",
+      "status": "PASS",
+      "detail": "Trübung 0.79 / 0.69 / 0.00",
+      "evidence": [
+        "docs/screenshots/07-mengen-1-15-31-tropfen.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 14374
+    },
+    {
+      "id": "E08",
+      "fl": "FL09",
+      "title": "Silber-, Halogenid-, Zuschauerionen- und Volumenbilanz (unabhängig gezählt, Toleranz 1e-6)",
+      "status": "PASS",
+      "detail": "max. rel. Abweichung 1.6e-15",
+      "evidence": [
+        "docs/evidence/E08-bilanz.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 13239
+    },
+    {
+      "id": "E09",
+      "fl": "FL10",
+      "title": "AgCl: zu wenig verdünnte NH₃ lässt Rest, ausreichende Menge löst sichtbar fortschreitend",
+      "status": "PASS",
+      "detail": "Rest 0.66, Verlauf 0.50→0.43→0.37→0.33",
+      "evidence": [
+        "docs/screenshots/09a-agcl-nh3-0-5ml-beginn.png",
+        "docs/screenshots/09b-agcl-rest-bei-zu-wenig-nh3.png",
+        "docs/screenshots/09c-agcl-loest-sich-1.png",
+        "docs/screenshots/09c-agcl-loest-sich-2.png",
+        "docs/screenshots/09c-agcl-loest-sich-3.png",
+        "docs/screenshots/09c-agcl-loest-sich-4.png",
+        "docs/evidence/E09-agcl.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 32633
+    },
+    {
+      "id": "E10",
+      "fl": "FL11",
+      "title": "AgBr: zwei frisch gleich angesetzte Proben – verdünnt weitgehend beständig, konzentriert löslich",
+      "status": "PASS",
+      "detail": "Rest verdünnt 0.97, konzentriert 0.07 (je 2,5 mL)",
+      "evidence": [
+        "docs/screenshots/10-agbr-verduennt-links-konzentriert-rechts.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 20761
+    },
+    {
+      "id": "E11",
+      "fl": "FL12",
+      "title": "AgI bleibt auch bei viel konzentrierter NH₃ sichtbar bestehen",
+      "status": "PASS",
+      "detail": "Rest 99.9 % nach 6 mL konz. NH₃",
+      "evidence": [
+        "docs/screenshots/11-agi-mit-6-ml-konz-nh3.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 18135
+    },
+    {
+      "id": "E12",
+      "fl": "FL13",
+      "title": "Vorgänge außerhalb der Anleitung: kein Stofftransfer, kurzer Hinweis, danach weiter bedienbar",
+      "status": "PASS",
+      "detail": "4 Fälle abgewiesen",
+      "evidence": [
+        "docs/screenshots/12a-verbotszeichen-nh3-vor-agno3.png",
+        "docs/evidence/E12-grenzen.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 5609
+    },
+    {
+      "id": "E13",
+      "fl": "FL14, FL15, FL16",
+      "title": "Kontrollteil zuerst nutzbar; positiv trüb, Blindprobe klar, Alltagswasser plausibel trüb; Zustände getrennt",
+      "status": "PASS",
+      "detail": "Helligkeit K1–K4 0.71 / 0.25 / 0.46 / 0.51",
+      "evidence": [
+        "docs/screenshots/13a-kontrollen-trueb-verteilt.png",
+        "docs/screenshots/13b-kontrolle-auswertung.png",
+        "docs/evidence/E13-kontrollen.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 12132
+    },
+    {
+      "id": "E14",
+      "fl": "FL14, FL17, FL18, FL19",
+      "title": "Auswahlaufgaben: leer/alles/teilweise/falsch/richtig; Gleichungen; Hilfen 1–3; Lösung bewusst; Hauptteil ohne Kontrollen abschließbar",
+      "status": "PASS",
+      "detail": "leer/alles/teilweise/Fehlvorstellung/richtig, Hilfen 1–3, Lösung mit Rückfrage",
+      "evidence": [
+        "docs/screenshots/14a-aufgabe-1-richtig.png",
+        "docs/screenshots/14b-gleichung-gekuerzt-rueckmeldung.png",
+        "docs/screenshots/14c-ammoniak-loesung-angefordert.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 12523
+    },
+    {
+      "id": "E15",
+      "fl": "FL14, FL19",
+      "title": "Beobachtung speichern; veränderter Ansatz wird dem alten Stand zugeordnet und markiert; gespülter Ansatz bleibt",
+      "status": "PASS",
+      "detail": "2 Einträge, Hinweise „verändert“ und „beendet“",
+      "evidence": [
+        "docs/screenshots/15-protokoll-ergebnisuebersicht.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 5741
+    },
+    {
+      "id": "E16",
+      "fl": "FL20",
+      "title": "Hefteintrag sofort erreichbar, knapp, sachlich; Kontroll-Kurzfassung separat",
+      "status": "PASS",
+      "detail": "91 Wörter",
+      "evidence": [
+        "docs/screenshots/16a-hefteintrag-sofort.png",
+        "docs/screenshots/16b-kurzfassung-kontrollen.png"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 938
+    },
+    {
+      "id": "E17",
+      "fl": "FL21",
+      "title": "Hintergrundwechsel ändert keine Chemie, Mengen oder Zeit; Niederschläge auf beiden Hintergründen erkennbar",
+      "status": "PASS",
+      "detail": "Farbabstand Bodensatz/Überstand min. 0.137",
+      "evidence": [
+        "docs/screenshots/17a-hintergrund-dunkel.png",
+        "docs/screenshots/17b-hintergrund-hell.png",
+        "docs/evidence/E17-kontrast.json"
+      ],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 18141
+    },
+    {
+      "id": "E18",
+      "fl": "FL23",
+      "title": "Formate 1024×768, 1180×820, 1440×900, 1920×1080, 820×1180: Labor groß, Bedienung erreichbar, nichts abgeschnitten; Splitter",
+      "status": "PASS",
+      "detail": "1024×768: Glas 79×277 px; 1180×820: Glas 87×306 px; 1440×900: Glas 99×350 px; 1920×1080: Glas 127×449 px; 820×1180: Glas 85×302 px",
+      "evidence": [
+        "docs/screenshots/18-format-1024x768.png",
+        "docs/screenshots/18-format-1180x820.png",
+        "docs/screenshots/18-format-1440x900.png",
+        "docs/screenshots/18-format-1920x1080.png",
+        "docs/screenshots/18-format-820x1180.png",
+        "docs/evidence/E18-formate.json"
+      ],
+      "viewport": "1024×768, 1180×820, 1440×900, 1920×1080, 820×1180",
+      "input": "Maus, Tastatur, Touch (emuliert, CDP)",
+      "ms": 13445
+    },
+    {
+      "id": "E19",
+      "fl": "FL24",
+      "title": "Dauerzugabe endet bei pointercancel, Fokusverlust und verborgenem Tab; keine Hintergrunddosierung",
+      "status": "PASS",
+      "detail": "{\"pointercancel\":3,\"Fokusverlust (blur)\":6,\"Tab verborgen\":9}",
+      "evidence": [],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 6590
+    },
+    {
+      "id": "E20",
+      "fl": "FL25",
+      "title": "Pause blockiert nicht; Neuladen stellt stabil wieder her; Glas spülen vs. alles zurücksetzen; ohne Speicher lauffähig",
+      "status": "PASS",
+      "detail": "Pause, Reload, Spülen, Gesamtreset, Speicher gesperrt",
+      "evidence": [],
+      "viewport": "1440×900",
+      "input": "Maus",
+      "ms": 19573
+    },
+    {
+      "id": "E21",
+      "fl": "FL30",
+      "title": "Netzwerk und Konsole über alle Szenarien",
+      "status": "PASS",
+      "detail": "390 Seitenanfragen, extern: 0; Konsolen-/Seitenfehler: 0"
+    }
+  ]
+}

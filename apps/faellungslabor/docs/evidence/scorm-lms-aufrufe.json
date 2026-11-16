@@ -1,0 +1,80 @@
+{
+  "L01": {
+    "mode": "iframe",
+    "api": "ok",
+    "state": {
+      "available": true,
+      "initialized": true,
+      "finished": false
+    },
+    "calls": [
+      [
+        "LMSInitialize",
+        ""
+      ],
+      [
+        "LMSFinish",
+        ""
+      ]
+    ]
+  },
+  "L02": {
+    "mode": "popup",
+    "api": "ok",
+    "state": {
+      "available": true,
+      "initialized": true,
+      "finished": false
+    },
+    "calls": [
+      [
+        "LMSInitialize",
+        ""
+      ],
+      [
+        "LMSFinish",
+        ""
+      ]
+    ]
+  },
+  "L03": {
+    "mode": "iframe",
+    "api": "none",
+    "state": {
+      "available": false,
+      "initialized": false,
+      "finished": false
+    },
+    "calls": []
+  },
+  "L04": {
+    "mode": "iframe",
+    "api": "broken",
+    "state": {
+      "available": true,
+      "initialized": false,
+      "finished": false
+    },
+    "calls": [
+      [
+        "LMSInitialize",
+        ""
+      ]
+    ]
+  },
+  "L05": {
+    "mode": "popup",
+    "api": "throw",
+    "state": {
+      "available": true,
+      "initialized": false,
+      "finished": false
+    },
+    "calls": [
+      [
+        "LMSInitialize",
+        ""
+      ]
+    ]
+  }
+}

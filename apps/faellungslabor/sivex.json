@@ -1,0 +1,24 @@
+{
+  "id": "chemie/faellungslabor",
+  "title": "Fällungslabor",
+  "description": "Silberhalogenide und Ionennachweise: Natriumchlorid-, Natriumbromid- und Natriumiodidlösung mit Silbernitratlösung fällen (Wolke, Trübung, Absetzen, Schwenken), Ammoniakprüfung mit verdünnter und konzentrierter Ammoniaklösung, unabhängige Kontrollversuche (Positivkontrolle, Blindprobe, Leitungs- und Mineralwasser), Auswahlaufgaben zu Ionen und vollständigen Ionengleichungen, kurzer Hefteintrag.",
+  "subject": "Chemie",
+  "topics": [
+    "Fällungsreaktion",
+    "Ionennachweise",
+    "Halogenidionen",
+    "Silberhalogenide",
+    "Zuschauerionen",
+    "Ionengleichungen",
+    "Kontrollversuche"
+  ],
+  "grades": [
+    8,
+    9
+  ],
+  "gradesNote": "LehrplanPLUS Gymnasium Bayern: Chemie 8 (NTG), Lernbereich 4 – Ionennachweise durch Fällungsreaktionen (u. a. Halogenid- und Silberionen); Chemie 9, Lernbereich 4 – Ionen und Salze (Ionennachweise dort nicht ausdrücklich, als Ergänzung). Ammoniakprüfung als Erweiterung.",
+  "version": "1.0.0",
+  "labkit": "0.3.0",
+  "status": "prototype",
+  "entry": "index.html"
+}

@@ -15,6 +15,7 @@ apps/
   stechheber/         # Stechheber 0.1.0 (prototype) – Gleichgewichts-Reihe 1/3, Stoffebene (Modell)
   apfelkrieg/         # Apfelkrieg 0.1.0 (prototype) – Gleichgewichts-Reihe 2/3, Teilchenebene (Modell, Zufall)
   ester-gleichgewicht/ # Estergleichgewicht 0.1.0 (prototype) – Gleichgewichts-Reihe 3/3, beide Ebenen, K = 4
+  faellungslabor/     # Fällungslabor 1.0.0 (prototype) – Silberhalogenide, Ammoniakprüfung, unabhängige Kontrollversuche; Labkit-Hülle, Glas/Tropfen nach TitraLab 3; zusätzlich Einzeldatei-HTML
   _template/
 shared/
   labkit/             # gemeinsamer Baukasten: Look, Bedienlogik, Diagramm (chart.js) und Lernweg-Mechanik (learn.js)
@@ -31,6 +32,7 @@ Verzeichnisse werden **nach Experiment**, nicht nach Fach oder Jahrgangsstufe an
 - **TitraLab 3 von Claude** ist die einzige gewählte Titrationsversion. TitraLab 2 wird nicht verwendet.
 - Redoxlabor: Implementierung durch Codex / Claude, anschließend Review und Import.
 - Das gebündelte Trennlabor 1.0.0 ist in Einzelanwendungen aufgegangen (Papierchromatographie, Destillation, Trennverfahren) und wird nicht weiterentwickelt; einheitlicher Look und einheitliche Bedienlogik über `shared/labkit/` ([Entscheidung](decisions/2026-10-23-trennlabor-aufteilung.md)). Es wurde am 25.10.2026 von `main` entfernt; der letzte Stand ist über die Tags `archiv/trennlabor-1.0.0` (Fassung B) und `archiv/trennlabor-ccr` (Fassung A) erreichbar.
+- Das Fällungslabor liefert als erste App neben Web- und SCORM-ZIP eine eigenständige HTML-Datei (Skripte und Stile eingebettet, `file://`-fähig, ohne ES-Module und `fetch`).
 - Die drei Gleichgewichts-Apps folgen gemeinsamen Kriterien und je drei Entwicklungsschritten ([Planung](GLEICHGEWICHT-PLANUNG.md)); ihr gemeinsames Gerüst (Diagramm, Balkenpaar, Lernweg-Mechanik) liegt ab Labkit 0.3.0 in `shared/labkit/`.
 - Auf `main` liegt je Anwendung nur das aktuelle Release; frühere Pakete stehen in der Git-Historie.
 - Gemeinsamer Code unter `shared/` enthält keine Fachlogik und wird beim Paketieren in jede App kopiert; jedes Web- und SCORM-Paket bleibt eigenständig und offline lauffähig.

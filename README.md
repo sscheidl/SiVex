@@ -8,7 +8,7 @@ SiVex ist eine Sammlung interaktiver naturwissenschaftlicher Lernanwendungen fü
 
 | Anwendung | Stand | Download |
 | --- | --- | --- |
-| [**Fällungslabor** – Silberhalogenide und Ionennachweise](prompts/faellungslabor-build-claude.md) | **planned** · Build-Auftrag für Claude · Ziel: HTML-/Web-App und mebis-SCORM 1.2; Implementierung und Abnahme stehen aus | [Build-Auftrag mit PASS/HOLD-Kriterien](prompts/faellungslabor-build-claude.md) |
+| [**Fällungslabor** – Silberhalogenide und Ionennachweise](apps/faellungslabor/) | prototype 1.0.0 · Jgst. 8/9 · funktionsvollständig, Entwicklerprüfung FL01–FL31 bestanden · iPad, mebis und fachliche Prüfung stehen aus | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/faellungslabor/release/faellungslabor-1.0.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/faellungslabor/release/faellungslabor-1.0.0-web.zip) · [⬇ HTML-Datei](https://github.com/sscheidl/sivex/raw/main/apps/faellungslabor/release/faellungslabor-1.0.0.html) · [Testbericht](apps/faellungslabor/docs/TESTBERICHT.md) |
 | [**TitraLab 3** – Säure-Base-Titration](apps/titration/) | **ready** 3.2.1 · Jgst. 10–13 · auf dem iPad geprüft, von der Lehrkraft freigegeben (09.11.2026), im Unterricht ab 10.11.2026 | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.2.1-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/titration/release/titration-3.2.1-web.zip) · [Testbericht](apps/titration/docs/TESTBERICHT.md) |
 | [**Redoxlabor** – Fehling- und Tollens-Probe](apps/redoxlabor/) | **ready** 1.3.1 · in mebis auf dem iPad freigegeben | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/redoxlabor/release/redoxlabor-1.3.1-web.zip) · [Testbericht](apps/redoxlabor/docs/TESTBERICHT.md) |
 | [**Papierchromatographie**](apps/chromatographie/) | prototype 0.3.0 · Jgst. 8/9 | **[⬇ SCORM 1.2](https://github.com/sscheidl/sivex/raw/main/apps/chromatographie/release/chromatographie-0.3.0-scorm12.zip)** · [⬇ Web-ZIP](https://github.com/sscheidl/sivex/raw/main/apps/chromatographie/release/chromatographie-0.3.0-web.zip) · [Testbericht](apps/chromatographie/docs/TESTBERICHT.md) |
@@ -36,13 +36,13 @@ Die drei Gleichgewichts-Apps bilden eine Reihe (Stechheber → Apfelkrieg → Es
 | [![Trennverfahren](apps/trennverfahren/docs/screenshots/03-v2-filtriert.png)](apps/trennverfahren/) | [![Aggregatzustände](apps/aggregatzustaende/docs/screenshots/51-wasser-verdampft.png)](apps/aggregatzustaende/) |
 | **Stechheber** | **Apfelkrieg** |
 | [![Stechheber](apps/stechheber/docs/screenshots/ipad-run.png)](apps/stechheber/) | [![Apfelkrieg](apps/apfelkrieg/docs/screenshots/ipad-run.png)](apps/apfelkrieg/) |
-| **Estergleichgewicht** | |
-| [![Estergleichgewicht](apps/ester-gleichgewicht/docs/screenshots/ipad-run.png)](apps/ester-gleichgewicht/) | |
+| **Estergleichgewicht** | **Fällungslabor** |
+| [![Estergleichgewicht](apps/ester-gleichgewicht/docs/screenshots/ipad-run.png)](apps/ester-gleichgewicht/) | [![Fällungslabor](apps/faellungslabor/docs/screenshots/03e-drei-faellungen-abgesetzt.png)](apps/faellungslabor/) |
 
 ## Einsatz im Unterricht
 
 1. **mebis:** SCORM-1.2-ZIP als Aktivität „Lernpaket (SCORM)“ hochladen; Darstellung „Neues Fenster“ empfohlen ([mebis-Hinweise](docs/MEBIS.md)).
-2. **Webserver oder lokal:** Web-ZIP entpacken und `index.html` öffnen – auch ohne Internetverbindung.
+2. **Webserver oder lokal:** Web-ZIP entpacken und `index.html` öffnen – auch ohne Internetverbindung. Das Fällungslabor gibt es zusätzlich als einzelne HTML-Datei zum Doppelklicken.
 
 Es werden keine Noten, Antworten oder personenbezogenen Daten übertragen.
 

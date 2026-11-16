@@ -1,0 +1,37 @@
+[
+  {
+    "format": "1024×768",
+    "reagenzglasPx": [
+      79,
+      277
+    ]
+  },
+  {
+    "format": "1180×820",
+    "reagenzglasPx": [
+      87,
+      306
+    ]
+  },
+  {
+    "format": "1440×900",
+    "reagenzglasPx": [
+      99,
+      350
+    ]
+  },
+  {
+    "format": "1920×1080",
+    "reagenzglasPx": [
+      127,
+      449
+    ]
+  },
+  {
+    "format": "820×1180",
+    "reagenzglasPx": [
+      85,
+      302
+    ]
+  }
+]

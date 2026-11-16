@@ -1,0 +1,18 @@
+[
+  {
+    "fall": "NH₃ vor Silbernitrat",
+    "grund": "Ammoniaklösung kommt erst zu einem Ansatz mit Silbernitratlösung."
+  },
+  {
+    "fall": "zweite andere Probe",
+    "grund": "In diesem Reagenzglas ist schon eine andere Probe. Nimm ein leeres Reagenzglas."
+  },
+  {
+    "fall": "Silbernitrat in leeres Glas",
+    "grund": "Gib zuerst eine Probelösung in das Reagenzglas."
+  },
+  {
+    "fall": "Umfüllen in Vorratsflasche",
+    "grund": "Lösungen werden nicht in Vorratsflaschen umgefüllt."
+  }
+]

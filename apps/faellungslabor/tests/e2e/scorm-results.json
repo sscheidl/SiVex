@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-16T12:12:45.189Z",
+  "version": "1.0.0",
+  "browser": "chrome 153.0.8010.12",
+  "artefakte": {
+    "html": "faellungslabor-1.0.0.html",
+    "web": "faellungslabor-1.0.0-web.zip",
+    "scorm": "faellungslabor-1.0.0-scorm12.zip"
+  },
+  "results": [
+    {
+      "id": "P01",
+      "fl": "FL28",
+      "status": "PASS",
+      "detail": "SCORM: imsmanifest.xml im ZIP-Stamm, SCORM 1.2, gültige Namespaces, genau ein SCO mit Startpunkt index.html – Ressource RES-FAELLUNGSLABOR",
+      "evidence": []
+    },
+    {
+      "id": "P02",
+      "fl": "FL28",
+      "status": "PASS",
+      "detail": "SCORM: alle Dateien im Manifest gelistet und vorhanden; nur relative, interne Verweise – 17 Dateien, 14 Verweise",
+      "evidence": []
+    },
+    {
+      "id": "P03",
+      "fl": "FL27",
+      "status": "PASS",
+      "detail": "Web-ZIP: dieselben Laufzeitdateien im Ordner faellungslabor/ mit index.html – 17 Dateien",
+      "evidence": []
+    },
+    {
+      "id": "P04",
+      "fl": "FL26",
+      "status": "PASS",
+      "detail": "Einzeldatei: Stile, Skripte und Piktogramme eingebettet, kein Verweis auf weitere Dateien – 202.4 KiB",
+      "evidence": []
+    },
+    {
+      "id": "P05",
+      "fl": "FL31",
+      "status": "PASS",
+      "detail": "Paketidentität: Versionen gleich, SHA256SUMS vollständig und korrekt, Inhalt = aktueller Quellstand – 17 Dateien identisch mit dem Quellstand, Prüfsummen ok",
+      "evidence": []
+    },
+    {
+      "id": "S01",
+      "fl": "FL26, FL30",
+      "status": "PASS",
+      "detail": "Einzeldatei frisch außerhalb des Repos per file:// (offline) – 1 Anfragen, alle lokal; keine Konsolenfehler",
+      "evidence": [
+        "docs/screenshots/50-einzeldatei-file.png"
+      ]
+    },
+    {
+      "id": "S02",
+      "fl": "FL26, FL30",
+      "status": "PASS",
+      "detail": "Einzeldatei per HTTP – 1 Anfragen, alle lokal; keine Konsolenfehler",
+      "evidence": []
+    },
+    {
+      "id": "S03",
+      "fl": "FL27, FL30",
+      "status": "PASS",
+      "detail": "Web-ZIP frisch entpackt per file:// – 15 Anfragen, alle lokal; keine Konsolenfehler",
+      "evidence": [
+        "docs/screenshots/51-web-zip-file.png"
+      ]
+    },
+    {
+      "id": "S04",
+      "fl": "FL27, FL30",
+      "status": "PASS",
+      "detail": "Web-ZIP frisch entpackt per HTTP – 15 Anfragen, alle lokal; keine Konsolenfehler",
+      "evidence": []
+    },
+    {
+      "id": "L01",
+      "fl": "FL29",
+      "status": "PASS",
+      "detail": "Mock-LMS eingebettet (iframe), API: ok – Aufrufe: LMSInitialize, LMSFinish",
+      "evidence": [
+        "docs/screenshots/52-scorm-iframe.png"
+      ]
+    },
+    {
+      "id": "L02",
+      "fl": "FL29",
+      "status": "PASS",
+      "detail": "Mock-LMS neues Fenster (opener), API: ok – Aufrufe: LMSInitialize, LMSFinish",
+      "evidence": [
+        "docs/screenshots/52-scorm-popup.png"
+      ]
+    },
+    {
+      "id": "L03",
+      "fl": "FL29",
+      "status": "PASS",
+      "detail": "Mock-LMS eingebettet (iframe), API: none – Aufrufe: keine",
+      "evidence": []
+    },
+    {
+      "id": "L04",
+      "fl": "FL29",
+      "status": "PASS",
+      "detail": "Mock-LMS eingebettet (iframe), API: broken – Aufrufe: LMSInitialize",
+      "evidence": []
+    },
+    {
+      "id": "L05",
+      "fl": "FL29",
+      "status": "PASS",
+      "detail": "Mock-LMS neues Fenster (opener), API: throw – Aufrufe: LMSInitialize",
+      "evidence": []
+    }
+  ]
+}
