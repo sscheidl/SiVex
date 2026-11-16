@@ -6,6 +6,8 @@ Varianten unterschiedlicher Coding-Agenten über Git-Branches oder Pull Requests
 
 ## Build-Aufträge
 
+- [Claude Code: Fällungslabor 1.1 – Korrekturauftrag](faellungslabor-korrekturauftrag-claude.md) – Lehrkraftfeedback zu Beschriftung/Gruppierung, − Glas, NH₃-Löseanimation, späterer Zugabe identischer Probe, Ausgießen beim Spülen, kompakter Konzentrationsdarstellung und zufälliger Antwortreihenfolge; 20 zusätzliche PASS/HOLD-Prüffälle.
+
 - [Claude: Fällungslabor](faellungslabor-build-claude.md) – neuer Build-Auftrag (16.11.2026): Silberhalogenidfällung, Ammoniakprüfung, unabhängige Kontrollen, Aussagen-/Ionengleichungsauswahl und kurzer Hefteintrag; fertige HTML-, Web- und SCORM-1.2-Artefakte mit 34 PASS/HOLD-Prüffällen. Umgesetzt in [apps/faellungslabor/](../apps/faellungslabor/) (1.0.0, prototype; Testbericht mit FL01–FL34).
 
 - [Claude Code: klassisches Trennlabor](trennlabor-klassik-build-claude.md) – fünf aufeinander aufbauende Versuche, helle SiVex-Gestaltung, interaktive Flüssigkeitsanimation, zuschaltbares Teilchenmodell, Lernkontrolle und Hefteintrag. Grundlage: [Trennlabor-Planung](../docs/TRENNLABOR-PLANUNG.md). Umgesetzt als [`apps/trennverfahren/`](../apps/trennverfahren/) 0.2.0, aktuell 0.4.0 (prototype) statt im Auftrag genannten Pfad `apps/trennlabor/`, weil die Aufteilungsentscheidung vom 23.10.2026 diesen Block der App Trennverfahren zuordnet.
