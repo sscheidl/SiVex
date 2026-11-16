@@ -492,13 +492,26 @@
       tb.tubes[pr.slot] = makeTube(pr.slot);
       st.pour = null;
       if (pr.remove) {
-        spliceTube(tb, pr.slot);
-        if (st.pip.tab === pr.tab && st.pip.over != null && st.pip.over > pr.slot) st.pip.over--;
+        removeSlot(pr.tab, pr.slot);
         emit('removed', { tab: pr.tab, slot: pr.slot });
       }
       emit('poured', { tab: pr.tab, slot: pr.slot, ansatz: pr.ansatz, remove: !!pr.remove });
       if (st.pip.tab === pr.tab) placePipette();
       return true;
+    }
+    /**
+     * Glas aus dem Ständer nehmen, ohne dass Bezüge auf ein anderes Glas springen: Tropfen im Flug
+     * (auch in andere Gläser, die während des Ausgießens dosiert wurden) kommen vorher in ihrem Glas an;
+     * eine Pipette über einem nachrückenden Glas folgt ihm (auch mitten in der Bewegung).
+     */
+    function removeSlot(tab, slot) {
+      landAll();
+      spliceTube(st.tabs[tab], slot);
+      const p = st.pip;
+      if (p.tab === tab && p.over != null && p.over > slot) {
+        p.over--;
+        if (p.phase === 'move') p.to = overPos(p.over, tab);
+      }
     }
     function stepPour(dt) {
       const pr = st.pour;
@@ -541,9 +554,7 @@
       if (!isEmpty(t)) return confirmed ? pour(slot, { remove: true }) : 'confirm';
       wake();
       releaseTube(st.tab, slot);
-      const p = st.pip;
-      spliceTube(tb, slot);
-      if (p.tab === st.tab && p.over != null && p.over > slot) p.over--;
+      removeSlot(st.tab, slot);
       placePipette();
       emit('removed', { tab: st.tab, slot });
       return true;

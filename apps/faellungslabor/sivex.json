@@ -17,7 +17,7 @@
     9
   ],
   "gradesNote": "LehrplanPLUS Gymnasium Bayern: Chemie 8 (NTG), Lernbereich 4 – Ionennachweise durch Fällungsreaktionen (u. a. Halogenid- und Silberionen); Chemie 9, Lernbereich 4 – Ionen und Salze (Ionennachweise dort nicht ausdrücklich, als Ergänzung). Ammoniakprüfung als Erweiterung.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "labkit": "0.3.0",
   "status": "prototype",
   "entry": "index.html"

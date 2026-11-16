@@ -228,6 +228,51 @@ test('FK05: Entfernen während aktiver Zugabe – keine Geistertropfen, keine Do
   assert.equal(L.tube(1).ansatz, 'A3');
 });
 
+// 1.1.1 (Review PR #56): Während ein gefülltes Glas zum Entfernen ausgegossen wird, darf in ANDERE
+// Gläser dosiert werden. Rücken die Gläser danach auf, dürfen Tropfen im Flug nicht im Nachbarglas landen.
+const until = (L, cond, max = 10) => { let t = 0; while (!cond() && t < max) { L.step(1 / 60); t += 1 / 60; } assert.ok(t < max, 'Bedingung erreicht'); };
+test('FK05b: Dosieren in ein anderes Glas während „− Glas“ – Tropfen bleiben in ihrem Ansatz, Pipette rückt mit', () => {
+  const L = lab();
+  to(L, 'nacl', 0); to(L, 'nabr', 1); to(L, 'nai', 2);
+  to(L, 'agno3', 1); L.returnPipette(); idle(L); // A2 hat AgNO₃ – weitere Tropfen sind erlaubt
+  const a2 = L.tube(1).log.agDrops;
+  L.drain();
+  assert.ok(L.removeTube(0, true));
+  L.selectBottle('agno3'); run(L, 0.5); L.target(1);
+  until(L, () => L.state.pip.phase === 'over');
+  assert.ok(L.state.pour, 'Ausgießen läuft noch');
+  assert.ok(L.startHold());
+  until(L, () => !L.state.pour); // Gläser rücken auf, während der Halte-Strahl läuft
+  assert.equal(L.tab().visible, 2);
+  assert.equal(L.state.pip.over, 0, 'Pipette folgt dem aufgerückten Glas A2');
+  run(L, 0.5); L.stopHold(); idle(L);
+  const released = L.drain().filter((e) => e.type === 'land' && e.key === 'agno3').length;
+  const tb = L.tab();
+  assert.deepEqual(tb.tubes.slice(0, 2).map((t) => t.ansatz), ['A2', 'A3']);
+  assert.ok(released > 0, 'es wurde während des Ausgießens dosiert');
+  assert.equal(tb.tubes[0].log.agDrops, a2 + released, 'alle Tropfen in A2 (NaBr)');
+  assert.equal(tb.tubes[1].log.agDrops, 0, 'keine Tropfen im Nachbarglas A3 (NaI)');
+  assert.equal(tb.archive[0].log.agDrops, 0, 'keine Tropfen im entfernten Ansatz A1');
+  const pos = L.overPos(0, 'main');
+  assert.ok(Math.abs(L.state.pip.x - pos.x) < 1e-9, 'Pipette steht über A2');
+});
+
+test('FK05b: Pipette unterwegs zu einem nachrückenden Glas, während „− Glas“ endet – sie kommt über dem richtigen Glas an', () => {
+  const L = lab();
+  to(L, 'nacl', 0); to(L, 'nabr', 1); to(L, 'nai', 2);
+  to(L, 'agno3', 2); dropsN(L, 1); L.returnPipette(); idle(L); // A3: 1 Tropfen
+  assert.ok(L.removeTube(0, true));
+  L.selectBottle('agno3');
+  until(L, () => L.state.pour && L.state.pour.t > L.state.pour.dur - 0.15);
+  L.target(2); // Bewegung dauert länger als der Rest des Ausgießens
+  assert.equal(L.state.pip.phase, 'move');
+  idle(L);
+  assert.equal(L.state.pip.over, 1, 'Ziel = aufgerücktes Glas A3');
+  assert.ok(Math.abs(L.state.pip.x - L.overPos(1, 'main').x) < 1e-9, 'steht über A3, nicht über dem alten Platz');
+  L.drain(); assert.ok(L.dropOnce()); idle(L);
+  assert.deepEqual(L.tab().tubes.slice(0, 2).map((t) => [t.ansatz, t.log.agDrops]), [['A2', 0], ['A3', 2]]);
+});
+
 test('FK03/FK16: Entfernen und Hinzufügen in beiden Reitern, Wiederherstellung nach Neuladen', () => {
   const L = lab();
   to(L, 'nacl', 0); L.returnPipette(); idle(L);

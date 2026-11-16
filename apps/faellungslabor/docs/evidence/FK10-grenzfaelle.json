@@ -1,9 +1,9 @@
 {
   "rest_anteil": {
-    "agcl_0_5ml_verd": 0.6620246126216309,
-    "agbr_1ml_verd": 0.9955714722775515,
-    "agi_6ml_konz": 0.9988284000220898,
-    "agcl_3ml_wasser": 0.9999992660740967
+    "agcl_0_5ml_verd": 0.6620246126215906,
+    "agbr_1ml_verd": 0.9955714722775917,
+    "agi_6ml_konz": 0.9988284000221459,
+    "agcl_3ml_wasser": 0.9999992660740903
   },
   "konstanten": {
     "pKsp": {

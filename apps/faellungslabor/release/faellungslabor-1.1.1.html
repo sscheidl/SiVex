@@ -404,7 +404,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     <header class="lk-head">
       <div class="lk-brand">
         <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="14" y="3" width="12" height="33" rx="6" fill="#dbe7f3" stroke="#8aa3bb" stroke-width="2"/><rect x="16" y="22" width="8" height="12" rx="4" fill="#f1e7c0"/><circle cx="20" cy="18" r="2.4" fill="#fff" opacity=".9"/></svg>
-        <div><b>Fällungslabor</b> <span class="ver" id="ver">1.1.0</span><br><small>Silberhalogenide und Ionennachweise</small></div>
+        <div><b>Fällungslabor</b> <span class="ver" id="ver">1.1.1</span><br><small>Silberhalogenide und Ionennachweise</small></div>
       </div>
       <nav class="parts" id="parts" role="tablist" aria-label="Versuchsteil">
         <button type="button" role="tab" id="part-main" data-part="main" aria-selected="true" aria-controls="stage">Fällungsreaktionen</button>
@@ -1799,13 +1799,26 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       tb.tubes[pr.slot] = makeTube(pr.slot);
       st.pour = null;
       if (pr.remove) {
-        spliceTube(tb, pr.slot);
-        if (st.pip.tab === pr.tab && st.pip.over != null && st.pip.over > pr.slot) st.pip.over--;
+        removeSlot(pr.tab, pr.slot);
         emit('removed', { tab: pr.tab, slot: pr.slot });
       }
       emit('poured', { tab: pr.tab, slot: pr.slot, ansatz: pr.ansatz, remove: !!pr.remove });
       if (st.pip.tab === pr.tab) placePipette();
       return true;
+    }
+    /**
+     * Glas aus dem Ständer nehmen, ohne dass Bezüge auf ein anderes Glas springen: Tropfen im Flug
+     * (auch in andere Gläser, die während des Ausgießens dosiert wurden) kommen vorher in ihrem Glas an;
+     * eine Pipette über einem nachrückenden Glas folgt ihm (auch mitten in der Bewegung).
+     */
+    function removeSlot(tab, slot) {
+      landAll();
+      spliceTube(st.tabs[tab], slot);
+      const p = st.pip;
+      if (p.tab === tab && p.over != null && p.over > slot) {
+        p.over--;
+        if (p.phase === 'move') p.to = overPos(p.over, tab);
+      }
     }
     function stepPour(dt) {
       const pr = st.pour;
@@ -1848,9 +1861,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       if (!isEmpty(t)) return confirmed ? pour(slot, { remove: true }) : 'confirm';
       wake();
       releaseTube(st.tab, slot);
-      const p = st.pip;
-      spliceTube(tb, slot);
-      if (p.tab === st.tab && p.over != null && p.over > slot) p.over--;
+      removeSlot(st.tab, slot);
       placePipette();
       emit('removed', { tab: st.tab, slot });
       return true;
@@ -3389,7 +3400,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 (function (root) {
   'use strict';
   const FL = root.FL, C = FL.chem, G = FL.geometry, M = FL.model, GHS = FL.ghs, LK = root.LK;
-  const VERSION = '1.1.0';
+  const VERSION = '1.1.1';
   const KEY = 'sivex.faellungslabor.session.v1';
   const PREF = 'sivex.faellungslabor.prefs';
   const $ = (id) => document.getElementById(id);

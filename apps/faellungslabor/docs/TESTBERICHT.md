@@ -1,6 +1,8 @@
-# Fällungslabor 1.1.0 – Testbericht
+# Fällungslabor 1.1.1 – Testbericht
 
-Stand **16.11.2026** · Status **prototype** · Labkit 0.3.0 · geprüfter Quellstand: Branch `fix/faellungslabor-1.1`, Commit `d939913` (Code und Tests; der folgende Commit enthält nur die daraus gebauten Artefakte, Belege und Dokumentation).
+Stand **16.11.2026** · Status **prototype** · Labkit 0.3.0 · geprüfter Quellstand: Branch `fix/faellungslabor-1.1`, Commit „Fällungslabor 1.1.1 …“ (Code, Tests, daraus gebaute Artefakte und Belege gemeinsam; 1.1.0 = Commit `0398517`).
+
+**1.1.1** behebt den Review-Befund zu PR #56 (Tropfen landeten nach „− Glas“ im Nachbarglas, siehe FK05b) und trägt die iPad-/mebis-Rückmeldung der Lehrkraft zu 1.0.0 nach (FL32/FL33). Alle automatischen Prüfungen wurden für 1.1.1 vollständig neu ausgeführt.
 
 Auftrag: [`prompts/faellungslabor-korrekturauftrag-claude.md`](../../../prompts/faellungslabor-korrekturauftrag-claude.md) (Revision 1). Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = tatsächlich geprüft, Nachweis dokumentiert · **HOLD – failed** · **HOLD – incomplete** · **HOLD – unverified**.
 
@@ -8,37 +10,37 @@ Auftrag: [`prompts/faellungslabor-korrekturauftrag-claude.md`](../../../prompts/
 
 | Bereich | Ergebnis |
 | --- | --- |
-| Korrekturfälle FK01–FK19 | **19/19 PASS** (FK01–FK16, FK19 als eigene Browserszenarien; FK17 über E01–E21; FK18 über P/S/L und die Browserläufe auf den frisch entpackten Paketen) |
-| FK20 reales iPad und mebis | **HOLD – unverified** (kein Gerät, kein mebis-Zugang in dieser Umgebung) |
-| Regression FL01–FL31 | **31/31 PASS** auf 1.1.0 |
-| Unterrichtsfreigabe FL32–FL34 | **HOLD – unverified** |
+| Korrekturfälle FK01–FK19 + FK05b | **20/20 PASS** (FK01–FK16, FK05b, FK19 als eigene Browserszenarien; FK17 über E01–E21; FK18 über P/S/L und die Browserläufe auf den frisch entpackten Paketen) |
+| FK20 reales iPad und mebis | **HOLD – unverified** für 1.1.1 (kein Gerät, kein mebis-Zugang in dieser Umgebung); 1.0.0 lief laut Lehrkraft über mebis auf dem iPad |
+| Regression FL01–FL31 | **31/31 PASS** auf 1.1.1 |
+| Unterrichtsfreigabe FL32–FL34 | FL32/FL33 **PASS für 1.0.0** (Rückmeldung der Lehrkraft, 16.11.2026), für 1.1.1 **HOLD – unverified**; FL34 **HOLD – unverified** |
 | `sivex.json` | `status: prototype` |
 
-**Keine Freigabeempfehlung für den Unterricht.** Entwicklungsseitig sind alle sieben Korrekturthemen umgesetzt und geprüft; iPad, mebis und die fachlich-visuelle Abnahme der neuen Version stehen aus.
+**Keine Freigabeempfehlung für den Unterricht.** Entwicklungsseitig sind alle sieben Korrekturthemen umgesetzt und geprüft. Der Weg mebis-SCORM → iPad ist mit 1.0.0 bestätigt; iPad/mebis mit 1.1.1 und die fachlich-visuelle Abnahme der neuen Version stehen aus.
 
 ## Prüfumgebung und ausgeführte Befehle
 
-- Linux-Container, Node.js 22.23.4, Playwright 1.56.1, **Chrome for Testing 153.0.8010.12** (headless). Kein Safari/WebKit, kein Edge, Firefox; **kein echtes Gerät**. Touch: Playwright-Emulation – als **emuliert** gekennzeichnet.
-- Prüfling der Browsertests: `release/faellungslabor-1.1.0-web.zip`, frisch in einen leeren Temp-Ordner außerhalb des Repositorys entpackt, per HTTP; Einzeldatei und Web-ZIP zusätzlich per `file://`; SCORM-ZIP im Mock-LMS. Externe Netze in allen Browserkontexten blockiert.
+- **1.1.1:** Windows 11, Node.js 24.22.1, Playwright 1.56.1, **Microsoft Edge 157.0.4341.60** (headless, Chromium). Kein Safari/WebKit, kein Firefox; **kein echtes Gerät**. Touch: Playwright-Emulation – als **emuliert** gekennzeichnet. (1.1.0 wurde im Linux-Container mit Chrome for Testing 153 geprüft.)
+- Prüfling der Browsertests: `release/faellungslabor-1.1.1-web.zip`, frisch in einen leeren Temp-Ordner außerhalb des Repositorys entpackt, per HTTP; Einzeldatei und Web-ZIP zusätzlich per `file://`; SCORM-ZIP im Mock-LMS. Externe Netze in allen Browserkontexten blockiert.
 - Zeit: Playwright-Uhr (virtuell); Zeitreihen der Korrekturfälle (FK09, FK11) in **Modellzeit bei 1×** gemessen (`lab.state.time`, bei 1× = Uhrzeit), ab Ende der Zugabe.
 
 ```sh
 cd apps/faellungslabor
 rm -rf node_modules dist && npm ci
-npm run test:all                          # Exit 0, Laufzeit 9 min 04 s
-#   npm test          → 55/55   (tests/unit/*.test.js, davon neu: korrektur.test.js, tasks.test.js FK14–FK16)
-#   npm run package   → Build OK: 17 Dateien, 243,9 KiB, Version 1.1.0, Labkit 0.3.0; 3 Artefakte + SHA256SUMS
-#   npm run test:e2e  → 21/21 (tests/e2e/results.json) und 18/18 (tests/e2e/korrektur-results.json: FK01–FK16, FK19, Netz/Konsole)
+npm run test:all                          # Exit 0
+#   npm test          → 57/57   (tests/unit/*.test.js; 1.1.1 neu: 2× FK05b in korrektur.test.js)
+#   npm run package   → Build OK: 17 Dateien, 248,2 KiB, Version 1.1.1, Labkit 0.3.0; 3 Artefakte + SHA256SUMS
+#   npm run test:e2e  → 21/21 (tests/e2e/results.json) und 19/19 (tests/e2e/korrektur-results.json: FK01–FK16, FK05b, FK19, Netz/Konsole)
 #   npm run test:scorm→ 14/14   (tests/e2e/scorm-results.json)
-cd ../../shared/labkit && npm test        # 8/8 (Labkit unverändert)
+# Labkit unverändert (für 1.1.1 nicht erneut geprüft; 1.1.0: 8/8)
 ```
 
-Prüfsummen (`release/SHA256SUMS.txt`; `release/` enthält nur 1.1.0):
+Prüfsummen (`release/SHA256SUMS.txt`; `release/` enthält nur 1.1.1):
 
 ```text
-4102973a43a510e74e2110644dd9ee78941e023c597dab8ea15cb69d561d4ce5  faellungslabor-1.1.0.html
-56f03b409278a13b61e4a9ce7b0a649c9249eac6d8bec6d355eba13f92196f6c  faellungslabor-1.1.0-web.zip
-fec17f1ce00d65c82a54e2de38845fcf0fc22dd185dbff11f1dab96cbda3a10c  faellungslabor-1.1.0-scorm12.zip
+8664422612fea8dc1c551f25381ebf06b6c60d14d2d93e5c9422e5580588deb1  faellungslabor-1.1.1.html
+01d4eaefa62c242d6341068794c1e30d3758b002a94bc348e51ac0e1cb96181a  faellungslabor-1.1.1-web.zip
+8a91cec4217b600896de96b9993e4d71e273b38a47a9b6558947cbc8137bb112  faellungslabor-1.1.1-scorm12.zip
 ```
 
 ## Korrekturfälle FK01–FK20
@@ -52,6 +54,7 @@ Viewport ohne Angabe: 1180×820 (emuliert). Vorher-Belege: `screenshots/vorher-1
 | FK03 | Browser: „− Glas“ ohne Auswahl; leeres Glas zwischen zwei gefüllten; +/− bis 6 bzw. 1; Kontrollteil 4→1; Reload; Tastatur | gewähltes Glas weg, Grenzen, ≥ 1 bleibt | Hinweis ohne Auswahl; leeres Glas 2 entfernt, A1/A2 bleiben; Obergrenze 6 (Haupt) bzw. 4 (Kontrolle), „Mindestens ein Reagenzglas bleibt im Ständer.“; Trefferflächen = Gläser; nach Reload gleicher Stand; Enter auf Glas und Knöpfen | PASS | FK03, Unit FK03/FK16 |
 | FK04 | Browser: A1 (NaCl + 5 Tr.) mit gespeicherter Beobachtung, A2 (NaBr); „− Glas“ auf A1, Abbrechen, dann bestätigen | Rückfrage, Abbrechen neutral, Daten erhalten | Rückfrage nennt Glas, Volumen und Ansatz; Abbrechen: Zustand identisch; Bestätigen: Ausgießen, Glas weg, A2 rückt auf; A1 genau einmal archiviert, Abfall = Inhalt (V, 5 Tropfen Ag); Protokolleintrag und Ergebnisübersicht „Ansatz beendet“; nächste Kennung A3 | PASS | `nachher-1.1.0-glas-entfernen-rueckfrage.png` |
 | FK05 | Browser: Dauertropfen (Maus gedrückt) in A2, währenddessen „− Glas“ + Bestätigen (zweiter Finger, Skript-Klick), danach loslassen | keine Geistertropfen, keine Doppelbuchung | Dosierung beim Entfernen beendet; A1 erhält keinen Tropfen; Archiv A2 = gelandete Tropfen, Abfall-Silber = archivierte Tropfen; nichts im Flug; danach normal weiter | PASS | FK05, Unit FK05 |
+| FK05b (1.1.1) | Browser + Unit: A1 NaCl, A2 NaBr (+ 1 Tr. AgNO₃), A3 NaI; „− Glas“ auf A1 bestätigt; **während des Ausgießens** AgNO₃-Pipette über A2, Tropfen gedrückt halten, bis die Gläser aufgerückt sind; Unit zusätzlich: Pipette gerade unterwegs zu A3, als das Ausgießen endet. Gegenprobe mit dem Modell aus 1.1.0 | Tropfen bleiben in ihrem Ansatz; Pipette folgt dem nachrückenden Glas | Alle Tropfen in A2, A3 0 Tropfen, archiviertes A1 ohne AgNO₃; Dosierung läuft nach dem Aufrücken über A2 weiter; Pipette steht über A2 bzw. kommt über A3 an. **Mit 1.1.0 FAIL** (Browser: 1 Tropfen in A3; Unit: Tropfen im Nachbarglas, Pipette über dem alten Platz) | PASS | FK05b, Unit FK05b, `nachher-1.1.1-glas-entfernen-waehrend-dosierung.png` |
 | FK06 | Browser + Unit: je Halogenid 2 mL + 5 Tr., dieselbe Probe erneut; andere Probe; 3-mL-Portionen bis zur Grenze | erlaubt, Mengen/Volumen/Revision richtig | Cl/Br/I: gleicher Ansatz, Revision steigt, V +2,00 mL, X⁻ gesamt 4,0·10⁻⁴ mol, Ag unverändert; andere Probe abgewiesen; Grenze 20 mL eingehalten (19,25 mL, nächste Portion würde überlaufen) | PASS | `evidence/FK06-gleiche-probe.json`, `korrektur.test.js` |
 | FK07 | Browser + Unit: AgCl + 1 mL NH₃ verd. gelöst, dann NaCl erneut, schwenken; Br/I nach NH₃ konz. | erlaubt, Gleichgewicht konsistent | Stoffmengen gesamt exakt; Feststoff = `solidAtEquilibrium` (hier 0 %, NH₃ reicht); Unit zeigt Wiederausfällung bei knapper NH₃-Menge; Br/I nach NH₃ erlaubt | PASS | `evidence/FK07-nach-nh3.json`, `korrektur.test.js` |
 | FK08 | Browser: NH₃ verd./konz. vor AgNO₃, andere Probe, AgNO₃ und Wasser in leeres Glas, Umfüllen, volles Glas | weiterhin abgefangen, Berechtigtes frei | 6/6 abgewiesen, Zustand unverändert; danach AgNO₃ und NH₃ möglich; Kapazität 20 mL | PASS | FK08, E12 |
@@ -63,14 +66,14 @@ Viewport ohne Angabe: 1180×820 (emuliert). Vorher-Belege: `screenshots/vorher-1
 | FK14 | Browser mit `#seed=1, 7, 42, 1234, 98765` + Unit (6 Startwerte, Gleichverteilung über 12 000 Startwerte) | unterschiedliche Permutationen, Bewertung über IDs | alle 9 Fragen (Auswahl, Mehrfachauswahl, Zuordnungen, Gleichungen) unterschiedlich gemischt; richtige Gleichung an Position 1/1/4/4/1; Gleichungen als Ganzes; richtige Antworten über IDs ergeben „Alles richtig“ | PASS | `nachher-1.1.0-aufgaben-gemischt-seed42.png`, `evidence/FK14-reihenfolgen.json`, `tasks.test.js` |
 | FK15 | Browser: Antworten, Prüfen, Tipp, Reiter-/Teilwechsel, Reload; „Neuer Durchgang …“ abbrechen und bestätigen | stabil bis zum neuen Durchgang | Reihenfolge und Auswahl unverändert über alle Schritte und Reload; Abbrechen behält den Startwert; Bestätigen: neuer Startwert, Antworten gelöscht, neu gemischt | PASS | FK15, Unit FK15 |
 | FK16 | Browser: Sitzung im 1.0.0-Format (Buchstaben) vorbelegt; beschädigter und gesperrter Speicher | korrekt migriert oder erklärt | Hinweis „Gespeicherte Antworten aus Version 1.0 übernommen …“ einmal; eqCl „c“ → `full` usw., Mehrfachauswahl auf IDs; neu bewertet weiterhin richtig, Fortschritt 3/3; nach Reload stabil; kaputter Speicher → frischer Start, gesperrter Speicher → bedienbar, keine Fehler | PASS | `nachher-1.1.0-migration-1-0.png`, Unit FK16 |
-| FK17 | Regression E01–E21 auf 1.1.0 (Kernversuche, NH₃, Kontrollen, Gleichungen, Hilfen, Hefteintrag, Formate, Abbruchwege, Speicher) | gesamter Lernweg weiter funktionsfähig | 21/21 PASS; Hauptteil 3/3 ohne Kontrollbesuch; Hefteintrag 91 Wörter (inkl. Überschrift) | PASS | `tests/e2e/results.json` |
-| FK18 | P01–P05, S01–S04, L01–L05 auf den frisch erzeugten Paketen; E/FK-Läufe auf dem frisch entpackten Web-ZIP | Pakete isoliert, offline, file/HTTP, Mock-LMS | 14/14 PASS: Einzeldatei (233,0 KiB) und Web-ZIP per `file://` und HTTP mit Kernablauf, SCORM-Manifest im Stamm, Mock-LMS nur `LMSInitialize`/`LMSFinish`; 0 externe Anfragen, 0 Konsolenfehler (E21, FK-Netz) | PASS | `tests/e2e/scorm-results.json`, `50`–`52-*.png` |
-| FK19 | Browserlauf FK19 + P05: Version in package.json, sivex.json, App, Oberfläche, Manifest, Dateinamen; SHA256SUMS; Paketinhalt gegen Quelle | 1.1.0 überall, aktuelle Prüfsummen, Quellstand dokumentiert | überall 1.1.0; nur 1.1.0-Dateien in `release/`; Prüfsummen stimmen; js/css im Paket byte-gleich mit Commit `d939913` | PASS | FK19, P05 |
-| FK20 | – | 1.1.0 auf echtem iPad und frisch in mebis | **nicht durchgeführt** (kein Gerät, kein mebis-Zugang) | **HOLD – unverified** | – |
+| FK17 | Regression E01–E21 auf 1.1.1 (Kernversuche, NH₃, Kontrollen, Gleichungen, Hilfen, Hefteintrag, Formate, Abbruchwege, Speicher) | gesamter Lernweg weiter funktionsfähig | 21/21 PASS; Hauptteil 3/3 ohne Kontrollbesuch; Hefteintrag 91 Wörter (inkl. Überschrift) | PASS | `tests/e2e/results.json` |
+| FK18 | P01–P05, S01–S04, L01–L05 auf den frisch erzeugten Paketen; E/FK-Läufe auf dem frisch entpackten Web-ZIP | Pakete isoliert, offline, file/HTTP, Mock-LMS | 14/14 PASS: Einzeldatei (237,1 KiB) und Web-ZIP per `file://` und HTTP mit Kernablauf, SCORM-Manifest im Stamm, Mock-LMS nur `LMSInitialize`/`LMSFinish`; 0 externe Anfragen, 0 Konsolenfehler (E21, FK-Netz) | PASS | `tests/e2e/scorm-results.json`, `50`–`52-*.png` |
+| FK19 | Browserlauf FK19 + P05: Version in package.json, sivex.json, App, Oberfläche, Manifest, Dateinamen; SHA256SUMS; Paketinhalt gegen Quelle | 1.1.1 überall, aktuelle Prüfsummen, Quellstand dokumentiert | überall 1.1.1; nur 1.1.1-Dateien in `release/` (1.1.0 vom Paketskript entfernt, über Git erreichbar); Prüfsummen stimmen; js/css im Paket byte-gleich mit dem Quellstand dieses Commits | PASS | FK19, P05 |
+| FK20 | – | 1.1.1 auf echtem iPad und frisch in mebis | **nicht durchgeführt** für 1.1.x (kein Gerät, kein mebis-Zugang in dieser Umgebung); 1.0.0 lief laut Lehrkraft über mebis auf dem iPad (FL32/FL33) | **HOLD – unverified** | – |
 
-## Regression: PASS/HOLD-Matrix FL01–FL34 auf 1.1.0
+## Regression: PASS/HOLD-Matrix FL01–FL34 auf 1.1.1
 
-Alle Prüfungen der Version 1.0.0 wurden auf den 1.1.0-Paketen erneut ausgeführt (E01–E21, P01–P05, S01–S04, L01–L05, Unit). Geänderte Erwartungen wegen der beauftragten Korrekturen sind in der Spalte „Ist“ mit **1.1.0:** gekennzeichnet. Datum: 16.11.2026. „Viewport“ ohne Angabe: 1440×900 (emuliert, Desktop-Chromium). Screenshots in `docs/screenshots/`, Messwerte in `docs/evidence/`.
+Alle Prüfungen der Version 1.0.0 wurden auf den 1.1.1-Paketen erneut ausgeführt (zuvor ebenso auf 1.1.0) (E01–E21, P01–P05, S01–S04, L01–L05, Unit). Geänderte Erwartungen wegen der beauftragten Korrekturen sind in der Spalte „Ist“ mit **1.1.0:** gekennzeichnet. Datum: 16.11.2026. „Viewport“ ohne Angabe: 1440×900 (emuliert, Desktop-Chromium). Screenshots in `docs/screenshots/`, Messwerte in `docs/evidence/`.
 
 | ID | Prüfverfahren · Eingangsdaten · Schritte | Soll | Ist | Status | Nachweis |
 | --- | --- | --- | --- | --- | --- |
@@ -99,15 +102,22 @@ Alle Prüfungen der Version 1.0.0 wurden auf den 1.1.0-Paketen erneut ausgeführ
 | FL23 | E18: 1024×768, 1180×820, 1440×900, 1920×1080, 820×1180 (emuliert); Splitter Maus/Tastatur/Doppelklick/Touch (CDP) | alles bedienbar, kein Clipping | kein horizontales Scrollen; Reagenzglas **1.1.0:** 77×273 (1024×768) bis 137×483 px (1920×1080) – trotz größerer Etiketten etwa wie in 1.0.0 (79×277); Bedienelemente im Bild; Bedienfeld und Gleichungen ohne Abschneiden; Splitter ±24 px, max. 620 px, Rücksetzen, Fingerzug | PASS | `18-format-*.png`, `evidence/E18-formate.json` |
 | FL24 | E04, E19: Halten mit pointercancel, blur, verborgenem Tab; Wechsel des Versuchsteils während Dosierhilfe | Ende in allen Fällen, keine Doppel-/Hintergrunddosierung | jeweils keine weiteren Tropfen nach dem Abbruch; Teilwechsel beendet Zugabe, Pipette zurück | PASS | E04, E19 |
 | FL25 | E20 (Echtzeit): Pause, Bedienen in Pause, Neuladen während gedrückter Dosierung, Spülen, Gesamtreset (Abbrechen/Ja), Speicher gesperrt | keine Blockade, gezielter Reset, Reload/Storage-Fehler ok | Pause hält an; Tropfen beendet Pause mit Hinweis; nach Reload: 1×, nichts im Flug, Pipette zurück, Ansatz A1 erhalten; Spülen leert nur dieses Glas (**1.1.0:** sichtbar ausgegossen, Test wartet das Ende ab); Gesamtreset nur nach Bestätigung; mit gesperrtem `localStorage`/`sessionStorage` voll bedienbar | PASS | E20 |
-| FL26 | P04, S01, S02: Einzeldatei in leeren Temp-Ordner kopiert, `file://` und HTTP, Kernablauf | volle Funktion offline ohne Quellordner | 12 Skripte, 2 Stylesheets, Piktogramme eingebettet (233,0 KiB); je 1 Anfrage (die Datei selbst); Haupt-, Ammoniak-, Kontroll-, Aufgaben- und Hefteintragsablauf ohne Fehler | PASS | `50-einzeldatei-file.png`, `scorm-results.json` |
+| FL26 | P04, S01, S02: Einzeldatei in leeren Temp-Ordner kopiert, `file://` und HTTP, Kernablauf | volle Funktion offline ohne Quellordner | 12 Skripte, 2 Stylesheets, Piktogramme eingebettet (237,1 KiB); je 1 Anfrage (die Datei selbst); Haupt-, Ammoniak-, Kontroll-, Aufgaben- und Hefteintragsablauf ohne Fehler | PASS | `50-einzeldatei-file.png`, `scorm-results.json` |
 | FL27 | P03, S03, S04: Web-ZIP frisch entpackt, `file://` und HTTP; alle Browsertests E01–E21 auf diesem Paket | vollständige statische App | 17 Dateien, identisch mit SCORM-Inhalt; beide Zugänge mit Kernablauf fehlerfrei; E01–E21 auf dem entpackten Paket | PASS | `51-web-zip-file.png` |
 | FL28 | P01, P02: Manifest und Dateien | Manifest im Stamm, gültige Referenzen | `imsmanifest.xml` im Stamm, kein verschachteltes Manifest, SCORM 1.2/ADL, IMS- und ADLCP-Namespaces, ein SCO `index.html`, Manifest = ZIP-Inhalt (17 Dateien), nur relative interne Verweise | PASS | `scorm-results.json` |
 | FL29 | L01–L05: Mock-LMS iframe/neues Fenster mit API, ohne API, `LMSInitialize` → 'false', `LMSInitialize` wirft | Init/Finish, Fehlerpfade, keine Lern-/Personendaten | mit API: genau `LMSInitialize` + `LMSFinish`; ohne API: keine Aufrufe; Fehlerpfade: ein Init-Versuch, kein Finish, keine Schleife, keine Konsolenfehler; nie `LMSGetValue`/`LMSSetValue`/`LMSCommit`; App jeweils bedienbar | PASS | `52-scorm-iframe.png`, `52-scorm-popup.png`, `evidence/scorm-lms-aufrufe.json` |
 | FL30 | E21 + S01–S04: externe Netze blockiert, frische Kontexte | alles offline vollständig, keine Konsolenfehler | 390 Seitenanfragen in E01–E20, extern 0; Konsolen-/Seitenfehler 0; Paketprüfungen ebenso. (Chrome selbst versucht im Container Verbindungen zu Google-Diensten – Browserprozess, nicht die Seite; vom Proxy abgelehnt, ohne Einfluss.) | PASS | `results.json` E21 |
-| FL31 | P05 + Build-Prüfung | Versionen, frischer Build, SHA256SUMS, Quellstand | **1.1.0** in `package.json`, `sivex.json`, App, Oberfläche, Manifest, Dateinamen; SHA256SUMS für alle 3 Artefakte korrekt; keine alten Pakete (1.0.0-Dateien entfernt); alle 17 Laufzeitdateien byte-gleich mit dem Quellstand | PASS | `scorm-results.json` P05 |
-| FL32 | – | echtes iPad/Safari | **nicht durchgeführt** – weder für 1.0.0 noch für 1.1.0 (kein Gerät in dieser Umgebung); nur Emulation | **HOLD – unverified** | – |
-| FL33 | – | frischer mebis-Import, neues Fenster, Zielgerät | **nicht durchgeführt** – weder für 1.0.0 noch für 1.1.0 (kein mebis-Zugang); nur Mock-LMS (FL29) | **HOLD – unverified** | – |
-| FL34 | – | Lehrkraft bestätigt Modell, Texte, Farben | **ausstehend** für 1.1.0 (das Feedback zu 1.0.0 ist in diese Version eingeflossen) | **HOLD – unverified** | – |
+| FL31 | P05 + Build-Prüfung | Versionen, frischer Build, SHA256SUMS, Quellstand | **1.1.1** in `package.json`, `sivex.json`, App, Oberfläche, Manifest, Dateinamen; SHA256SUMS für alle 3 Artefakte korrekt; keine alten Pakete (1.1.0-Dateien entfernt); alle 17 Laufzeitdateien byte-gleich mit dem Quellstand | PASS | `scorm-results.json` P05 |
+| FL32 | Lehrkraft, 16.11.2026: Version **1.0.0** als SCORM-Paket über mebis auf einem iPad gestartet | echtes iPad/Safari | **1.0.0:** lief laut Rückmeldung der Lehrkraft erfolgreich (kein Einzelprotokoll der Schritte). **1.1.1:** nicht auf einem Gerät geprüft; nur Emulation | **1.0.0: PASS** (Rückmeldung) · **1.1.1: HOLD – unverified** | mündliche Rückmeldung der Lehrkraft |
+| FL33 | wie FL32 | frischer mebis-Import, Zielgerät | **1.0.0:** Import in mebis und Start auf dem iPad laut Lehrkraft erfolgreich (Darstellung „Neues Fenster“/eingebettet nicht berichtet). **1.1.1:** nicht importiert; nur Mock-LMS (FL29) | **1.0.0: PASS** (Rückmeldung) · **1.1.1: HOLD – unverified** | mündliche Rückmeldung der Lehrkraft |
+| FL34 | – | Lehrkraft bestätigt Modell, Texte, Farben | **ausstehend** für 1.1.1 (das Feedback zu 1.0.0 ist in 1.1.0 eingeflossen) | **HOLD – unverified** | – |
+
+## Gefundene und behobene Fehler 1.1.1
+
+| Befund | Ursache | Korrektur | erneut geprüft |
+| --- | --- | --- | --- |
+| Code-Review PR #56: Wird während des Ausgießens eines gefüllten Glases („− Glas“) in ein anderes Glas getropft, landen Tropfen nach dem Aufrücken im Nachbarglas | Beim Aufrücken wurden nur Pipette und Auswahl umnummeriert; Tropfen im Flug behielten die alte Glasnummer (FK05 prüfte nur das Dosieren in das *entfernte* Glas) | `removeSlot` in `js/model.js`: Tropfen im Flug kommen vor dem Aufrücken in ihrem Glas an; Pipette über einem nachrückenden Glas (auch unterwegs) folgt ihm; gilt für leere und gefüllte Gläser | FK05b (Unit, Browser), Gegenprobe mit 1.1.0 FAIL; vollständiger Lauf `npm ci` + `test:all` |
+| Testentwurf FK05b: AgNO₃-Pipette wurde zurückgestellt statt aufgenommen | Testfehler: die Pipette war noch in der Hand, Antippen der Flasche stellt sie zurück | Pipette im Test vorher zurücklegen | FK05b |
 
 ## Gefundene und behobene Fehler in der Korrekturschleife 1.1.0
 
@@ -151,8 +161,10 @@ Angepasste Erwartungen der Regressionstests (beauftragte Verhaltensänderungen, 
 
 ## Nächste Prüfschritte (reproduzierbar)
 
-1. **FK20/FL32:** `release/faellungslabor-1.1.0.html` oder Web-ZIP auf ein Schul-iPad (Safari, Querformat und Hochformat): Probe füllen, Tropfen tippen und halten, Ammoniak-Dosierhilfe, Schwenken, Kontrollteil, Aufgaben (Auswahllisten!), Hefteintrag, GHS-Karte, Trennlinie mit dem Finger; neu: Lesbarkeit der Etiketten mit iPad-Schrift, „− Glas“, Spülen/Ausgießen, „Neuer Durchgang“.
-2. **FK20/FL33:** `release/faellungslabor-1.1.0-scorm12.zip` frisch in mebis importieren, Darstellung „Neues Fenster“, auf dem iPad starten, einmal Haupt- und Kontrollablauf, Neuladen.
+Der Weg mebis-SCORM → iPad ist mit 1.0.0 bestätigt (FL32/FL33). Für 1.1.1 genügt daher ein gezielter Durchgang mit Schwerpunkt auf den Neuerungen:
+
+1. **FK20/FL32:** `release/faellungslabor-1.1.1.html` oder Web-ZIP auf ein Schul-iPad (Safari, Querformat und Hochformat): Probe füllen, Tropfen tippen und halten, Ammoniak-Dosierhilfe, Schwenken, Kontrollteil, Aufgaben (Auswahllisten!), Hefteintrag, GHS-Karte, Trennlinie mit dem Finger; neu: Lesbarkeit der Etiketten mit iPad-Schrift, „− Glas“, Spülen/Ausgießen, „Neuer Durchgang“.
+2. **FK20/FL33:** `release/faellungslabor-1.1.1-scorm12.zip` frisch in mebis importieren, Darstellung „Neues Fenster“, auf dem iPad starten, einmal Haupt- und Kontrollablauf, Neuladen.
 3. **FL34:** Lehrkraft prüft die neue Version fachlich-visuell: Etiketten und Gruppen (`nachher-1.1.0-*`), Auflösegeschwindigkeit (`nachher-1.1.0-nh3-*`), Ausgießen (`nachher-1.1.0-ausgiessen-*`), Modell (`docs/CHEMIE.md` §5a/5b), Farben (`03e`, `10`, `11`, `13a`, `17a/b`).
 
 Erst wenn FK20 und FL32–FL34 für genau diese Version bestanden sind, `sivex.json` auf `ready` setzen.

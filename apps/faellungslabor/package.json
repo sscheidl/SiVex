@@ -1,6 +1,6 @@
 {
   "name": "sivex-faellungslabor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Fällungslabor – Silberhalogenide und Ionennachweise: Fällung mit Silbernitratlösung, Ammoniakprüfung und Kontrollversuche (statische Webanwendung, SiVex)",
   "scripts": {

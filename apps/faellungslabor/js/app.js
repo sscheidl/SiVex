@@ -14,7 +14,7 @@
 (function (root) {
   'use strict';
   const FL = root.FL, C = FL.chem, G = FL.geometry, M = FL.model, GHS = FL.ghs, LK = root.LK;
-  const VERSION = '1.1.0';
+  const VERSION = '1.1.1';
   const KEY = 'sivex.faellungslabor.session.v1';
   const PREF = 'sivex.faellungslabor.prefs';
   const $ = (id) => document.getElementById(id);

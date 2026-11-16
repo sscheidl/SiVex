@@ -264,6 +264,40 @@ await scenario('FK05', 'Entfernen während gedrückter Dosierung: Dosierung stop
   return { detail: `Dosierung gestoppt (${arch.log.agDrops} Tropfen archiviert), keine Geistertropfen`, input: 'Maus + zweiter Finger (Skript-Klick)' };
 });
 
+// =========================================================== FK05b (1.1.1) Dosieren in ein anderes Glas während „− Glas“
+await scenario('FK05b', 'Während ein gefülltes Glas zum Entfernen ausgegossen wird, in ein anderes Glas tropfen: Tropfen bleiben in ihrem Ansatz', async () => {
+  const { page, done } = await open();
+  await fill(page, 'nacl', 0); await fill(page, 'nabr', 1); await fill(page, 'nai', 2);
+  await over(page, 'agno3', 1); await dropTap(page); // A2 hat schon AgNO₃
+  await btn(page, '#btnReturn'); await idle(page); // ohne Pipette: Antippen wählt das Glas nur aus
+  await tubeHit(page, 0); await adv(page, 100);
+  assert((await S(page, (A) => A.lab.tab().sel)) === 0 && !(await S(page, (A) => A.lab.state.pip.key)), 'Glas 1 gewählt, keine Pipette');
+  await btn(page, '#btnRemoveTube'); await page.locator('.modal [data-m="removeYes"]').click(); await adv(page, 50);
+  assert(await S(page, (A) => !!A.lab.state.pour), 'Ausgießen von A1 läuft');
+  // währenddessen: AgNO₃-Pipette über Glas 2 (A2) und Tropfen halten, bis die Gläser aufgerückt sind
+  await bottle(page, 'agno3'); await adv(page, 400); await tubeHit(page, 1);
+  for (let i = 0; i < 100 && (await S(page, (A) => A.lab.state.pip.phase)) !== 'over'; i++) await adv(page, 16);
+  const pipMid = await S(page, (A) => ({ phase: A.lab.state.pip.phase, over: A.lab.state.pip.over, key: A.lab.state.pip.key, pour: A.lab.state.pour && A.lab.state.pour.t, deck: document.getElementById('btnDrop') ? 'Tropfen-Knopf da' : document.querySelector('#doseRow, .doserow') && document.querySelector('#doseRow, .doserow').innerText }));
+  assert(pipMid.phase === 'over' && pipMid.over === 1 && pipMid.pour != null, 'Pipette über A2, Ausgießen läuft noch: ' + JSON.stringify(pipMid));
+  const b = await page.locator('#btnDrop').boundingBox();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();
+  for (let i = 0; i < 300 && (await S(page, (A) => !!A.lab.state.pour)); i++) await adv(page, 16);
+  const mid = await S(page, (A) => ({ over: A.lab.state.pip.over, visible: A.lab.tab().visible, hold: !!A.lab.state.hold }));
+  await adv(page, 500); await page.mouse.up(); await idle(page);
+  const s = await tabState(page);
+  const ev = [await shot(page, 'nachher-1.1.1-glas-entfernen-waehrend-dosierung')];
+  assert(mid.visible === 2 && mid.over === 0 && mid.hold, 'Pipette folgt A2 auf Platz 1, Dosierung läuft weiter: ' + JSON.stringify(mid));
+  assert(s.tubes[0].ansatz === 'A2' && s.tubes[1].ansatz === 'A3', 'Reihenfolge A2, A3: ' + JSON.stringify(s.tubes));
+  assert(s.tubes[0].ag > 1, 'Tropfen während des Ausgießens in A2 gebucht: ' + s.tubes[0].ag);
+  assert(s.tubes[1].ag === 0, 'keine Tropfen im Nachbarglas A3 (NaI): ' + s.tubes[1].ag);
+  const arch = await S(page, (A) => A.lab.tab().archive.find((a) => a.ansatz === 'A1'));
+  assert(arch.log.agDrops === 0, 'keine Tropfen im entfernten Ansatz A1');
+  const pip = await S(page, (A) => ({ x: A.lab.state.pip.x, want: A.lab.overPos(0, 'main').x }));
+  assert(Math.abs(pip.x - pip.want) < 1e-6, 'Pipette steht über A2: ' + JSON.stringify(pip));
+  await done();
+  return { detail: `Halten über A2 während des Ausgießens und Aufrückens: A2 ${s.tubes[0].ag} Tropfen, A3 0, A1 archiviert ohne AgNO₃; Pipette über A2`, evidence: ev };
+});
+
 // =========================================================== FK06 Gleiche Probe nach AgNO₃
 await scenario('FK06', 'Gleiche Probe nach AgNO₃ erneut zugeben – Cl, Br, I; Mengen, Volumen, Revision; Kapazität', async () => {
   const { page, done } = await open();
@@ -679,10 +713,10 @@ await scenario('FK16', 'Sitzung aus 1.0.0 (Buchstaben-Antworten) wird übernomme
 });
 
 // =========================================================== FK19 Version und Prüfsummen
-await scenario('FK19', '1.1.0 in App, Metadaten, Manifest und Paketen; SHA256SUMS aktuell; nur aktuelle Version in release/', async () => {
+await scenario('FK19', '1.1.1 in App, Metadaten, Manifest und Paketen; SHA256SUMS aktuell; nur aktuelle Version in release/', async () => {
   const rd = path.join(APP, 'release'), files = fs.readdirSync(rd).sort();
   assert(JSON.stringify(files) === JSON.stringify(['SHA256SUMS.txt', `faellungslabor-${VERSION}-scorm12.zip`, `faellungslabor-${VERSION}-web.zip`, `faellungslabor-${VERSION}.html`].sort()), 'release/: ' + files);
-  assert(VERSION === '1.1.0', 'package.json ' + VERSION);
+  assert(VERSION === '1.1.1', 'package.json ' + VERSION);
   const sums = fs.readFileSync(path.join(rd, 'SHA256SUMS.txt'), 'utf8').trim().split('\n').map((l) => l.split(/\s+\*?/));
   for (const [h, n] of sums) assert(crypto.createHash('sha256').update(fs.readFileSync(path.join(rd, n))).digest('hex') === h, 'Prüfsumme ' + n);
   const sx = JSON.parse(fs.readFileSync(path.join(APP, 'sivex.json'), 'utf8'));
@@ -692,8 +726,8 @@ await scenario('FK19', '1.1.0 in App, Metadaten, Manifest und Paketen; SHA256SUM
   const web = unzip(fs.readFileSync(REL(`faellungslabor-${VERSION}-web.zip`)));
   const sc = unzip(fs.readFileSync(REL(`faellungslabor-${VERSION}-scorm12.zip`)));
   const find = (z, re) => { const k = [...z.keys()].find((n) => re.test(n)); return k && z.get(k).toString('utf8'); };
-  assert(JSON.parse(find(web, /sivex\.json$/)).version === VERSION && /VERSION = '1\.1\.0'/.test(find(web, /js\/app\.js$/)), 'Web-ZIP-Version');
-  assert(new RegExp(`<version>${VERSION.replace(/\./g, '\\.')}</version>|version="${VERSION.replace(/\./g, '\\.')}"|${VERSION.replace(/\./g, '\\.')}`).test(find(sc, /imsmanifest\.xml$/)), 'Manifest nennt 1.1.0');
+  assert(JSON.parse(find(web, /sivex\.json$/)).version === VERSION && find(web, /js\/app\.js$/).includes(`VERSION = '${VERSION}'`), 'Web-ZIP-Version');
+  assert(new RegExp(`<version>${VERSION.replace(/\./g, '\\.')}</version>|version="${VERSION.replace(/\./g, '\\.')}"|${VERSION.replace(/\./g, '\\.')}`).test(find(sc, /imsmanifest\.xml$/)), 'Manifest nennt ' + VERSION);
   // Paketinhalt entspricht dem Quellstand (js/css/index.html)
   for (const f of ['js/model.js', 'js/render.js', 'js/app.js', 'js/ui.js', 'js/tasks.js', 'js/geometry.js', 'css/app.css']) {
     const src = fs.readFileSync(path.join(APP, f), 'utf8'), z = find(web, new RegExp(f.replace(/[./]/g, (c) => '\\' + c) + '$'));

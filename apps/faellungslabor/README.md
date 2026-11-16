@@ -1,8 +1,8 @@
-# Fällungslabor 1.1.0 – Silberhalogenide und Ionennachweise
+# Fällungslabor 1.1.1 – Silberhalogenide und Ionennachweise
 
-**Status: prototype** – entwicklungsseitig vollständig und paketiert; Prüfung auf einem echten iPad, mebis-Import und fachliche Abnahme durch die Lehrkraft stehen aus ([Testbericht](docs/TESTBERICHT.md)). Nicht für den Unterricht freigegeben.
+**Status: prototype** – entwicklungsseitig vollständig und paketiert. Version 1.0.0 lief laut Lehrkraft am 16.11.2026 über mebis (SCORM) erfolgreich auf einem iPad; für 1.1.x stehen iPad-/mebis-Prüfung und fachliche Abnahme durch die Lehrkraft noch aus ([Testbericht](docs/TESTBERICHT.md)). Nicht für den Unterricht freigegeben.
 
-**Neu in 1.1.0** ([CHANGELOG](CHANGELOG.md)): größere, gruppierte Flaschenetiketten ohne Konzentrationsangaben (Konzentration in der Infokarte), „− Glas“, sichtbares Ausgießen in den Behälter „Silberabfälle“, schneller sichtbares Auflösen mit Ammoniak (Gleichgewichte unverändert), dieselbe Probe darf nachgegeben werden, Antworten je Durchgang gemischt.
+**Neu in 1.1.1:** Tropfen, die beim Entfernen eines gefüllten Glases noch in der Luft sind, landen im richtigen Glas. **Neu in 1.1.0** ([CHANGELOG](CHANGELOG.md)): größere, gruppierte Flaschenetiketten ohne Konzentrationsangaben (Konzentration in der Infokarte), „− Glas“, sichtbares Ausgießen in den Behälter „Silberabfälle“, schneller sichtbares Auflösen mit Ammoniak (Gleichgewichte unverändert), dieselbe Probe darf nachgegeben werden, Antworten je Durchgang gemischt.
 
 Die Lernenden geben Silbernitratlösung tropfenweise zu Natriumchlorid-, Natriumbromid- und Natriumiodidlösung, sehen am Eintreffpunkt jedes Tropfens eine Wolke entstehen, die sich verteilt und absetzt, schwenken, vergleichen die Farben und prüfen in einer Erweiterung die Löslichkeit in verdünnter und konzentrierter Ammoniaklösung. Ein unabhängiger Kontrollteil zeigt Positivkontrolle, Blindprobe sowie Leitungs- und Mineralwasser. Auswahlaufgaben (Beobachtungen, Zuschauerionen, vollständige Ionengleichungen, Ammoniak; Kontrollen getrennt) mit Hilfe in drei Stufen und Lösung auf Anforderung; kurzer Hefteintrag jederzeit.
 
@@ -12,18 +12,18 @@ Jahrgangsstufen 8 (NTG, LehrplanPLUS LB 4: Ionennachweise durch Fällungsreaktio
 
 | Datei | Zweck |
 | --- | --- |
-| [`faellungslabor-1.1.0.html`](release/faellungslabor-1.1.0.html) | eine einzelne Datei – per Doppelklick öffnen, läuft offline |
-| [`faellungslabor-1.1.0-web.zip`](release/faellungslabor-1.1.0-web.zip) | statische Web-App (Ordner `faellungslabor/` mit `index.html`) für Webserver oder lokal |
-| [`faellungslabor-1.1.0-scorm12.zip`](release/faellungslabor-1.1.0-scorm12.zip) | SCORM-1.2-Lernpaket für mebis |
+| [`faellungslabor-1.1.1.html`](release/faellungslabor-1.1.1.html) | eine einzelne Datei – per Doppelklick öffnen, läuft offline |
+| [`faellungslabor-1.1.1-web.zip`](release/faellungslabor-1.1.1-web.zip) | statische Web-App (Ordner `faellungslabor/` mit `index.html`) für Webserver oder lokal |
+| [`faellungslabor-1.1.1-scorm12.zip`](release/faellungslabor-1.1.1-scorm12.zip) | SCORM-1.2-Lernpaket für mebis |
 | [`SHA256SUMS.txt`](release/SHA256SUMS.txt) | Prüfsummen der drei Dateien |
 
 ### mebis (Lehrkraft)
 
-1. Im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“, die Datei `faellungslabor-1.1.0-scorm12.zip` hochladen.
+1. Im Kurs „Aktivität oder Material anlegen“ → „Lernpaket (SCORM)“, die Datei `faellungslabor-1.1.1-scorm12.zip` hochladen.
 2. Unter „Darstellung“ → „Lernpaket anzeigen“: **„Neues Fenster“** (bevorzugt, mehr Platz). Eingebettet läuft die App grundsätzlich auch.
 3. Es werden keine Noten, Antworten, Fortschritte oder personenbezogenen Daten an mebis übertragen; die App meldet sich nur an und ab (LMSInitialize/LMSFinish).
 
-Der tatsächliche Import in mebis wurde weder für 1.0.0 noch für 1.1.0 durchgeführt (FL33/FK20: HOLD – unverified). Hinweise: [docs/MEBIS.md](../../docs/MEBIS.md).
+Version 1.0.0 wurde laut Lehrkraft am 16.11.2026 in mebis importiert und lief auf einem iPad (FL33 für 1.0.0: PASS, Rückmeldung der Lehrkraft). Für 1.1.1 ist der mebis-Import noch nicht erfolgt (FK20: HOLD – unverified). Hinweise: [docs/MEBIS.md](../../docs/MEBIS.md).
 
 ### Hinweise für die Lehrkraft
 

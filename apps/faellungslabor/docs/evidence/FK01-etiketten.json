@@ -34,7 +34,7 @@
   },
   "nachher_1_1_0": {
     "1024x768-dark-main": {
-      "scale": 0.4859629861982434,
+      "scale": 0.5096063362609786,
       "etiketten": [
         {
           "key": "nacl",
@@ -42,7 +42,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -52,7 +52,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -62,7 +62,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -72,7 +72,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -82,7 +82,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -92,7 +92,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -102,7 +102,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -111,7 +111,7 @@
       "abstand_zwischen_gruppen_px": 18
     },
     "1024x768-dark-control": {
-      "scale": 0.4859629861982434,
+      "scale": 0.5096063362609786,
       "etiketten": [
         {
           "key": "nacl",
@@ -119,7 +119,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -129,7 +129,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -139,7 +139,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -149,7 +149,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -159,7 +159,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -168,7 +168,7 @@
       "abstand_zwischen_gruppen_px": 18
     },
     "1024x768-light-main": {
-      "scale": 0.4859629861982434,
+      "scale": 0.5096063362609786,
       "etiketten": [
         {
           "key": "nacl",
@@ -176,7 +176,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -186,7 +186,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -196,7 +196,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -206,7 +206,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -216,7 +216,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -226,7 +226,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -236,7 +236,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -245,7 +245,7 @@
       "abstand_zwischen_gruppen_px": 18
     },
     "1024x768-light-control": {
-      "scale": 0.4859629861982434,
+      "scale": 0.5096063362609786,
       "etiketten": [
         {
           "key": "nacl",
@@ -253,7 +253,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -263,7 +263,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -273,7 +273,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -283,7 +283,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -293,7 +293,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -310,7 +310,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -320,7 +320,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -330,7 +330,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -340,7 +340,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -350,7 +350,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -360,7 +360,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -370,7 +370,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -387,7 +387,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -397,7 +397,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -407,7 +407,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -417,7 +417,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -427,7 +427,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -444,7 +444,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -454,7 +454,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -464,7 +464,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -474,7 +474,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -484,7 +484,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -494,7 +494,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -504,7 +504,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -521,7 +521,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -531,7 +531,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -541,7 +541,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -551,7 +551,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -561,7 +561,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -578,7 +578,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -588,7 +588,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -598,7 +598,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -608,7 +608,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -618,7 +618,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -628,7 +628,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -638,7 +638,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -655,7 +655,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -665,7 +665,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -675,7 +675,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -685,7 +685,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -695,7 +695,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -712,7 +712,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -722,7 +722,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -732,7 +732,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -742,7 +742,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -752,7 +752,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -762,7 +762,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -772,7 +772,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }
@@ -789,7 +789,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -799,7 +799,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -809,7 +809,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -819,7 +819,7 @@
           "formel_px": null,
           "name_px": 15,
           "zusatz_px": 14,
-          "zeilenhoehe_name_px": 19,
+          "zeilenhoehe_name_px": 20,
           "breite_px": 90,
           "eng_gesetzt": false
         },
@@ -829,7 +829,7 @@
           "formel_px": 18,
           "name_px": 14,
           "zusatz_px": null,
-          "zeilenhoehe_name_px": 17,
+          "zeilenhoehe_name_px": 19,
           "breite_px": 90,
           "eng_gesetzt": false
         }

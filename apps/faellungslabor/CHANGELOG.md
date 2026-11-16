@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 – 16.11.2026 (prototype)
+
+Fehlerbehebung aus dem Code-Review zu PR #56; sonst unverändert gegenüber 1.1.0.
+
+- **„− Glas“ bei gefülltem Glas:** Wurde während des Ausgießens in ein *anderes* Glas getropft, landeten Tropfen, die beim Aufrücken der Gläser noch in der Luft waren, im Nachbarglas (falscher Ansatz, falsches Protokoll). Jetzt kommen alle Tropfen im Flug vor dem Aufrücken in ihrem Glas an; eine Pipette über einem nachrückenden Glas – auch eine gerade dorthin unterwegs – folgt ihm. Neue Prüffälle FK05b (Unit und Browser).
+- iPad-/mebis-Rückmeldung der Lehrkraft zu 1.0.0 im Testbericht nachgetragen (FL32/FL33 für 1.0.0).
+
 ## 1.1.0 – 16.11.2026 (prototype)
 
 Korrekturfassung nach [`prompts/faellungslabor-korrekturauftrag-claude.md`](../../prompts/faellungslabor-korrekturauftrag-claude.md) (Revision 1). Labkit 0.3.0 unverändert; andere Apps unverändert.
