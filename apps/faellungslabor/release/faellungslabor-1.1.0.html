@@ -205,7 +205,7 @@ body.is-resizing { cursor: col-resize; -webkit-user-select: none; user-select: n
   --accent: #2f6db3;
   --accent-2: #24568f;
   --accent-soft: #e6eef8;
-  --panel-w: clamp(330px, 30vw, 420px);
+  --panel-w: clamp(300px, 28vw, 420px);
   --stage-bg: #0f161e;
   --deck-bg: #18222d;
   --deck-text: #e6edf4;
@@ -236,8 +236,49 @@ body { background: var(--bg); }
 .hit { position: absolute; pointer-events: auto; background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer; border-radius: 10px; touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .hit:focus-visible { outline: 3px solid #5ac8ff; outline-offset: 1px; }
 .hit.pip { cursor: grab; }
-.blabel { position: absolute; pointer-events: auto; background: transparent; border: 0; border-radius: 8px; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.blabel:focus-visible { outline: 3px solid #5ac8ff; outline-offset: 1px; }
+canvas.fx { pointer-events: none; }
+/* Flaschenetikett in festen Bildschirmpixeln (1.1.0): Formel groß, Name, Zusatz – ohne Konzentration */
+.bcard {
+  position: absolute; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 3px 2px 26px; border-radius: 6px; background: #fbfaf4; color: #17212c; border: 1px solid rgba(40, 60, 80, .35);
+  text-align: center; line-height: 1.12; overflow: hidden; pointer-events: none; -webkit-hyphens: manual; hyphens: manual;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+}
+.bcard .f { font-size: 18px; font-weight: 700; letter-spacing: .01em; line-height: 1.15; }
+.bcard .n { font-size: 14px; font-weight: 600; overflow-wrap: normal; }
+.bcard .n.big { font-size: 15px; font-weight: 700; margin-top: 2px; }
+.bcard .q { font-size: 14px; font-weight: 800; color: #0d3c73; margin-top: 1px; letter-spacing: -.025em; }
+.bcard.compact { padding: 3px 2px 22px; }
+.bcard.tight .n, .bcard.tight .q { font-size: 13px; letter-spacing: -.03em; }
+.bcard.compact .n { display: none; }
+.bcard.compact .n.big { display: block; font-size: 13px; }
+.bcard.compact .q { font-size: 13px; line-height: 1.05; }
+.binfo { border-radius: 0 0 6px 6px; }
+.binfo .strip {
+  position: absolute; left: 1px; right: 1px; top: 0; height: 24px; display: flex; align-items: center; justify-content: center; gap: 1px;
+  border-top: 1px solid rgba(40, 60, 80, .18); background: rgba(240, 244, 248, .9); border-radius: 0 0 5px 5px;
+}
+.binfo .strip img { display: block; }
+.binfo .i {
+  display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 3px; border-radius: 50%;
+  background: #2f6db3; color: #fff; font: 700 12px Georgia, serif;
+}
+.ghead {
+  position: absolute; box-sizing: border-box; text-align: center; font-size: 12px; font-weight: 700; line-height: 1.15;
+  color: var(--deck-text); opacity: .92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+  border-top: 2px solid rgba(160, 190, 220, .45); padding-top: 2px;
+}
+:root[data-theme="light"] .ghead { border-top-color: rgba(60, 92, 124, .45); }
+.ghead.compact { font-size: 11.5px; }
+.wlabel {
+  position: absolute; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; padding: 2px 4px; border-radius: 6px;
+  background: #fff7d6; color: #3b2a00; border: 1px solid #b08a1e; font-size: 11px; text-align: center; line-height: 1.15; pointer-events: none;
+}
+.wlabel b { font-size: 13px; }
+.tubebtns { display: inline-flex; gap: 4px; }
+.deck-row.util { gap: 6px 6px; }
+.deck-row.util .lk-btn.small { padding-left: 8px; padding-right: 8px; }
+.lk-btn.soft-off { opacity: .55; }
 .tlabel {
   position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0;
   font-size: 11.5px; line-height: 1.18; color: var(--deck-text); padding: 2px 3px; border-radius: 6px;
@@ -286,8 +327,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 .deck .lk-btn:disabled { opacity: .45; }
 
 /* ---------- Bedienfeld ---------- */
-.lk-tabs { flex-wrap: nowrap; gap: 0; padding: 8px 4px 0; }
-.lk-tabs button { flex: 1 1 auto; min-width: 0; padding: 0 5px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lk-tabs { flex-wrap: wrap; gap: 2px 0; padding: 8px 4px 0; }
+.lk-tabs button { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: 14px; white-space: normal; line-height: 1.15; }
 .steps-list { padding-left: 20px; margin: 4px 0; }
 .steps-list li { margin: 6px 0; }
 .small { font-size: 13.5px; }
@@ -353,6 +394,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 .lk-form fieldset { min-width: 0; }
 .lk-form legend { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .lk-panel { overflow-x: hidden; }
+.deck-row.util .lk-seg.light button { padding-left: 7px; padding-right: 7px; }
+.deck-row.util .grp { gap: 6px; }
 
 </style>
 </head>
@@ -361,7 +404,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     <header class="lk-head">
       <div class="lk-brand">
         <svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="14" y="3" width="12" height="33" rx="6" fill="#dbe7f3" stroke="#8aa3bb" stroke-width="2"/><rect x="16" y="22" width="8" height="12" rx="4" fill="#f1e7c0"/><circle cx="20" cy="18" r="2.4" fill="#fff" opacity=".9"/></svg>
-        <div><b>Fällungslabor</b> <span class="ver" id="ver">1.0.0</span><br><small>Silberhalogenide und Ionennachweise</small></div>
+        <div><b>Fällungslabor</b> <span class="ver" id="ver">1.1.0</span><br><small>Silberhalogenide und Ionennachweise</small></div>
       </div>
       <nav class="parts" id="parts" role="tablist" aria-label="Versuchsteil">
         <button type="button" role="tab" id="part-main" data-part="main" aria-selected="true" aria-controls="stage">Fällungsreaktionen</button>
@@ -376,6 +419,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="lab" role="img" aria-label="Labortisch mit Vorratsflaschen, Pipetten und Reagenzgläsern im Ständer"></canvas>
           <div class="labels" id="labels"></div>
+          <canvas id="fx" class="fx" aria-hidden="true"></canvas>
           <div class="hits" id="hits"></div>
           <div class="forbid" id="forbid" role="alert" hidden>
             <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="16" fill="#fff" stroke="#c62f3a" stroke-width="5"/><line x1="9" y1="31" x2="31" y2="9" stroke="#c62f3a" stroke-width="5" stroke-linecap="round"/></svg>
@@ -391,8 +435,11 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
               <div class="lk-seg light" id="vol"><button type="button" data-vol="1">1 mL</button><button type="button" data-vol="2">2 mL</button><button type="button" data-vol="3">3 mL</button></div>
             </div>
             <button type="button" class="lk-btn small" id="btnShake" title="Gewähltes Reagenzglas schwenken (wirbelt abgesetzten Niederschlag auf)">Schwenken</button>
-            <button type="button" class="lk-btn small" id="btnRinse" title="Gewähltes Reagenzglas leeren und spülen – der Ansatz endet, er bleibt in der Ergebnisübersicht">Spülen</button>
-            <button type="button" class="lk-btn small" id="btnAddTube" title="Weiteres leeres Reagenzglas in den Ständer stellen (für frische Vergleichsansätze)">+ Glas</button>
+            <button type="button" class="lk-btn small" id="btnRinse" title="Gewähltes Reagenzglas in den Silberabfall ausgießen und spülen – der Ansatz endet, er bleibt in der Ergebnisübersicht">Spülen</button>
+            <span class="tubebtns" role="group" aria-label="Reagenzgläser im Ständer">
+              <button type="button" class="lk-btn small" id="btnRemoveTube" title="Gewähltes Reagenzglas aus dem Ständer nehmen (gefüllt: erst ausgießen)">− Glas</button>
+              <button type="button" class="lk-btn small" id="btnAddTube" title="Weiteres leeres Reagenzglas in den Ständer stellen (für frische Vergleichsansätze)">+ Glas</button>
+            </span>
             <div class="grp" role="group" aria-label="Zeit">
               <span class="glabel">Zeit</span>
               <div class="lk-seg light" id="speed">
@@ -1116,6 +1163,10 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
  * (titration/js/view/geometry.js) – aus der realen Glasgeometrie berechnet:
  * Halbkugelboden (Innenradius 1,0 cm) und zylindrischer Teil. Die Steighöhe entspricht
  * damit genau dem Volumen; Fassungsvermögen 20 mL bei 67 mm, Glasrand bei 82 mm.
+ *
+ * 1.1.0: Die Vorratsflaschen werden in BILDSCHIRMPIXELN bemessen (Etikett mit Name und Formel in
+ * fester Schriftgröße) und erst dann in Weltkoordinaten umgerechnet. Dadurch schrumpft die Schrift
+ * nicht mit dem Maßstab der Bühne. Flaschen stehen in fachlichen Gruppen mit Abstand und Überschrift.
  */
 (function (root, factory) {
   const isNode = typeof module === 'object' && module.exports;
@@ -1137,11 +1188,60 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   const TUBE_R = R_CM * 10 * MM; // Innenradius (Welt)
   const TUBE_GAP = 172;         // Mittenabstand der Reagenzgläser
   const BOTTLE_GAP = 116;       // Mittenabstand der Flaschen
-  const SHELF_Y = 258;          // Flaschenboden (Regalbrett)
-  const BOTTLE = { w: 86, h: 104, neck: 30, neckH: 22 };
-  const PIPETTE_LEN = 112;      // Glasschaft der Pipette (Spitze bis Hütchen)
-  const LIFT = 56;              // aufgenommene Pipette über der Flasche
-  const TOP_Y = -52;            // oberster sichtbarer Weltpunkt (Hütchen der aufgenommenen Pipette)
+  const SHELF_Y = 300;          // Flaschenboden (Regalbrett)
+  const BOTTLE = { w: 86, h: 104, neck: 30, neckH: 22 }; // Mindestmaße (Welt); tatsächlich aus Pixeln, siehe bottleLayout
+  const PIPETTE_LEN = 92;       // Glasschaft der Pipette (Spitze bis Hütchen)
+  const LIFT = 44;              // aufgenommene Pipette über der Flasche
+  const TOP_Y = -60;            // oberster sichtbarer Weltpunkt (Hütchen der aufgenommenen Pipette)
+
+  // Flaschenetikett in CSS-Pixeln (unabhängig vom Bühnenmaßstab)
+  const LABEL_PX = { w: 90, h: 86, hCompact: 76, gap: 6, group: 18, margin: 8, compactW: 70, minW: 54 };
+  // über dem Flaschenkörper: Hals, aufgenommene Pipette mit Hütchen (Welt)
+  const ABOVE_BOTTLE = 22 - 26 + 92 + 36 + 44 + 6;
+  // Silberabfall-Behälter rechts neben dem Ständer (Welt)
+  const WASTE = { w: 150, h: 200, space: 220 };
+  /**
+   * Gruppen je Versuchsteil: Probelösungen | Nachweis-/Prüfreagenzien | Wasser (Hauptteil);
+   * Positivkontrolle | Blindprobe | Wasserproben | Nachweisreagenz (Kontrollteil).
+   */
+  const GROUPS = {
+    main: [{ title: 'Probelösungen', keys: ['nacl', 'nabr', 'nai'] }, { title: 'Nachweis- und Prüfreagenzien', short: 'Reagenzien', keys: ['agno3', 'nh3dil', 'nh3conc'] }, { title: 'zum Verdünnen', keys: ['water'] }],
+    control: [{ title: 'Positivkontrolle', keys: ['nacl'] }, { title: 'Blindprobe', keys: ['water'] }, { title: 'Wasserproben', keys: ['tap', 'mineral'] }, { title: 'Nachweisreagenz', keys: ['agno3'] }]
+  };
+  /** Benötigte Bühnenbreite (CSS-Pixel) für das volle Etikett. */
+  function shelfPx(tab, compact) {
+    const g = GROUPS[tab], n = g.reduce((s, x) => s + x.keys.length, 0);
+    const w = compact ? LABEL_PX.compactW : LABEL_PX.w;
+    return n * w + (n - g.length) * LABEL_PX.gap + (g.length - 1) * LABEL_PX.group + 2 * LABEL_PX.margin;
+  }
+  /**
+   * Lage aller Flaschen in Weltkoordinaten: x (Mitte), w, h; dazu Gruppenbereiche für Überschriften.
+   * scale = Bildschirmpixel je Welteinheit. compact: schmale Bühne – Etikett nur Formel und Zusatz.
+   */
+  function bottleLayout(tab, W, scale) {
+    const s = scale > 0 ? scale : 1;
+    const compact = W * s < shelfPx(tab, false) - 0.5;
+    const g = GROUPS[tab], n = g.reduce((a, x) => a + x.keys.length, 0);
+    let wpx = LABEL_PX.w;
+    if (compact) {
+      // schmale Bühne: Etikett ohne Namen; reicht auch das nicht, schmaler (Formel bleibt 18 px)
+      const avail = W * s - (n - g.length) * LABEL_PX.gap - (g.length - 1) * LABEL_PX.group - 2 * LABEL_PX.margin;
+      wpx = Math.max(LABEL_PX.minW, Math.min(LABEL_PX.compactW, Math.floor(avail / n)));
+    }
+    const hpx = compact ? LABEL_PX.hCompact : LABEL_PX.h;
+    const tot = n * wpx + (n - g.length) * LABEL_PX.gap + (g.length - 1) * LABEL_PX.group;
+    let x = W / 2 - tot / 2 / s;
+    const bottles = {}, groups = [];
+    g.forEach((grp, gi) => {
+      if (gi) x += (LABEL_PX.group - LABEL_PX.gap) / s;
+      const x0 = x;
+      grp.keys.forEach((k) => { bottles[k] = { x: x + wpx / 2 / s, w: (wpx + 4) / s, h: (hpx + 12) / s, wpx, hpx }; x += (wpx + LABEL_PX.gap) / s; });
+      groups.push({ title: grp.title, short: grp.short || grp.title, x0, x1: x - LABEL_PX.gap / s, keys: grp.keys });
+    });
+    return { bottles, groups, compact, scale: s, hpx };
+  }
+  /** Oberster benötigter Weltpunkt bei Maßstab s (Hütchen der aufgenommenen Pipette). */
+  function topY(s, compact) { return SHELF_Y - ((compact ? LABEL_PX.hCompact : LABEL_PX.h) + 12) / s - ABOVE_BOTTLE; }
   const TIP_ABOVE = 30;         // Pipettenspitze über dem Glasrand beim Dosieren
   const GRAV = 2600;            // verlangsamter Fall (Welt/s²), wie Pufferfish/TitraLab
 
@@ -1174,18 +1274,20 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   }
   const CAPACITY_Y = surfaceY(C.CAPACITY_ML);
 
-  /** Mindestbreite der Welt für n Flaschen und m Reagenzgläser. */
+  /** Mindestbreite der Welt für m Reagenzgläser (die Flaschen bemessen sich in Pixeln, siehe bottleLayout). */
   function minWidth(nBottles, nTubes) {
-    return Math.max(nBottles * BOTTLE_GAP + 80, nTubes * TUBE_GAP + 120, 700);
+    return Math.max(nTubes * TUBE_GAP + WASTE.space + 110, 700);
   }
   /** Mittelpunkt der Flasche i von n bei Weltbreite W (Abstand wächst mit verfügbarem Platz). */
   function bottleGap(n, W) { return Math.max(BOTTLE_GAP, Math.min(150, (W - 80) / n)); }
   function bottleX(i, n, W) { return W / 2 + (i - (n - 1) / 2) * bottleGap(n, W); }
   /** Mittelpunkt des Reagenzglases i von m bei Weltbreite W. */
-  function tubeX(i, m, W) { return W / 2 + (i - (m - 1) / 2) * TUBE_GAP; }
+  function tubeX(i, m, W) { return W / 2 - WASTE.space / 2 + (i - (m - 1) / 2) * TUBE_GAP; }
+  /** Mitte des Silberabfall-Behälters (auf dem Tisch rechts vom Ständer). */
+  function wasteX(m, W) { return tubeX(m - 1, m, W) + TUBE_GAP / 2 + WASTE.space / 2 + 6; }
 
   /** Ruheposition der Pipette (in der Flasche) und Arbeitsposition über einem Reagenzglas. */
-  const pipetteRest = (bx) => ({ x: bx, y: SHELF_Y - BOTTLE.h - BOTTLE.neckH + 26 });
+  const pipetteRest = (bx, bh) => ({ x: bx, y: SHELF_Y - (bh || BOTTLE.h) - BOTTLE.neckH + 26 });
   const pipetteOver = (tx) => ({ x: tx, y: RIM_Y - TIP_ABOVE });
   /** Fallzeit (s) eines Tropfens von der Spitze bis zur Oberfläche bei Volumen v. */
   function fallTime(v) { const d = Math.max(10, surfaceY(v) - (RIM_Y - TIP_ABOVE)); return Math.sqrt((2 * d) / GRAV); }
@@ -1196,6 +1298,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   return {
     H, BENCH, TOP_Y, PIPETTE_LEN, LIFT, MM, R_CM, RIM_MM, WALL, INNER_BOTTOM, RIM_Y, TUBE_R, TUBE_GAP, BOTTLE_GAP, SHELF_Y, BOTTLE, TIP_ABOVE, GRAV,
     HEMI_ML, AREA, CAPACITY_Y, SEDIMENT_ML_PER_MMOL,
+    LABEL_PX, GROUPS, ABOVE_BOTTLE, WASTE, shelfPx, bottleLayout, topY, wasteX,
     volumeAt, heightFor, surfaceY, halfWidthAt, minWidth, bottleGap, bottleX, tubeX, pipetteRest, pipetteOver, fallTime
   };
 });
@@ -1241,8 +1344,11 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     cloud: 3.0,        // lokale Wolke → verteilte Trübung
     settle: 40,        // Absetzfront erreicht den Boden
     shake: 1.3,        // Schwenkbewegung
-    kSusp: 0.30,       // Auflösegeschwindigkeit des schwebenden Feststoffs (1/s, bei voller Triebkraft)
-    kSed: 0.05,        // Auflösegeschwindigkeit des Bodensatzes (1/s)
+    kSusp: 0.9,        // Auflösegeschwindigkeit des schwebenden Feststoffs (1/s, bei voller Triebkraft) – 1.1.0: vorher 0,30
+    kSed: 0.25,        // Auflösegeschwindigkeit des Bodensatzes (1/s) – 1.1.0: vorher 0,05
+    floorRate: 0.03,   // Mindestumsatz je s (Anteil der Höchstmenge) bei voller Triebkraft – 1.1.0: vorher 0,01
+    pour: 2.4,         // Ausgießen: Anheben 0–0,6 s, Ausgießen 0,6–1,7 s, Zurückstellen bis 2,4 s
+    pourReduced: 0.8,  // bei reduzierter Bewegung: nur kurzes Ausblenden
     lift: 0.32,        // Pipette aufnehmen
     moveSpeed: 1600,   // Pipettenweg (Welt/s)
     minMove: 0.28,
@@ -1352,7 +1458,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       parts.push({ get: () => t.sed, set: (v) => { t.sed = v; }, k: T.kSed });
       // erster Ordnung je Bereich, dazu ein kleiner Mindestumsatz (1 % der Höchstmenge je s bei voller
       // Triebkraft), damit Reste nicht endlos sichtbar „nachschleichen“
-      const floor = 0.01 * t.maxSolid * drive * dt;
+      const floor = T.floorRate * t.maxSolid * drive * dt;
       const loss = parts.map((q) => q.get() * (1 - Math.exp(-q.k * drive * dt)) + floor * q.get() / p);
       const sum = loss.reduce((s, v) => s + v, 0);
       const excess = p - pEq;
@@ -1383,8 +1489,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     if (!cfg.bottles.includes(key)) return 'Diese Lösung gehört nicht zu diesem Versuchsteil.';
     if (cfg.samples.includes(key)) {
       if (isEmpty(t)) return null;
+      // dieselbe Probelösung darf jederzeit nachgegeben werden (1.1.0), eine andere nicht
       if (t.sample !== key) return 'In diesem Reagenzglas ist schon eine andere Probe. Nimm ein leeres Reagenzglas.';
-      if (t.log.agV > 0 || t.log.nh3dilV > 0 || t.log.nh3concV > 0 || t.log.waterV > 0) return 'Probelösung kommt vor allen anderen Zugaben in das Reagenzglas.';
       return null;
     }
     if (isEmpty(t)) return 'Gib zuerst eine Probelösung in das Reagenzglas.';
@@ -1397,32 +1503,43 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   // ------------------------------------------------------------------ Labor (Bedienablauf)
   function makeTab(id) {
     const cfg = TABS[id];
-    return { id, counter: 0, visible: cfg.startTubes, sel: null, tubes: Array.from({ length: cfg.maxTubes }, (_, i) => makeTube(i)), archive: [] };
+    return { id, counter: 0, visible: cfg.startTubes, sel: null, tubes: Array.from({ length: cfg.maxTubes }, (_, i) => makeTube(i)), archive: [], waste: emptyWaste() };
+  }
+
+  function emptyWaste() { return { V: 0, Na: 0, NO3: 0, Ag: 0, X: 0, N: 0, F: 0, solid: 0 }; }
+  /** Glas aus dem Ständer nehmen: nachfolgende Gläser rücken auf, Kennungen wandern mit ihrem Inhalt. */
+  function spliceTube(tb, slot) {
+    tb.tubes.splice(slot, 1);
+    tb.tubes.push(makeTube(tb.tubes.length));
+    tb.tubes.forEach((t, i) => { t.slot = i; });
+    tb.visible = Math.max(1, tb.visible - 1);
+    if (tb.sel === slot) tb.sel = Math.min(slot, tb.visible - 1);
+    else if (tb.sel != null && tb.sel > slot) tb.sel--;
   }
 
   function create(saved) {
     const st = {
-      v: 1, time: 0, speed: 1, tab: 'main', worldW: 1000,
+      v: 1, time: 0, speed: 1, tab: 'main', worldW: 1000, scale: 0.6,
       tabs: { main: makeTab('main'), control: makeTab('control') },
       sampleVol: { main: 2, control: 2 },
       pip: { key: null, tab: null, phase: 'rest', x: 0, y: 0, from: null, to: null, t: 0, dur: 0, over: null, content: 0, next: null },
-      drops: [], hold: null, stream: null, burst: null, lastDrop: -1, uid: 1, events: []
+      drops: [], hold: null, stream: null, burst: null, lastDrop: -1, uid: 1, events: [], pour: null, reduced: false
     };
     if (saved) restore(st, saved);
 
     const tabState = (id) => st.tabs[id || st.tab];
     const cfg = (id) => TABS[id || st.tab];
     const emit = (type, data) => { st.events.push(Object.assign({ type }, data || {})); if (st.events.length > 50) st.events.shift(); };
-    const busy = () => !!st.pip.autoReturn || st.pip.phase === 'move' || st.pip.phase === 'lift' || st.pip.phase === 'back' || !!st.stream || !!st.hold || !!st.burst || st.drops.length > 0 ||
+    const busy = () => !!st.pour || !!st.pip.autoReturn || st.pip.phase === 'move' || st.pip.phase === 'lift' || st.pip.phase === 'back' || !!st.stream || !!st.hold || !!st.burst || st.drops.length > 0 ||
       Object.values(st.tabs).some((tb) => tb.tubes.some((t) => t.shake > 0));
     /** Bedienen beendet die Pause (SiVex-Regel 4). */
     function wake() { if (st.speed === 0) { st.speed = 1; emit('toast', { text: 'Pause beendet – die Zeit läuft wieder mit 1×.' }); } }
 
     // ---------------- Positionen
-    function bottleIndex(key, tab) { return cfg(tab).bottles.indexOf(key); }
-    function bottlePos(key, tab) { const c = cfg(tab); return G.bottleX(bottleIndex(key, tab), c.bottles.length, st.worldW); }
+    function layout(tab) { return G.bottleLayout(tab || st.tab, st.worldW, st.scale); }
+    function bottlePos(key, tab) { const b = layout(tab).bottles[key]; return b ? b.x : st.worldW / 2; }
     function tubePos(slot, tab) { const tb = tabState(tab); return G.tubeX(slot, tb.visible, st.worldW); }
-    function restPos(key, tab) { const p = G.pipetteRest(bottlePos(key, tab)); return { x: p.x, y: p.y }; }
+    function restPos(key, tab) { const b = layout(tab).bottles[key]; const p = G.pipetteRest(b ? b.x : st.worldW / 2, b && b.h); return { x: p.x, y: p.y }; }
     function heldPos(key, tab) { const p = restPos(key, tab); return { x: p.x, y: p.y - G.LIFT }; }
     function overPos(slot, tab) { const p = G.pipetteOver(tubePos(slot, tab)); return { x: p.x, y: p.y }; }
     function moveTo(to, phase, then) {
@@ -1477,6 +1594,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       if (!t || slot >= tb.visible) return false;
       tb.sel = slot;
       const p = st.pip;
+      if (st.pour && st.pour.tab === st.tab && st.pour.slot === slot) { emit('toast', { text: 'Dieses Glas wird gerade ausgegossen.' }); return false; }
       if (!p.key || p.tab !== st.tab) return 'select';
       wake();
       const reason = rule(st.tab, p.key, t);
@@ -1633,6 +1751,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         stepPipette(h);
         stepFlow(h);
         stepDrops(h);
+        stepPour(h);
         for (const id of Object.keys(st.tabs)) for (const t of st.tabs[id].tubes) stepTube(t, h);
       }
       return dt;
@@ -1642,21 +1761,98 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     function shake(slot) {
       const tb = tabState();
       const t = tb.tubes[slot];
-      if (!t || isEmpty(t)) return false;
+      if (!t || isEmpty(t) || pourBusy(st.tab, slot)) return false;
       wake();
       tb.sel = slot;
       shakeTube(t);
       return true;
     }
-    /** Reagenzglas spülen: Ansatz endet (bleibt in der Ergebnisübersicht), das Glas ist leer. */
-    function rinse(slot) {
-      const tb = tabState();
-      const t = tb.tubes[slot];
-      if (!t || isEmpty(t)) return false;
-      if (st.pip.over === slot && st.pip.tab === st.tab) { stopFlow(); landAll(); }
-      tb.archive.push({ ansatz: t.ansatz, sample: t.sample, log: Object.assign({}, t.log), rev: t.rev, ended: Math.round(st.time) });
-      tb.tubes[slot] = makeTube(slot);
-      if (st.pip.over === slot && st.pip.tab === st.tab && st.pip.phase === 'over') { st.pip.phase = 'held'; st.pip.over = null; placePipette(); }
+    // ---------------- Ausgießen (Spülen bzw. Entfernen eines gefüllten Glases)
+    const pourBusy = (tab, slot) => !!st.pour && st.pour.tab === tab && st.pour.slot === slot;
+    /** Dosierungen in dieses Glas beenden; Tropfen im Flug kommen noch an (vor Slot-Änderungen). */
+    function releaseTube(tab, slot) {
+      const p = st.pip;
+      if (p.tab === tab && p.over === slot) stopFlow();
+      landAll();
+      if (p.tab === tab && p.over === slot && (p.phase === 'over' || p.phase === 'move')) { p.autoReturn = false; p.over = null; p.pending = null; p.phase = 'held'; placePipette(); }
+    }
+    /** Inhalt anteilig in den Silberabfall: Rest r (0…1) des Anfangsinhalts bleibt im Glas. */
+    function drainTo(pr, r) {
+      const t = st.tabs[pr.tab].tubes[pr.slot], w = st.tabs[pr.tab].waste, c = pr.content;
+      const keep = Math.max(0, Math.min(1, r));
+      const out = (pr.left - keep);
+      if (!(out > 0)) return;
+      w.V += c.V * out; w.solid += c.solid * out;
+      for (const k of Object.keys(c.n)) w[k] += c.n[k] * out;
+      pr.left = keep;
+      t.V = c.V * keep;
+      for (const k of Object.keys(c.n)) t.n[k] = c.n[k] * keep;
+      t.susp = c.solid * keep; t.sed = 0; t.clouds = []; t.front = 0;
+      t.rev++;
+    }
+    /** Handgriff abschließen: Glas exakt leer, Rest in den Abfall, ggf. Glas entfernen. */
+    function finishPour() {
+      const pr = st.pour;
+      if (!pr) return false;
+      drainTo(pr, 0);
+      const tb = st.tabs[pr.tab];
+      tb.tubes[pr.slot] = makeTube(pr.slot);
+      st.pour = null;
+      if (pr.remove) {
+        spliceTube(tb, pr.slot);
+        if (st.pip.tab === pr.tab && st.pip.over != null && st.pip.over > pr.slot) st.pip.over--;
+        emit('removed', { tab: pr.tab, slot: pr.slot });
+      }
+      emit('poured', { tab: pr.tab, slot: pr.slot, ansatz: pr.ansatz, remove: !!pr.remove });
+      if (st.pip.tab === pr.tab) placePipette();
+      return true;
+    }
+    function stepPour(dt) {
+      const pr = st.pour;
+      if (!pr) return;
+      pr.t += dt;
+      const k = pr.t / pr.dur;
+      // Ausgießphase: bei voller Bewegung 25–70 % der Dauer, sonst gleichmäßig
+      const a = st.reduced ? 0 : 0.25, b = st.reduced ? 1 : 0.7;
+      drainTo(pr, 1 - Math.max(0, Math.min(1, (k - a) / (b - a))));
+      if (k >= 1) finishPour();
+    }
+    /**
+     * Ausgießen beginnen. Archiviert den Ansatz genau einmal (beim Start), kippt den Feststoff mit
+     * auf (Schräglage), Stoffmengen fließen anteilig in den Silberabfall. remove: Glas danach entfernen.
+     */
+    function pour(slot, opts) {
+      const tb = tabState(), t = tb.tubes[slot];
+      if (!t || slot >= tb.visible || isEmpty(t) || st.pour) return false;
+      if (opts && opts.remove && tb.visible <= 1) return false;
+      wake();
+      releaseTube(st.tab, slot);
+      const solid = solidTotal(t);
+      tb.archive.push({ ansatz: t.ansatz, sample: t.sample, log: Object.assign({}, t.log), rev: t.rev, ended: Math.round(st.time), content: { V: t.V, n: Object.assign({}, t.n), solid } });
+      shakeTube(t); t.shake = 0;
+      st.pour = { tab: st.tab, slot, t: 0, dur: st.reduced ? T.pourReduced : T.pour, remove: !!(opts && opts.remove), ansatz: t.ansatz, left: 1, content: { V: t.V, n: Object.assign({}, t.n), solid } };
+      tb.sel = slot;
+      return true;
+    }
+    /** Spülen = Ausgießen in den Silberabfall; der Ansatz bleibt in der Ergebnisübersicht. */
+    function rinse(slot) { return pour(slot, { remove: false }); }
+    /**
+     * „− Glas“: leeres Glas sofort entfernen; gefülltes nur mit confirmed (sonst 'confirm') und
+     * dann über das Ausgießen. Mindestens ein Glas bleibt; Ergebnis 'min' am Minimum.
+     */
+    function removeTube(slot, confirmed) {
+      const tb = tabState(), t = tb.tubes[slot];
+      if (slot == null || !t || slot >= tb.visible) return false;
+      if (tb.visible <= 1) return 'min';
+      if (st.pour) return false;
+      if (!isEmpty(t)) return confirmed ? pour(slot, { remove: true }) : 'confirm';
+      wake();
+      releaseTube(st.tab, slot);
+      const p = st.pip;
+      spliceTube(tb, slot);
+      if (p.tab === st.tab && p.over != null && p.over > slot) p.over--;
+      placePipette();
+      emit('removed', { tab: st.tab, slot });
       return true;
     }
     function addTube() {
@@ -1669,7 +1865,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     function setTab(id) {
       if (!TABS[id] || id === st.tab) return false;
       // laufenden Handgriff abschließen, Pipette zurück, Zeit 1×
-      stopFlow(); landAll();
+      stopFlow(); landAll(); finishPour();
       if (st.pip.key) Object.assign(st.pip, { key: null, tab: null, phase: 'rest', over: null, content: 0 });
       if (st.speed === 0) st.speed = 1;
       st.tab = id;
@@ -1677,29 +1873,48 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     }
     function setSpeed(v) { if (SPEEDS.includes(v)) { st.speed = v; return true; } return false; }
     function setSampleVol(v) { if (SAMPLE_VOLUMES.includes(v)) { st.sampleVol[st.tab] = v; return true; } return false; }
-    function setWorldWidth(W) { if (Math.abs(W - st.worldW) > 0.5) { st.worldW = W; placePipette(); } }
+    /** Weltbreite und Maßstab der Bühne (Bildschirmpixel je Welteinheit) – bestimmen die Flaschenlage. */
+    function setWorldWidth(W, scale) {
+      const sc = scale > 0 ? scale : st.scale;
+      if (Math.abs(W - st.worldW) > 0.5 || Math.abs(sc - st.scale) > 1e-6) { st.worldW = W; st.scale = sc; placePipette(); }
+    }
     /** Alle Abbruchwege (Loslassen, Abbruch, Fokusverlust, Tabwechsel) enden hier. */
     function cancelInput() { st.hold = null; st.burst = null; }
     /** Fokusverlust oder verborgener Tab: jede Dosierung endet, Tropfen im Flug kommen an. */
-    function cancelAll() { stopFlow(); landAll(); }
+    function cancelAll() { stopFlow(); landAll(); finishPour(); }
+    function setReducedMotion(v) { st.reduced = !!v; }
     function drain() { const e = st.events; st.events = []; return e; }
 
     function snapshot() {
       const tabs = {};
       for (const id of Object.keys(st.tabs)) {
         const tb = st.tabs[id];
-        tabs[id] = { counter: tb.counter, visible: tb.visible, sel: tb.sel, archive: tb.archive, tubes: tb.tubes.map((t) => {
-          const o = Object.assign({}, t); delete o._eqRev; delete o._pEq; o.clouds = []; o.susp = t.susp + t.clouds.reduce((s, c) => s + c.m, 0); o.shake = 0; return o;
+        const copy = { counter: tb.counter, visible: tb.visible, sel: tb.sel, archive: tb.archive.slice(), waste: Object.assign({}, tb.waste), tubes: tb.tubes.map((t) => {
+          const o = JSON.parse(JSON.stringify(t)); delete o._eqRev; delete o._pEq; o.clouds = []; o.susp = t.susp + t.clouds.reduce((s, c) => s + c.m, 0); o.shake = 0; return o;
         }) };
+        // laufendes Ausgießen gilt im Speicher als abgeschlossen (bereits archiviert, Rest im Abfall)
+        const pr = st.pour;
+        if (pr && pr.tab === id) {
+          const c = pr.content;
+          copy.waste.V += c.V * pr.left; copy.waste.solid += c.solid * pr.left;
+          for (const k of Object.keys(c.n)) copy.waste[k] += c.n[k] * pr.left;
+          copy.tubes[pr.slot] = makeTube(pr.slot);
+          if (pr.remove) {
+            copy.tubes.splice(pr.slot, 1); copy.tubes.push(makeTube(copy.tubes.length)); copy.tubes.forEach((t, i) => { t.slot = i; });
+            copy.visible = Math.max(1, copy.visible - 1);
+            if (copy.sel === pr.slot) copy.sel = Math.min(pr.slot, copy.visible - 1); else if (copy.sel != null && copy.sel > pr.slot) copy.sel--;
+          }
+        }
+        tabs[id] = copy;
       }
       return { v: 1, time: st.time, tab: st.tab, speed: st.speed === 0 ? 1 : st.speed, sampleVol: st.sampleVol, tabs };
     }
 
     return {
-      state: st, TABS, busy, selectBottle, returnPipette, toBottle, target, dropOnce, startHold, stopHold, drops, dose, shake, rinse, addTube,
-      setTab, setSpeed, setSampleVol, setWorldWidth, cancelInput, cancelAll, step, drain, snapshot, landAll,
+      state: st, TABS, busy, selectBottle, returnPipette, toBottle, target, dropOnce, startHold, stopHold, drops, dose, shake, rinse, pour, removeTube, addTube,
+      setTab, setSpeed, setSampleVol, setWorldWidth, setReducedMotion, cancelInput, cancelAll, finishPour, step, drain, snapshot, landAll, pourBusy,
       tube: (slot, tab) => tabState(tab).tubes[slot], tab: (id) => tabState(id),
-      tubePos, bottlePos, overPos, restPos, inflight, ready
+      tubePos, bottlePos, overPos, restPos, inflight, ready, layout
     };
   }
 
@@ -1715,8 +1930,9 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       if (!src) continue;
       const tb = st.tabs[id];
       tb.counter = src.counter | 0;
-      tb.visible = Math.min(TABS[id].maxTubes, Math.max(TABS[id].startTubes, src.visible | 0));
-      tb.sel = src.sel == null ? null : src.sel | 0;
+      tb.visible = Math.min(TABS[id].maxTubes, Math.max(1, src.visible | 0 || TABS[id].startTubes));
+      if (src.waste) for (const k of Object.keys(tb.waste)) tb.waste[k] = C.finite(src.waste[k]) && src.waste[k] > 0 ? src.waste[k] : 0;
+      tb.sel = src.sel == null || (src.sel | 0) >= tb.visible ? null : src.sel | 0;
       tb.archive = Array.isArray(src.archive) ? src.archive : [];
       (src.tubes || []).forEach((t, i) => {
         if (i >= tb.tubes.length || !t) return;
@@ -1869,11 +2085,12 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     formula: 'Das ist eine Gleichung mit Salzformeln. Gelöste Salze liegen als Ionen vor – schreibe die Ionen einzeln.',
     spect: 'Die Zuschauerionen Na⁺ und NO₃⁻ verschwinden nicht – sie stehen auch rechts, gelöst.'
   };
-  function eqQuestion(h, order) {
+  /** Gleichungsfrage: Optionen tragen fachliche IDs (full, net, …); die Anzeigereihenfolge wird je Durchgang gemischt. */
+  function eqQuestion(h, ids) {
     const X = SUB[h];
     const options = {}, misc = {};
-    order.forEach((k, i) => { const key = String.fromCharCode(97 + i); options[key] = EQ[k](X); if (EQ_FB[k]) misc[key] = EQ_FB[k]; });
-    return { id: 'eq' + h, type: 'one', legend: `Wähle eine richtige Antwort: vollständige Ionengleichung für ${NAMES[h]} + Silbernitratlösung`, options, misc, correct: String.fromCharCode(97 + order.indexOf('full')), equation: true };
+    ids.forEach((k) => { options[k] = EQ[k](X); if (EQ_FB[k]) misc[k] = EQ_FB[k]; });
+    return { id: 'eq' + h, type: 'one', legend: `Wähle eine richtige Antwort: vollständige Ionengleichung für ${NAMES[h]} + Silbernitratlösung`, options, misc, correct: 'full', equation: true };
   }
 
   // ------------------------------------------------------------------ Hauptteil
@@ -1894,17 +2111,17 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         {
           id: 'ablauf', type: 'many', legend: 'Wähle alle zutreffenden Aussagen.',
           options: {
-            a: 'Wo ein Tropfen Silbernitratlösung auftrifft, entsteht sofort eine Trübung (Wolke).',
-            b: 'Die Trübung verteilt sich nach und nach in der Lösung.',
-            c: 'Lässt man das Reagenzglas stehen, setzt sich der Niederschlag ab; darüber wird die Flüssigkeit klarer.',
-            d: 'Beim Schwenken wird der abgesetzte Niederschlag wieder aufgewirbelt.',
-            e: 'Beim Schwenken löst sich der Niederschlag auf.',
-            f: 'Die Probelösungen sind schon vor der Zugabe trüb.'
+            wolke: 'Wo ein Tropfen Silbernitratlösung auftrifft, entsteht sofort eine Trübung (Wolke).',
+            verteilt: 'Die Trübung verteilt sich nach und nach in der Lösung.',
+            absetzen: 'Lässt man das Reagenzglas stehen, setzt sich der Niederschlag ab; darüber wird die Flüssigkeit klarer.',
+            aufwirbeln: 'Beim Schwenken wird der abgesetzte Niederschlag wieder aufgewirbelt.',
+            schwenkenLoest: 'Beim Schwenken löst sich der Niederschlag auf.',
+            vorherTrueb: 'Die Probelösungen sind schon vor der Zugabe trüb.'
           },
-          correct: ['a', 'b', 'c', 'd'],
+          correct: ['wolke', 'verteilt', 'absetzen', 'aufwirbeln'],
           misc: {
-            e: 'Schwenken verteilt den Feststoff nur – die Menge bleibt gleich; beim Stehenlassen setzt er sich wieder ab.',
-            f: 'Die Natriumhalogenidlösungen sind klar und farblos; die Trübung entsteht erst mit Silbernitratlösung.'
+            schwenkenLoest: 'Schwenken verteilt den Feststoff nur – die Menge bleibt gleich; beim Stehenlassen setzt er sich wieder ab.',
+            vorherTrueb: 'Die Natriumhalogenidlösungen sind klar und farblos; die Trübung entsteht erst mit Silbernitratlösung.'
           }
         }
       ],
@@ -1932,17 +2149,17 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         {
           id: 'aussagen', type: 'many', legend: 'Wähle alle zutreffenden Aussagen.',
           options: {
-            a: 'Nach der Fällung sind Na⁺- und NO₃⁻-Ionen weiterhin in der Flüssigkeit gelöst.',
-            b: 'Der Niederschlag besteht aus Silberionen und Halogenidionen.',
-            c: 'Natriumionen sind ein Bestandteil des Niederschlags.',
-            d: 'Nach der Fällung sind keine Ionen mehr in der Flüssigkeit.',
-            e: 'In der Natriumchloridlösung liegen NaCl-Moleküle vor.'
+            zuschauerGeloest: 'Nach der Fällung sind Na⁺- und NO₃⁻-Ionen weiterhin in der Flüssigkeit gelöst.',
+            feststoffIonen: 'Der Niederschlag besteht aus Silberionen und Halogenidionen.',
+            naImFeststoff: 'Natriumionen sind ein Bestandteil des Niederschlags.',
+            keineIonen: 'Nach der Fällung sind keine Ionen mehr in der Flüssigkeit.',
+            naclMolekuele: 'In der Natriumchloridlösung liegen NaCl-Moleküle vor.'
           },
-          correct: ['a', 'b'],
+          correct: ['zuschauerGeloest', 'feststoffIonen'],
           misc: {
-            c: 'Na⁺ bleibt gelöst – im Niederschlag ist kein Natrium.',
-            d: 'Die Zuschauerionen (und ein Überschuss an Ag⁺ oder Halogenidionen) bleiben gelöst.',
-            e: 'Ein gelöstes Salz liegt als einzelne, von Wasser umhüllte Ionen vor (Na⁺(aq), Cl⁻(aq)), nicht als Moleküle.'
+            naImFeststoff: 'Na⁺ bleibt gelöst – im Niederschlag ist kein Natrium.',
+            keineIonen: 'Die Zuschauerionen (und ein Überschuss an Ag⁺ oder Halogenidionen) bleiben gelöst.',
+            naclMolekuele: 'Ein gelöstes Salz liegt als einzelne, von Wasser umhüllte Ionen vor (Na⁺(aq), Cl⁻(aq)), nicht als Moleküle.'
           }
         }
       ],
@@ -1984,16 +2201,16 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         {
           id: 'schluss', type: 'many', legend: 'Wähle alle zutreffenden Aussagen.',
           options: {
-            a: 'Ob sich ein Niederschlag löst, hängt auch davon ab, wie viel Ammoniaklösung zugegeben wird.',
-            b: 'Mit der Ammoniakprobe lassen sich Niederschläge unterscheiden, die ähnlich aussehen.',
-            c: 'Beide Ammoniaklösungen wirken auf alle drei Niederschläge gleich.',
-            d: 'Der Niederschlag verschwindet nur, weil die Ammoniaklösung den Ansatz verdünnt.',
-            e: 'Das Silber ist nach dem Auflösen weiterhin in der Lösung vorhanden.'
+            menge: 'Ob sich ein Niederschlag löst, hängt auch davon ab, wie viel Ammoniaklösung zugegeben wird.',
+            unterscheiden: 'Mit der Ammoniakprobe lassen sich Niederschläge unterscheiden, die ähnlich aussehen.',
+            gleicheWirkung: 'Beide Ammoniaklösungen wirken auf alle drei Niederschläge gleich.',
+            nurVerduennung: 'Der Niederschlag verschwindet nur, weil die Ammoniaklösung den Ansatz verdünnt.',
+            silberGeloest: 'Das Silber ist nach dem Auflösen weiterhin in der Lösung vorhanden.'
           },
-          correct: ['a', 'b', 'e'],
+          correct: ['menge', 'unterscheiden', 'silberGeloest'],
           misc: {
-            c: 'Vergleiche die gleich angesetzten Paare: Verdünnte und konzentrierte Lösung wirken verschieden.',
-            d: 'Gibt man dieselbe Menge destilliertes Wasser zu, bleibt der Niederschlag bestehen.'
+            gleicheWirkung: 'Vergleiche die gleich angesetzten Paare: Verdünnte und konzentrierte Lösung wirken verschieden.',
+            nurVerduennung: 'Gibt man dieselbe Menge destilliertes Wasser zu, bleibt der Niederschlag bestehen.'
           }
         }
       ],
@@ -2016,36 +2233,36 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         {
           id: 'pos', type: 'one', legend: 'Wähle eine richtige Antwort: Wozu dient die Positivkontrolle mit Natriumchloridlösung?',
           options: {
-            a: 'Sie zeigt, dass die Silbernitratlösung wirkt und wie die Fällung aussieht, wenn sicher Chloridionen vorhanden sind.',
-            b: 'Sie beweist, dass jede Trübung von Chloridionen stammt.',
-            c: 'Sie liefert den Chloridgehalt des Leitungswassers.'
+            zeigtWirkung: 'Sie zeigt, dass die Silbernitratlösung wirkt und wie die Fällung aussieht, wenn sicher Chloridionen vorhanden sind.',
+            beweistChlorid: 'Sie beweist, dass jede Trübung von Chloridionen stammt.',
+            chloridgehalt: 'Sie liefert den Chloridgehalt des Leitungswassers.'
           },
-          correct: 'a',
-          misc: { b: 'Sie zeigt nur, wie eine Chloridfällung aussieht – andere Ionen können ebenfalls Trübungen erzeugen.', c: 'Die Positivkontrolle enthält kein Leitungswasser; sie ist eine bekannte Vergleichsprobe.' }
+          correct: 'zeigtWirkung',
+          misc: { beweistChlorid: 'Sie zeigt nur, wie eine Chloridfällung aussieht – andere Ionen können ebenfalls Trübungen erzeugen.', chloridgehalt: 'Die Positivkontrolle enthält kein Leitungswasser; sie ist eine bekannte Vergleichsprobe.' }
         },
         {
           id: 'neg', type: 'one', legend: 'Wähle eine richtige Antwort: Wozu dient die Blindprobe mit destilliertem Wasser?',
           options: {
-            a: 'Sie zeigt, dass destilliertes Wasser Chloridionen enthält.',
-            b: 'Sie zeigt, dass Silbernitratlösung mit Wasser allein keine Trübung erzeugt.',
-            c: 'Ohne Blindprobe wirkt die Silbernitratlösung nicht.'
+            chloridImWasser: 'Sie zeigt, dass destilliertes Wasser Chloridionen enthält.',
+            reagenzAllein: 'Sie zeigt, dass Silbernitratlösung mit Wasser allein keine Trübung erzeugt.',
+            ohneBlindNicht: 'Ohne Blindprobe wirkt die Silbernitratlösung nicht.'
           },
-          correct: 'b',
-          misc: { a: 'Die Blindprobe bleibt klar – sie enthält keine Ionen, die mit Silberionen einen Niederschlag bilden.', c: 'Die Silbernitratlösung wirkt auch ohne Blindprobe; die Blindprobe dient dem Vergleich.' }
+          correct: 'reagenzAllein',
+          misc: { chloridImWasser: 'Die Blindprobe bleibt klar – sie enthält keine Ionen, die mit Silberionen einen Niederschlag bilden.', ohneBlindNicht: 'Die Silbernitratlösung wirkt auch ohne Blindprobe; die Blindprobe dient dem Vergleich.' }
         },
         {
           id: 'wasser', type: 'many', legend: 'Wähle alle zutreffenden Aussagen zu Leitungs- und Mineralwasser.',
           options: {
-            a: 'Die Proben enthalten gelöste Ionen, die mit Silberionen schwer lösliche Stoffe bilden.',
-            b: 'Der Niederschlag kann ein Stoffgemisch sein.',
-            c: 'Die Trübung beweist eindeutig, dass das Wasser Chloridionen enthält.',
-            d: 'Jedes Leitungswasser wird genauso stark trüb wie diese Probe.',
-            e: 'Welche Ionen den Niederschlag bilden, lässt sich mit diesem Versuch allein nicht eindeutig feststellen.'
+            ionenFaellbar: 'Die Proben enthalten gelöste Ionen, die mit Silberionen schwer lösliche Stoffe bilden.',
+            gemisch: 'Der Niederschlag kann ein Stoffgemisch sein.',
+            beweistChlorid: 'Die Trübung beweist eindeutig, dass das Wasser Chloridionen enthält.',
+            jedesWasser: 'Jedes Leitungswasser wird genauso stark trüb wie diese Probe.',
+            nichtEindeutig: 'Welche Ionen den Niederschlag bilden, lässt sich mit diesem Versuch allein nicht eindeutig feststellen.'
           },
-          correct: ['a', 'b', 'e'],
+          correct: ['ionenFaellbar', 'gemisch', 'nichtEindeutig'],
           misc: {
-            c: 'Auch andere Ionen bilden mit Silberionen schwer lösliche Stoffe. Eine Trübung allein ist kein eindeutiger Chloridnachweis.',
-            d: 'Die Probe ist ein Modell; die Zusammensetzung von Wasser ist je nach Ort und Quelle verschieden.'
+            beweistChlorid: 'Auch andere Ionen bilden mit Silberionen schwer lösliche Stoffe. Eine Trübung allein ist kein eindeutiger Chloridnachweis.',
+            jedesWasser: 'Die Probe ist ein Modell; die Zusammensetzung von Wasser ist je nach Ort und Quelle verschieden.'
           }
         }
       ],
@@ -2085,6 +2302,49 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     return nb.blocks.reduce((s, b) => s + (b.kind === 'eq' ? LL.words(b.legend || '') : LL.words(b.text)), 0);
   }
 
+
+  // ------------------------------------------------------------------ Zufällige Reihenfolge je Durchgang (1.1.0)
+  /** FNV-1a über Zeichenkette → 32 bit. */
+  function hash(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+  /** Mulberry32: kleiner, reproduzierbarer Zufallsgenerator (Werte in [0, 1)). */
+  function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  /** Fisher-Yates (Durstenfeld): jede Permutation gleich wahrscheinlich; kein sort() mit Zufallsvergleich. */
+  function shuffle(arr, rnd) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  /** Neuer Durchgang: zufälliger Startwert (crypto, sonst Math.random). */
+  function newSeed() {
+    try { const c = (typeof self !== 'undefined' && self.crypto) || (typeof globalThis !== 'undefined' && globalThis.crypto); if (c && c.getRandomValues) return c.getRandomValues(new Uint32Array(1))[0] >>> 0; } catch (e) { /* ohne crypto */ }
+    return Math.floor(Math.random() * 4294967296) >>> 0;
+  }
+  /** Anzeigereihenfolge der Antwort-IDs einer Frage – allein aus Startwert und Frage-ID bestimmt (stabil bis zum neuen Durchgang). */
+  function order(seed, q) { return shuffle(Object.keys(q.options), rng(hash((seed >>> 0) + ':' + q.id))); }
+  /** Darstellungskopie eines Schritts mit gemischten Optionen; Bewertung bleibt über dieselben IDs. Gleichungen bleiben unverändert in sich. */
+  function view(step, seed) {
+    const s = Object.assign({}, step);
+    s.questions = step.questions.map((q) => {
+      const o = {};
+      for (const k of order(seed, q)) o[k] = q.options[k];
+      return Object.assign({}, q, { options: o });
+    });
+    return s;
+  }
+
+  /**
+   * Antworten aus Version 1.0.0 (Buchstaben a, b, c … in fester Reihenfolge) auf fachliche IDs abbilden.
+   * Zuordnungsfragen (farbe, rolle, loes) hatten schon fachliche IDs und bleiben unverändert.
+   */
+  const MIGRATE_1_0 = {"ablauf": {"a": "wolke", "b": "verteilt", "c": "absetzen", "d": "aufwirbeln", "e": "schwenkenLoest", "f": "vorherTrueb"}, "aussagen": {"a": "zuschauerGeloest", "b": "feststoffIonen", "c": "naImFeststoff", "d": "keineIonen", "e": "naclMolekuele"}, "schluss": {"a": "menge", "b": "unterscheiden", "c": "gleicheWirkung", "d": "nurVerduennung", "e": "silberGeloest"}, "pos": {"a": "zeigtWirkung", "b": "beweistChlorid", "c": "chloridgehalt"}, "neg": {"a": "chloridImWasser", "b": "reagenzAllein", "c": "ohneBlindNicht"}, "wasser": {"a": "ionenFaellbar", "b": "gemisch", "c": "beweistChlorid", "d": "jedesWasser", "e": "nichtEindeutig"}, "eqCl": {"a": "net", "b": "charge", "c": "full", "d": "state", "e": "solid"}, "eqBr": {"a": "formula", "b": "state", "c": "net", "d": "full", "e": "solid"}, "eqI": {"a": "full", "b": "spect", "c": "charge", "d": "net", "e": "state"}};
+  function migrateAnswers(answers) {
+    const out = {};
+    let changed = 0;
+    for (const [k, v] of Object.entries(answers || {})) {
+      const m = MIGRATE_1_0[k];
+      if (!m) { out[k] = v; continue; }
+      if (Array.isArray(v)) { out[k] = v.map((x) => m[x] || x); changed += v.some((x) => m[x]) ? 1 : 0; }
+      else if (typeof v === 'string') { out[k] = m[v] || v; changed += m[v] ? 1 : 0; }
+    }
+    return { answers: out, changed };
+  }
+
   // ------------------------------------------------------------------ Prüfung
   /**
    * Prüfung wie LK.learn.grade, aber mit konkreter Rückmeldung je angekreuzter Aussage:
@@ -2120,7 +2380,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     return { done, total: req.length };
   }
 
-  return { STEPS, CONTROL_STEPS, CONTROL_STATEMENT, EQ, EQ_FB, OBS, NOTEBOOK, CONTROL_SUMMARY, notebookWords, grade, progress, required };
+  return { STEPS, CONTROL_STEPS, CONTROL_STATEMENT, EQ, EQ_FB, OBS, NOTEBOOK, CONTROL_SUMMARY, notebookWords, grade, progress, required, hash, rng, shuffle, newSeed, order, view, migrateAnswers, MIGRATE_1_0 };
 });
 
 </script>
@@ -2134,6 +2394,12 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
  * lokale Wolken am Eintreffpunkt, verteilte Trübung mit Absetzfront und Bodensatz – Menge, Dichte und
  * Lage kommen ausschließlich aus dem Modellzustand (model.js). Der Renderer liest nur.
  * Lesbare Texte (Etiketten, Volumina) liegen als HTML über der Bühne (app.js).
+ *
+ * 1.1.0: Zwei Ebenen. Die Grundebene (canvas#lab) zeigt Regal, Flaschen, Ständer, Gläser und den
+ * Silberabfall-Behälter; darüber liegen die HTML-Etiketten. Die Bewegungsebene (canvas#fx) darüber
+ * zeigt alles, was sich bewegt: aufgenommene Pipette, Tropfen, Strahl, Spritzer und das Ausgießen.
+ * So verdeckt kein Etikett eine Pipette. Die Flaschen werden in Bildschirmpixeln bemessen
+ * (G.bottleLayout), damit Name und Formel in fester Schriftgröße lesbar bleiben.
  */
 (function (root) {
   'use strict';
@@ -2170,8 +2436,9 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   const BULB = { agno3: '#3a3f46', nacl: '#c43d3d', nabr: '#c76a1d', nai: '#9a7a12', nh3dil: '#2f78c4', nh3conc: '#1d4f8a', water: '#5f8f5a', tap: '#5f8f5a', mineral: '#3f7f8f' };
 
   class LabRenderer {
-    constructor(canvas, lab) {
+    constructor(canvas, lab, fxCanvas) {
       this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.lab = lab;
+      this.fxCanvas = fxCanvas || null; this.fxCtx = fxCanvas ? fxCanvas.getContext('2d') : null;
       this.view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 0, h: 0, worldW: 1000 };
       this.theme = 'dark'; this.reduceMotion = false; this.fx = {}; this.splashes = []; this.time = 0; this.bg = null;
     }
@@ -2183,19 +2450,25 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       const r = this.canvas.getBoundingClientRect();
       const dpr = Math.min(2.5, root.devicePixelRatio || 1);
       const w = Math.max(1, r.width), h = Math.max(1, r.height);
-      const tab = this.lab.tab();
-      const minW = G.minWidth(M.TABS[this.lab.state.tab].bottles.length, tab.visible);
-      const key = [w, h, dpr, minW, tab.visible, this.lab.state.tab].join('|');
+      const tab = this.lab.tab(), tabId = this.lab.state.tab;
+      const minW = G.minWidth(M.TABS[tabId].bottles.length, tab.visible);
+      const key = [w, h, dpr, minW, tab.visible, tabId].join('|');
       if (key === this._key) return false;
       this._key = key;
       this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
-      const visH = G.BENCH + 18 - G.TOP_Y; // vom Hütchen der aufgenommenen Pipette bis knapp unter die Tischkante
-      const sH = Math.max(0.15, (h - STRIP) / visH), sW = w / minW;
+      if (this.fxCanvas) { this.fxCanvas.width = this.canvas.width; this.fxCanvas.height = this.canvas.height; }
+      // Weltbreite × Maßstab = Bühnenbreite in Pixeln: davon hängt ab, ob das volle Etikett passt
+      const compact = w < G.shelfPx(tabId, false);
+      const hp = (compact ? G.LABEL_PX.hCompact : G.LABEL_PX.h) + 12;
+      // feste Pixelhöhe der Flaschen + Weltstrecke vom Hütchen der aufgenommenen Pipette bis knapp unter die Tischkante
+      const worldSpan = G.BENCH + 18 - G.SHELF_Y + G.ABOVE_BOTTLE;
+      const sH = Math.max(0.15, (h - STRIP - hp) / worldSpan), sW = w / minW;
       const scale = Math.min(sH, sW);
-      const used = visH * scale;
-      const oy = (h - STRIP - used) / (sW < sH ? 2 : 1) - G.TOP_Y * scale;
-      Object.assign(this.view, { w, h, dpr, scale, ox: 0, oy, worldW: w / scale });
-      this.lab.setWorldWidth(w / scale);
+      const top = G.topY(scale, compact);
+      const used = (G.BENCH + 18 - top) * scale;
+      const oy = (h - STRIP - used) / (sW < sH ? 2 : 1) - top * scale;
+      Object.assign(this.view, { w, h, dpr, scale, ox: 0, oy, worldW: w / scale, compact });
+      this.lab.setWorldWidth(w / scale, scale);
       this.bg = null;
       return true;
     }
@@ -2226,6 +2499,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       this.time += dt;
       const st = this.lab.state;
       for (let slot = 0; slot < this.lab.tab().visible; slot++) {
+        if (this.pouringSlot() === slot) continue;
         const f = this.tubeFx(st.tab, slot);
         const h = f.h, v = f.v;
         const sub = Math.max(2, Math.ceil(dt / 0.004)), sdt = dt / sub;
@@ -2248,18 +2522,28 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       if (!this.bg) this.renderBackground();
       ctx.drawImage(this.bg, 0, 0);
-      ctx.setTransform(v.scale * v.dpr, 0, 0, v.scale * v.dpr, v.ox * v.dpr, v.oy * v.dpr);
-      const st = this.lab.state, tb = this.lab.tab();
+      const T = [v.scale * v.dpr, 0, 0, v.scale * v.dpr, v.ox * v.dpr, v.oy * v.dpr];
+      ctx.setTransform(...T);
+      const tb = this.lab.tab();
+      // Bewegungsebene leeren (ohne eigene Ebene wird alles in die Grundebene gezeichnet)
+      let top = ctx;
+      if (this.fxCtx) { top = this.fxCtx; top.setTransform(1, 0, 0, 1, 0, 0); top.clearRect(0, 0, this.fxCanvas.width, this.fxCanvas.height); top.setTransform(...T); }
       this.drawBottles(ctx);
-      this.drawShelfLabels(ctx);
       this.drawRack(ctx, false);
-      for (let i = 0; i < tb.visible; i++) this.drawTube(ctx, tb.tubes[i], i, tb.sel === i);
+      const ps = this.pouringSlot();
+      for (let i = 0; i < tb.visible; i++) if (i !== ps) this.drawTube(ctx, tb.tubes[i], i, tb.sel === i);
       this.drawRack(ctx, true);
-      this.drawDrops(ctx);
-      this.drawPipette(ctx);
-      ctx.fillStyle = this.P.splash;
-      for (const p of this.splashes) { ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2); ctx.fill(); }
-      void st;
+      this.drawWaste(ctx);
+      if (ps != null) this.drawPour(top);
+      this.drawDrops(top);
+      this.drawPipette(top);
+      top.fillStyle = this.P.splash;
+      for (const p of this.splashes) { top.beginPath(); top.arc(p.x, p.y, 1.6, 0, Math.PI * 2); top.fill(); }
+    }
+    /** Glas, das gerade sichtbar ausgegossen wird (bei reduzierter Bewegung bleibt es im Ständer). */
+    pouringSlot() {
+      const st = this.lab.state, pr = st.pour;
+      return pr && pr.tab === st.tab && !st.reduced ? pr.slot : null;
     }
 
     renderBackground() {
@@ -2300,55 +2584,127 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     // ------------------------------------------------------------ Flaschen und Pipetten
     drawBottles(ctx) {
       const st = this.lab.state, keys = M.TABS[st.tab].bottles, B = G.BOTTLE, P = this.P;
+      const L = this.lab.layout();
       keys.forEach((key) => {
-        const x = this.lab.bottlePos(key), y = G.SHELF_Y;
+        const b = L.bottles[key], x = b.x, y = G.SHELF_Y, bw = b.w, bh = b.h;
         const brown = key === 'agno3';
-        // Körper
-        const bx = x - B.w / 2, by = y - B.h;
-        ctx.fillStyle = P.shadow; ctx.beginPath(); ctx.ellipse(x, y + 2, B.w / 2 + 4, 5, 0, 0, Math.PI * 2); ctx.fill();
-        const g = ctx.createLinearGradient(bx, 0, bx + B.w, 0);
+        // Körper (das Etikett mit Name, Formel und Piktogrammen liegt als HTML darüber)
+        const bx = x - bw / 2, by = y - bh, rad = Math.min(12, bw * 0.14);
+        ctx.fillStyle = P.shadow; ctx.beginPath(); ctx.ellipse(x, y + 2, bw / 2 + 4, 5, 0, 0, Math.PI * 2); ctx.fill();
+        const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
         const tint = brown ? [120, 62, 18] : [200, 222, 240];
         g.addColorStop(0, rgba(tint, brown ? 0.85 : 0.28)); g.addColorStop(0.5, rgba(tint, brown ? 0.6 : 0.10)); g.addColorStop(1, rgba(tint, brown ? 0.9 : 0.30));
-        ctx.fillStyle = g; rr(ctx, bx, by, B.w, B.h, 12); ctx.fill();
-        // Inhalt (klar), Füllstand 70 %
-        const ly = by + B.h * 0.3;
+        ctx.fillStyle = g; rr(ctx, bx, by, bw, bh, rad); ctx.fill();
         ctx.fillStyle = brown ? 'rgba(200,150,90,0.30)' : rgba(P.liquid, 0.28);
-        rr(ctx, bx + 4, ly, B.w - 8, by + B.h - ly - 4, 9); ctx.fill();
-        ctx.strokeStyle = brown ? 'rgba(90,45,10,0.9)' : P.glass; ctx.lineWidth = 2; rr(ctx, bx, by, B.w, B.h, 12); ctx.stroke();
+        rr(ctx, bx + 3, by + bh * 0.06, bw - 6, bh * 0.92, rad * 0.8); ctx.fill();
+        ctx.strokeStyle = brown ? 'rgba(90,45,10,0.9)' : P.glass; ctx.lineWidth = 2; rr(ctx, bx, by, bw, bh, rad); ctx.stroke();
         // Hals
         ctx.fillStyle = brown ? 'rgba(110,58,18,0.85)' : rgba(tint, 0.25);
         ctx.fillRect(x - B.neck / 2, by - B.neckH, B.neck, B.neckH + 2);
         ctx.strokeStyle = brown ? 'rgba(90,45,10,0.9)' : P.glass; ctx.lineWidth = 1.6; ctx.strokeRect(x - B.neck / 2, by - B.neckH, B.neck, B.neckH + 2);
-        // Papieretikett auf der Flasche: Name und GHS-Piktogramme der konkreten Lösung
-        ctx.fillStyle = 'rgba(250,248,240,0.95)'; rr(ctx, bx + 6, by + 22, B.w - 12, 62, 4); ctx.fill();
-        ctx.fillStyle = '#1f2a36'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        const s = C.SOLUTIONS[key];
-        const lines = labelLines(key, s);
-        ctx.font = `700 12px ${FONT}`; ctx.fillText(lines[0], x, by + 33, B.w - 16);
-        ctx.font = `600 11px ${FONT}`; if (lines[1]) ctx.fillText(lines[1], x, by + 46, B.w - 16);
-        const picts = (root.FL.ghs.LABELS[key] || { pict: [] }).pict;
-        const ps = 22, pw = picts.length * (ps + 1);
-        picts.forEach((code, i) => { const im = pictImage(code); if (im.complete && im.naturalWidth) ctx.drawImage(im, x - pw / 2 + i * (ps + 1), by + 56, ps, ps); });
         // Pipette in der Flasche (wenn nicht aufgenommen)
         const p = st.pip;
-        if (!(p.key === key && p.tab === st.tab)) this.drawPipetteAt(ctx, key, G.pipetteRest(x).x, G.pipetteRest(x).y, 0, false);
+        if (!(p.key === key && p.tab === st.tab)) { const r = this.lab.restPos(key); this.drawPipetteAt(ctx, key, r.x, r.y, 0, false); }
       });
     }
 
-    /** Etikettenleiste unter dem Regal: Formel und Konzentration in gleichbleibender Bildschirmgröße. */
-    drawShelfLabels(ctx) {
-      const st = this.lab.state, keys = M.TABS[st.tab].bottles, k = 1 / this.view.scale;
-      const w = G.bottleGap(keys.length, this.view.worldW) - 8 * k, h = 34 * k, y = G.SHELF_Y + 18;
-      keys.forEach((key) => {
-        const x = this.lab.bottlePos(key), t = shelfText(key);
-        ctx.fillStyle = 'rgba(255,255,255,0.95)'; rr(ctx, x - w / 2, y, w, h, 6 * k); ctx.fill();
-        ctx.strokeStyle = 'rgba(40,60,80,0.35)'; ctx.lineWidth = k; ctx.stroke();
-        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#17212c';
-        ctx.font = `700 ${12.5 * k}px ${FONT}`; ctx.fillText(t[0], x - w / 2 + 6 * k, y + 15 * k, w - 26 * k);
-        ctx.fillStyle = '#3d4b5a'; ctx.font = `500 ${11 * k}px ${FONT}`; ctx.fillText(t[1], x - w / 2 + 6 * k, y + 29 * k, w - 10 * k);
-        ctx.fillStyle = '#2f6db3'; ctx.beginPath(); ctx.arc(x + w / 2 - 11 * k, y + 11 * k, 7.5 * k, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = `700 ${11 * k}px Georgia, serif`; ctx.fillText('i', x + w / 2 - 11 * k, y + 15 * k);
-      });
+    // ------------------------------------------------------------ Silberabfall und Ausgießen
+    wastePos() {
+      const tb = this.lab.tab(), W = G.WASTE;
+      const x = G.wasteX(tb.visible, this.view.worldW);
+      return { x, top: G.BENCH - W.h, w: W.w, h: W.h };
+    }
+    /** Sammelbehälter für Silberabfälle auf dem Tisch (Becherglas mit Ausguss); Inhalt aus dem Modell. */
+    drawWaste(ctx) {
+      const P = this.P, w = this.wastePos(), tb = this.lab.tab(), ws = tb.waste || { V: 0, solid: 0 };
+      const x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, y0 = w.top, y1 = G.BENCH - 2;
+      ctx.fillStyle = P.shadow; ctx.beginPath(); ctx.ellipse(w.x, G.BENCH + 2, w.w / 2 + 6, 6, 0, 0, Math.PI * 2); ctx.fill();
+      const path = () => { ctx.beginPath(); ctx.moveTo(x0 - 8, y0 - 6); ctx.lineTo(x0, y0 + 8); ctx.lineTo(x0, y1 - 10); ctx.quadraticCurveTo(x0, y1, x0 + 10, y1); ctx.lineTo(x1 - 10, y1); ctx.quadraticCurveTo(x1, y1, x1, y1 - 10); ctx.lineTo(x1, y0); };
+      path(); ctx.fillStyle = 'rgba(170,205,245,0.10)'; ctx.fill();
+      if (ws.V > 0.001) {
+        const f = Math.min(0.82, 0.06 + ws.V / 90), ly = y1 - (y1 - y0 - 10) * f;
+        const turb = ws.solid > 0 ? clamp(0.25 + ws.solid * 400, 0.25, 0.75) : 0;
+        ctx.fillStyle = rgba(P.liquid, 0.30); ctx.fillRect(x0 + 2, ly, w.w - 4, y1 - ly - 1);
+        if (turb) { ctx.fillStyle = rgba([226, 224, 214], turb * 0.7); ctx.fillRect(x0 + 2, ly + 4, w.w - 4, y1 - ly - 5); }
+        ctx.strokeStyle = this.theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(40,80,120,0.45)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(x0 + 2, ly); ctx.lineTo(x1 - 2, ly); ctx.stroke();
+      }
+      path(); ctx.strokeStyle = P.glass; ctx.lineWidth = 2.2; ctx.stroke();
+      ctx.strokeStyle = P.rim; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 - 8, y0 - 6); ctx.lineTo(x0 + 4, y0 - 2); ctx.moveTo(x1 - 4, y0); ctx.lineTo(x1 + 2, y0); ctx.stroke();
+    }
+    /**
+     * Lage des ausgegossenen Glases: Anheben, zum Behälter führen und kippen, ausgießen, aufrichten,
+     * zurückstellen (beim Entfernen: am Behälter ausblenden). Zeitachse wie im Modell (st.pour).
+     */
+    pourPose(pr) {
+      const k = clamp(pr.t / pr.dur, 0, 1), R = G.TUBE_R + G.WALL;
+      const x0 = this.lab.tubePos(pr.slot), w = this.wastePos();
+      const TH = 112 * Math.PI / 180, c = Math.cos(TH), sn = Math.sin(TH);
+      const lift = G.RIM_Y - 120;
+      // Lippe (rechte Randecke nach dem Kippen) über der Öffnung des Behälters
+      const lipX = w.x - 8, lipY = w.top - 110;
+      const px = lipX - R * c, py = lipY - R * sn;
+      const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+      let x = x0, y = G.RIM_Y, a = 0, alpha = 1, phase = 'lift';
+      if (k < 0.1) { y = lerp(G.RIM_Y, lift, ease(k / 0.1)); }
+      else if (k < 0.26) { const u = ease((k - 0.1) / 0.16); x = lerp(x0, px, u); y = lerp(lift, py, u); a = TH * u; phase = 'tilt'; }
+      else if (k < 0.72) { x = px; y = py; a = TH; phase = 'pour'; }
+      else if (pr.remove) { const u = (k - 0.72) / 0.28; x = px; y = py; a = TH * (1 - 0.25 * ease(u)); alpha = 1 - ease(clamp(u / 0.8, 0, 1)); phase = 'fade'; }
+      else if (k < 0.84) { const u = ease((k - 0.72) / 0.12); x = lerp(px, x0, u); y = lerp(py, lift, u); a = TH * (1 - u); phase = 'back'; }
+      else { y = lerp(lift, G.RIM_Y, ease((k - 0.84) / 0.16)); phase = 'down'; }
+      return { k, x, y, a, alpha, phase, x0, lip: { x: x + R * Math.cos(a), y: y + R * Math.sin(a) }, w };
+    }
+    /** Innenraum des Glases als Polygon (Weltkoordinaten bei aufrechtem Glas an Stelle x). */
+    cavity(x) {
+      const R = G.TUBE_R, B = G.INNER_BOTTOM, pts = [[x - R, G.RIM_Y], [x - R, B - R]];
+      for (let i = 1; i < 18; i++) { const an = Math.PI - (i / 18) * Math.PI; pts.push([x + R * Math.cos(an), B - R + R * Math.sin(an)]); }
+      pts.push([x + R, B - R], [x + R, G.RIM_Y]);
+      return pts;
+    }
+    drawPour(ctx) {
+      const st = this.lab.state, pr = st.pour, tb = this.lab.tab(), t = tb.tubes[pr.slot], P = this.P;
+      if (!t) return;
+      const q = this.pourPose(pr), R = G.TUBE_R;
+      const ca = Math.cos(q.a), sa = Math.sin(q.a);
+      const tf = (p) => [q.x + (p[0] - q.x0) * ca - (p[1] - G.RIM_Y) * sa, q.y + (p[0] - q.x0) * sa + (p[1] - G.RIM_Y) * ca];
+      ctx.save(); ctx.globalAlpha = q.alpha;
+      // Flüssigkeit: gleiche Querschnittsfläche wie im aufrechten Glas, Oberfläche waagrecht
+      if (t.V > 0.005) {
+        const up = this.cavity(q.x0), A0 = polyArea(clipBelow(up, G.surfaceY(t.V)));
+        const poly = up.map(tf);
+        let lo = Math.min(...poly.map((p) => p[1])), hi = Math.max(...poly.map((p) => p[1]));
+        for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (polyArea(clipBelow(poly, m)) > A0) lo = m; else hi = m; }
+        const liq = clipBelow(poly, (lo + hi) / 2);
+        if (liq.length > 2) {
+          ctx.beginPath(); liq.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath();
+          ctx.fillStyle = rgba(P.liquid, Math.max(0.3, P.liquidA * 2)); ctx.fill();
+          const pig = this.pigment(t), op = t.susp > 0 ? M.turbidity(t.susp / Math.max(0.05, t.V) * 1e6) : 0;
+          if (op > 0) { ctx.fillStyle = rgba(pig, op); ctx.fill(); }
+        }
+      }
+      // Glas
+      ctx.save();
+      ctx.translate(q.x, q.y); ctx.rotate(q.a); ctx.translate(-q.x0, -G.RIM_Y);
+      this.tubePath(ctx, q.x0, 0); ctx.strokeStyle = P.glass; ctx.lineWidth = 1.8; ctx.stroke();
+      this.tubePath(ctx, q.x0, G.WALL); ctx.strokeStyle = P.glassIn; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = P.rim; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.ellipse(q.x0, G.RIM_Y, R + G.WALL + 3, 4, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(q.x0 - R + 7, G.RIM_Y + 14, 4, G.INNER_BOTTOM - G.RIM_Y - 50);
+      ctx.restore();
+      // Strahl von der Lippe in die Öffnung des Behälters, solange das Modell ausgießt
+      if (q.phase === 'pour' && t.V > 0.005 && q.k > 0.25 && q.k < 0.7) {
+        const y1 = q.w.top + 30, x1 = q.w.x - 4;
+        const pig = this.pigment(t), op = t.susp > 0 ? M.turbidity(t.susp / Math.max(0.05, t.V) * 1e6) : 0;
+        const wdt = 3 + 3 * Math.min(1, t.V / 4);
+        ctx.fillStyle = op > 0.05 ? rgba(pig, 0.5 + op * 0.4) : P.stream;
+        ctx.beginPath(); ctx.moveTo(q.lip.x - wdt, q.lip.y); ctx.lineTo(q.lip.x + wdt * 0.6, q.lip.y);
+        ctx.quadraticCurveTo(x1 + wdt * 0.4, q.lip.y + 20, x1 + wdt * 0.4, y1); ctx.lineTo(x1 - wdt * 0.4, y1);
+        ctx.quadraticCurveTo(x1 - wdt * 0.4, q.lip.y + 24, q.lip.x - wdt, q.lip.y); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
+    pigment(t) {
+      return t.model === 'water' ? (C.WATER[C.SOLUTIONS[t.sample] && C.SOLUTIONS[t.sample].water] || {}).pigment || [236, 234, 226] : C.PIGMENT[t.halide] || [240, 240, 240];
     }
 
     /** Pipette mit Spitze bei (x, y): Glasschaft und Gummihütchen. */
@@ -2528,7 +2884,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 
     /** Niederschlag: Bodensatz, Schwebe mit Absetzfront, Wolken – alles aus dem Modellzustand. */
     drawSolid(ctx, t, x, surf, f) {
-      const pig = t.model === 'water' ? (C.WATER[C.SOLUTIONS[t.sample] && C.SOLUTIONS[t.sample].water] || {}).pigment || [236, 234, 226] : C.PIGMENT[t.halide] || [240, 240, 240];
+      const pig = this.pigment(t);
       const P = this.P, R = G.TUBE_R, dark = this.theme === 'dark';
       const total = M.solidTotal(t);
       if (!(total > 0)) return;
@@ -2584,16 +2940,32 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     }
   }
 
-  const PICT = {};
-  function pictImage(code) {
-    if (!PICT[code]) { const im = new Image(); im.src = root.FL.ghs.dataUri(code); PICT[code] = im; }
-    return PICT[code];
+  /** Teil des Polygons unterhalb der Waagrechten y = lv (Weltkoordinaten: größeres y = tiefer). */
+  function clipBelow(poly, lv) {
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length], ina = a[1] >= lv, inb = b[1] >= lv;
+      if (ina) out.push(a);
+      if (ina !== inb) { const u = (lv - a[1]) / (b[1] - a[1]); out.push([a[0] + (b[0] - a[0]) * u, lv]); }
+    }
+    return out;
   }
-  function shelfText(key) {
+  function polyArea(p) { let s = 0; for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s) / 2; }
+  /**
+   * Flaschenetikett (HTML, app.js): Formel groß, Name, Zusatz (verdünnt/konzentriert/destilliert).
+   * Keine Konzentrationsangaben auf der Bühne – die stehen in der Infokarte.
+   */
+  const SH = '\u00ad';
+  function bottleText(key) {
     return {
-      agno3: ['AgNO₃', '0,100 mol/L'], nacl: ['NaCl', '0,100 mol/L'], nabr: ['NaBr', '0,100 mol/L'], nai: ['NaI', '0,100 mol/L'],
-      nh3dil: ['NH₃ verd.', '2,0 mol/L'], nh3conc: ['NH₃ konz.', 'w = 25 %'], water: ['H₂O', 'destilliert'], tap: ['Leitungs-', 'wasser'], mineral: ['Mineral-', 'wasser']
-    }[key] || [key, ''];
+      nacl: { f: 'NaCl', n: 'Natrium' + SH + 'chlorid' }, nabr: { f: 'NaBr', n: 'Natrium' + SH + 'bromid' }, nai: { f: 'NaI', n: 'Natrium' + SH + 'iodid' },
+      agno3: { f: 'AgNO₃', n: 'Silber' + SH + 'nitrat' }, nh3dil: { f: 'NH₃', n: 'Ammoniak', q: 'verdünnt' }, nh3conc: { f: 'NH₃', n: 'Ammoniak', q: 'konzen' + SH + 'triert' },
+      water: { f: 'H₂O', n: 'Wasser', q: 'destilliert' }, tap: { f: '', n: 'Leitungs' + SH + 'wasser', q: 'Probe' }, mineral: { f: '', n: 'Mineral' + SH + 'wasser', q: 'Probe' }
+    }[key] || { f: key, n: '' };
+  }
+  /** Kurzbezeichnung (Bedienleiste, Protokoll). */
+  function shortText(key) {
+    return { agno3: 'AgNO₃', nacl: 'NaCl', nabr: 'NaBr', nai: 'NaI', nh3dil: 'NH₃ verdünnt', nh3conc: 'NH₃ konzentriert', water: 'H₂O dest.', tap: 'Leitungswasser', mineral: 'Mineralwasser' }[key] || key;
   }
   function shade(c, k) { return [c[0] * k, c[1] * k, c[2] * k]; }
   function makeSpecks(seed) {
@@ -2601,23 +2973,9 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
     return Array.from({ length: 70 }, () => ({ u: rnd(), v: rnd(), w: 0.4 + rnd(), p: rnd() * 6.28 }));
   }
-  function labelLines(key, s) {
-    switch (key) {
-      case 'agno3': return ['Silber-', 'nitrat'];
-      case 'nacl': return ['Natrium-', 'chlorid'];
-      case 'nabr': return ['Natrium-', 'bromid'];
-      case 'nai': return ['Natrium-', 'iodid'];
-      case 'nh3dil': return ['Ammoniak', 'verdünnt'];
-      case 'nh3conc': return ['Ammoniak', 'konz.'];
-      case 'water': return ['Wasser', 'dest.'];
-      case 'tap': return ['Leitungs-', 'wasser'];
-      case 'mineral': return ['Mineral-', 'wasser'];
-      default: return [s ? s.name : key, ''];
-    }
-  }
 
   (root.FL = root.FL || {}).LabRenderer = LabRenderer;
-  root.FL.render = { STRIP, PAL, BULB, labelLines, shelfText };
+  root.FL.render = { STRIP, PAL, BULB, bottleText, shortText, clipBelow, polyArea };
 })(typeof self !== 'undefined' ? self : this);
 
 </script>
@@ -2640,10 +2998,20 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   };
   const STEPS = { main: T.STEPS, control: T.CONTROL_STEPS };
 
+  /** Startwert für das Mischen: neu je Durchgang; über „#seed=…“ in der Adresse festlegbar (Prüfungen). */
+  function hashSeed(offset) {
+    try { const m = /[#&]seed=(\d+)/.exec(root.location.hash || ''); if (m) return (Number(m[1]) + (offset || 0)) >>> 0; } catch (e) { /* ohne Adresse */ }
+    return null;
+  }
+  function freshLearn(p) {
+    const steps = STEPS[p];
+    const fixed = hashSeed(p === 'main' ? 0 : 1);
+    return { v: 2, seed: fixed != null ? fixed : T.newSeed(), step: steps[0].id, steps: LL.freshState(steps) };
+  }
   function freshState() {
     return {
       ptab: { main: 'guide', control: 'guide' },
-      learn: { main: { step: T.STEPS[0].id, steps: LL.freshState(T.STEPS) }, control: { step: T.CONTROL_STEPS[0].id, steps: LL.freshState(T.CONTROL_STEPS) } },
+      learn: { main: freshLearn('main'), control: freshLearn('control') },
       records: { main: [], control: [] }, drafts: {}, uid: 1
     };
   }
@@ -2653,8 +3021,20 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     for (const p of ['main', 'control']) {
       if (s.ptab && PTABS[p].some(([k]) => k === s.ptab[p])) f.ptab[p] = s.ptab[p];
       const L = s.learn && s.learn[p];
-      if (L && L.steps) for (const st of STEPS[p]) if (L.steps[st.id]) f.learn[p].steps[st.id] = Object.assign(LL.freshStep(), L.steps[st.id], { confirmSolution: false });
+      // Antworten aus 1.0.0 (Buchstaben) werden auf die fachlichen IDs abgebildet und neu bewertet
+      const legacy = L && L.v !== 2;
+      if (L && L.steps) for (const st of STEPS[p]) if (L.steps[st.id]) {
+        const ss = Object.assign(LL.freshStep(), L.steps[st.id], { confirmSolution: false });
+        if (legacy) {
+          const m = T.migrateAnswers(ss.answers);
+          ss.answers = m.answers;
+          if (ss.graded) ss.graded = T.grade(st, ss.answers);
+          if (m.changed) f.migrated = true;
+        }
+        f.learn[p].steps[st.id] = ss;
+      }
       if (L && STEPS[p].some((x) => x.id === L.step)) f.learn[p].step = L.step;
+      if (L && L.v === 2 && Number.isInteger(L.seed) && L.seed >= 0) f.learn[p].seed = L.seed >>> 0;
       if (s.records && Array.isArray(s.records[p])) f.records[p] = s.records[p].filter((r) => r && r.ansatz);
     }
     if (s.drafts && typeof s.drafts === 'object') f.drafts = s.drafts;
@@ -2714,7 +3094,9 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
           <p class="lk-muted small">Ammoniaklösung gehört erst zu einem Ansatz, der schon Silbernitratlösung enthält.</p></div>
           <div class="lk-card"><h3>Gut zu wissen</h3>
           <ul class="small"><li>Ein Tropfen ist im Modell 0,050 mL. Jedes Reagenzglas fasst 20 mL.</li>
-          <li><b>Spülen</b> beendet nur den Ansatz im gewählten Glas; er bleibt in der Ergebnisübersicht. Der Lernstand bleibt erhalten.</li>
+          <li><b>Spülen</b> gießt das gewählte Glas in den Behälter „Silberabfälle“ aus und beendet nur diesen Ansatz; er bleibt in der Ergebnisübersicht. <b>− Glas</b> nimmt ein Glas aus dem Ständer (gefüllt erst nach Rückfrage).</li>
+          <li>Dieselbe Probe darfst du nachgeben, eine andere Probe nicht.</li>
+          <li>Konzentrationen und Gefahrstoffhinweise: ⓘ unten auf dem Flaschenetikett antippen.</li>
           <li>Zeiten für Mischen und Absetzen sind für die Beobachtung gewählt, keine Messwerte.</li>
           <li>Hintergrund hell/dunkel ändert nur die Darstellung.</li></ul></div>
           ${resetHtml()}`;
@@ -2781,10 +3163,12 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       const pr = T.progress(steps, L);
       let html = '';
       if (p === 'main') html += `<p class="progress" role="status">Pflichtschritte gelöst: <b>${pr.done} von ${pr.total}</b> · Schritt 4 (Ammoniak) ist eine Erweiterung.</p>`;
-      html += `<div class="tasks${p === 'main' && L.step === 'gleich' ? ' eqs' : ''}">${LL.taskHtml(steps, L)}</div>`;
+      // Anzeige mit der für diesen Durchgang gemischten Reihenfolge; Bewertung über dieselben IDs
+      html += `<div class="tasks${p === 'main' && L.step === 'gleich' ? ' eqs' : ''}">${LL.taskHtml(steps.map((st) => T.view(st, L.seed)), L)}</div>`;
       const ss = L.steps[L.step];
       if (p === 'main' && L.step === 'nh3') html += `<details class="lk-card more"><summary>Vertiefung: Warum löst sich der Niederschlag?</summary><p>Ammoniakmoleküle binden gelöste Silberionen zum Diamminsilber(I)-Ion:</p><p class="eqline">Ag⁺(aq) + 2 NH₃(aq) → [Ag(NH₃)₂]⁺(aq)</p><p>Dadurch sinkt die Konzentration freier Silberionen, und Feststoff kann sich lösen. Je schwerer löslich der Niederschlag ist, desto mehr Ammoniak ist nötig – bei Silberiodid reicht auch konzentrierte Ammoniaklösung nicht.</p></details>`;
       if (p === 'control' && ss && ((ss.graded && ss.graded.allCorrect) || ss.solution)) html += `<div class="lk-card statement"><h3>Auswertung</h3><p>${esc(T.CONTROL_STATEMENT)}</p></div>`;
+      html += `<div class="lk-row round"><button type="button" class="lk-btn small" data-act="newRound">Neuer Durchgang …</button><span class="small lk-muted">löscht die Antworten dieses Teils und mischt die Antworten neu</span></div>`;
       if (p === 'control') html += `<details class="lk-card more"><summary>Für Interessierte: andere Anionen und Ansäuern</summary><p>Neben Halogenidionen können auch andere Anionen, z. B. Carbonationen, mit Silberionen schwer lösliche Stoffe bilden. In der Analytik säuert man eine Probe deshalb vorher mit verdünnter Salpetersäure an: Carbonat wird dabei zerstört, Silberhalogenide bleiben bestehen. In diesem Labor wird nicht angesäuert.</p></details>`;
       return html;
     }
@@ -2897,6 +3281,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       else if (act === 'solutionNo') { ss.confirmSolution = false; render(); }
       else if (act === 'hideSolution') { ss.solution = false; render(); opts.save(); }
       else if (act === 'resetAll') confirmReset();
+      else if (act === 'newRound') openModal(`<h2 id="modalTitle">Neuer Durchgang?</h2><p>Alle Antworten im Teil „${p === 'main' ? 'Fällungsreaktionen' : 'Kontrollversuche'}“ werden gelöscht, die Antwortmöglichkeiten neu gemischt. Versuche und Beobachtungen bleiben erhalten.</p><div class="lk-row end"><button type="button" class="lk-btn" data-m="close">Abbrechen</button><button type="button" class="lk-btn primary" data-m="newRoundYes">Neu beginnen</button></div>`);
       else if (act === 'copyNb') copyNotebook();
       else if (act === 'printNb') printNotebook();
     });
@@ -2922,6 +3307,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       const m = b.dataset.m;
       if (m === 'close') closeModal();
       else if (m === 'resetYes') { closeModal(); opts.resetAll(); }
+      else if (m === 'newRoundYes') { const p = part(); S.learn[p] = freshLearn(p); closeModal(); showTab('tasks'); opts.save(); opts.toast('Neuer Durchgang – Antworten neu gemischt.'); }
       else if (m === 'copyNb') copyNotebook();
       else if (m === 'printNb') printNotebook();
     });
@@ -2946,6 +3332,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
         : `<p><b>Keine Gefahrenpiktogramme</b> – ${s.kind === 'water' || s.water ? 'kein Gefahrstoff.' : 'die Lösung ist in dieser Konzentration nicht kennzeichnungspflichtig.'}</p>`;
       openModal(`<h2 id="modalTitle">${esc(s.name)}</h2>
         <p class="formula">${esc(s.formula)} · ${esc(L.form)}</p>
+        ${s.c != null ? `<p class="conc"><b>Konzentration:</b> ${esc(s.label)}</p>` : ''}
         ${hazard}
         ${L.protect ? `<p><b>Schutz:</b> ${esc(L.protect)}</p>` : ''}
         ${L.note ? `<p class="small">${esc(L.note)}</p>` : ''}
@@ -2981,7 +3368,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     };
   }
 
-  FL.ui = { create, freshState, sanitize, addsText, PTABS };
+  FL.ui = { create, freshState, freshLearn, sanitize, addsText, PTABS };
 })(typeof self !== 'undefined' ? self : this);
 
 </script>
@@ -3002,7 +3389,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 (function (root) {
   'use strict';
   const FL = root.FL, C = FL.chem, G = FL.geometry, M = FL.model, GHS = FL.ghs, LK = root.LK;
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
   const KEY = 'sivex.faellungslabor.session.v1';
   const PREF = 'sivex.faellungslabor.prefs';
   const $ = (id) => document.getElementById(id);
@@ -3019,11 +3406,11 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 
   const lab = M.create(saved && saved.lab);
   const canvas = $('lab');
-  const renderer = new FL.LabRenderer(canvas, lab);
+  const renderer = new FL.LabRenderer(canvas, lab, $('fx'));
   const reduce = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  renderer.reduceMotion = !!(reduce && reduce.matches);
-  if (reduce && reduce.addEventListener) reduce.addEventListener('change', (e) => { renderer.reduceMotion = e.matches; document.body.classList.toggle('reduce-motion', e.matches); });
-  document.body.classList.toggle('reduce-motion', renderer.reduceMotion);
+  function applyMotion(on) { renderer.reduceMotion = on; lab.setReducedMotion(on); document.body.classList.toggle('reduce-motion', on); }
+  applyMotion(!!(reduce && reduce.matches));
+  if (reduce && reduce.addEventListener) reduce.addEventListener('change', (e) => applyMotion(e.matches));
 
   let dirty = false;
   function save() { dirty = true; }
@@ -3126,13 +3513,17 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     if (key === hitsKey) return;
     hitsKey = key;
     let html = '';
+    const L = lab.layout(), info = [];
     keys.forEach((k) => {
-      const x = lab.bottlePos(k);
-      const a = renderer.toScreen(x - G.BOTTLE.w / 2 - 4, G.SHELF_Y - G.BOTTLE.h - G.BOTTLE.neckH - G.PIPETTE_LEN);
-      const b = renderer.toScreen(x + G.BOTTLE.w / 2 + 4, G.SHELF_Y);
-      const w = Math.max(44, b.x - a.x), h = Math.max(44, b.y - a.y);
+      const bt = L.bottles[k], x = bt.x;
+      const a = renderer.toScreen(x, G.SHELF_Y - bt.h - G.BOTTLE.neckH - G.PIPETTE_LEN);
+      const b = renderer.toScreen(x, G.SHELF_Y);
+      const w = bt.wpx + 4, h = Math.max(44, b.y - a.y);
       const held = st.pip.key === k && st.pip.tab === st.tab;
-      html += `<button type="button" class="hit bottle" data-bottle="${k}" aria-pressed="${held}" aria-label="${esc((held ? 'Pipette zurückstellen: ' : 'Pipette aufnehmen: ') + solName(k))}" style="left:${(a.x + b.x) / 2 - w / 2}px;top:${b.y - h}px;width:${w}px;height:${h}px"></button>`;
+      html += `<button type="button" class="hit bottle" data-bottle="${k}" aria-pressed="${held}" aria-label="${esc((held ? 'Pipette zurückstellen: ' : 'Pipette aufnehmen: ') + solName(k))}" style="left:${b.x - w / 2}px;top:${b.y - h}px;width:${w}px;height:${h}px"></button>`;
+      // Infoleiste unten auf dem Etikett: Piktogramme + i; öffnet die Karte mit Konzentration und Gefahrstoffhinweisen
+      const picts = (GHS.LABELS[k] || { pict: [] }).pict, ps = L.compact ? 15 : 18;
+      info.push(`<button type="button" class="hit binfo" data-info="${k}" aria-label="${esc('Infokarte: ' + solName(k) + ' – Konzentration und Gefahrstoffkennzeichnung')}" style="left:${b.x - bt.wpx / 2}px;top:${b.y - 2 - 26}px;width:${bt.wpx}px;height:44px"><span class="strip">${picts.map((c) => `<img src="${GHS.dataUri(c)}" width="${ps}" height="${ps}" alt="">`).join('')}<span class="i" aria-hidden="true">i</span></span></button>`);
     });
     for (let i = 0; i < tb.visible; i++) {
       const x = lab.tubePos(i);
@@ -3141,6 +3532,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       const w = Math.max(44, b.x - a.x), h = Math.max(44, b.y - a.y);
       html += `<button type="button" class="hit tube" data-slot="${i}" aria-label="${esc(tubeLabel(i))}" style="left:${(a.x + b.x) / 2 - w / 2}px;top:${a.y}px;width:${w}px;height:${h}px"></button>`;
     }
+    // Infoleisten vor der Pipette: die aufgenommene Pipette liegt sichtbar und bedienbar obenauf
+    html += info.join('');
     const p = st.pip;
     if (p.key && p.tab === st.tab && (p.phase === 'held' || p.phase === 'over')) {
       const a = renderer.toScreen(p.x - 16, p.y - G.PIPETTE_LEN - 40), b = renderer.toScreen(p.x + 16, p.y - 30);
@@ -3156,23 +3549,34 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     const st = lab.state, tb = lab.tab(), keys = M.TABS[st.tab].bottles, v = renderer.view;
     const texts = [];
     for (let i = 0; i < tb.visible; i++) { const t = tb.tubes[i]; texts.push(t.ansatz || '', t.sample || '', t.V.toFixed(3), t.log.agDrops, t.log.nh3dilV.toFixed(2), t.log.nh3concV.toFixed(2), t.log.waterV.toFixed(2)); }
-    const key = [st.tab, tb.visible, v.scale, v.ox, v.oy, v.w, v.h].join('|') + '#' + texts.join(',');
+    const key = [st.tab, tb.visible, v.scale, v.ox, v.oy, v.w, v.h, st.pour ? st.pour.slot : ''].join('|') + '#' + texts.join(',');
     if (key === labelsKey) return;
     labelsKey = key;
     let html = '';
-    const bw = Math.max(44, G.bottleGap(keys.length, v.worldW) * v.scale - 8);
+    const L = lab.layout(), sy = renderer.toScreen(0, G.SHELF_Y).y;
     keys.forEach((k) => {
-      // Etikett ist auf die Bühne gezeichnet; hier nur die bedienbare, unsichtbare Fläche (Infokarte)
-      const s = C.SOLUTIONS[k];
-      const p = renderer.toScreen(lab.bottlePos(k), G.SHELF_Y + 18);
-      html += `<button type="button" class="blabel" data-info="${k}" style="left:${p.x - bw / 2}px;top:${p.y - 4}px;width:${bw}px;height:${Math.max(44, 42)}px" aria-label="${esc('Informationen und Gefahrstoffkennzeichnung: ' + s.name + ', ' + FL.render.shelfText(k).join(' '))}"></button>`;
+      // Etikett in festen Bildschirmpixeln: Formel groß, Name, Zusatz – ohne Konzentration (die steht in der Infokarte)
+      const bt = L.bottles[k], tx = FL.render.bottleText(k), x = renderer.toScreen(bt.x, 0).x;
+      const big = tx.f ? `<span class="f">${esc(tx.f)}</span>` : '';
+      const name = tx.n ? `<span class="n${tx.f ? '' : ' big'}">${esc(tx.n)}</span>` : '';
+      const q = tx.q ? `<span class="q">${esc(tx.q)}</span>` : '';
+      html += `<div class="bcard${L.compact ? ' compact' : ''}${k === 'agno3' ? ' brown' : ''}" data-card="${k}" aria-hidden="true" style="left:${x - bt.wpx / 2}px;top:${sy - 2 - bt.hpx}px;width:${bt.wpx}px;height:${bt.hpx}px">${big}${name}${q}</div>`;
     });
+    // Gruppenüberschriften unter dem Regal
+    L.groups.forEach((g) => {
+      const a = Math.max(2, renderer.toScreen(g.x0, 0).x - 9), b = Math.min(v.w - 2, renderer.toScreen(g.x1, 0).x + 9);
+      html += `<div class="ghead${L.compact ? ' compact' : ''}" data-group="${esc(g.title)}" style="left:${a}px;width:${b - a}px;top:${renderer.toScreen(0, G.SHELF_Y + 16).y + 2}px">${esc(L.compact ? g.short : g.title)}</div>`;
+    });
+    // Silberabfall-Behälter
+    const wx = renderer.toScreen(G.wasteX(tb.visible, v.worldW), G.BENCH);
+    html += `<div class="wlabel" data-waste="1" style="left:${wx.x - 50}px;top:${wx.y + 3}px;width:100px"><b>Silberabfälle</b><span>Sammelbehälter</span></div>`;
     for (let i = 0; i < tb.visible; i++) {
       const t = tb.tubes[i];
       const p = renderer.toScreen(lab.tubePos(i), G.BENCH);
       const w = Math.max(96, G.TUBE_GAP * v.scale - 4);
       let inner;
-      if (!(t.V > 0)) inner = `<b>Glas ${i + 1}</b><span class="lk-muted">leer</span>`;
+      if (lab.pourBusy(st.tab, i)) inner = `<b>Glas ${i + 1}${t.ansatz ? ' · ' + esc(t.ansatz) : ''}</b><span>wird ausgegossen …</span>`;
+      else if (!(t.V > 0)) inner = `<b>Glas ${i + 1}</b><span class="lk-muted">leer</span>`;
       else {
         const s = C.SOLUTIONS[t.sample];
         const extra = [];
@@ -3185,8 +3589,10 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       html += `<div class="tlabel${tb.sel === i ? ' sel' : ''}" style="left:${p.x - w / 2}px;top:${p.y + 3}px;width:${w}px">${inner}</div>`;
     }
     labels.innerHTML = html;
+    // Sicherung für abweichende Systemschriften: passt ein Etikett nicht, Zusatzzeilen etwas enger setzen
+    labels.querySelectorAll('.bcard').forEach((c) => { if (c.scrollHeight > c.clientHeight + 1 || c.scrollWidth > c.clientWidth + 1) c.classList.add('tight'); });
   }
-  labels.addEventListener('click', (e) => { const b = e.target.closest('[data-info]'); if (b) ui.ghsCard(b.dataset.info); });
+  hits.addEventListener('click', (e) => { const b = e.target.closest('[data-info]'); if (b) ui.ghsCard(b.dataset.info); });
 
   // ---------------------------------------------------------------- Eingaben an Flaschen und Gläsern
   let lastKeyAct = 0;
@@ -3236,7 +3642,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     const w = renderer.toWorld(px - r.left, py - r.top);
     const tb = lab.tab();
     for (let i = 0; i < tb.visible; i++) if (Math.abs(w.x - lab.tubePos(i)) < G.TUBE_R + 26 && w.y > G.RIM_Y - 120 && w.y < G.BENCH) return { slot: i, w };
-    for (const k of M.TABS[lab.state.tab].bottles) if (Math.abs(w.x - lab.bottlePos(k)) < G.BOTTLE.w / 2 + 12 && w.y > G.SHELF_Y - G.BOTTLE.h - 80 && w.y < G.SHELF_Y + 12) return { bottle: k, w };
+    const L = lab.layout();
+    for (const k of M.TABS[lab.state.tab].bottles) { const bt = L.bottles[k]; if (Math.abs(w.x - bt.x) < bt.w / 2 + 4 && w.y > G.SHELF_Y - bt.h - 80 && w.y < G.SHELF_Y + 12) return { bottle: k, w }; }
     return { w };
   }
   hits.addEventListener('pointerdown', (e) => {
@@ -3285,9 +3692,9 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     let html = '', h = '';
     if (!d.key) {
       html = '<span class="who">Keine Pipette in der Hand.</span>';
-      h = 'Tippe eine Flasche an, um ihre Pipette aufzunehmen. Das Etikett darunter zeigt Gefahrstoffhinweise.';
+      h = 'Tippe eine Flasche an, um ihre Pipette aufzunehmen. ⓘ unten auf dem Etikett: Konzentration und Gefahrstoffhinweise.';
     } else {
-      const name = solName(d.key), short = d.key === 'tap' ? 'Leitungswasser' : d.key === 'mineral' ? 'Mineralwasser' : FL.render.shelfText(d.key)[0];
+      const name = solName(d.key), short = FL.render.shortText(d.key);
       html = `<span class="who" title="${esc('Pipette: ' + name)}"><span class="bulb" style="background:${FL.render.BULB[d.key]}"></span><span>Pipette <b>${esc(short)}</b>${d.over != null ? ` → Glas ${d.over + 1}` : ''}</span></span>`;
       if (d.sample) h = `Tippe ein leeres Reagenzglas an – die Pipette gibt ${d.vol} mL Probe ab.`;
       else if (d.over == null) h = 'Tippe das Reagenzglas an, in das du zugeben möchtest.';
@@ -3327,9 +3734,35 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
   $('btnRinse').addEventListener('click', () => {
     const tb = lab.tab();
     if (tb.sel == null) { toast('Tippe zuerst ein Reagenzglas an.'); return; }
-    const t = tb.tubes[tb.sel], id = t.ansatz;
-    if (lab.rinse(tb.sel)) { toast(`Glas ${tb.sel + 1} gespült – Ansatz ${id} ist beendet und bleibt in der Ergebnisübersicht.`); save(); }
+    if (lab.state.pour) { toast('Bitte warten – ein Glas wird gerade ausgegossen.'); return; }
+    const slot = tb.sel, t = tb.tubes[slot], id = t.ansatz;
+    if (lab.rinse(slot)) { toast(`Glas ${slot + 1} wird in den Silberabfall ausgegossen – Ansatz ${id} bleibt in der Ergebnisübersicht.`); save(); }
     else toast('Das Reagenzglas ist schon leer.');
+  });
+  // „− Glas“: gewähltes Glas aus dem Ständer nehmen; gefüllt nur nach Rückfrage (dann ausgießen)
+  function removeSelected(confirmed) {
+    const tb = lab.tab();
+    if (tb.sel == null) { toast('Tippe zuerst das Reagenzglas an, das du wegnehmen möchtest.'); return; }
+    if (lab.state.pour) { toast('Bitte warten – ein Glas wird gerade ausgegossen.'); return; }
+    const slot = tb.sel, t = tb.tubes[slot];
+    const r = lab.removeTube(slot, confirmed);
+    if (r === 'min') toast('Mindestens ein Reagenzglas bleibt im Ständer.');
+    else if (r === 'confirm') {
+      ui.openModal(`<h2 id="modalTitle">Glas ${slot + 1} ausgießen und wegnehmen?</h2><p>In Glas ${slot + 1} ist noch ${esc(C.fmt(t.V, 2))} mL (Ansatz ${esc(t.ansatz)}). Der Inhalt kommt in den Silberabfall, das Glas wird aus dem Ständer genommen. Ansatz ${esc(t.ansatz)} bleibt in der Ergebnisübersicht.</p><div class="lk-row end"><button type="button" class="lk-btn" data-m="close">Abbrechen</button><button type="button" class="lk-btn danger" data-m="removeYes" data-slot="${slot}">Ausgießen und wegnehmen</button></div>`);
+    } else if (r === true) {
+      toast(confirmed ? `Glas ${slot + 1} wird ausgegossen und dann weggenommen.` : `Leeres Glas ${slot + 1} weggenommen.`);
+      save();
+    }
+  }
+  $('btnRemoveTube').addEventListener('click', () => removeSelected(false));
+  $('modal').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-m="removeYes"]');
+    if (!b) return;
+    ui.closeModal();
+    const tb = lab.tab();
+    if (tb.sel !== +b.dataset.slot) tb.sel = +b.dataset.slot;
+    removeSelected(true);
+    $('btnRemoveTube').focus();
   });
   $('btnAddTube').addEventListener('click', () => {
     if (lab.addTube()) { toast('Weiteres leeres Reagenzglas im Ständer.'); save(); }
@@ -3344,6 +3777,10 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
     $('btnShake').setAttribute('aria-label', tb.sel != null ? `Glas ${tb.sel + 1} schwenken` : 'Schwenken (zuerst ein Glas antippen)');
     $('btnRinse').setAttribute('aria-label', tb.sel != null ? `Glas ${tb.sel + 1} spülen` : 'Glas spülen (zuerst ein Glas antippen)');
     $('btnAddTube').disabled = tb.visible >= M.TABS[st.tab].maxTubes;
+    // „− Glas“ bleibt bedienbar (Hinweis bei fehlender Auswahl/Minimum), wirkt aber gedämpft
+    const rm = $('btnRemoveTube'), canRm = tb.sel != null && tb.visible > 1 && !st.pour;
+    rm.classList.toggle('soft-off', !canRm);
+    rm.setAttribute('aria-label', tb.sel != null ? `Glas ${tb.sel + 1} aus dem Ständer nehmen` : 'Glas wegnehmen (zuerst ein Glas antippen)');
   }
 
   // ---------------------------------------------------------------- Hauptschleife
@@ -3357,6 +3794,8 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
       else if (e.type === 'forbidden') showForbidden(e);
       else if (e.type === 'full') toast(e.text);
       else if (e.type === 'toast') toast(e.text);
+      else if (e.type === 'removed') { for (const k of Object.keys(renderer.fx)) if (k.indexOf(e.tab) === 0) delete renderer.fx[k]; hitsKey = ''; labelsKey = ''; save(); }
+      else if (e.type === 'poured') { if (e.tab === lab.state.tab) delete renderer.fx[e.tab + e.slot]; save(); }
     }
     renderer.frame(dt);
     layoutHits(); updateTubeAria(); layoutLabels(); renderDeck(); syncControls(); ui.tick();
@@ -3366,6 +3805,7 @@ body.reduce-motion .forbid.wiggle svg { animation: none; }
 
   syncPart();
   ui.render();
+  if (ui.state.migrated) { delete ui.state.migrated; save(); setTimeout(() => toast('Gespeicherte Antworten aus Version 1.0 übernommen – die Antwortmöglichkeiten sind jetzt gemischt.', 5000), 300); }
   root.requestAnimationFrame((t) => { last = t; loop(t); });
 
   // Zugriff für Tests (nur lesen) und Fehlersuche

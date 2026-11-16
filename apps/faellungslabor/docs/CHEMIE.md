@@ -84,9 +84,11 @@ Anteil des Feststoffs am Anfangsfeststoff, Modellzeit ab Ende der Zugabe, 10 Tro
 | Fall | 0 s | 1 s | 2 s | 5 s | 10 s |
 | --- | --- | --- | --- | --- | --- |
 | AgCl + 1,0 mL NH₃ verd., ohne Schwenken – 1.0.0 | 0,97 | – | 0,85 | 0,70 | 0,50 (20 s: 0,22) |
-| AgCl + 1,0 mL NH₃ verd., ohne Schwenken – 1.1.0 | 0,87 | 0,65 | 0,48 | 0,16 | 0,00 |
-| AgCl + 1,0 mL NH₃ verd., einmal geschwenkt – 1.1.0 | 0,71 | 0,30 | 0,10 | 0,00 | 0,00 |
-| AgBr + 3,0 mL NH₃ konz., einmal geschwenkt – 1.1.0 | siehe Testbericht FK09 | | | | |
+| AgCl + 1,0 mL NH₃ verd., ohne Schwenken – 1.1.0 | 0,85 | 0,64 | 0,47 | 0,16 | 0,00 |
+| AgCl + 1,0 mL NH₃ verd., einmal geschwenkt – 1.1.0 | 0,69 | 0,28 | 0,10 | 0,00 | 0,00 |
+| AgBr + 3,0 mL NH₃ konz., einmal geschwenkt – 1.1.0 | 0,45 | 0,18 | 0,05 | 0,00 | 0,00 |
+
+Der Wert bei 0 s liegt unter 1, weil das Auflösen schon während des Strahls (≈ 1,3 s) beginnt.
 
 Die Gleichgewichtslage ist unverändert: Zu wenig Ammoniaklösung lässt den berechneten Rest (AgCl + 0,5 mL verd.: 66 %), AgBr bleibt in verdünnter Lösung weitgehend bestehen (≥ 97 %), AgI auch in viel konzentrierter (≥ 99,9 %), Wasser löst nichts. Mit 2,5 mL konzentrierter Lösung bleiben von AgBr (10 Tropfen) im Gleichgewicht ≈ 7 %, mit 3 mL nichts.
 

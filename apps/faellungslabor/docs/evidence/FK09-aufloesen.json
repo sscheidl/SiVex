@@ -1,0 +1,98 @@
+{
+  "agbr_gleichgewichtsrest": 0,
+  "methode": "Modellzeit bei 1× ab Ende der Zugabe (Pipette fertig); Anteil des Feststoffs am Anfangsfeststoff (10 Tropfen); Bilder je Zeitpunkt",
+  "vorher_1_0_0_agcl_verd_ohne_schwenken": [
+    {
+      "t": 0,
+      "rest": 0.9664740288134932
+    },
+    {
+      "t": 2,
+      "rest": 0.8520894024203806
+    },
+    {
+      "t": 5,
+      "rest": 0.7022762631858681
+    },
+    {
+      "t": 10,
+      "rest": 0.5007108048661972
+    },
+    {
+      "t": 20,
+      "rest": 0.22395221747207758
+    }
+  ],
+  "nachher_1_1_0": {
+    "agcl_verd_ohne_schwenken": [
+      {
+        "t": 0,
+        "rest": 0.8542304258538642
+      },
+      {
+        "t": 1,
+        "rest": 0.6371619793194805
+      },
+      {
+        "t": 2,
+        "rest": 0.4731750542688221
+      },
+      {
+        "t": 5,
+        "rest": 0.15839252728065528
+      },
+      {
+        "t": 10,
+        "rest": 0
+      }
+    ],
+    "agcl_verd_geschwenkt": [
+      {
+        "t": 0,
+        "rest": 0.6940116626835129
+      },
+      {
+        "t": 1,
+        "rest": 0.2820437764580747
+      },
+      {
+        "t": 2,
+        "rest": 0.09614225645476399
+      },
+      {
+        "t": 5,
+        "rest": 0
+      },
+      {
+        "t": 10,
+        "rest": 0
+      }
+    ],
+    "agbr_konz_geschwenkt": [
+      {
+        "t": 0,
+        "rest": 0.4482810489547606
+      },
+      {
+        "t": 1,
+        "rest": 0.17544885209587746
+      },
+      {
+        "t": 2,
+        "rest": 0.05106052993567262
+      },
+      {
+        "t": 5,
+        "rest": 0
+      },
+      {
+        "t": 10,
+        "rest": 0
+      }
+    ]
+  },
+  "bild_helligkeit_bodensatz": {
+    "t0": 0.6583803284950344,
+    "t10": 0.2518025184619302
+  }
+}

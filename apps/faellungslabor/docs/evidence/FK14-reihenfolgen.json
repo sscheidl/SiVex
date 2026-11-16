@@ -1,0 +1,318 @@
+{
+  "seeds": [
+    1,
+    7,
+    42,
+    1234,
+    98765
+  ],
+  "reihenfolgen": {
+    "1": {
+      "farbe": [
+        "gelb",
+        "creme",
+        "kein",
+        "weiss"
+      ],
+      "ablauf": [
+        "absetzen",
+        "wolke",
+        "schwenkenLoest",
+        "verteilt",
+        "vorherTrueb",
+        "aufwirbeln"
+      ],
+      "rolle": [
+        "fest",
+        "zus"
+      ],
+      "aussagen": [
+        "naclMolekuele",
+        "naImFeststoff",
+        "keineIonen",
+        "zuschauerGeloest",
+        "feststoffIonen"
+      ],
+      "eqCl": [
+        "state",
+        "full",
+        "solid",
+        "charge",
+        "net"
+      ],
+      "eqBr": [
+        "state",
+        "solid",
+        "net",
+        "formula",
+        "full"
+      ],
+      "eqI": [
+        "charge",
+        "net",
+        "spect",
+        "full",
+        "state"
+      ],
+      "loes": [
+        "conc",
+        "none",
+        "dil"
+      ],
+      "schluss": [
+        "gleicheWirkung",
+        "menge",
+        "unterscheiden",
+        "silberGeloest",
+        "nurVerduennung"
+      ]
+    },
+    "7": {
+      "farbe": [
+        "weiss",
+        "gelb",
+        "kein",
+        "creme"
+      ],
+      "ablauf": [
+        "wolke",
+        "aufwirbeln",
+        "vorherTrueb",
+        "schwenkenLoest",
+        "verteilt",
+        "absetzen"
+      ],
+      "rolle": [
+        "fest",
+        "zus"
+      ],
+      "aussagen": [
+        "naImFeststoff",
+        "feststoffIonen",
+        "zuschauerGeloest",
+        "keineIonen",
+        "naclMolekuele"
+      ],
+      "eqCl": [
+        "state",
+        "full",
+        "charge",
+        "solid",
+        "net"
+      ],
+      "eqBr": [
+        "net",
+        "formula",
+        "full",
+        "solid",
+        "state"
+      ],
+      "eqI": [
+        "charge",
+        "full",
+        "spect",
+        "net",
+        "state"
+      ],
+      "loes": [
+        "conc",
+        "none",
+        "dil"
+      ],
+      "schluss": [
+        "nurVerduennung",
+        "gleicheWirkung",
+        "silberGeloest",
+        "menge",
+        "unterscheiden"
+      ]
+    },
+    "42": {
+      "farbe": [
+        "weiss",
+        "gelb",
+        "kein",
+        "creme"
+      ],
+      "ablauf": [
+        "schwenkenLoest",
+        "vorherTrueb",
+        "absetzen",
+        "wolke",
+        "aufwirbeln",
+        "verteilt"
+      ],
+      "rolle": [
+        "zus",
+        "fest"
+      ],
+      "aussagen": [
+        "naImFeststoff",
+        "naclMolekuele",
+        "keineIonen",
+        "feststoffIonen",
+        "zuschauerGeloest"
+      ],
+      "eqCl": [
+        "charge",
+        "state",
+        "net",
+        "solid",
+        "full"
+      ],
+      "eqBr": [
+        "solid",
+        "state",
+        "net",
+        "formula",
+        "full"
+      ],
+      "eqI": [
+        "state",
+        "spect",
+        "full",
+        "net",
+        "charge"
+      ],
+      "loes": [
+        "dil",
+        "none",
+        "conc"
+      ],
+      "schluss": [
+        "gleicheWirkung",
+        "silberGeloest",
+        "nurVerduennung",
+        "menge",
+        "unterscheiden"
+      ]
+    },
+    "1234": {
+      "farbe": [
+        "weiss",
+        "kein",
+        "gelb",
+        "creme"
+      ],
+      "ablauf": [
+        "verteilt",
+        "vorherTrueb",
+        "aufwirbeln",
+        "wolke",
+        "schwenkenLoest",
+        "absetzen"
+      ],
+      "rolle": [
+        "fest",
+        "zus"
+      ],
+      "aussagen": [
+        "feststoffIonen",
+        "zuschauerGeloest",
+        "keineIonen",
+        "naclMolekuele",
+        "naImFeststoff"
+      ],
+      "eqCl": [
+        "state",
+        "solid",
+        "net",
+        "charge",
+        "full"
+      ],
+      "eqBr": [
+        "formula",
+        "state",
+        "full",
+        "solid",
+        "net"
+      ],
+      "eqI": [
+        "spect",
+        "full",
+        "state",
+        "net",
+        "charge"
+      ],
+      "loes": [
+        "conc",
+        "dil",
+        "none"
+      ],
+      "schluss": [
+        "nurVerduennung",
+        "menge",
+        "silberGeloest",
+        "gleicheWirkung",
+        "unterscheiden"
+      ]
+    },
+    "98765": {
+      "farbe": [
+        "gelb",
+        "creme",
+        "kein",
+        "weiss"
+      ],
+      "ablauf": [
+        "absetzen",
+        "verteilt",
+        "schwenkenLoest",
+        "aufwirbeln",
+        "wolke",
+        "vorherTrueb"
+      ],
+      "rolle": [
+        "fest",
+        "zus"
+      ],
+      "aussagen": [
+        "keineIonen",
+        "naclMolekuele",
+        "naImFeststoff",
+        "feststoffIonen",
+        "zuschauerGeloest"
+      ],
+      "eqCl": [
+        "state",
+        "full",
+        "solid",
+        "charge",
+        "net"
+      ],
+      "eqBr": [
+        "full",
+        "net",
+        "formula",
+        "solid",
+        "state"
+      ],
+      "eqI": [
+        "net",
+        "spect",
+        "full",
+        "charge",
+        "state"
+      ],
+      "loes": [
+        "conc",
+        "dil",
+        "none"
+      ],
+      "schluss": [
+        "unterscheiden",
+        "menge",
+        "nurVerduennung",
+        "gleicheWirkung",
+        "silberGeloest"
+      ]
+    }
+  },
+  "position_richtige_eqCl": [
+    1,
+    1,
+    4,
+    4,
+    1
+  ]
+}

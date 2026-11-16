@@ -1,0 +1,54 @@
+{
+  "1024x768-dark": {
+    "scale": 0.5170833333333333,
+    "flaschenname_css_px": 6.2,
+    "formel_leiste_css_px": 12.5
+  },
+  "1024x768-light": {
+    "scale": 0.5170833333333333,
+    "flaschenname_css_px": 6.2,
+    "formel_leiste_css_px": 12.5
+  },
+  "1180x820-dark": {
+    "scale": 0.5704166666666667,
+    "flaschenname_css_px": 6.8,
+    "formel_leiste_css_px": 12.5
+  },
+  "1180x820-light": {
+    "scale": 0.5704166666666667,
+    "flaschenname_css_px": 6.8,
+    "formel_leiste_css_px": 12.5
+  },
+  "820x1180-dark": {
+    "scale": 0.5622115384615385,
+    "flaschenname_css_px": 6.7,
+    "formel_leiste_css_px": 12.5
+  },
+  "820x1180-light": {
+    "scale": 0.5622115384615385,
+    "flaschenname_css_px": 6.7,
+    "formel_leiste_css_px": 12.5
+  },
+  "nh3_agcl_bodensatz_ohne_schwenken": [
+    {
+      "t": 0,
+      "rest": 0.9664740288134932
+    },
+    {
+      "t": 2,
+      "rest": 0.8520894024203806
+    },
+    {
+      "t": 5,
+      "rest": 0.7022762631858681
+    },
+    {
+      "t": 10,
+      "rest": 0.5007108048661972
+    },
+    {
+      "t": 20,
+      "rest": 0.22395221747207758
+    }
+  ]
+}
