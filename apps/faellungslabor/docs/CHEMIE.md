@@ -71,10 +71,28 @@ R9 entspricht den Beobachtungen der RSC-Vorschrift (AgCl löst sich im gleichen 
 | lokale Wolke → verteilt | 3,0 s, Wolke sinkt und breitet sich aus |
 | Absetzen | Front erreicht den Boden nach 40 s; Konzentration unter der Front bleibt gleich |
 | Schwenken | 1,3 s Bewegung; Wolken und Bodensatz → Schwebe, Front zurück |
-| Auflösen (NH₃) | erster Ordnung: Schwebe 0,30 s⁻¹, Bodensatz 0,05 s⁻¹ (× Triebkraft 1 − p_GG/p) plus 1 % der Höchstmenge je s; nie unter p_GG |
+| Auflösen (NH₃) | erster Ordnung: Schwebe 0,9 s⁻¹, Bodensatz 0,25 s⁻¹ (× Triebkraft 1 − p_GG/p) plus 3 % der Höchstmenge je s; nie unter p_GG. **1.1.0:** vorher 0,30 / 0,05 s⁻¹ / 1 % – nur die Darstellungsgeschwindigkeit ist erhöht, Kₗ, β und Stoffmengen sind unverändert (Abschnitt 5a) |
+| Ausgießen (Spülen, „− Glas“) | 2,4 s: Anheben 0–0,24 s, zum Silberabfall führen und auf 112° kippen bis 0,62 s, Ausgießen 0,6–1,7 s (Inhalt fließt anteilig in den Abfall), Aufrichten und Zurückstellen bis 2,4 s; bei reduzierter Bewegung 0,8 s im Ständer |
 | Pipette | Tropfen: Tippen = 1, Halten = erster sofort, dann alle 0,38 s; Mindestabstand 0,16 s; Strahl 1,0 mL/s (Probe) bzw. 0,8 mL/s (Dosierhilfe) |
 
 Pause hält alles an; 5× beschleunigt nur, solange kein Handgriff läuft (sonst höchstens 1×). Bedienen beendet die Pause (SiVex-Regel 4).
+
+### 5a. Auflösen mit Ammoniak – gemessen bei 1× (1.1.0)
+
+Anteil des Feststoffs am Anfangsfeststoff, Modellzeit ab Ende der Zugabe, 10 Tropfen AgNO₃ auf 2 mL Probe, abgesetzt (Browserprüfung FK09, `evidence/FK09-aufloesen.json`; vorher: `evidence/vorher-1.0.0.json`):
+
+| Fall | 0 s | 1 s | 2 s | 5 s | 10 s |
+| --- | --- | --- | --- | --- | --- |
+| AgCl + 1,0 mL NH₃ verd., ohne Schwenken – 1.0.0 | 0,97 | – | 0,85 | 0,70 | 0,50 (20 s: 0,22) |
+| AgCl + 1,0 mL NH₃ verd., ohne Schwenken – 1.1.0 | 0,87 | 0,65 | 0,48 | 0,16 | 0,00 |
+| AgCl + 1,0 mL NH₃ verd., einmal geschwenkt – 1.1.0 | 0,71 | 0,30 | 0,10 | 0,00 | 0,00 |
+| AgBr + 3,0 mL NH₃ konz., einmal geschwenkt – 1.1.0 | siehe Testbericht FK09 | | | | |
+
+Die Gleichgewichtslage ist unverändert: Zu wenig Ammoniaklösung lässt den berechneten Rest (AgCl + 0,5 mL verd.: 66 %), AgBr bleibt in verdünnter Lösung weitgehend bestehen (≥ 97 %), AgI auch in viel konzentrierter (≥ 99,9 %), Wasser löst nichts. Mit 2,5 mL konzentrierter Lösung bleiben von AgBr (10 Tropfen) im Gleichgewicht ≈ 7 %, mit 3 mL nichts.
+
+### 5b. Silberabfall (1.1.0)
+
+Spülen und „− Glas“ gießen den Inhalt in einen beschrifteten Sammelbehälter „Silberabfälle“. Die Stoffmengen (Na⁺, NO₃⁻, Ag, X⁻, NH₃, F, Feststoff) und das Volumen fließen während des Ausgießens anteilig in einen Abfallspeicher je Versuchsteil; danach ist das Glas exakt leer. Der Ansatz wird beim Beginn des Ausgießens genau einmal archiviert (Ergebnisübersicht). Wird der Handgriff abgebrochen (Wechsel des Versuchsteils, Fokusverlust, Neuladen), wird er sofort vollständig abgeschlossen – nie doppelt gebucht.
 
 ## 6. Alltagswasser – phänomenologisches Mischfällungsmodell
 
@@ -102,7 +120,7 @@ Trübung: Deckkraft = 0,85·(1 − exp(−√(c/4 mmol/L))), c = Feststoff in de
 
 ## 8. Grenzen der Anleitung (vor jedem Stofftransfer geprüft)
 
-Abgewiesen (Zustand unverändert, Verbotszeichen mit Text „Dieser Vorgang entspricht nicht der Experimentieranleitung.“ und kurzer Begründung): Ammoniaklösung vor der Silbernitratlösung; zweite, andere Probe in denselben Ansatz; Probe nach anderen Zugaben; Silbernitrat, Ammoniak oder Wasser in ein leeres Glas; Pipette in eine Vorratsflasche (Umfüllen). Erlaubt bleiben weitere AgNO₃-Zugaben, wiederholte NH₃-Zugaben, Schwenken, Wasserzugabe, Spülen und frische Gläser. Die Rückmeldung beschreibt den Versuchsumfang, keine chemische Unmöglichkeit.
+Abgewiesen (Zustand unverändert, Verbotszeichen mit Text „Dieser Vorgang entspricht nicht der Experimentieranleitung.“ und kurzer Begründung): Ammoniaklösung vor der Silbernitratlösung; zweite, **andere** Probe in denselben Ansatz; Silbernitrat, Ammoniak oder Wasser in ein leeres Glas; Pipette in eine Vorratsflasche (Umfüllen); Überschreiten der 20 mL. Erlaubt bleiben weitere AgNO₃-Zugaben, wiederholte NH₃-Zugaben, Schwenken, Wasserzugabe, Spülen, frische Gläser und – **seit 1.1.0** – **dieselbe Probe erneut**, auch nach AgNO₃ oder NH₃ (gleiche Ansatzkennung, neue Revision; die Gleichgewichte werden mit den neuen Gesamtmengen neu berechnet, z. B. kann AgCl wieder ausfallen). Die Rückmeldung beschreibt den Versuchsumfang, keine chemische Unmöglichkeit.
 
 ## 9. Gleichungen
 

@@ -77,15 +77,18 @@ await scenario('E01', 'FL01', 'Start: Titel, Version, beide Versuchsteile, keine
 // =========================================================== E02 Vorratslösungen und Gefahrstoffkarten
 await scenario('E02', 'FL02, FL22', 'Vorratslösungen korrekt beschriftet; GHS-Karten je Lösung per Tippen, lesbar, schließbar', async () => {
   const { page, done } = await open({ hasTouch: true, viewport: { width: 1180, height: 820 } });
-  const labels = await page.$$eval('.blabel', (b) => b.map((x) => x.getAttribute('aria-label')));
-  const want = ['Natriumchloridlösung, NaCl 0,100 mol/L', 'Natriumbromidlösung, NaBr 0,100 mol/L', 'Natriumiodidlösung, NaI 0,100 mol/L', 'Silbernitratlösung, AgNO₃ 0,100 mol/L', 'Ammoniaklösung, verdünnt, NH₃ verd. 2,0 mol/L', 'Ammoniaklösung, konzentriert, NH₃ konz. w = 25 %', 'Destilliertes Wasser, H₂O destilliert'];
-  for (const w of want) assert(labels.some((l) => l.endsWith(w)), 'Etikett fehlt: ' + w);
+  // 1.1.0: Etikett auf der Flasche = Formel, Name, Zusatz (ohne Konzentration); Konzentration in der Infokarte
+  const labels = await page.$$eval('.bcard', (b) => b.map((x) => x.innerText.replace(/\u00ad/g, '').replace(/\s+/g, ' ').trim()));
+  const want = ['NaCl Natriumchlorid', 'NaBr Natriumbromid', 'NaI Natriumiodid', 'AgNO₃ Silbernitrat', 'NH₃ Ammoniak verdünnt', 'NH₃ Ammoniak konzentriert', 'H₂O Wasser destilliert'];
+  assert(JSON.stringify(labels) === JSON.stringify(want), 'Etiketten: ' + labels.join(' | '));
+  const info = await page.$$eval('.binfo', (b) => b.map((x) => x.getAttribute('aria-label')));
+  for (const n of ['Natriumchloridlösung', 'Natriumbromidlösung', 'Natriumiodidlösung', 'Silbernitratlösung', 'Ammoniaklösung, verdünnt', 'Ammoniaklösung, konzentriert', 'Destilliertes Wasser']) assert(info.some((l) => l.startsWith('Infokarte: ' + n + ' –')), 'Infokarte fehlt: ' + n);
   const txt = (await stageText(page)) + labels.join(' ');
   assert(!/Barium|BaBr|Carbonat|Salpeters|HNO/.test(txt), 'keine ausgeschlossenen Reagenzien');
   const expect = { agno3: ['GHS07'], nacl: [], nabr: [], nai: [], nh3dil: ['GHS05'], nh3conc: ['GHS05', 'GHS07', 'GHS09'], water: [] };
   const ev = [];
   for (const [k, picts] of Object.entries(expect)) {
-    await page.locator(`.blabel[data-info="${k}"]`).tap();
+    await page.locator(`.binfo[data-info="${k}"]`).tap();
     await adv(page, 150);
     const card = page.locator('.modal-card');
     assert(await card.isVisible(), 'Karte sichtbar ' + k);
@@ -94,6 +97,7 @@ await scenario('E02', 'FL02, FL22', 'Vorratslösungen korrekt beschriftet; GHS-K
     const t = await card.innerText();
     assert(/Quelle:/.test(t), 'Quelle genannt');
     if (picts.length) assert(/Signalwort/.test(t) && /H\d{3}/.test(t), 'Signalwort und H-Sätze');
+    if (k !== 'water') assert(/Konzentration: c [=≈] /.test(t), k + ': Konzentration in der Karte');
     else assert(/Keine Gefahrenpiktogramme/.test(t), 'ohne Piktogramme');
     const box = await card.boundingBox(), vp = page.viewportSize();
     assert(box.y >= 0 && box.y + box.height <= vp.height + 1 && box.x >= 0 && box.x + box.width <= vp.width + 1, 'Karte ohne Abschneiden');
@@ -103,9 +107,9 @@ await scenario('E02', 'FL02, FL22', 'Vorratslösungen korrekt beschriftet; GHS-K
     assert(!(await card.isVisible()), 'geschlossen ' + k);
   }
   await part(page, 'control'); await adv(page, 200);
-  const cl = await page.$$eval('.blabel', (b) => b.map((x) => x.getAttribute('aria-label')).join(' '));
+  const cl = await page.$$eval('.binfo', (b) => b.map((x) => x.getAttribute('aria-label')).join(' '));
   assert(/Leitungswasser/.test(cl) && /Mineralwasser/.test(cl) && !/Ammoniak/.test(cl), 'Kontrollteil: Wasserproben, kein Ammoniak');
-  await page.locator('.blabel[data-info="tap"]').tap(); await adv(page, 150);
+  await page.locator('.binfo[data-info="tap"]').tap(); await adv(page, 150);
   assert(/Keine Gefahrenpiktogramme – kein Gefahrstoff/.test(await page.locator('.modal-card').innerText()), 'Wasser ohne erfundene Symbole');
   await done();
   return { detail: '7 + 2 Karten geprüft (Touch-Emulation)', evidence: ev, viewport: '1180×820', input: 'Touch (emuliert)' };
@@ -320,10 +324,11 @@ await scenario('E09', 'FL10', 'AgCl: zu wenig verdünnte NH₃ lässt Rest, ausr
   assert(mid < p0 && rest > 0.5 * p0 && rest < 0.8 * p0, `Rest bei 0,5 mL: ${(rest / p0).toFixed(3)}`);
   await btn(page, '[data-dose="1"]'); await idle(page);
   const seq = [];
-  for (let i = 0; i < 4; i++) { await adv(page, 1500); seq.push((await tube(page, 0)).solid / p0); ev.push(await shot(page, `09c-agcl-loest-sich-${i + 1}`, await tubeClip(page, 0))); }
+  // 1.1.0: schnelleres, aber weiterhin fortschreitendes Auflösen – Abtastung alle 0,5 s
+  for (let i = 0; i < 4; i++) { await adv(page, 500); seq.push((await tube(page, 0)).solid / p0); ev.push(await shot(page, `09c-agcl-loest-sich-${i + 1}`, await tubeClip(page, 0))); }
   await page.locator('#btnShake').click(); await adv(page, 20000);
   const end = (await tube(page, 0)).solid;
-  assert(seq[0] > seq[3] && seq[3] > 0, 'fortschreitend, nicht schlagartig: ' + seq.map((v) => v.toFixed(2)));
+  assert(seq[0] < 1 && seq.every((v, i) => !i || v < seq[i - 1]) && seq[0] > 0.02, 'fortschreitend, nicht schlagartig: ' + seq.map((v) => v.toFixed(2)));
   assert(end < 1e-12, 'mit 1,5 mL verdünnter NH₃ gelöst');
   writeEvidence('E09-agcl.json', { start_mol: p0, nach_0_5mL: rest / p0, verlauf_nach_weiterem_1mL: seq, ende: end });
   await done();
@@ -462,12 +467,13 @@ await scenario('E14', 'FL14, FL17, FL18, FL19', 'Auswahlaufgaben: leer/alles/tei
   await grade();
   assert(/0 von 4 Antworten richtig/.test(await page.locator('#panelBody').innerText()), 'leer besteht nicht');
   // alles ankreuzen
-  for (const k of ['a', 'b', 'c', 'd', 'e', 'f']) await page.locator(`input[name="ablauf"][value="${k}"]`).check();
+  const ABL = ['wolke', 'verteilt', 'absetzen', 'aufwirbeln', 'schwenkenLoest', 'vorherTrueb'];
+  for (const k of ABL) await page.locator(`input[name="ablauf"][value="${k}"]`).check();
   await grade();
   let fb = await page.locator('fieldset[data-q="ablauf"] .lk-fb').innerText();
   assert(/trifft nicht zu/.test(fb) && /4 angekreuzte Aussagen treffen zu/.test(fb), '„alles ankreuzen“ besteht nicht, konkrete Rückmeldung: ' + fb);
   // teilweise richtig
-  for (const k of ['c', 'd', 'e', 'f']) await page.locator(`input[name="ablauf"][value="${k}"]`).uncheck();
+  for (const k of ABL.slice(2)) await page.locator(`input[name="ablauf"][value="${k}"]`).uncheck();
   await grade();
   fb = await page.locator('fieldset[data-q="ablauf"] .lk-fb').innerText();
   assert(/2 angekreuzte Aussagen treffen zu\. Es fehlen noch 2 zutreffende Aussagen/.test(fb), 'Teilantwort benannt: ' + fb);
@@ -480,19 +486,19 @@ await scenario('E14', 'FL14, FL17, FL18, FL19', 'Auswahlaufgaben: leer/alles/tei
   await page.locator('select[name="farbe.nacl"]').selectOption('weiss');
   await page.locator('select[name="farbe.nabr"]').selectOption('creme');
   await page.locator('select[name="farbe.nai"]').selectOption('gelb');
-  for (const k of ['c', 'd']) await page.locator(`input[name="ablauf"][value="${k}"]`).check();
+  for (const k of ['absetzen', 'aufwirbeln']) await page.locator(`input[name="ablauf"][value="${k}"]`).check();
   await grade();
   assert(/Alles richtig/.test(await page.locator('#panelBody').innerText()), 'Schritt 1 richtig');
   const ev = [await shot(page, '14a-aufgabe-1-richtig')];
   // Schritt 2 mit Fehlvorstellung, dann Korrektur
   await page.locator('.lk-stepchips [data-step="ionen"]').click(); await adv(page, 50);
   for (const [r, v] of [['ag', 'fest'], ['x', 'fest'], ['na', 'fest'], ['no3', 'zus']]) await page.locator(`select[name="rolle.${r}"]`).selectOption(v);
-  for (const k of ['a', 'c']) await page.locator(`input[name="aussagen"][value="${k}"]`).check();
+  for (const k of ['zuschauerGeloest', 'naImFeststoff']) await page.locator(`input[name="aussagen"][value="${k}"]`).check();
   await grade();
   const t2 = await page.locator('#panelBody').innerText();
   assert(/Na⁺ bleibt gelöst/.test(t2), 'Rückmeldung zur Fehlvorstellung Na⁺');
   await page.locator('select[name="rolle.na"]').selectOption('zus');
-  await page.locator('input[name="aussagen"][value="c"]').uncheck(); await page.locator('input[name="aussagen"][value="b"]').check();
+  await page.locator('input[name="aussagen"][value="naImFeststoff"]').uncheck(); await page.locator('input[name="aussagen"][value="feststoffIonen"]').check();
   await grade();
   assert(/Alles richtig/.test(await page.locator('#panelBody').innerText()), 'Schritt 2 nach Korrektur richtig');
   // Schritt 3: gekürzte Gleichung → spezielle Rückmeldung; dann vollständig
@@ -547,7 +553,7 @@ await scenario('E15', 'FL14, FL19', 'Beobachtung speichern; veränderter Ansatz 
   await page.locator('input[name="nh3"][value="geloest"]').check();
   await page.locator('#obsForm button[type="submit"]').click(); await adv(page, 100);
   await page.locator('.hit.pip').click(); await idle(page);
-  await tubeHit(page, 0); await page.locator('#btnRinse').click(); await adv(page, 200);
+  await tubeHit(page, 0); await page.locator('#btnRinse').click(); await idle(page); await adv(page, 200);
   ov = await page.locator('ul.overview').innerText();
   assert((ov.match(/Ansatz beendet/g) || []).length === 2, 'gespülter Ansatz bleibt mit Hinweis');
   const ev = [await shot(page, '15-protokoll-ergebnisuebersicht')];
@@ -708,7 +714,7 @@ await scenario('E20', 'FL25', 'Pause blockiert nicht; Neuladen stellt stabil wie
   assert(r.speed === 1 && r.drops === 0 && r.pip === null && !r.busy, 'stabil: nicht pausiert, nichts im Flug, Pipette zurück');
   assert(r.t.ansatz === 'A1' && r.t.log.agDrops >= 2, 'Ansatz wiederhergestellt');
   // gezielt: Glas spülen
-  await tubeHit(page, 0); await page.locator('#btnRinse').click(); await adv(page, 200);
+  await tubeHit(page, 0); await page.locator('#btnRinse').click(); await idle(page);
   assert((await tube(page, 0)).V === 0, 'Glas leer');
   // alles zurücksetzen mit Bestätigung (Abbrechen, dann Ja)
   await fill(page, 'nai', 1);

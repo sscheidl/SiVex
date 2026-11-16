@@ -37,8 +37,11 @@
     cloud: 3.0,        // lokale Wolke → verteilte Trübung
     settle: 40,        // Absetzfront erreicht den Boden
     shake: 1.3,        // Schwenkbewegung
-    kSusp: 0.30,       // Auflösegeschwindigkeit des schwebenden Feststoffs (1/s, bei voller Triebkraft)
-    kSed: 0.05,        // Auflösegeschwindigkeit des Bodensatzes (1/s)
+    kSusp: 0.9,        // Auflösegeschwindigkeit des schwebenden Feststoffs (1/s, bei voller Triebkraft) – 1.1.0: vorher 0,30
+    kSed: 0.25,        // Auflösegeschwindigkeit des Bodensatzes (1/s) – 1.1.0: vorher 0,05
+    floorRate: 0.03,   // Mindestumsatz je s (Anteil der Höchstmenge) bei voller Triebkraft – 1.1.0: vorher 0,01
+    pour: 2.4,         // Ausgießen: Anheben 0–0,6 s, Ausgießen 0,6–1,7 s, Zurückstellen bis 2,4 s
+    pourReduced: 0.8,  // bei reduzierter Bewegung: nur kurzes Ausblenden
     lift: 0.32,        // Pipette aufnehmen
     moveSpeed: 1600,   // Pipettenweg (Welt/s)
     minMove: 0.28,
@@ -148,7 +151,7 @@
       parts.push({ get: () => t.sed, set: (v) => { t.sed = v; }, k: T.kSed });
       // erster Ordnung je Bereich, dazu ein kleiner Mindestumsatz (1 % der Höchstmenge je s bei voller
       // Triebkraft), damit Reste nicht endlos sichtbar „nachschleichen“
-      const floor = 0.01 * t.maxSolid * drive * dt;
+      const floor = T.floorRate * t.maxSolid * drive * dt;
       const loss = parts.map((q) => q.get() * (1 - Math.exp(-q.k * drive * dt)) + floor * q.get() / p);
       const sum = loss.reduce((s, v) => s + v, 0);
       const excess = p - pEq;
@@ -179,8 +182,8 @@
     if (!cfg.bottles.includes(key)) return 'Diese Lösung gehört nicht zu diesem Versuchsteil.';
     if (cfg.samples.includes(key)) {
       if (isEmpty(t)) return null;
+      // dieselbe Probelösung darf jederzeit nachgegeben werden (1.1.0), eine andere nicht
       if (t.sample !== key) return 'In diesem Reagenzglas ist schon eine andere Probe. Nimm ein leeres Reagenzglas.';
-      if (t.log.agV > 0 || t.log.nh3dilV > 0 || t.log.nh3concV > 0 || t.log.waterV > 0) return 'Probelösung kommt vor allen anderen Zugaben in das Reagenzglas.';
       return null;
     }
     if (isEmpty(t)) return 'Gib zuerst eine Probelösung in das Reagenzglas.';
@@ -193,32 +196,43 @@
   // ------------------------------------------------------------------ Labor (Bedienablauf)
   function makeTab(id) {
     const cfg = TABS[id];
-    return { id, counter: 0, visible: cfg.startTubes, sel: null, tubes: Array.from({ length: cfg.maxTubes }, (_, i) => makeTube(i)), archive: [] };
+    return { id, counter: 0, visible: cfg.startTubes, sel: null, tubes: Array.from({ length: cfg.maxTubes }, (_, i) => makeTube(i)), archive: [], waste: emptyWaste() };
+  }
+
+  function emptyWaste() { return { V: 0, Na: 0, NO3: 0, Ag: 0, X: 0, N: 0, F: 0, solid: 0 }; }
+  /** Glas aus dem Ständer nehmen: nachfolgende Gläser rücken auf, Kennungen wandern mit ihrem Inhalt. */
+  function spliceTube(tb, slot) {
+    tb.tubes.splice(slot, 1);
+    tb.tubes.push(makeTube(tb.tubes.length));
+    tb.tubes.forEach((t, i) => { t.slot = i; });
+    tb.visible = Math.max(1, tb.visible - 1);
+    if (tb.sel === slot) tb.sel = Math.min(slot, tb.visible - 1);
+    else if (tb.sel != null && tb.sel > slot) tb.sel--;
   }
 
   function create(saved) {
     const st = {
-      v: 1, time: 0, speed: 1, tab: 'main', worldW: 1000,
+      v: 1, time: 0, speed: 1, tab: 'main', worldW: 1000, scale: 0.6,
       tabs: { main: makeTab('main'), control: makeTab('control') },
       sampleVol: { main: 2, control: 2 },
       pip: { key: null, tab: null, phase: 'rest', x: 0, y: 0, from: null, to: null, t: 0, dur: 0, over: null, content: 0, next: null },
-      drops: [], hold: null, stream: null, burst: null, lastDrop: -1, uid: 1, events: []
+      drops: [], hold: null, stream: null, burst: null, lastDrop: -1, uid: 1, events: [], pour: null, reduced: false
     };
     if (saved) restore(st, saved);
 
     const tabState = (id) => st.tabs[id || st.tab];
     const cfg = (id) => TABS[id || st.tab];
     const emit = (type, data) => { st.events.push(Object.assign({ type }, data || {})); if (st.events.length > 50) st.events.shift(); };
-    const busy = () => !!st.pip.autoReturn || st.pip.phase === 'move' || st.pip.phase === 'lift' || st.pip.phase === 'back' || !!st.stream || !!st.hold || !!st.burst || st.drops.length > 0 ||
+    const busy = () => !!st.pour || !!st.pip.autoReturn || st.pip.phase === 'move' || st.pip.phase === 'lift' || st.pip.phase === 'back' || !!st.stream || !!st.hold || !!st.burst || st.drops.length > 0 ||
       Object.values(st.tabs).some((tb) => tb.tubes.some((t) => t.shake > 0));
     /** Bedienen beendet die Pause (SiVex-Regel 4). */
     function wake() { if (st.speed === 0) { st.speed = 1; emit('toast', { text: 'Pause beendet – die Zeit läuft wieder mit 1×.' }); } }
 
     // ---------------- Positionen
-    function bottleIndex(key, tab) { return cfg(tab).bottles.indexOf(key); }
-    function bottlePos(key, tab) { const c = cfg(tab); return G.bottleX(bottleIndex(key, tab), c.bottles.length, st.worldW); }
+    function layout(tab) { return G.bottleLayout(tab || st.tab, st.worldW, st.scale); }
+    function bottlePos(key, tab) { const b = layout(tab).bottles[key]; return b ? b.x : st.worldW / 2; }
     function tubePos(slot, tab) { const tb = tabState(tab); return G.tubeX(slot, tb.visible, st.worldW); }
-    function restPos(key, tab) { const p = G.pipetteRest(bottlePos(key, tab)); return { x: p.x, y: p.y }; }
+    function restPos(key, tab) { const b = layout(tab).bottles[key]; const p = G.pipetteRest(b ? b.x : st.worldW / 2, b && b.h); return { x: p.x, y: p.y }; }
     function heldPos(key, tab) { const p = restPos(key, tab); return { x: p.x, y: p.y - G.LIFT }; }
     function overPos(slot, tab) { const p = G.pipetteOver(tubePos(slot, tab)); return { x: p.x, y: p.y }; }
     function moveTo(to, phase, then) {
@@ -273,6 +287,7 @@
       if (!t || slot >= tb.visible) return false;
       tb.sel = slot;
       const p = st.pip;
+      if (st.pour && st.pour.tab === st.tab && st.pour.slot === slot) { emit('toast', { text: 'Dieses Glas wird gerade ausgegossen.' }); return false; }
       if (!p.key || p.tab !== st.tab) return 'select';
       wake();
       const reason = rule(st.tab, p.key, t);
@@ -429,6 +444,7 @@
         stepPipette(h);
         stepFlow(h);
         stepDrops(h);
+        stepPour(h);
         for (const id of Object.keys(st.tabs)) for (const t of st.tabs[id].tubes) stepTube(t, h);
       }
       return dt;
@@ -438,21 +454,98 @@
     function shake(slot) {
       const tb = tabState();
       const t = tb.tubes[slot];
-      if (!t || isEmpty(t)) return false;
+      if (!t || isEmpty(t) || pourBusy(st.tab, slot)) return false;
       wake();
       tb.sel = slot;
       shakeTube(t);
       return true;
     }
-    /** Reagenzglas spülen: Ansatz endet (bleibt in der Ergebnisübersicht), das Glas ist leer. */
-    function rinse(slot) {
-      const tb = tabState();
-      const t = tb.tubes[slot];
-      if (!t || isEmpty(t)) return false;
-      if (st.pip.over === slot && st.pip.tab === st.tab) { stopFlow(); landAll(); }
-      tb.archive.push({ ansatz: t.ansatz, sample: t.sample, log: Object.assign({}, t.log), rev: t.rev, ended: Math.round(st.time) });
-      tb.tubes[slot] = makeTube(slot);
-      if (st.pip.over === slot && st.pip.tab === st.tab && st.pip.phase === 'over') { st.pip.phase = 'held'; st.pip.over = null; placePipette(); }
+    // ---------------- Ausgießen (Spülen bzw. Entfernen eines gefüllten Glases)
+    const pourBusy = (tab, slot) => !!st.pour && st.pour.tab === tab && st.pour.slot === slot;
+    /** Dosierungen in dieses Glas beenden; Tropfen im Flug kommen noch an (vor Slot-Änderungen). */
+    function releaseTube(tab, slot) {
+      const p = st.pip;
+      if (p.tab === tab && p.over === slot) stopFlow();
+      landAll();
+      if (p.tab === tab && p.over === slot && (p.phase === 'over' || p.phase === 'move')) { p.autoReturn = false; p.over = null; p.pending = null; p.phase = 'held'; placePipette(); }
+    }
+    /** Inhalt anteilig in den Silberabfall: Rest r (0…1) des Anfangsinhalts bleibt im Glas. */
+    function drainTo(pr, r) {
+      const t = st.tabs[pr.tab].tubes[pr.slot], w = st.tabs[pr.tab].waste, c = pr.content;
+      const keep = Math.max(0, Math.min(1, r));
+      const out = (pr.left - keep);
+      if (!(out > 0)) return;
+      w.V += c.V * out; w.solid += c.solid * out;
+      for (const k of Object.keys(c.n)) w[k] += c.n[k] * out;
+      pr.left = keep;
+      t.V = c.V * keep;
+      for (const k of Object.keys(c.n)) t.n[k] = c.n[k] * keep;
+      t.susp = c.solid * keep; t.sed = 0; t.clouds = []; t.front = 0;
+      t.rev++;
+    }
+    /** Handgriff abschließen: Glas exakt leer, Rest in den Abfall, ggf. Glas entfernen. */
+    function finishPour() {
+      const pr = st.pour;
+      if (!pr) return false;
+      drainTo(pr, 0);
+      const tb = st.tabs[pr.tab];
+      tb.tubes[pr.slot] = makeTube(pr.slot);
+      st.pour = null;
+      if (pr.remove) {
+        spliceTube(tb, pr.slot);
+        if (st.pip.tab === pr.tab && st.pip.over != null && st.pip.over > pr.slot) st.pip.over--;
+        emit('removed', { tab: pr.tab, slot: pr.slot });
+      }
+      emit('poured', { tab: pr.tab, slot: pr.slot, ansatz: pr.ansatz, remove: !!pr.remove });
+      if (st.pip.tab === pr.tab) placePipette();
+      return true;
+    }
+    function stepPour(dt) {
+      const pr = st.pour;
+      if (!pr) return;
+      pr.t += dt;
+      const k = pr.t / pr.dur;
+      // Ausgießphase: bei voller Bewegung 25–70 % der Dauer, sonst gleichmäßig
+      const a = st.reduced ? 0 : 0.25, b = st.reduced ? 1 : 0.7;
+      drainTo(pr, 1 - Math.max(0, Math.min(1, (k - a) / (b - a))));
+      if (k >= 1) finishPour();
+    }
+    /**
+     * Ausgießen beginnen. Archiviert den Ansatz genau einmal (beim Start), kippt den Feststoff mit
+     * auf (Schräglage), Stoffmengen fließen anteilig in den Silberabfall. remove: Glas danach entfernen.
+     */
+    function pour(slot, opts) {
+      const tb = tabState(), t = tb.tubes[slot];
+      if (!t || slot >= tb.visible || isEmpty(t) || st.pour) return false;
+      if (opts && opts.remove && tb.visible <= 1) return false;
+      wake();
+      releaseTube(st.tab, slot);
+      const solid = solidTotal(t);
+      tb.archive.push({ ansatz: t.ansatz, sample: t.sample, log: Object.assign({}, t.log), rev: t.rev, ended: Math.round(st.time), content: { V: t.V, n: Object.assign({}, t.n), solid } });
+      shakeTube(t); t.shake = 0;
+      st.pour = { tab: st.tab, slot, t: 0, dur: st.reduced ? T.pourReduced : T.pour, remove: !!(opts && opts.remove), ansatz: t.ansatz, left: 1, content: { V: t.V, n: Object.assign({}, t.n), solid } };
+      tb.sel = slot;
+      return true;
+    }
+    /** Spülen = Ausgießen in den Silberabfall; der Ansatz bleibt in der Ergebnisübersicht. */
+    function rinse(slot) { return pour(slot, { remove: false }); }
+    /**
+     * „− Glas“: leeres Glas sofort entfernen; gefülltes nur mit confirmed (sonst 'confirm') und
+     * dann über das Ausgießen. Mindestens ein Glas bleibt; Ergebnis 'min' am Minimum.
+     */
+    function removeTube(slot, confirmed) {
+      const tb = tabState(), t = tb.tubes[slot];
+      if (slot == null || !t || slot >= tb.visible) return false;
+      if (tb.visible <= 1) return 'min';
+      if (st.pour) return false;
+      if (!isEmpty(t)) return confirmed ? pour(slot, { remove: true }) : 'confirm';
+      wake();
+      releaseTube(st.tab, slot);
+      const p = st.pip;
+      spliceTube(tb, slot);
+      if (p.tab === st.tab && p.over != null && p.over > slot) p.over--;
+      placePipette();
+      emit('removed', { tab: st.tab, slot });
       return true;
     }
     function addTube() {
@@ -465,7 +558,7 @@
     function setTab(id) {
       if (!TABS[id] || id === st.tab) return false;
       // laufenden Handgriff abschließen, Pipette zurück, Zeit 1×
-      stopFlow(); landAll();
+      stopFlow(); landAll(); finishPour();
       if (st.pip.key) Object.assign(st.pip, { key: null, tab: null, phase: 'rest', over: null, content: 0 });
       if (st.speed === 0) st.speed = 1;
       st.tab = id;
@@ -473,29 +566,48 @@
     }
     function setSpeed(v) { if (SPEEDS.includes(v)) { st.speed = v; return true; } return false; }
     function setSampleVol(v) { if (SAMPLE_VOLUMES.includes(v)) { st.sampleVol[st.tab] = v; return true; } return false; }
-    function setWorldWidth(W) { if (Math.abs(W - st.worldW) > 0.5) { st.worldW = W; placePipette(); } }
+    /** Weltbreite und Maßstab der Bühne (Bildschirmpixel je Welteinheit) – bestimmen die Flaschenlage. */
+    function setWorldWidth(W, scale) {
+      const sc = scale > 0 ? scale : st.scale;
+      if (Math.abs(W - st.worldW) > 0.5 || Math.abs(sc - st.scale) > 1e-6) { st.worldW = W; st.scale = sc; placePipette(); }
+    }
     /** Alle Abbruchwege (Loslassen, Abbruch, Fokusverlust, Tabwechsel) enden hier. */
     function cancelInput() { st.hold = null; st.burst = null; }
     /** Fokusverlust oder verborgener Tab: jede Dosierung endet, Tropfen im Flug kommen an. */
-    function cancelAll() { stopFlow(); landAll(); }
+    function cancelAll() { stopFlow(); landAll(); finishPour(); }
+    function setReducedMotion(v) { st.reduced = !!v; }
     function drain() { const e = st.events; st.events = []; return e; }
 
     function snapshot() {
       const tabs = {};
       for (const id of Object.keys(st.tabs)) {
         const tb = st.tabs[id];
-        tabs[id] = { counter: tb.counter, visible: tb.visible, sel: tb.sel, archive: tb.archive, tubes: tb.tubes.map((t) => {
-          const o = Object.assign({}, t); delete o._eqRev; delete o._pEq; o.clouds = []; o.susp = t.susp + t.clouds.reduce((s, c) => s + c.m, 0); o.shake = 0; return o;
+        const copy = { counter: tb.counter, visible: tb.visible, sel: tb.sel, archive: tb.archive.slice(), waste: Object.assign({}, tb.waste), tubes: tb.tubes.map((t) => {
+          const o = JSON.parse(JSON.stringify(t)); delete o._eqRev; delete o._pEq; o.clouds = []; o.susp = t.susp + t.clouds.reduce((s, c) => s + c.m, 0); o.shake = 0; return o;
         }) };
+        // laufendes Ausgießen gilt im Speicher als abgeschlossen (bereits archiviert, Rest im Abfall)
+        const pr = st.pour;
+        if (pr && pr.tab === id) {
+          const c = pr.content;
+          copy.waste.V += c.V * pr.left; copy.waste.solid += c.solid * pr.left;
+          for (const k of Object.keys(c.n)) copy.waste[k] += c.n[k] * pr.left;
+          copy.tubes[pr.slot] = makeTube(pr.slot);
+          if (pr.remove) {
+            copy.tubes.splice(pr.slot, 1); copy.tubes.push(makeTube(copy.tubes.length)); copy.tubes.forEach((t, i) => { t.slot = i; });
+            copy.visible = Math.max(1, copy.visible - 1);
+            if (copy.sel === pr.slot) copy.sel = Math.min(pr.slot, copy.visible - 1); else if (copy.sel != null && copy.sel > pr.slot) copy.sel--;
+          }
+        }
+        tabs[id] = copy;
       }
       return { v: 1, time: st.time, tab: st.tab, speed: st.speed === 0 ? 1 : st.speed, sampleVol: st.sampleVol, tabs };
     }
 
     return {
-      state: st, TABS, busy, selectBottle, returnPipette, toBottle, target, dropOnce, startHold, stopHold, drops, dose, shake, rinse, addTube,
-      setTab, setSpeed, setSampleVol, setWorldWidth, cancelInput, cancelAll, step, drain, snapshot, landAll,
+      state: st, TABS, busy, selectBottle, returnPipette, toBottle, target, dropOnce, startHold, stopHold, drops, dose, shake, rinse, pour, removeTube, addTube,
+      setTab, setSpeed, setSampleVol, setWorldWidth, setReducedMotion, cancelInput, cancelAll, finishPour, step, drain, snapshot, landAll, pourBusy,
       tube: (slot, tab) => tabState(tab).tubes[slot], tab: (id) => tabState(id),
-      tubePos, bottlePos, overPos, restPos, inflight, ready
+      tubePos, bottlePos, overPos, restPos, inflight, ready, layout
     };
   }
 
@@ -511,8 +623,9 @@
       if (!src) continue;
       const tb = st.tabs[id];
       tb.counter = src.counter | 0;
-      tb.visible = Math.min(TABS[id].maxTubes, Math.max(TABS[id].startTubes, src.visible | 0));
-      tb.sel = src.sel == null ? null : src.sel | 0;
+      tb.visible = Math.min(TABS[id].maxTubes, Math.max(1, src.visible | 0 || TABS[id].startTubes));
+      if (src.waste) for (const k of Object.keys(tb.waste)) tb.waste[k] = C.finite(src.waste[k]) && src.waste[k] > 0 ? src.waste[k] : 0;
+      tb.sel = src.sel == null || (src.sel | 0) >= tb.visible ? null : src.sel | 0;
       tb.archive = Array.isArray(src.archive) ? src.archive : [];
       (src.tubes || []).forEach((t, i) => {
         if (i >= tb.tubes.length || !t) return;

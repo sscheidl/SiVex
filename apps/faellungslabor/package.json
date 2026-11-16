@@ -1,6 +1,6 @@
 {
   "name": "sivex-faellungslabor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Fällungslabor – Silberhalogenide und Ionennachweise: Fällung mit Silbernitratlösung, Ammoniakprüfung und Kontrollversuche (statische Webanwendung, SiVex)",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "node scripts/build.mjs",
     "test": "node --test \"tests/unit/*.test.js\"",
     "package": "node scripts/package.mjs",
-    "test:e2e": "node tests/e2e/run.mjs",
+    "test:e2e": "node tests/e2e/run.mjs && node tests/e2e/korrektur.mjs",
     "test:scorm": "node tests/e2e/scorm.mjs",
     "test:all": "npm test && npm run package && npm run test:e2e && npm run test:scorm"
   },
