@@ -2,7 +2,7 @@
 
 Stand **16.11.2026** · Status **prototype** · Labkit 0.3.0 · geprüfter Quellstand: Branch `fix/faellungslabor-1.1`, Commit „Fällungslabor 1.1.1 …“ (Code, Tests, daraus gebaute Artefakte und Belege gemeinsam; 1.1.0 = Commit `0398517`).
 
-**1.1.1** behebt den Review-Befund zu PR #56 (Tropfen landeten nach „− Glas“ im Nachbarglas, siehe FK05b) und trägt die iPad-/mebis-Rückmeldung der Lehrkraft zu 1.0.0 nach (FL32/FL33). Alle automatischen Prüfungen wurden für 1.1.1 vollständig neu ausgeführt.
+**1.1.1** behebt den Review-Befund zu PR #56 (Tropfen landeten nach „− Glas“ im Nachbarglas, siehe FK05b) und trägt die iPad-/mebis-Rückmeldungen der Lehrkraft nach: 1.0.0 und 1.1.1 liefen über mebis auf dem iPad (FL32/FL33, FK20). Alle automatischen Prüfungen wurden für 1.1.1 vollständig neu ausgeführt.
 
 Auftrag: [`prompts/faellungslabor-korrekturauftrag-claude.md`](../../../prompts/faellungslabor-korrekturauftrag-claude.md) (Revision 1). Statusregeln nach [`docs/QUALITY.md`](../../../docs/QUALITY.md): **PASS** = tatsächlich geprüft, Nachweis dokumentiert · **HOLD – failed** · **HOLD – incomplete** · **HOLD – unverified**.
 
@@ -11,12 +11,12 @@ Auftrag: [`prompts/faellungslabor-korrekturauftrag-claude.md`](../../../prompts/
 | Bereich | Ergebnis |
 | --- | --- |
 | Korrekturfälle FK01–FK19 + FK05b | **20/20 PASS** (FK01–FK16, FK05b, FK19 als eigene Browserszenarien; FK17 über E01–E21; FK18 über P/S/L und die Browserläufe auf den frisch entpackten Paketen) |
-| FK20 reales iPad und mebis | **HOLD – unverified** für 1.1.1 (kein Gerät, kein mebis-Zugang in dieser Umgebung); 1.0.0 lief laut Lehrkraft über mebis auf dem iPad |
+| FK20 reales iPad und mebis | **PASS** (Rückmeldung der Lehrkraft, 16.11.2026: 1.1.1 läuft über mebis auf dem iPad; kein Einzelprotokoll der Schritte) |
 | Regression FL01–FL31 | **31/31 PASS** auf 1.1.1 |
-| Unterrichtsfreigabe FL32–FL34 | FL32/FL33 **PASS für 1.0.0** (Rückmeldung der Lehrkraft, 16.11.2026), für 1.1.1 **HOLD – unverified**; FL34 **HOLD – unverified** |
+| Unterrichtsfreigabe FL32–FL34 | FL32/FL33 **PASS** für 1.0.0 und 1.1.1 (Rückmeldungen der Lehrkraft, 16.11.2026); FL34 **HOLD – unverified** |
 | `sivex.json` | `status: prototype` |
 
-**Keine Freigabeempfehlung für den Unterricht.** Entwicklungsseitig sind alle sieben Korrekturthemen umgesetzt und geprüft. Der Weg mebis-SCORM → iPad ist mit 1.0.0 bestätigt; iPad/mebis mit 1.1.1 und die fachlich-visuelle Abnahme der neuen Version stehen aus.
+**Keine Freigabeempfehlung für den Unterricht.** Entwicklungsseitig sind alle sieben Korrekturthemen umgesetzt und geprüft. 1.1.1 läuft laut Lehrkraft über mebis auf dem iPad (FK20). Es fehlt nur noch die fachlich-visuelle Abnahme der neuen Version (FL34).
 
 ## Prüfumgebung und ausgeführte Befehle
 
@@ -69,7 +69,7 @@ Viewport ohne Angabe: 1180×820 (emuliert). Vorher-Belege: `screenshots/vorher-1
 | FK17 | Regression E01–E21 auf 1.1.1 (Kernversuche, NH₃, Kontrollen, Gleichungen, Hilfen, Hefteintrag, Formate, Abbruchwege, Speicher) | gesamter Lernweg weiter funktionsfähig | 21/21 PASS; Hauptteil 3/3 ohne Kontrollbesuch; Hefteintrag 91 Wörter (inkl. Überschrift) | PASS | `tests/e2e/results.json` |
 | FK18 | P01–P05, S01–S04, L01–L05 auf den frisch erzeugten Paketen; E/FK-Läufe auf dem frisch entpackten Web-ZIP | Pakete isoliert, offline, file/HTTP, Mock-LMS | 14/14 PASS: Einzeldatei (237,1 KiB) und Web-ZIP per `file://` und HTTP mit Kernablauf, SCORM-Manifest im Stamm, Mock-LMS nur `LMSInitialize`/`LMSFinish`; 0 externe Anfragen, 0 Konsolenfehler (E21, FK-Netz) | PASS | `tests/e2e/scorm-results.json`, `50`–`52-*.png` |
 | FK19 | Browserlauf FK19 + P05: Version in package.json, sivex.json, App, Oberfläche, Manifest, Dateinamen; SHA256SUMS; Paketinhalt gegen Quelle | 1.1.1 überall, aktuelle Prüfsummen, Quellstand dokumentiert | überall 1.1.1; nur 1.1.1-Dateien in `release/` (1.1.0 vom Paketskript entfernt, über Git erreichbar); Prüfsummen stimmen; js/css im Paket byte-gleich mit dem Quellstand dieses Commits | PASS | FK19, P05 |
-| FK20 | – | 1.1.1 auf echtem iPad und frisch in mebis | **nicht durchgeführt** für 1.1.x (kein Gerät, kein mebis-Zugang in dieser Umgebung); 1.0.0 lief laut Lehrkraft über mebis auf dem iPad (FL32/FL33) | **HOLD – unverified** | – |
+| FK20 | Lehrkraft, 16.11.2026: SCORM-Paket `faellungslabor-1.1.1-scorm12.zip` (SHA-256 `8a91cec4…`) in mebis, auf einem echten iPad gestartet | 1.1.1 auf echtem iPad und frisch in mebis | läuft laut Rückmeldung der Lehrkraft; welche Einzelschritte (Etiketten mit iPad-Schrift, „− Glas“, Ausgießen, „Neuer Durchgang“) im Einzelnen geprüft wurden, ist nicht protokolliert | **PASS** (Rückmeldung) | mündliche Rückmeldung der Lehrkraft |
 
 ## Regression: PASS/HOLD-Matrix FL01–FL34 auf 1.1.1
 
@@ -108,8 +108,8 @@ Alle Prüfungen der Version 1.0.0 wurden auf den 1.1.1-Paketen erneut ausgeführ
 | FL29 | L01–L05: Mock-LMS iframe/neues Fenster mit API, ohne API, `LMSInitialize` → 'false', `LMSInitialize` wirft | Init/Finish, Fehlerpfade, keine Lern-/Personendaten | mit API: genau `LMSInitialize` + `LMSFinish`; ohne API: keine Aufrufe; Fehlerpfade: ein Init-Versuch, kein Finish, keine Schleife, keine Konsolenfehler; nie `LMSGetValue`/`LMSSetValue`/`LMSCommit`; App jeweils bedienbar | PASS | `52-scorm-iframe.png`, `52-scorm-popup.png`, `evidence/scorm-lms-aufrufe.json` |
 | FL30 | E21 + S01–S04: externe Netze blockiert, frische Kontexte | alles offline vollständig, keine Konsolenfehler | 390 Seitenanfragen in E01–E20, extern 0; Konsolen-/Seitenfehler 0; Paketprüfungen ebenso. (Chrome selbst versucht im Container Verbindungen zu Google-Diensten – Browserprozess, nicht die Seite; vom Proxy abgelehnt, ohne Einfluss.) | PASS | `results.json` E21 |
 | FL31 | P05 + Build-Prüfung | Versionen, frischer Build, SHA256SUMS, Quellstand | **1.1.1** in `package.json`, `sivex.json`, App, Oberfläche, Manifest, Dateinamen; SHA256SUMS für alle 3 Artefakte korrekt; keine alten Pakete (1.1.0-Dateien entfernt); alle 17 Laufzeitdateien byte-gleich mit dem Quellstand | PASS | `scorm-results.json` P05 |
-| FL32 | Lehrkraft, 16.11.2026: Version **1.0.0** als SCORM-Paket über mebis auf einem iPad gestartet | echtes iPad/Safari | **1.0.0:** lief laut Rückmeldung der Lehrkraft erfolgreich (kein Einzelprotokoll der Schritte). **1.1.1:** nicht auf einem Gerät geprüft; nur Emulation | **1.0.0: PASS** (Rückmeldung) · **1.1.1: HOLD – unverified** | mündliche Rückmeldung der Lehrkraft |
-| FL33 | wie FL32 | frischer mebis-Import, Zielgerät | **1.0.0:** Import in mebis und Start auf dem iPad laut Lehrkraft erfolgreich (Darstellung „Neues Fenster“/eingebettet nicht berichtet). **1.1.1:** nicht importiert; nur Mock-LMS (FL29) | **1.0.0: PASS** (Rückmeldung) · **1.1.1: HOLD – unverified** | mündliche Rückmeldung der Lehrkraft |
+| FL32 | Lehrkraft, 16.11.2026: Version **1.0.0** als SCORM-Paket über mebis auf einem iPad gestartet | echtes iPad/Safari | **1.0.0:** lief laut Rückmeldung der Lehrkraft erfolgreich (kein Einzelprotokoll der Schritte). **1.1.1:** läuft laut Lehrkraft auf dem iPad (FK20) | **1.0.0: PASS** · **1.1.1: PASS** (je Rückmeldung) | mündliche Rückmeldung der Lehrkraft |
+| FL33 | wie FL32 | frischer mebis-Import, Zielgerät | **1.0.0:** Import in mebis und Start auf dem iPad laut Lehrkraft erfolgreich (Darstellung „Neues Fenster“/eingebettet nicht berichtet). **1.1.1:** SCORM-Paket in mebis, Start auf dem iPad laut Lehrkraft erfolgreich (FK20) | **1.0.0: PASS** · **1.1.1: PASS** (je Rückmeldung) | mündliche Rückmeldung der Lehrkraft |
 | FL34 | – | Lehrkraft bestätigt Modell, Texte, Farben | **ausstehend** für 1.1.1 (das Feedback zu 1.0.0 ist in 1.1.0 eingeflossen) | **HOLD – unverified** | – |
 
 ## Gefundene und behobene Fehler 1.1.1
@@ -153,18 +153,16 @@ Angepasste Erwartungen der Regressionstests (beauftragte Verhaltensänderungen, 
 
 ## Grenzen dieser Prüfung
 
-- Nur Chromium (Chrome for Testing 153); Safari/WebKit nicht geprüft – gerade für iPad relevant (FL32).
-- Die Schriftmessungen (FK01) gelten für die Systemschrift des Containers; mit der iPad-Schrift können Breiten leicht abweichen (Sicherung `tight` vorhanden, Prüfung Teil von FK20).
-- Touch und Tablet-Formate emuliert; Bildschirmtastatur, echtes Fingerverhalten und Safari-Eigenheiten (Auswahllisten, Zoom) nicht geprüft.
+- Automatisch nur Chromium (Edge 157; 1.1.0: Chrome for Testing 153); Safari/WebKit nur durch den iPad-Durchgang der Lehrkraft abgedeckt (FL32/FK20, ohne Einzelprotokoll).
+- Die Schriftmessungen (FK01) gelten für die Systemschrift des Containers; mit der iPad-Schrift können Breiten leicht abweichen (Sicherung `tight` vorhanden; auf dem iPad laut Lehrkraft lauffähig, FK20).
+- Touch und Tablet-Formate emuliert; Bildschirmtastatur, echtes Fingerverhalten und Safari-Eigenheiten (Auswahllisten, Zoom) automatisch nicht geprüft; nur durch den iPad-Durchgang der Lehrkraft abgedeckt (ohne Einzelprotokoll).
 - Farben nur gegen Textbeschreibungen fotografisch dokumentierter Versuche abgeglichen, nicht pixelgenau gegen Fotos (Teil von FL34).
-- Mock-LMS statt mebis; „Neues Fenster“ von mebis auf Schul-iPads offen (FL33).
+- Automatisch nur Mock-LMS; der echte mebis-Weg ist durch die Rückmeldungen der Lehrkraft belegt (FL33, FK20).
 
 ## Nächste Prüfschritte (reproduzierbar)
 
-Der Weg mebis-SCORM → iPad ist mit 1.0.0 bestätigt (FL32/FL33). Für 1.1.1 genügt daher ein gezielter Durchgang mit Schwerpunkt auf den Neuerungen:
+FK20, FL32 und FL33 sind für 1.1.1 bestanden (Rückmeldung der Lehrkraft). Offen ist nur noch:
 
-1. **FK20/FL32:** `release/faellungslabor-1.1.1.html` oder Web-ZIP auf ein Schul-iPad (Safari, Querformat und Hochformat): Probe füllen, Tropfen tippen und halten, Ammoniak-Dosierhilfe, Schwenken, Kontrollteil, Aufgaben (Auswahllisten!), Hefteintrag, GHS-Karte, Trennlinie mit dem Finger; neu: Lesbarkeit der Etiketten mit iPad-Schrift, „− Glas“, Spülen/Ausgießen, „Neuer Durchgang“.
-2. **FK20/FL33:** `release/faellungslabor-1.1.1-scorm12.zip` frisch in mebis importieren, Darstellung „Neues Fenster“, auf dem iPad starten, einmal Haupt- und Kontrollablauf, Neuladen.
-3. **FL34:** Lehrkraft prüft die neue Version fachlich-visuell: Etiketten und Gruppen (`nachher-1.1.0-*`), Auflösegeschwindigkeit (`nachher-1.1.0-nh3-*`), Ausgießen (`nachher-1.1.0-ausgiessen-*`), Modell (`docs/CHEMIE.md` §5a/5b), Farben (`03e`, `10`, `11`, `13a`, `17a/b`).
+1. **FL34:** Lehrkraft prüft die neue Version fachlich-visuell: Etiketten und Gruppen (`nachher-1.1.0-*`), Auflösegeschwindigkeit (`nachher-1.1.0-nh3-*`), Ausgießen (`nachher-1.1.0-ausgiessen-*`), Modell (`docs/CHEMIE.md` §5a/5b), Farben (`03e`, `10`, `11`, `13a`, `17a/b`).
 
-Erst wenn FK20 und FL32–FL34 für genau diese Version bestanden sind, `sivex.json` auf `ready` setzen.
+Erst wenn auch FL34 für genau diese Version bestanden ist, `sivex.json` auf `ready` setzen.

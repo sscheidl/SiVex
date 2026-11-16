@@ -5,7 +5,7 @@
 Fehlerbehebung aus dem Code-Review zu PR #56; sonst unverändert gegenüber 1.1.0.
 
 - **„− Glas“ bei gefülltem Glas:** Wurde während des Ausgießens in ein *anderes* Glas getropft, landeten Tropfen, die beim Aufrücken der Gläser noch in der Luft waren, im Nachbarglas (falscher Ansatz, falsches Protokoll). Jetzt kommen alle Tropfen im Flug vor dem Aufrücken in ihrem Glas an; eine Pipette über einem nachrückenden Glas – auch eine gerade dorthin unterwegs – folgt ihm. Neue Prüffälle FK05b (Unit und Browser).
-- iPad-/mebis-Rückmeldung der Lehrkraft zu 1.0.0 im Testbericht nachgetragen (FL32/FL33 für 1.0.0).
+- iPad-/mebis-Rückmeldungen der Lehrkraft im Testbericht nachgetragen: 1.0.0 und 1.1.1 laufen über mebis auf dem iPad (FL32/FL33, FK20: PASS). Offen bleibt die fachlich-visuelle Abnahme (FL34); Status weiter prototype.
 
 ## 1.1.0 – 16.11.2026 (prototype)
 

@@ -1,6 +1,6 @@
 # Fällungslabor 1.1.1 – Silberhalogenide und Ionennachweise
 
-**Status: prototype** – entwicklungsseitig vollständig und paketiert. Version 1.0.0 lief laut Lehrkraft am 16.11.2026 über mebis (SCORM) erfolgreich auf einem iPad; für 1.1.x stehen iPad-/mebis-Prüfung und fachliche Abnahme durch die Lehrkraft noch aus ([Testbericht](docs/TESTBERICHT.md)). Nicht für den Unterricht freigegeben.
+**Status: prototype** – entwicklungsseitig vollständig und paketiert. Versionen 1.0.0 und 1.1.1 liefen laut Lehrkraft am 16.11.2026 über mebis (SCORM) auf einem iPad; die fachliche Abnahme von 1.1.1 durch die Lehrkraft steht noch aus ([Testbericht](docs/TESTBERICHT.md)). Nicht für den Unterricht freigegeben.
 
 **Neu in 1.1.1:** Tropfen, die beim Entfernen eines gefüllten Glases noch in der Luft sind, landen im richtigen Glas. **Neu in 1.1.0** ([CHANGELOG](CHANGELOG.md)): größere, gruppierte Flaschenetiketten ohne Konzentrationsangaben (Konzentration in der Infokarte), „− Glas“, sichtbares Ausgießen in den Behälter „Silberabfälle“, schneller sichtbares Auflösen mit Ammoniak (Gleichgewichte unverändert), dieselbe Probe darf nachgegeben werden, Antworten je Durchgang gemischt.
 
@@ -23,7 +23,7 @@ Jahrgangsstufen 8 (NTG, LehrplanPLUS LB 4: Ionennachweise durch Fällungsreaktio
 2. Unter „Darstellung“ → „Lernpaket anzeigen“: **„Neues Fenster“** (bevorzugt, mehr Platz). Eingebettet läuft die App grundsätzlich auch.
 3. Es werden keine Noten, Antworten, Fortschritte oder personenbezogenen Daten an mebis übertragen; die App meldet sich nur an und ab (LMSInitialize/LMSFinish).
 
-Version 1.0.0 wurde laut Lehrkraft am 16.11.2026 in mebis importiert und lief auf einem iPad (FL33 für 1.0.0: PASS, Rückmeldung der Lehrkraft). Für 1.1.1 ist der mebis-Import noch nicht erfolgt (FK20: HOLD – unverified). Hinweise: [docs/MEBIS.md](../../docs/MEBIS.md).
+Die Versionen 1.0.0 und 1.1.1 wurden laut Lehrkraft am 16.11.2026 in mebis importiert und liefen auf einem iPad (FL33/FK20: PASS, Rückmeldung der Lehrkraft). Hinweise: [docs/MEBIS.md](../../docs/MEBIS.md).
 
 ### Hinweise für die Lehrkraft
 
